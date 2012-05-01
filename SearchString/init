@@ -1,4 +1,0 @@
-#ifndef _SearchString_icpp_init_stub
-#define _SearchString_icpp_init_stub
-#include "Core/init"
-#endif

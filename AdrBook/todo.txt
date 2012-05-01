@@ -1,2 +1,0 @@
-- hidden fields
-- MySql reconnection
