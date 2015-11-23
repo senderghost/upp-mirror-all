@@ -1,0 +1,43 @@
+files *.cpp *.c;
+
+exclude
+	port/vsipreload.cpp
+	ogr/generate_encoding_table.c
+	*/geojson/*
+	*/sqlite/*
+	*/sqlite3/*
+	*/pg/*
+	*/sde/*
+	*/sosi/*
+	*/tiger/*
+	*/vfk/*
+	*/shape/*
+	*/libkml/*
+	*/dgn/*
+	*/arcobjects/*
+	*/dods/*
+	*/dwg/*
+	*/filegdb/*
+	*/fme/*
+	*/gpkg/*
+	*/grass/*
+	*/idb/*
+	*/ingres/*
+	*/ili/*
+	*/mdb/*
+	*/mysql/*
+	*/kml/*
+	*/nas/*
+	*/idrisi/*
+	*/xlsx/*
+	*/xls/*
+	*/oci/*
+	*/ogdi/*
+	*/ods/*
+	*/gpkg/*
+	*/osm/*
+	port/cpl_win32ce_api.cpp
+	frmts/*
+;
+
+includes *.h *.hpp;
