@@ -1,0 +1,5 @@
+#ifndef _gdal_test_icpp_init_stub
+#define _gdal_test_icpp_init_stub
+#include "gdal/init"
+#include "Core/init"
+#endif

@@ -1,0 +1,10 @@
+uses
+	gdal,
+	Core;
+
+file
+	Test.cpp charset "UTF-8";
+
+mainconfig
+	"" = "SSE2";
+
