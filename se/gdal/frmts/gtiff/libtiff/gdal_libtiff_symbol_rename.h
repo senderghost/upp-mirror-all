@@ -704,6 +704,7 @@
 #define _TIFFerrorHandlerExt gdal__TIFFerrorHandlerExt
 #define TIFFInitDumpMode gdal_TIFFInitDumpMode
 #define TIFFReInitJPEG_12 gdal_TIFFReInitJPEG_12
+
 #ifdef LZW_SUPPORT
 #define TIFFInitLZW gdal_TIFFInitLZW
 #endif

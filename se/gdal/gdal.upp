@@ -8,6 +8,8 @@ include
 	ogr;
 
 file
+	gdal.h,
+	gdal.cpp,
 	import.ext,
 	cpl_config.h;
 

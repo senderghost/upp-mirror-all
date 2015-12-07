@@ -36,6 +36,7 @@ exclude
 	*/ods/*
 	*/gpkg/*
 	*/osm/*
+	port/cpl_vsil_simple.cpp
 	port/cpl_win32ce_api.cpp
 	frmts/bgp/*
 	frmts/dds/*
@@ -67,6 +68,29 @@ exclude
 	frmts/webp/*
 	frmts/pdf/*
 	frmts/pcidsk/*
+
+	*/ogr_capi_test.c*
+	*/test_geo_utils.c*
+	*/s57dump.c*
+	*/ntfdump.c*
+	*/jp2dump.c*
+	*/sdts2shp.c*
+	*/nitfdump.c*
+	*/hfatest.c*
+	*/envisat_dump.c*
+	*/dumpgeo.c*
+	*/dted_test.c*
+	*/ceostest.c*
+	*/bsb2raw.c*
+	*/aitest.c*
+
+	*/cpl_recode_iconv.c*
+	*/ogrjmllayer.c*
+	*/ogrgeojsonreader.c*
+	*/ograpispy.c*
+	*/nitf_gcprpc.c*
+	*/gt_jpeg_copy.c*
+	*/gdalrasterfpolygonenumerator.c*
 ;
 
 includes *.h *.hpp;

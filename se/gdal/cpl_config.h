@@ -8,6 +8,22 @@
 #ifndef _gdal_cpl_config_h_
 #define _gdal_cpl_config_h_
 
+#define RENAME_INTERNAL_LIBTIFF_SYMBOLS
+#define RENAME_INTERNAL_LIBGEOTIFF_SYMBOLS
+
+// added to embed in U++ to fix plugin/tif interoperability
+#define TIFFSwabArrayOfDouble gdal_TIFFSwabArrayOfDouble
+#define TIFFSwabArrayOfLong gdal_TIFFSwabArrayOfLong
+#define TIFFSwabArrayOfShort gdal_TIFFSwabArrayOfShort
+#define TIFFSwabArrayOfTriples gdal_TIFFSwabArrayOfTriples
+#define TIFFSwabDouble gdal_TIFFSwabDouble
+#define TIFFSwabLong gdal_TIFFSwabLong
+#define TIFFSwabShort gdal_TIFFSwabShort
+#define _TIFFSwab16BitData gdal__TIFFSwab16BitData
+#define _TIFFSwab24BitData gdal__TIFFSwab24BitData
+#define _TIFFSwab32BitData gdal__TIFFSwab32BitData
+#define _TIFFSwab64BitData gdal__TIFFSwab64BitData
+
 /* We define this here in general so that a VC++ build will publically
    declare STDCALL interfaces even if an application is built against it
    using MinGW */
@@ -15,6 +31,8 @@
 #ifndef CPL_DISABLE_STDCALL
 #  define CPL_STDCALL __stdcall
 #endif
+
+#define HAVE_LIBZ 1
 
 /* Define if you don't have vprintf but do have _doprnt.  */
 #undef HAVE_DOPRNT
