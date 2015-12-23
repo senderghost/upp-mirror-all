@@ -16,8 +16,6 @@ void  FreeRaw64KB(void *ptr);
 #endif
 
 struct Heap {
-	enum { CACHE = 16 };
-
 	static int Ksz(int k) {
 		return k < 14 ? (k + 1) << 4 : k == 17 ? 576 : k == 16 ? 448 : k == 15 ? 368 : 288;
 	}
@@ -26,12 +24,12 @@ struct Heap {
 		FreeLink *next;
 	};
 
-	struct Page {
-		byte         klass;
-		byte         active;
-		Heap        *heap;
-		FreeLink    *freelist;
-		Page        *next;
+	struct Page { // small block Page
+		byte         klass;    // size class
+		byte         active;   // number of used (active) blocks in this page
+		Heap        *heap;     // pointer to Heap
+		FreeLink    *freelist; // single linked list of free blocks in Page
+		Page        *next;     // Pages are in free/full/empty lists
 		Page        *prev;
 
 		void         LinkSelf()            { Dbl_Self(this); }
@@ -58,7 +56,7 @@ struct Heap {
 		Header      *GetHeader()           { return (Header *)this - 1; }
 	};
 
-	struct Header {
+	struct Header { // Large block header
 		byte    free;
 		byte    filler1, filler2, filler3;
 		word    size;
@@ -73,19 +71,23 @@ struct Heap {
 		Header     *Prev()                 { return (Header *)((byte *)this - prev) - 1; }
 	};
 
-	struct BigHdr : DLink {
+	enum {
+		NKLASS = 18, // number of small size classes
+		LBINS = 113, // number of large size bins
+		LARGEHDRSZ = 24, // size of large block header
+		MAXBLOCK = 65536 - 2 * sizeof(Header) - LARGEHDRSZ, // maximum size of large block
+		BIGHDRSZ = 56, // size of huge block header
+		REMOTEINA = 512, // size of remotely freed ptr array
+		REMOTEOUT = 32, // maximum number of remote blocks to be passed to other threads at once
+		REMOTEOUTSZ = 2048, // maximum size of memory of remout_out
+	};
+
+	struct BigHdr : DLink { // Big block header
 		size_t       size;
 	};
 
-	enum {
-		NKLASS = 18,
-		LBINS = 113,
-		LARGEHDRSZ = 24,
-		MAXBLOCK = 65536 - 2 * sizeof(Header) - LARGEHDRSZ,
-		BIGHDRSZ = 56,
-	};
 	static StaticMutex mutex;
-
+	// small blocks
 	Page      work[NKLASS][1];   // circular list of pages that contain some empty blocks
 	Page      full[NKLASS][1];   // circular list of pages that contain NO empty blocks
 	Page     *empty[NKLASS];     // last fully freed page per klass (hot) or global list of empty pages in aux
@@ -94,8 +96,8 @@ struct Heap {
 
 	bool      initialized;
 
-	static word  BinSz[LBINS];
-	static byte  SzBin[MAXBLOCK / 8 + 1];
+	static word  BinSz[LBINS];            // to convert large block bin to size
+	static byte  SzBin[MAXBLOCK / 8 + 1]; // to convert size to large block bin
 	static byte  BlBin[MAXBLOCK / 8 + 1];
 
 	DLink  large[1];
@@ -103,10 +105,17 @@ struct Heap {
 	DLink  freebin[LBINS][1];
 	static DLink lempty[1];
 
-	FreeLink *remote_free;
+	void     *free_remote[REMOTEOUT]; // buffer of remote freed blocks, to be flushed at once (reduce locking)
+	Heap     *free_remote_heap[REMOTEOUT]; // buffer of corresponding remote heaps
+	int       free_remote_count;      // count of remote_out blocks to be passed to target threads to be freed
+	int       free_remote_size;       // memory size of remout_out blocks
 
-	static DLink big[1];
-	static Heap  aux;           // Single global auxiliary heap to store orphans and global list of free pages
+	int       remote_count;          // count of remote_ptr blocks to be freed
+	void     *remote_ptr[REMOTEINA]; // pointers to free blocks
+	FreeLink *remote_more;           // if there is more than REMOTEINA blocks, they are store as linked list
+	
+	static DLink big[1];             // List of all big blocks
+	static Heap  aux;                // Single global auxiliary heap to store orphans and global list of free pages
 
 #ifdef HEAPDBG
 	static void  DbgFreeFill(void *ptr, size_t size);
@@ -126,8 +135,11 @@ struct Heap {
 	static void  Stat(size_t sz) {}
 #endif
 
-	void  FreeRemoteRaw();
+	void  RemoteOut(Heap *heap, void *ptr, int size);
+	void  RemoteFlush();
+	void  FreeRemoteDo(void **ptr, int count, FreeLink *more);
 	void  FreeRemote();
+	void  FreeRemote2();
 
 	void  Init();
 

@@ -184,13 +184,14 @@ void *Heap::LAlloc(size_t& size) {
 	void *ptr = TryLAlloc(bini, size);
 	if(ptr)
 		return ptr;
-	Mutex::Lock __(mutex);
-	if(remote_free) {
-		FreeRemoteRaw();
+	if(remote_count) {
+		FreeRemote();
 		ptr = TryLAlloc(bini, size);
 		if(ptr) return ptr;
 	}
-	aux.FreeRemoteRaw();
+	Mutex::Lock __(mutex);
+	aux.RemoteFlush();
+	aux.FreeRemote2();
 	while(aux.large->next != aux.large) {
 		LLOG("Adopting large block " << (void *)aux.large->next);
 		MoveLarge(this, aux.large->next);
@@ -222,7 +223,7 @@ void Heap::LFree(void *ptr) {
 	}
 	if(bh->heap != this) {
 		LLOG("Remote large, heap " << (void *)bh->heap);
-		bh->heap->RemoteFree(ptr);
+		RemoteOut(bh->heap, ptr, bh->size);
 		return;
 	}
 	LLOG("--- LFree " << asString(bh->size));

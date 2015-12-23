@@ -13,7 +13,7 @@ Heap        Heap::aux;
 StaticMutex Heap::mutex;
 
 void Heap::Init()
-{
+{ // we expect that everything is zero initialized
 	if(initialized)
 		return;
 	LLOG("Init heap " << (void *)this);
@@ -23,7 +23,7 @@ void Heap::Init()
 		work[i]->LinkSelf();
 		work[i]->freelist = NULL;
 		work[i]->klass = i;
-		cachen[i] = 3500 / Ksz(i);
+		cachen[i] = 3500 / Ksz(i); // cache up to 3.5KB of small blocks per class in frontend cache
 	}
 	ASSERT(sizeof(Header) == 16);
 	ASSERT(sizeof(DLink) <= 16);
@@ -41,20 +41,45 @@ void Heap::Init()
 	PROFILEMT(mutex);
 }
 
+inline
 void Heap::RemoteFree(void *ptr)
 {
 	LLOG("RemoteFree " << ptr);
-	Mutex::Lock __(mutex);
-	FreeLink *f = (FreeLink *)ptr;
-	f->next = remote_free;
-	remote_free = f;
+	if(remote_count < REMOTEINA)
+		remote_ptr[remote_count++] = ptr;
+	else {
+		FreeLink *f = (FreeLink *)ptr;
+		f->next = remote_more;
+		remote_more = f;
+	}
 }
 
-void Heap::FreeRemoteRaw()
+void Heap::RemoteFlush()
 {
-	while(remote_free) {
-		FreeLink *f = remote_free;
-		remote_free = remote_free->next;
+	for(int i = 0; i < free_remote_count; i++)
+		free_remote_heap[i]->RemoteFree(free_remote[i]);
+	free_remote_count = free_remote_size = 0;
+}
+
+void Heap::RemoteOut(Heap *heap, void *ptr, int size)
+{
+	free_remote_heap[free_remote_count] = heap;
+	free_remote[free_remote_count] = ptr;
+	free_remote_size += size;
+	free_remote_count++;
+	if(free_remote_count == REMOTEOUT || free_remote_size >= REMOTEOUTSZ) {
+		Mutex::Lock __(mutex);
+		RemoteFlush();
+	}
+}
+
+void Heap::FreeRemoteDo(void **ptr, int count, FreeLink *more)
+{
+	for(int i = 0; i < count; i++)
+		FreeDirect(ptr[i]);
+	while(more) {
+		FreeLink *f = more;
+		more = more->next;
 		LLOG("FreeRemote " << (void *)f);
 		FreeDirect(f);
 	}
@@ -63,8 +88,29 @@ void Heap::FreeRemoteRaw()
 void Heap::FreeRemote()
 {
 	LLOG("FreeRemote");
-	Mutex::Lock __(mutex);
-	FreeRemoteRaw();
+	if(remote_count) {
+		void     *ptr[REMOTEINA];
+		int       count;
+		FreeLink *more;
+	
+		{ // keep locked state as short as possible, do the hard work outside
+			Mutex::Lock __(mutex);
+			memcpy(ptr, remote_ptr, remote_count * sizeof(void *));
+			count = remote_count;
+			more = remote_more;
+			remote_count = 0;
+			remote_more = NULL;
+		}
+		
+		FreeRemoteDo(ptr, count, more);
+	}
+}
+
+void Heap::FreeRemote2()
+{
+	FreeRemoteDo(remote_ptr, remote_count, remote_more);
+	remote_count = 0;
+	remote_more = NULL;
 }
 
 void Heap::Shutdown()
@@ -72,7 +118,8 @@ void Heap::Shutdown()
 	LLOG("Shutdown");
 	Mutex::Lock __(mutex);
 	Init();
-	FreeRemoteRaw();
+	RemoteFlush();
+	FreeRemote2();
 	for(int i = 0; i < NKLASS; i++) {
 		LLOG("Free cache " << i);
 		FreeLink *l = cache[i];
@@ -208,7 +255,8 @@ void Heap::AuxFinalCheck()
 {
 	Mutex::Lock __(mutex);
 	aux.Init();
-	aux.FreeRemoteRaw();
+	aux.RemoteFlush();
+	aux.FreeRemote2();
 	aux.Check();
 	if(!aux.work[0]->next)
 		aux.Init();

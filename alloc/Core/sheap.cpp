@@ -34,7 +34,7 @@ Heap::Page *Heap::WorkPage(int k) // get a new workpage with empty blocks
 	empty[k] = NULL;
 	if(!page) { // try to reacquire pages freed remotely
 		LLOG("AllocK - trying FreeRemote");
-		FreeRemote(); // TODO: precheck remote_free without mutex
+		FreeRemote();
 		if(work[k]->freelist) { // partially free page found
 			LLOG("AllocK - work available after FreeRemote " << k);
 			return work[k];
@@ -53,7 +53,8 @@ Heap::Page *Heap::WorkPage(int k) // get a new workpage with empty blocks
 			}
 	if(!page) { // Attempt to find page in global storage of free pages
 		Mutex::Lock __(mutex);
-		aux.FreeRemoteRaw();
+		aux.RemoteFlush();
+		aux.FreeRemote2();
 		if(aux.work[k]->next != aux.work[k]) { // Try page of the same klass first
 			page = aux.work[k]->next;
 			page->Unlink();
@@ -211,7 +212,7 @@ void Heap::Free(void *ptr)
 		ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(k) == 0);
 #ifdef _MULTITHREADED
 		if(page->heap != this) { // freeing page allocated in different thread
-			page->heap->RemoteFree(ptr); // add to original heap's list of free pages to be properly freed later
+			RemoteOut(page->heap, ptr, Ksz(k)); // add to original heap's list of free pages to be properly freed later
 			return;
 		}
 #endif
@@ -283,7 +284,7 @@ void Heap::Free32(void *ptr)
 	ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(1) == 0);
 #ifdef _MULTITHREADED
 	if(page->heap != this) {
-		page->heap->RemoteFree(ptr);
+		RemoteOut(page->heap, ptr, 32);
 		return;
 	}
 #endif
@@ -313,7 +314,7 @@ void Heap::Free48(void *ptr)
 	ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(2) == 0);
 #ifdef _MULTITHREADED
 	if(page->heap != this) {
-		page->heap->RemoteFree(ptr);
+		RemoteOut(page->heap, ptr, 48);
 		return;
 	}
 #endif
