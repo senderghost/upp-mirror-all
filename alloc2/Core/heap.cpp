@@ -38,34 +38,96 @@ void Heap::Init()
 		aux.Init();
 	}
 	initialized = true;
+	remote_ptr = remote1;
+	out_ptr = out;
 	PROFILEMT(mutex);
 }
 
+/*
 void Heap::RemoteFree(void *ptr)
 {
 	LLOG("RemoteFree " << ptr);
 	Mutex::Lock __(mutex);
-	FreeLink *f = (FreeLink *)ptr;
-	f->next = remote_free;
-	remote_free = f;
+	if(remote_count < REMOTE_COUNT)
+		remote_ptr[remote_count++] = ptr;
+	else {
+		FreeLink *f = (FreeLink *)ptr;
+		f->next = remote_more;
+		remote_more = f;
+	}
+}
+*/
+
+void Heap::RemoteFree(Heap *heap, void *ptr, int size)
+{
+	if(!initialized)
+		Init();
+	Out *o = out_ptr++;
+	o->heap = heap;
+	o->ptr = ptr;
+	out_size += size;
+	if(out_size >= REMOTE_OUT_SZ)
+		RemoteFlush();
 }
 
-void Heap::FreeRemoteRaw()
+void Heap::RemoteFlush()
 {
-	while(remote_free) {
-		FreeLink *f = remote_free;
-		remote_free = remote_free->next;
+	if(!initialized)
+		Init();
+	Mutex::Lock __(mutex);
+	for(Out *o = out; o < out_ptr; o++) {
+		if(o->heap->remote_count < REMOTE_COUNT)
+			o->heap->remote_ptr[o->heap->remote_count++] = o->ptr;
+		else {
+			FreeLink *f = (FreeLink *)o->ptr;
+			f->next = o->heap->remote_more;
+			o->heap->remote_more = f;
+		}
+	}
+	out_size = 0;
+	out_ptr = out;
+}
+
+void Heap::FreeRemoteRaw(void **ptr, int count, FreeLink *more)
+{
+	for(int i = 0; i < count; i++)
+		FreeDirect(ptr[i]);
+	while(more) {
+		FreeLink *f = more;
+		more = more->next;
 		LLOG("FreeRemote " << (void *)f);
 		FreeDirect(f);
 	}
 }
 
+void Heap::FreeRemoteRaw()
+{
+	LLOG("FreeRemoteRaw");
+	if(remote_count) { // avoid mutex if likely nothing to free
+		FreeRemoteRaw(remote_ptr, remote_count, remote_more);
+		remote_more = NULL;
+		remote_count = 0;
+	}
+}
+
+
 void Heap::FreeRemote()
 {
 	LLOG("FreeRemote");
-	if(remote_free) { // avoid mutex if likely nothing to free
-		Mutex::Lock __(mutex);
-		FreeRemoteRaw();
+	if(remote_count) { // avoid mutex if likely nothing to free
+		FreeLink *more;
+		void    **ptr;
+		int       count;
+		{
+			Mutex::Lock __(mutex);
+			more = remote_more;
+			count = remote_count;
+			ptr = remote_ptr;
+			remote_ptr = remote_ptr == remote1 ? remote2 : remote1;
+			remote_more = NULL;
+			remote_count = 0;
+		}
+		FreeRemoteRaw(ptr, count, more);
 	}
 }
 
@@ -74,6 +136,7 @@ void Heap::Shutdown()
 	LLOG("Shutdown");
 	Mutex::Lock __(mutex);
 	Init();
+	RemoteFlush();
 	FreeRemoteRaw();
 	for(int i = 0; i < NKLASS; i++) {
 		LLOG("Free cache " << i);
