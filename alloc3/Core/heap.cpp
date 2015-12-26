@@ -42,21 +42,6 @@ void Heap::Init()
 	PROFILEMT(mutex);
 }
 
-/*
-void Heap::RemoteFree(void *ptr)
-{
-	LLOG("RemoteFree " << ptr);
-	Mutex::Lock __(mutex);
-	if(remote_count < REMOTE_COUNT)
-		remote_ptr[remote_count++] = ptr;
-	else {
-		FreeLink *f = (FreeLink *)ptr;
-		f->next = remote_more;
-		remote_more = f;
-	}
-}
-*/
-
 void Heap::RemoteFree(Heap *heap, void *ptr, int size)
 {
 	if(!initialized)

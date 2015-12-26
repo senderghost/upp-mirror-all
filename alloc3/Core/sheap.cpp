@@ -285,7 +285,6 @@ void Heap::Free32(void *ptr)
 	ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(1) == 0);
 #ifdef _MULTITHREADED
 	if(page->heap != this) {
-//		page->heap->RemoteFree(page->heap, ptr, 32);
 		RemoteFree(page->heap, ptr, 32);
 		return;
 	}
@@ -316,7 +315,6 @@ void Heap::Free48(void *ptr)
 	ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(2) == 0);
 #ifdef _MULTITHREADED
 	if(page->heap != this) {
-//		page->heap->RemoteFree(ptr);
 		RemoteFree(page->heap, ptr, 32);
 		return;
 	}
