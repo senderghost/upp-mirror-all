@@ -32,6 +32,7 @@ Heap::Page *Heap::WorkPage(int k) // get a new workpage with empty blocks
 	LLOG("AllocK - next work not available " << k << " empty: " << (void *)empty[k]);
 	Page *page = empty[k]; // hot empty page of the same klass
 	empty[k] = NULL;
+	// FreeRemote();
 	if(!page) { // try to reacquire pages freed remotely
 		LLOG("AllocK - trying FreeRemote");
 		FreeRemote();

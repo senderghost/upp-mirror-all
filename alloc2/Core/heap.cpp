@@ -75,15 +75,17 @@ void Heap::RemoteFlush()
 	if(!initialized)
 		Init();
 	Mutex::Lock __(mutex);
-	for(Out *o = out; o < out_ptr; o++) {
-		if(o->heap->remote_count < REMOTE_COUNT)
+	for(Out *o = out; o < out_ptr; o++)
+		if(o->heap->remote_count < REMOTE_COUNT) {
+//			RHITCOUNT("remote");
 			o->heap->remote_ptr[o->heap->remote_count++] = o->ptr;
+		}
 		else {
+//			RHITCOUNT("more");
 			FreeLink *f = (FreeLink *)o->ptr;
 			f->next = o->heap->remote_more;
 			o->heap->remote_more = f;
 		}
-	}
 	out_size = 0;
 	out_ptr = out;
 }
@@ -103,7 +105,7 @@ void Heap::FreeRemoteRaw(void **ptr, int count, FreeLink *more)
 void Heap::FreeRemoteRaw()
 {
 	LLOG("FreeRemoteRaw");
-	if(remote_count) { // avoid mutex if likely nothing to free
+	if(remote_count) {
 		FreeRemoteRaw(remote_ptr, remote_count, remote_more);
 		remote_more = NULL;
 		remote_count = 0;
@@ -113,17 +115,16 @@ void Heap::FreeRemoteRaw()
 
 void Heap::FreeRemote()
 {
-	LLOG("FreeRemote");
 	if(remote_count) { // avoid mutex if likely nothing to free
 		FreeLink *more;
 		void    **ptr;
 		int       count;
-		{
+		{ // only pick values in mutex, resolve later
 			Mutex::Lock __(mutex);
 			more = remote_more;
 			count = remote_count;
 			ptr = remote_ptr;
-			remote_ptr = remote_ptr == remote1 ? remote2 : remote1;
+			remote_ptr = remote_ptr == remote1 ? remote2 : remote1; //swap arrays so that remotes can be stored while resolving
 			remote_more = NULL;
 			remote_count = 0;
 		}
