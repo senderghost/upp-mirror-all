@@ -105,7 +105,7 @@ void Heap::FreeRemoteRaw()
 
 void Heap::FreeRemote()
 {
-	if(remote_list) { // avoid mutex if likely nothing to free
+	while(remote_list) { // avoid mutex if likely nothing to free
 		FreeLink *list;
 		{ // only pick values in mutex, resolve later
 			Mutex::Lock __(mutex);
