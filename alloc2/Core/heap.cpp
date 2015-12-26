@@ -116,6 +116,7 @@ void Heap::FreeRemoteRaw()
 void Heap::FreeRemote()
 {
 	if(remote_count) { // avoid mutex if likely nothing to free
+		RTIMING("FreeRemote");
 		FreeLink *more;
 		void    **ptr;
 		int       count;
