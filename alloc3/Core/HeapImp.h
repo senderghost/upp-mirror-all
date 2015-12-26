@@ -112,15 +112,8 @@ struct Heap {
 	Out      *out_ptr;
 	int       out_size;
 
-	byte      filler1[128]; // make sure variables are in distinct cachelines
-	void    **remote_ptr; // current remote in buffer
-	byte      filler2[128];
-	void     *remote1[REMOTE_COUNT]; // remote in buffer 1
-	byte      filler3[128];
-	void     *remote2[REMOTE_COUNT]; // remote in buffer 2
-	byte      filler4[128];
-	int       remote_count; // count of items in remote_ptr
-	FreeLink *remote_more; // if there is more than REMOTE_COUNT, they are stored in single-linked list
+	byte      filler1[128]; // make next variable is in distinct cacheline
+	FreeLink *remote_list; // single linked list of remotely released pointers
 
 	static DLink big[1];        // List of all big blocks
 	static Heap  aux;           // Single global auxiliary heap to store orphans and global list of free pages
@@ -144,7 +137,7 @@ struct Heap {
 #endif
 
 	void  FreeRemoteRaw();
-	void  FreeRemoteRaw(void **ptr, int count, FreeLink *more);
+	void  FreeRemoteRaw(FreeLink *list);
 	void  FreeRemote();
 
 	void  Init();

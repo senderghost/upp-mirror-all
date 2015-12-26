@@ -184,7 +184,7 @@ void *Heap::LAlloc(size_t& size) {
 	void *ptr = TryLAlloc(bini, size);
 	if(ptr)
 		return ptr;
-	if(remote_count) {
+	if(remote_list) {
 		FreeRemote();
 		ptr = TryLAlloc(bini, size);
 		if(ptr) return ptr;
