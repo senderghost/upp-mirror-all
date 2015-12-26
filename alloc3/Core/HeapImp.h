@@ -81,8 +81,7 @@ struct Heap {
 		LARGEHDRSZ = 24, // size of large block header
 		MAXBLOCK = 65536 - 2 * sizeof(Header) - LARGEHDRSZ, // maximum size of large block
 		BIGHDRSZ = 56, // size of huge block header
-		REMOTE_COUNT = 512, // maximum count of remotely released blocks stored in array
-		REMOTE_OUT_SZ = 2000, // maximum size of remote blocks to be buffered before flush
+		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
 	};
 
 	static StaticMutex mutex;
@@ -172,7 +171,6 @@ struct Heap {
 
 	static void Shrink();
 
-//	void RemoteFree(void *ptr);
 	void RemoteFree(Heap *heap, void *ptr, int size);
 	void RemoteFlush();
 	void Shutdown();
