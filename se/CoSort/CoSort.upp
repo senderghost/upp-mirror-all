@@ -1,0 +1,10 @@
+uses
+	Core;
+
+file
+	CoSort.cpp,
+	info.txt;
+
+mainconfig
+	"" = "MT";
+
