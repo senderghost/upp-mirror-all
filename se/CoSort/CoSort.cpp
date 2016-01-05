@@ -80,7 +80,7 @@ void CoSort(T& c)
 }
 
 #ifdef _DEBUG
-#define N 1000000
+#define N 100000
 #else
 #define N 10000000
 #endif

@@ -1,5 +1,9 @@
-TIMING CoSort         : 537.00 ms - 537.00 ms (537.00 ms / 1 ), min: 537.00 ms, max: 537.00 ms, nesting: 1 - 1
-TIMING Sort           :  2.10 s  -  2.10 s  ( 2.10 s  / 1 ), min:  2.10 s , max:  2.10 s , nesting: 1 - 1
+Pentium 2.7
+Intel® Pentium(R) CPU G620 @ 2.60GHz × 2 
+gcc (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010
 
-TIMING CoSort         : 495.00 ms - 495.00 ms (495.00 ms / 1 ), min: 495.00 ms, max: 495.00 ms, nesting: 1 - 1
-TIMING Sort           :  2.04 s  -  2.04 s  ( 2.04 s  / 1 ), min:  2.04 s , max:  2.04 s , nesting: 1 - 1
+TIMING std::sort      :  6.43 s  -  6.43 s  ( 6.43 s  / 1 ), min:  6.43 s , max:  6.43 s , nesting: 1 - 1
+TIMING CoSort         :  1.24 s  -  1.24 s  ( 1.24 s  / 1 ), min:  1.24 s , max:  1.24 s , nesting: 1 - 1
+TIMING Sort           :  2.24 s  -  2.24 s  ( 2.24 s  / 1 ), min:  2.24 s , max:  2.24 s , nesting: 1 - 1
+
+
