@@ -6,6 +6,14 @@ TIMING std::sort      :  4.91 s  -  4.91 s  ( 4.91 s  / 1 ), min:  4.91 s , max:
 TIMING CoSort         : 921.00 ms - 921.00 ms (921.00 ms / 1 ), min: 921.00 ms, max: 921.00 ms, nesting: 1 - 1
 TIMING Sort           :  1.64 s  -  1.64 s  ( 1.64 s  / 1 ), min:  1.64 s , max:  1.64 s , nesting: 1 - 1
 
+clang
+
+TIMING std::sort      :  4.95 s  -  4.95 s  ( 4.95 s  / 1 ), min:  4.95 s , max:  4.95 s , nesting: 1 - 1
+TIMING CoSort         :  1.01 s  -  1.01 s  ( 1.01 s  / 1 ), min:  1.01 s , max:  1.01 s , nesting: 1 - 1
+TIMING Sort           :  1.82 s  -  1.82 s  ( 1.82 s  / 1 ), min:  1.82 s , max:  1.82 s , nesting: 1 - 1
+
+
+-----------------------------------
 Intel® Pentium(R) Core i7-4771 @ 3.5GHz (4 cores, 8 threads)
 Windows 10
 Visual C++ 2014 32-bit
