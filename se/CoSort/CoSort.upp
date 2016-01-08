@@ -4,7 +4,7 @@ uses
 	Core;
 
 file
-	CoSort.cpp,
+	CoSort.cpp optimize_speed,
 	srcdoc.tpp,
 	info.txt;
 

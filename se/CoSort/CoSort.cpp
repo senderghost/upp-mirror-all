@@ -1,6 +1,5 @@
 #include <Core/Core.h>
 #include <vector>
-#include <ppl.h>
 
 using namespace Upp;
 
@@ -104,11 +103,11 @@ CONSOLE_APP_MAIN
 		RTIMING("CoSort");
 		CoSort(b);
 	}
-#if 0
 	{
 		RTIMING("std::sort");
 		std::sort(c.begin(), c.end());
 	}
+#if 0
 	{
 		RTIMING("parallel_sort");
 		concurrency::parallel_sort(d.begin(), d.end());

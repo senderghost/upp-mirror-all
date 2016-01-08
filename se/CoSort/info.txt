@@ -2,9 +2,9 @@ Intel® Pentium(R) CPU G620 @ 2.60GHz (2 cores, 2 threads)
 Ubuntu Linux
 gcc (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010, 64-bit
 
-TIMING std::sort      :  6.43 s  -  6.43 s  ( 6.43 s  / 1 ), min:  6.43 s , max:  6.43 s , nesting: 1 - 1
-TIMING CoSort         :  1.24 s  -  1.24 s  ( 1.24 s  / 1 ), min:  1.24 s , max:  1.24 s , nesting: 1 - 1
-TIMING Sort           :  2.24 s  -  2.24 s  ( 2.24 s  / 1 ), min:  2.24 s , max:  2.24 s , nesting: 1 - 1
+TIMING std::sort      :  4.91 s  -  4.91 s  ( 4.91 s  / 1 ), min:  4.91 s , max:  4.91 s , nesting: 1 - 1
+TIMING CoSort         : 921.00 ms - 921.00 ms (921.00 ms / 1 ), min: 921.00 ms, max: 921.00 ms, nesting: 1 - 1
+TIMING Sort           :  1.64 s  -  1.64 s  ( 1.64 s  / 1 ), min:  1.64 s , max:  1.64 s , nesting: 1 - 1
 
 Intel® Pentium(R) Core i7-4771 @ 3.5GHz (4 cores, 8 threads)
 Windows 10
