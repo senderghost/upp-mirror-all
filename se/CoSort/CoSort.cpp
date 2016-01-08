@@ -1,69 +1,67 @@
 #include <Core/Core.h>
 #include <vector>
+#include <ppl.h>
 
 using namespace Upp;
 
-struct CoSorter {
-	CoWork cw;
-	
-	enum { PARALLEL_THRESHOLD = 50 };
+template <class I, class Less>
+void CoSort(CoWork& cw, I l, I h, const Less& less)
+{
+	enum { PARALLEL_THRESHOLD = 80 };
 
-	template <class I, class Less>
-	void CoSort(I l, I h, const Less& less)
-	{
+	for(;;) {
+		int count = int(h - l);
+		if(count < 2)
+			return;
+		if(count < 8) {                         // Final optimized SelectSort
+			ForwardSort(l, h, less);
+			return;
+		}
+		int pass = 4;
 		for(;;) {
-			int count = int(h - l);
-			if(count < 2)
-				return;
-			if(count < 8) {                         // Final optimized SelectSort
-				ForwardSort(l, h, less);
-				return;
-			}
-			int pass = 4;
-			for(;;) {
-				I middle = l + (count >> 1);        // get the middle element
-				OrderIter2__(l, middle, less);      // sort l, middle, h-1 to find median of 3
-				OrderIter2__(middle, h - 1, less);
-				OrderIter2__(l, middle, less);      // median is now in middle
-				IterSwap(l + 1, middle);            // move median pivot to l + 1
-				I ii = l + 1;
-				for(I i = l + 2; i != h - 1; ++i)   // do partitioning; already l <= pivot <= h - 1
-					if(less(*i, *(l + 1)))
-						IterSwap(++ii, i);
-				IterSwap(ii, l + 1);                // put pivot back in between partitions
-				I iih = ii;
-				while(iih + 1 != h && !less(*ii, *(iih + 1))) // Find middle range of elements equal to pivot
-					++iih;
-				if(pass > 5 || min(ii - l, h - iih) > (max(ii - l, h - iih) >> pass)) { // partition sizes ok or we have done max attempts
-					if(ii - l < h - iih - 1) {       // recurse on smaller partition, tail on larger
-						if(ii - l < PARALLEL_THRESHOLD)
-							CoSort(l, ii, less);
-						else
-							cw & [=] { CoSort(l, ii, less); };
-						l = iih + 1;
-					}
-					else {
-						if(h - iih - 1 < PARALLEL_THRESHOLD)
-							CoSort(iih + 1, h, less);
-						else
-							cw & [=] { CoSort(iih + 1, h, less); };
-						h = ii;
-					}
-					break;
+			I middle = l + (count >> 1);        // get the middle element
+			OrderIter2__(l, middle, less);      // sort l, middle, h-1 to find median of 3
+			OrderIter2__(middle, h - 1, less);
+			OrderIter2__(l, middle, less);      // median is now in middle
+			IterSwap(l + 1, middle);            // move median pivot to l + 1
+			I ii = l + 1;
+			for(I i = l + 2; i != h - 1; ++i)   // do partitioning; already l <= pivot <= h - 1
+				if(less(*i, *(l + 1)))
+					IterSwap(++ii, i);
+			IterSwap(ii, l + 1);                // put pivot back in between partitions
+			I iih = ii;
+			while(iih + 1 != h && !less(*ii, *(iih + 1))) // Find middle range of elements equal to pivot
+				++iih;
+			if(pass > 5 || min(ii - l, h - iih) > (max(ii - l, h - iih) >> pass)) { // partition sizes ok or we have done max attempts
+				if(ii - l < h - iih - 1) {       // schedule or recurse on smaller partition, tail on larger
+					if(ii - l < PARALLEL_THRESHOLD) // too small to run in parallel?
+						Sort(l, ii, less); // resolve in this thread
+					else
+						cw & [=, &cw] { CoSort(cw, l, ii, less); }; // schedule for parallel execution
+					l = iih + 1;
 				}
-				IterSwap(l, l + (int)Random(count));     // try some other random elements for median pivot
-				IterSwap(middle, l + (int)Random(count));
-				IterSwap(h - 1, l + (int)Random(count));
-				pass++;
+				else {
+					if(h - iih - 1 < PARALLEL_THRESHOLD) // too small to run in parallel?
+						Sort(iih + 1, h, less); // resolve in this thread
+					else
+						cw & [=, &cw] { CoSort(cw, iih + 1, h, less); }; // schedule for parallel execution
+					h = ii;
+				}
+				break;
 			}
+			IterSwap(l, l + (int)Random(count));     // try some other random elements for median pivot
+			IterSwap(middle, l + (int)Random(count));
+			IterSwap(h - 1, l + (int)Random(count));
+			pass++;
 		}
 	}
-};
+}
 
 template <class I, class Less>
 void CoSort(I l, I h, const Less& less)
 {
-	CoSorter().CoSort(l, h, less);
+	CoWork cw;
+	CoSort(cw, l, h, less);
 }
 
 template <class T, class Less>
@@ -89,11 +87,13 @@ CONSOLE_APP_MAIN
 {
 	Vector<String> a, b;
 	std::vector<std::string> c;
+	std::vector<std::string> d;
 	for(int i = 0; i < N; i++) {
 		String s = AsString(Random());
 		a.Add(s);
 		b.Add(s);
 		c.push_back(s.ToStd());
+		d.push_back(s.ToStd());
 	}
 
 	{
@@ -104,10 +104,15 @@ CONSOLE_APP_MAIN
 		RTIMING("CoSort");
 		CoSort(b);
 	}
+#if 0
 	{
 		RTIMING("std::sort");
 		std::sort(c.begin(), c.end());
 	}
-
+	{
+		RTIMING("parallel_sort");
+		concurrency::parallel_sort(d.begin(), d.end());
+	}
+#endif
 	ASSERT(a == b);
 }
