@@ -86,19 +86,19 @@ random elements for median pivot]&]
 [s0; &]
 [s0; This is fairly standard implementation. For small final subsections 
 (<8 elements), optimized selection sort is used. Algorithm uses 
-`"fat`" partitioning (elements equal to pivot are removed). Pivot 
-is decided as median of first, middle, last elements and algorithm 
-contains detection of degenerate cases, in which case it does 
-2 more attempts to find a better pivot, using random elements 
-to get median.&]
+`"fat`" partitioning (elements equal to pivot are excluded from 
+partitions). Pivot is decided as median of first, middle, last 
+elements and algorithm contains detection of degenerate cases, 
+in which case it does 2 more attempts to find a better pivot, 
+using random elements to get median.&]
 [s0; &]
-[s0; Now the feature of QuickSort that makes particularly easy to 
-parallelize is the fact that once partitioned, there is no data 
-sharing between partitions. Practically all we need to do is 
-to replace recursion with parallel execution.&]
+[s0; Now the feature of QuickSort that makes it particularly easy 
+to parallelize is the fact that once partitioned, there is no 
+data sharing between partitions. Practically all we need to do 
+is to replace recursion with parallel execution.&]
 [s0; &]
 [s0; The only problem here is how to reasonably manage threads. Thankfully, 
-U`+`+ provides useful parallelization class called CoWork.&]
+U`+`+ provides a useful parallelization class called CoWork.&]
 [s0; &]
 [s0; Meet the CoWork&]
 [s0; CoWork can be thought of as an interface to the thread pool. 
@@ -112,8 +112,8 @@ executed. (Note that Do can also be invoked using operator `&).&]
 [s0; Finish&]
 [s0; &]
 [s0; waits for all the code scheduled by Do to be finished. (Finish 
-can be called multiple times and is called from CoWork destructor, 
-so is usually omitted from the code).&]
+is invoked from CoWork destructor, so is usually omitted from 
+the code).&]
 [s0; &]
 [s0; With respect to memory visibility, all changes made before Do 
 are visible when scheduled code is performed and all changes 
@@ -204,15 +204,14 @@ other random elements for median pivot]&]
 [s0;R0 &]
 [s0; Just as promised, about the only change in the QuickSort code 
 is replacement of recursion with CoWork`::Do scheduling (in operator 
-`& form). We are using helper CoSorter class just to make access 
-to single CoWork easier. The only interesting part is PARALLEL`_THRESHOLD 
-constant `- when partitions become small, scheduling them in 
-parallel has diminishing returns and at some point, false cacheline 
-sharing and CoWork management costs are higher that benefits 
-of using more CPU cores. The value 50 used here is a combination 
-of guts feeling and some experimentation and is not really critical, 
-in experiments sorting Strings we have found that performance 
-generally is getting worse if this value is >100 or <20.&]
+`& form). PARALLEL`_THRESHOLD constant prevents parallel execution 
+for small partitions `- scheduling them in parallel has diminishing 
+returns and at some point, false cacheline sharing and CoWork 
+management costs are higher that benefits of using more CPU cores. 
+The value 80 used here is a combination of guts feeling and some 
+experimentation and is not really critical, in experiments sorting 
+Strings we have found that performance generally is getting worse 
+if this value is >200 or <20.&]
 [s0; &]
 [s0; Benchmarks&]
 [s0; We have benchmarked CoSort against original serial version, 
