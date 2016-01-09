@@ -79,39 +79,43 @@ void CoSort(T& c)
 #ifdef _DEBUG
 #define N 100000
 #else
-#define N 10000000
+//#define N 10000000
+#define N 100000
+//#define N 1000
 #endif
 
 CONSOLE_APP_MAIN
 {
-	Vector<String> a, b;
+	Vector<String> a;
 	std::vector<std::string> c;
-	std::vector<std::string> d;
 	for(int i = 0; i < N; i++) {
 		String s = AsString(Random());
 		a.Add(s);
-		b.Add(s);
 		c.push_back(s.ToStd());
-		d.push_back(s.ToStd());
 	}
 
-	{
-		RTIMING("Sort");
-		Sort(a);
-	}
-	{
-		RTIMING("CoSort");
-		CoSort(b);
-	}
-	{
-		RTIMING("std::sort");
-		std::sort(c.begin(), c.end());
-	}
-#if 0
-	{
-		RTIMING("parallel_sort");
-		concurrency::parallel_sort(d.begin(), d.end());
+#ifdef _DEBUG
+	Vector<String> b = clone(a);
+	Sort(a);
+	CoSort(b);
+	ASSERT(a == b);
+#else
+	for(int i = 0; i < 10000000 / N; i++) {
+		{
+			Vector<String> b = clone(a);
+			RTIMING("Sort");
+			Sort(b);
+		}
+		{
+			Vector<String> b = clone(a);
+			RTIMING("CoSort");
+			CoSort(b);
+		}
+		{
+			std::vector<std::string> d = c;
+			RTIMING("std::sort");
+			std::sort(d.begin(), d.end());
+		}
 	}
 #endif
-	ASSERT(a == b);
 }
