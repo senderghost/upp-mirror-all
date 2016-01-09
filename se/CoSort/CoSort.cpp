@@ -6,7 +6,7 @@ using namespace Upp;
 template <class I, class Less>
 void CoSort(CoWork& cw, I l, I h, const Less& less)
 {
-	enum { PARALLEL_THRESHOLD = 80 };
+	const int PARALLEL_THRESHOLD = 80;
 
 	for(;;) {
 		int count = int(h - l);
@@ -80,7 +80,7 @@ void CoSort(T& c)
 #define N 100000
 #else
 //#define N 10000000
-#define N 100000
+#define N 500000
 //#define N 1000
 #endif
 
@@ -100,6 +100,7 @@ CONSOLE_APP_MAIN
 	CoSort(b);
 	ASSERT(a == b);
 #else
+	RDUMP(N);
 	for(int i = 0; i < 10000000 / N; i++) {
 		{
 			Vector<String> b = clone(a);
