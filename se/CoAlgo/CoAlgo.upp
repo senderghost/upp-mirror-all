@@ -4,7 +4,7 @@ uses
 	Core;
 
 file
-	CoAlgo.cpp;
+	CoAlgo.cpp optimize_speed;
 
 mainconfig
 	"" = "MT";

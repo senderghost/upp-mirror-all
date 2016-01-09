@@ -79,8 +79,8 @@ void CoSort(T& c)
 #ifdef _DEBUG
 #define N 100000
 #else
-//#define N 10000000
-#define N 500000
+#define N 100000000
+//#define N 1000
 //#define N 1000
 #endif
 
@@ -101,7 +101,7 @@ CONSOLE_APP_MAIN
 	ASSERT(a == b);
 #else
 	RDUMP(N);
-	for(int i = 0; i < 10000000 / N; i++) {
+	for(int i = 0; i < max(1, 10000000 / N); i++) {
 		{
 			Vector<String> b = clone(a);
 			RTIMING("Sort");
