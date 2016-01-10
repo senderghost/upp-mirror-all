@@ -2,16 +2,30 @@ Intel® Pentium(R) CPU G620 @ 2.60GHz (2 cores, 2 threads)
 Ubuntu Linux
 gcc (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010, 64-bit
 
-TIMING std::sort      :  4.91 s  -  4.91 s  ( 4.91 s  / 1 ), min:  4.91 s , max:  4.91 s , nesting: 1 - 1
-TIMING CoSort         : 921.00 ms - 921.00 ms (921.00 ms / 1 ), min: 921.00 ms, max: 921.00 ms, nesting: 1 - 1
-TIMING Sort           :  1.64 s  -  1.64 s  ( 1.64 s  / 1 ), min:  1.64 s , max:  1.64 s , nesting: 1 - 1
+N = 1000
+TIMING std::sort      :  2.42 s  - 241.82 us ( 2.42 s  / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING CoSort         : 531.25 ms - 53.12 us (532.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
+TIMING Sort           : 632.25 ms - 63.22 us (633.00 ms / 10000 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 10000
 
-clang
+N = 10000
+TIMING std::sort      :  3.18 s  -  3.18 ms ( 3.18 s  / 1000 ), min:  3.00 ms, max:  5.00 ms, nesting: 1 - 1000
+TIMING CoSort         : 603.93 ms - 603.93 us (604.00 ms / 1000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1000
+TIMING Sort           : 968.93 ms - 968.93 us (969.00 ms / 1000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1000
 
-TIMING std::sort      :  4.95 s  -  4.95 s  ( 4.95 s  / 1 ), min:  4.95 s , max:  4.95 s , nesting: 1 - 1
-TIMING CoSort         :  1.01 s  -  1.01 s  ( 1.01 s  / 1 ), min:  1.01 s , max:  1.01 s , nesting: 1 - 1
-TIMING Sort           :  1.82 s  -  1.82 s  ( 1.82 s  / 1 ), min:  1.82 s , max:  1.82 s , nesting: 1 - 1
+N = 100000
+TIMING std::sort      :  3.83 s  - 38.32 ms ( 3.83 s  / 100 ), min: 36.00 ms, max: 49.00 ms, nesting: 1 - 100
+TIMING CoSort         : 657.99 ms -  6.58 ms (658.00 ms / 100 ), min:  6.00 ms, max: 10.00 ms, nesting: 1 - 100
+TIMING Sort           :  1.15 s  - 11.50 ms ( 1.15 s  / 100 ), min: 11.00 ms, max: 13.00 ms, nesting: 1 - 100
 
+N = 1000000
+TIMING std::sort      :  4.28 s  - 427.70 ms ( 4.28 s  / 10 ), min: 426.00 ms, max: 430.00 ms, nesting: 1 - 10
+TIMING CoSort         : 770.00 ms - 77.00 ms (770.00 ms / 10 ), min: 75.00 ms, max: 81.00 ms, nesting: 1 - 10
+TIMING Sort           :  1.37 s  - 137.20 ms ( 1.37 s  / 10 ), min: 137.00 ms, max: 138.00 ms, nesting: 1 - 10
+
+N = 10000000
+TIMING std::sort      :  4.85 s  -  4.85 s  ( 4.85 s  / 1 ), min:  4.85 s , max:  4.85 s , nesting: 1 - 1
+TIMING CoSort         : 894.00 ms - 894.00 ms (894.00 ms / 1 ), min: 894.00 ms, max: 894.00 ms, nesting: 1 - 1
+TIMING Sort           :  1.63 s  -  1.63 s  ( 1.63 s  / 1 ), min:  1.63 s , max:  1.63 s , nesting: 1 - 1
 
 -----------------------------------
 Intel® Pentium(R) Core i7-4771 @ 3.5GHz (4 cores, 8 threads)
