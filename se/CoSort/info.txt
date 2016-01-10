@@ -18,15 +18,30 @@ Intel® Pentium(R) Core i7-4771 @ 3.5GHz (4 cores, 8 threads)
 Windows 10
 Visual C++ 2014 64-bit
 
+N = 100000000
+TIMING std::sort      : 49.08 s  - 49.08 s  (49.08 s  / 1 ), min: 49.08 s , max: 49.08 s , nesting: 1 - 1
+TIMING CoSort         :  3.69 s  -  3.69 s  ( 3.69 s  / 1 ), min:  3.69 s , max:  3.69 s , nesting: 1 - 1
+TIMING Sort           : 13.63 s  - 13.63 s  (13.63 s  / 1 ), min: 13.63 s , max: 13.63 s , nesting: 1 - 1
+
 N = 10000000
 TIMING std::sort      :  4.20 s  -  4.20 s  ( 4.20 s  / 1 ), min:  4.20 s , max:  4.20 s , nesting: 1 - 1
 TIMING CoSort         : 296.00 ms - 296.00 ms (296.00 ms / 1 ), min: 296.00 ms, max: 296.00 ms, nesting: 1 - 1
 TIMING Sort           :  1.16 s  -  1.16 s  ( 1.16 s  / 1 ), min:  1.16 s , max:  1.16 s , nesting: 1 - 1
 
+N = 1000000
+TIMING std::sort      :  3.82 s  - 381.60 ms ( 3.82 s  / 10 ), min: 377.00 ms, max: 388.00 ms, nesting: 1 - 10
+TIMING CoSort         : 285.00 ms - 28.50 ms (285.00 ms / 10 ), min: 25.00 ms, max: 30.00 ms, nesting: 1 - 10
+TIMING Sort           : 959.00 ms - 95.90 ms (959.00 ms / 10 ), min: 94.00 ms, max: 100.00 ms, nesting: 1 - 10
+
 N = 100000
 TIMING std::sort      :  3.13 s  - 31.32 ms ( 3.13 s  / 100 ), min: 30.00 ms, max: 32.00 ms, nesting: 1 - 100
 TIMING CoSort         : 262.00 ms -  2.62 ms (262.00 ms / 100 ), min:  1.00 ms, max:  4.00 ms, nesting: 1 - 100
 TIMING Sort           : 796.00 ms -  7.96 ms (796.00 ms / 100 ), min:  7.00 ms, max:  9.00 ms, nesting: 1 - 100
+
+N = 10000
+TIMING std::sort      :  2.49 s  -  2.49 ms ( 2.50 s  / 1000 ), min:  2.00 ms, max:  4.00 ms, nesting: 1 - 1000
+TIMING CoSort         : 301.97 ms - 301.97 us (302.00 ms / 1000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1000
+TIMING Sort           : 642.97 ms - 642.97 us (643.00 ms / 1000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1000
 
 N = 1000
 TIMING std::sort      :  1.93 s  - 193.37 us ( 1.93 s  / 10000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 10000
