@@ -1,0 +1,7 @@
+b.GetCount() = 5000000
+part_count = 17295499
+retry_count = 1416221
+mid_count = 0
+HITCOUNT Retry: hit count = 2
+
+------------------------------------------------
