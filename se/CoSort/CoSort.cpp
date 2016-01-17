@@ -80,27 +80,34 @@ void CoSort(CoWork& cw, I l, I h, const Less& less)
 			for(I i = l + 2; i != h - 1; ++i)   // do partitioning; already l <= pivot <= h - 1
 				if(less(*i, *(l + 1)))
 					IterSwap(++ii, i);
+
 			IterSwap(ii, l + 1);                // put pivot back in between partitions
 			I iih = ii;
 			while(iih + 1 != h && !less(*ii, *(iih + 1))) // Find middle range of elements equal to pivot
 				++iih;
+			// LOG("count: " << count << ", l: " << ii - l << ", h: " << h - iih);
 			if(pass > 5 || min(ii - l, h - iih) > (max(ii - l, h - iih) >> pass)) { // partition sizes ok or we have done max attempts
 				if(ii - l < h - iih - 1) {       // schedule or recurse on smaller partition, tail on larger
 					if(ii - l < PARALLEL_THRESHOLD) // too small to run in parallel?
 						Sort(l, ii, less); // resolve in this thread
-					else
+					else {
+						LOG("Schedule " << count << ": " << ii - l);
 						cw & [=, &cw] { CoSort(cw, l, ii, less); }; // schedule for parallel execution
+					}
 					l = iih + 1;
 				}
 				else {
 					if(h - iih - 1 < PARALLEL_THRESHOLD) // too small to run in parallel?
 						Sort(iih + 1, h, less); // resolve in this thread
-					else
+					else {
+						LOG("Schedule " << count << ": " << h - iih - 1);
 						cw & [=, &cw] { CoSort(cw, iih + 1, h, less); }; // schedule for parallel execution
+					}
 					h = ii;
 				}
 				break;
 			}
+			// LOG("RETRY: " << count << ", l: " << ii - l << ", h: " << h - iih);
 			IterSwap(l, l + (int)Random(count));     // try some other random elements for median pivot
 			IterSwap(middle, l + (int)Random(count));
 			IterSwap(h - 1, l + (int)Random(count));
@@ -132,9 +139,7 @@ void CoSort(T& c)
 #ifdef _DEBUG
 #define N 100000
 #else
-#define N 100000000
-//#define N 1000
-//#define N 1000
+#define N 100000
 #endif
 
 CONSOLE_APP_MAIN
@@ -169,6 +174,18 @@ CONSOLE_APP_MAIN
 			std::vector<std::string> d = c;
 			RTIMING("std::sort");
 			std::sort(d.begin(), d.end());
+		}
+		if(0) {
+			{
+				std::vector<std::string> d = c;
+				RTIMING("CoSort<string>");
+				CoSort(d.begin(), d.end(), StdLess<std::string>());
+			}
+			{
+				std::vector<std::string> d = c;
+				RTIMING("Sort<string>");
+				Sort(d.begin(), d.end(), StdLess<std::string>());
+			}
 		}
 	}
 #endif

@@ -49,6 +49,27 @@ I CoBest(I begin, I end, const Better& better)
 	return best;
 }
 
+template <class I, class Eq>
+int CoFind(I begin, int count, const Eq& eq)
+{
+	int found = count;
+	CoLoop(0, count,
+		[=, &found](int i, int e) {
+			while(i < e) {
+				if(found < i)
+					break;
+				if(eq(begin[i])) {
+					CoWork::FinLock();
+					found = i;
+					return;
+				}
+				i++;
+			}
+		}
+	);
+	return found < count ? found : -1;
+}
+
 struct Summer {
 	int value;
 	
@@ -60,18 +81,70 @@ struct Summer {
 #ifdef _DEBUG
 #define N 20005
 #else
-#define N 500000
+#define N 5000000
 #endif
 
 CONSOLE_APP_MAIN
 {
 	RDUMP(CPU_Cores());
 
-	Vector<String> a;
+	Vector<String> data;
 	for(int i = 0; i < N; i++)
-		a.Add(AsString(Random()));
+		data.Add(AsString(Random()));
 	
+	for(int i = 0; i < 1000; i++) {
+		String f = data[Random(data.GetCount())];
+		int a;
+		int b;
+		{
+			RTIMING("Serial");
+			a = FindIndex(data, f);
+		}
+		{
+			RTIMING("Parallel");
+			b = CoFind(data.Begin(), data.GetCount(), [=](const String& s) { return s == f; });
+		}
+		
+		if(a != b)
+			Panic("!!!");
+	}
 
+	return;
+	
+	int samples = 100000000;
+	{
+		RTIMING("Parallel");
+		int count = 0;
+		CoLoop(0, samples,
+			[=, &count](int a, int b) {
+				int lcount = 0;
+				while(a < b) {
+					double x = Randomf();
+					double y = Randomf();
+					if(sqrt(x*x + y*y) < 1)
+						lcount++;
+					a++;
+				}
+				CoWork::FinLock();
+				count += lcount;
+			}
+		);
+		RDUMP(4.0 * count / samples);
+	}
+	{
+		RTIMING("Serial");
+		int count = 0;
+		for(int i = 0; i < samples; i++) {
+			double x = Randomf();
+			double y = Randomf();
+			if(sqrt(x*x + y*y) < 1)
+				count++;
+		}
+		RDUMP(4.0 * count / samples);
+	}
+	return;
+
+#if 0
 	if(1) {
 		int sum1;
 		int sum2;
@@ -139,4 +212,5 @@ CONSOLE_APP_MAIN
 		RLOG(pos1);
 		RLOG(pos2);
 	}
+#endif
 }

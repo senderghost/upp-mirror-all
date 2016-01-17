@@ -61,3 +61,6 @@ N = 1000
 TIMING std::sort      :  1.93 s  - 193.37 us ( 1.93 s  / 10000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 10000
 TIMING CoSort         : 442.66 ms - 44.27 us (443.00 ms / 10000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 10000
 TIMING Sort           : 478.66 ms - 47.87 us (479.00 ms / 10000 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 10000
+
+
+===================

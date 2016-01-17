@@ -1,7 +1,8 @@
 optimize_speed;
 
 uses
-	Core;
+	Core,
+	Core/SSL;
 
 file
 	CoAlgo.cpp optimize_speed;
