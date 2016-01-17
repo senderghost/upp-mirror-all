@@ -2,7 +2,8 @@ uses
 	Core;
 
 file
-	Sort.cpp,
+	Sort.cpp.0 optimize_speed,
+	Sort.cpp optimize_speed,
 	info.txt;
 
 mainconfig

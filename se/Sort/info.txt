@@ -1,7 +1,55 @@
-b.GetCount() = 5000000
-part_count = 17295499
-retry_count = 1416221
+b.GetCount() = 100000
+part_count = 1638397
+retry_count = 11623
 mid_count = 0
-HITCOUNT Retry: hit count = 2
+misbalance = 596807
+HITCOUNT Retry: hit count = 134
+HITCOUNT Paritition: hit count = 19171
 
 ------------------------------------------------
+10000
+
+b.GetCount() = 100000
+part_count = 1597724
+retry_count = 17694
+mid_count = 0
+misbalance = 508352
+HITCOUNT Retry: hit count = 117
+TIMING Extended middle:  0.00 ns -  0.00 ns ( 0.00 ns / 14 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 14
+HITCOUNT Paritition: hit count = 19053
+
+---------------------------------------
+1000
+b.GetCount() = 100000
+part_count = 1567990
+retry_count = 8321
+mid_count = 0
+misbalance = 489897
+HITCOUNT Retry: hit count = 122
+TIMING Extended middle:  0.00 ns -  0.00 ns ( 0.00 ns / 160 ), min:  0.00 ns, max:  0.00 ns, nesting: 1 - 160
+HITCOUNT Paritition: hit count = 19104
+
+-------------------
+100
+b.GetCount() = 100000
+part_count = 1523223
+retry_count = 4671
+mid_count = 0
+misbalance = 405931
+HITCOUNT Retry: hit count = 118
+TIMING Extended middle: 950.48 us - 620.42 ns ( 1.00 ms / 1532 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 1532
+HITCOUNT Paritition: hit count = 19127
+
+*******************
+b.GetCount() = 100000
+part_count = 1585942
+retry_count = 24067
+mid_count = 0
+misbalance = 482316
+
+---------
+b.GetCount() = 100000
+part_count = 1665825
+retry_count = 19893
+mid_count = 0
+misbalance = 623531
