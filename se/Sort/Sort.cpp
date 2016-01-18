@@ -8,8 +8,11 @@ int64 retry_count;
 int64 mid_count;
 int64 misbalance;
 
-
+#ifdef _DEBUG
 #define TEST(x) x
+#else
+#define TEST(x)
+#endif
 
 template <class I, class Less>
 force_inline
@@ -41,14 +44,11 @@ void NewSort(I l, I h, const Less& less)
 		for(;;) {
 			TEST(part_count += count);
 			I middle = l + (count >> 1);        // get the middle element
-			if(count > 1000) {
-				RTIMING("Extended middle");
-				I m1 = l + (int)Random(count);
-				I m2 = l + (int)Random(count);
+			if(count > 500) {
+//				RTIMING("Extended middle");
 				IterSwap(l, Median__(l, count, less));
 				IterSwap(middle, Median__(l, count, less));
 				IterSwap(h - 1, Median__(l, count, less));
-
 			}
 			OrderIter2__(l, middle, less);      // sort l, middle, h-1 to find median of 3
 			OrderIter2__(middle, h - 1, less);
@@ -92,7 +92,6 @@ void NewSort(T& c, const Less& less)
 template <class T>
 void NewSort(T& c)
 {
-	RTIMING("NewSort");
 	typedef typename T::ValueType VT;
 	NewSort(c.Begin(), c.End(), StdLess<VT>());
 }
@@ -101,14 +100,33 @@ void NewSort(T& c)
 #define N 100000
 #else
 //#define N 10000000
-#define N 500000
+#define N 5000000
 //#define N 1000
 #endif
+
+
+int Partition3(I l, I h)
+{
+	I ii = l;
+	I jj = h - 1;
+	I i = l + 1;
+	for(;;) {
+		if(i >= jj)
+			break;
+		if(*i < *l)
+			IterSwap(++ii, i);
+		else
+		if(*i > *(h - 1))
+			IterSwap(--jj, i);
+	}
+}
 
 CONSOLE_APP_MAIN
 {
 	Vector<String> a;
 	SeedRandom();
+	
+	Vector<int> x
 
 	std::vector<std::string> c;
 	for(int i = 0; i < N; i++) {
