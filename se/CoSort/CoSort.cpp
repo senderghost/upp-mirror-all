@@ -139,11 +139,14 @@ void CoSort(T& c)
 #ifdef _DEBUG
 #define N 100000
 #else
-#define N 100000
+#define N 1000000
 #endif
 
 CONSOLE_APP_MAIN
 {
+	StdLogSetup(LOG_COUT|LOG_FILE);
+	RDUMP(CPU_Cores());
+
 	Vector<String> a;
 	std::vector<std::string> c;
 	for(int i = 0; i < N; i++) {
@@ -170,7 +173,7 @@ CONSOLE_APP_MAIN
 			RTIMING("CoSort");
 			CoSort(b);
 		}
-		{
+		if(0) {
 			std::vector<std::string> d = c;
 			RTIMING("std::sort");
 			std::sort(d.begin(), d.end());

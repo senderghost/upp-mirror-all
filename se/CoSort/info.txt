@@ -64,3 +64,23 @@ TIMING Sort           : 478.66 ms - 47.87 us (479.00 ms / 10000 ), min:  0.00 ns
 
 
 ===================
+N = 1000
+TIMING std::sort      : 14.70 s  -  1.47 ms (14.71 s  / 10000 ), min:  1.00 ms, max:  9.00 ms, nesting: 1 - 10000
+TIMING CoSort         :  2.92 s  - 291.77 us ( 2.93 s  / 10000 ), min:  0.00 ns, max:  6.00 ms, nesting: 1 - 10000
+TIMING Sort           :  3.06 s  - 305.87 us ( 3.07 s  / 10000 ), min:  0.00 ns, max:  3.00 ms, nesting: 1 - 10000
+
+N = 10000
+TIMING std::sort      : 20.00 s  - 20.00 ms (20.01 s  / 1000 ), min: 19.00 ms, max: 32.00 ms, nesting: 1 - 1000
+TIMING CoSort         :  2.32 s  -  2.32 ms ( 2.32 s  / 1000 ), min:  1.00 ms, max: 12.00 ms, nesting: 1 - 1000
+TIMING Sort           :  4.58 s  -  4.58 ms ( 4.58 s  / 1000 ), min:  4.00 ms, max:  9.00 ms, nesting: 1 - 1000
+
+N = 100000
+TIMING std::sort      : 25.05 s  - 250.48 ms (25.05 s  / 100 ), min: 246.00 ms, max: 268.00 ms, nesting: 1 - 100
+TIMING CoSort         :  3.36 s  - 33.64 ms ( 3.36 s  / 100 ), min: 27.00 ms, max: 43.00 ms, nesting: 1 - 100
+TIMING Sort           :  6.90 s  - 69.05 ms ( 6.91 s  / 100 ), min: 67.00 ms, max: 73.00 ms, nesting: 1 - 100
+
+N = 1000000
+TIMING std::sort      : 31.43 s  -  3.14 s  (31.43 s  / 10 ), min:  3.11 s , max:  3.19 s , nesting: 1 - 10
+TIMING CoSort         :  4.90 s  - 489.90 ms ( 4.90 s  / 10 ), min: 479.00 ms, max: 516.00 ms, nesting: 1 - 10
+TIMING Sort           : 10.22 s  -  1.02 s  (10.22 s  / 10 ), min:  1.01 s , max:  1.04 s , nesting: 1 - 10
+
