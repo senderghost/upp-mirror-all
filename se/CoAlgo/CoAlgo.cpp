@@ -3,9 +3,10 @@
 using namespace Upp;
 
 template <typename I, typename Lambda>
-void CoLoop(I begin, I end, const Lambda& lambda)
+void CoLoop(I begin, I end, const Lambda& lambda, int max_chunk = INT_MAX)
 {
 	size_t chunk = max(size_t((end - begin) / CPU_Cores()), (size_t)1);
+	chunk = min(chunk, max_chunk);
 	CoWork co;
 	while(begin < end) {
 		co & [=] {
@@ -42,7 +43,7 @@ I CoBest(I begin, I end, const Better& better)
 				i++;
 			}
 			CoWork::FinLock();
-			if(better(*b, *best))
+			if(better(*b, *best)) // Does not find _first_ best here...
 				best = b;
 		}
 	);
@@ -65,7 +66,8 @@ int CoFind(I begin, int count, const Eq& eq)
 				}
 				i++;
 			}
-		}
+		},
+		
 	);
 	return found < count ? found : -1;
 }
@@ -79,7 +81,7 @@ struct Summer {
 };
 
 #ifdef _DEBUG
-#define N 20005
+#define N 20000
 #else
 #define N 5000000
 #endif
@@ -91,8 +93,13 @@ CONSOLE_APP_MAIN
 	Vector<String> data;
 	for(int i = 0; i < N; i++)
 		data.Add(AsString(Random()));
-	
-	for(int i = 0; i < 1000; i++) {
+
+#ifdef _DEBUG
+	for(int i = 0; i < 1; i++)
+#else
+	for(int i = 0; i < 1000; i++)
+#endif
+	{
 		String f = data[Random(data.GetCount())];
 		int a;
 		int b;

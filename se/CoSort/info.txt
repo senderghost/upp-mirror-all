@@ -64,6 +64,11 @@ TIMING Sort           : 478.66 ms - 47.87 us (479.00 ms / 10000 ), min:  0.00 ns
 
 
 ===================
+Raspberry Pi 2
+Broadcom BCM2836 ARM Cortex-A7 900 MHz, 4 cores, 4 threads
+Ubuntu Linux
+gcc (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010, 32-bit
+
 N = 1000
 TIMING std::sort      : 14.70 s  -  1.47 ms (14.71 s  / 10000 ), min:  1.00 ms, max:  9.00 ms, nesting: 1 - 10000
 TIMING CoSort         :  2.92 s  - 291.77 us ( 2.93 s  / 10000 ), min:  0.00 ns, max:  6.00 ms, nesting: 1 - 10000
