@@ -53,3 +53,43 @@ part_count = 1665825
 retry_count = 19893
 mid_count = 0
 misbalance = 623531
+
+----------
+b.GetCount() = 100000
+part_count = 1581191
+retry_count = 11001
+mid_count = 0
+misbalance = 519216
+
+----------
+b.GetCount() = 100000
+part_count = 1543898
+retry_count = 11894
+mid_count = 0
+misbalance = 419089
+
+--------
+b.GetCount() = 100000
+part_count = 1533930
+retry_count = 16953
+mid_count = 0
+misbalance = 360347
+
+----------
+b.GetCount() = 100000
+part_count = 1665825
+retry_count = 19893
+mid_count = 0
+misbalance = 623531
+
+b.GetCount() = 100000
+part_count = 1536688
+retry_count = 22289
+mid_count = 0
+misbalance = 324319
+
+b.GetCount() = 100000
+part_count = 1540337
+retry_count = 12595
+mid_count = 0
+misbalance = 385356

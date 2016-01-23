@@ -29,6 +29,15 @@ I Median__(I l, int count, const Less& less)
 	return middle;
 }
 
+template <class I>
+String Range(I l, int n)
+{
+	String r;
+	for(int i = 0; i < n; i++)
+		MergeWith(r, ", ", l[i]);
+	return r;
+}
+
 template <class I, class Less>
 void NewSort(I l, I h, const Less& less)
 {
@@ -44,16 +53,30 @@ void NewSort(I l, I h, const Less& less)
 		for(;;) {
 			TEST(part_count += count);
 			I middle = l + (count >> 1);        // get the middle element
-			if(count > 500) {
+			if(count > 20000) {
 //				RTIMING("Extended middle");
-				IterSwap(l, Median__(l, count, less));
-				IterSwap(middle, Median__(l, count, less));
-				IterSwap(h - 1, Median__(l, count, less));
+				LOG("-------------");
+			//	int n = 5;
+			//	while(2 * (1 << n) < count)
+			//		n++;
+				int n = count >> 10;
+				DUMP(count);
+				DUMP(n);
+				for(int i = 0; i < n; i++)
+					IterSwap(l + i, l + (int)Random(count));
+				Sort(l, l + n, less);
+				DUMP(l[0]);
+				DUMP(l[n / 2]);
+				DUMP(l[n - 1]);
+				IterSwap(h - 1, l + n - 1);
+				IterSwap(l + 1, l + n / 2);
 			}
-			OrderIter2__(l, middle, less);      // sort l, middle, h-1 to find median of 3
-			OrderIter2__(middle, h - 1, less);
-			OrderIter2__(l, middle, less);      // median is now in middle
-			IterSwap(l + 1, middle);            // move median pivot to l + 1
+			else {
+				OrderIter2__(l, middle, less);      // sort l, middle, h-1 to find median of 3
+				OrderIter2__(middle, h - 1, less);
+				OrderIter2__(l, middle, less);      // median is now in middle
+				IterSwap(l + 1, middle);            // move median pivot to l + 1
+			}
 			I ii = l + 1;
 			for(I i = l + 2; i != h - 1; ++i)   // do partitioning; already l <= pivot <= h - 1
 				if(less(*i, *(l + 1)))
@@ -64,6 +87,10 @@ void NewSort(I l, I h, const Less& less)
 				++iih;
 			if(pass > 5 || min(ii - l, h - iih) > (max(ii - l, h - iih) >> pass)) { // partition sizes ok or we have done max attempts
 				TEST(misbalance += abs((ii - l) - (h - iih - 1)));
+				if(count > 100) {
+					DUMP(ii - l);
+					DUMP(h - iih);
+				}
 				if(ii - l < h - iih - 1) {       // recurse on smaller partition, tail on larger
 					NewSort(l, ii, less);
 					l = iih + 1;
@@ -74,6 +101,7 @@ void NewSort(I l, I h, const Less& less)
 				}
 				break;
 			}
+			LOG("Retry " << ii - l << " : " << h - iih);
 			TEST(retry_count += count);
 			IterSwap(l, l + (int)Random(count));     // try some other random elements for median pivot
 			IterSwap(middle, l + (int)Random(count));
@@ -105,32 +133,14 @@ void NewSort(T& c)
 #endif
 
 
-int Partition3(I l, I h)
-{
-	I ii = l;
-	I jj = h - 1;
-	I i = l + 1;
-	for(;;) {
-		if(i >= jj)
-			break;
-		if(*i < *l)
-			IterSwap(++ii, i);
-		else
-		if(*i > *(h - 1))
-			IterSwap(--jj, i);
-	}
-}
-
 CONSOLE_APP_MAIN
 {
 	Vector<String> a;
 	SeedRandom();
 	
-	Vector<int> x
-
 	std::vector<std::string> c;
 	for(int i = 0; i < N; i++) {
-		String s = AsString(Random());
+		String s = AsString(Random(1000000));
 		a.Add(s);
 		c.push_back(s.ToStd());
 	}
