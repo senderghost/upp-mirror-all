@@ -1,0 +1,10 @@
+uses
+	Core;
+
+file
+	Random.cpp optimize_speed,
+	info.txt;
+
+mainconfig
+	"" = "";
+

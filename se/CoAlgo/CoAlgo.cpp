@@ -6,7 +6,7 @@ template <typename I, typename Lambda>
 void CoLoop(I begin, I end, const Lambda& lambda, int max_chunk = INT_MAX)
 {
 	size_t chunk = max(size_t((end - begin) / CPU_Cores()), (size_t)1);
-	chunk = min(chunk, max_chunk);
+	chunk = min(chunk, (size_t)max_chunk);
 	CoWork co;
 	while(begin < end) {
 		co & [=] {
@@ -43,7 +43,7 @@ I CoBest(I begin, I end, const Better& better)
 				i++;
 			}
 			CoWork::FinLock();
-			if(better(*b, *best)) // Does not find _first_ best here...
+			if(better(*b, *best) || !better(*best, *b) && b < best)
 				best = b;
 		}
 	);
@@ -54,6 +54,7 @@ template <class I, class Eq>
 int CoFind(I begin, int count, const Eq& eq)
 {
 	int found = count;
+
 	CoLoop(0, count,
 		[=, &found](int i, int e) {
 			while(i < e) {
@@ -66,8 +67,7 @@ int CoFind(I begin, int count, const Eq& eq)
 				}
 				i++;
 			}
-		},
-		
+		}
 	);
 	return found < count ? found : -1;
 }

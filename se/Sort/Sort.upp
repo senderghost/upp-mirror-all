@@ -3,7 +3,12 @@ uses
 
 file
 	Sort.cpp.0 optimize_speed,
+	other.h,
+	SmallSort.h,
+	TwoPivot.h,
+	Sampling.h,
 	Sort.cpp optimize_speed,
+	help.txt,
 	info.txt;
 
 mainconfig
