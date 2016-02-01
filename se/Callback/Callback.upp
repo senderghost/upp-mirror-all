@@ -2,8 +2,8 @@ uses
 	Core;
 
 file
-	Callback.cpp;
+	Callback.cpp optimize_speed;
 
 mainconfig
-	"" = "";
+	"" = "MT";
 
