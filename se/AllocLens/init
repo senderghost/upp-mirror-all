@@ -1,0 +1,4 @@
+#ifndef _AllocLens_icpp_init_stub
+#define _AllocLens_icpp_init_stub
+#include "Core/init"
+#endif

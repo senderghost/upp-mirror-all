@@ -7,93 +7,47 @@ template<class T = void(void)> class Lambda { };
 template<typename Res, typename... ArgTypes>
 class Lambda<Res(ArgTypes...)> : Moveable<Lambda<Res(ArgTypes...)>> {
 	struct WrapperBase {
+		Atomic  refcount;
+
 		virtual Res Execute(ArgTypes... args) = 0;
+		
+		WrapperBase() { refcount = 1; }
 		virtual ~WrapperBase() {}
 	};
 
 	template <class F>
-	struct SmallWrapper : WrapperBase {
+	struct Wrapper : WrapperBase {
 		F fn;
 		virtual Res Execute(ArgTypes... args) { return fn(args...); }
-		
-		SmallWrapper(F fn) : fn(fn) {}
-	};
 
-	template <class F, int fsz>
-	struct DualWrapper : WrapperBase {
-		F fn;
-		virtual Res Execute(ArgTypes... args) { return fn(args...); }
-		
-		SmallWrapper(F fn) : fn(fn) {}
-	};
-
-	struct LargeWrapperBase : WrapperBase {
-		Atomic refcount;
-		
-		LargeWrapperBase() { refcount = 1; }
+		Wrapper(F fn) : fn(fn) {}
 	};
 
 	template <class F>
-	struct LargeWrapper : LargeWrapperBase {
-		F fn;
-		virtual Res Execute(ArgTypes... args) { return fn(args...); }
+	struct Wrapper2 : WrapperBase {
+		Lambda l;
+		F      fn;
 
-		LargeWrapper(F fn) : fn(fn) {}
+		virtual Res Execute(ArgTypes... args) { l(args...); return fn(args...); }
+
+		Wrapper2(const Lambda& l, F fn) : l(l), fn(fn) {}
 	};
 
-	enum {
-		EMPTY,
-		LARGE,
-		KIND = 63,
-		MAXSMALL = KIND,
-	};
-	
-	union {
-		LargeWrapperBase *large;
-		byte              data[64];
-	} data;
-	
-	byte& Kind()               { return data.data[KIND]; }
-	byte  Kind() const         { return data.data[KIND]; }
-	WrapperBase *Small() const { return (WrapperBase *)(data.data); }
+	WrapperBase *ptr;
 	
 	void Free() {
-		if(Kind() == LARGE) {
-			if(AtomicDec(data.large->refcount) == 0)
-				delete data.large;
-		}
-		else
-			Small()->WrapperBase::~WrapperBase();
+		if(ptr && AtomicDec(ptr->refcount) == 0)
+			delete ptr;
 	}
 	
 	void Copy(const Lambda& a) {
-		if(a.Kind() == LARGE) {
-			data.large = a.data.large;
-			Kind() = LARGE;
-			AtomicInc(data.large->refcount);
-			return;
-		}
-		data = a.data;
-//		Kind() = a.Kind();
-//		memcpy(data.data, a.data.data, Kind());
-	}
-
-	template <class F>
-	void Create(const F& fn) {
-		DUMP(sizeof(SmallWrapper<F>));
-		if(sizeof(SmallWrapper<F>) <= MAXSMALL) {
-			::new(data.data) SmallWrapper<F>(fn);
-			Kind() = sizeof(SmallWrapper<F>);
-		}
-		else {
-			data.large = new LargeWrapper<F>(fn);
-			Kind() = LARGE;
-		}
+		ptr = a.ptr;
+		AtomicInc(ptr->refcount);
 	}
 
 public:
 	Lambda() {
-		Kind() = EMPTY;
+		ptr = NULL;
 	}
 	
 	Lambda(const Lambda& a) {
@@ -110,27 +64,20 @@ public:
 	
 	template <class F>
 	Lambda(const F& fn) {
-		Create(fn);
+		ptr = new Wrapper<F>(fn);
 	}
 	
 	template <class F>
 	Lambda& operator<<(const F& fn) {
-		LOG("operator<<");
-		DUMP(sizeof(SmallWrapper<F>));
-		DUMP(sizeof(F));
-		Lambda h = *this;
-		auto l = [=](ArgTypes... args) -> Res { h(args...); fn(args...); };
-		DUMP(sizeof(l));
+		WrapperBase *p2 = new Wrapper2<F>(*this, fn);
 		Free();
-		Create(l);
+		ptr = p2;
 		return *this;
 	}
 	
 	Res operator()(ArgTypes... args) const {
-		if(Kind() == LARGE)
-			return data.large->Execute(args...);
-		if(Kind())
-			return Small()->Execute(args...);
+		if(ptr)
+			return ptr->Execute(args...);
 		return Res();
 	}
 
@@ -190,27 +137,29 @@ CONSOLE_APP_MAIN
 	Lambda<void (int)> l = [&](int v) { RDUMP(x); RDUMP(h); RDUMP(v); };
 
 	LOG("----------- COMBINE");
-	l << [&](int v) { DDUMP(v + 1); };
+	l << [&](int v) { RDUMP(v + 1); };
 	l(77777);
+	l << l;
+	l(999);
 
 	Callback cb;
 	cb = callback(Test1);
 	cb();
 	
 	Foo foo;
-	DDUMP(foo.x);
+	RDUMP(foo.x);
 	cb = callback(&foo, &Foo::Inc);
 	
 	cb();
-	DDUMP(foo.x);
+	RDUMP(foo.x);
 
 	Callback1<int> cb1 = callback(&foo, &Foo::Add);
 	cb1(10);
-	DDUMP(foo.x);
+	RDUMP(foo.x);
 	
 	cb = callback1(&foo, &Foo::Add, 5);
 	cb();
-	DDUMP(foo.x);
+	RDUMP(foo.x);
 
 #ifndef _DEBUG
 	{
