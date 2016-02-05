@@ -51,6 +51,15 @@ I CoBest(I begin, I end, const Better& better)
 }
 
 template <class I, class Eq>
+int SerialFind(I begin, int count, const Eq& eq)
+{
+	for(int i = 0; i < count; i++)
+		if(eq(begin[i]))
+			return i;
+	return -1;
+}
+
+template <class I, class Eq>
 int CoFind(I begin, int count, const Eq& eq)
 {
 	int found = count;
@@ -58,11 +67,13 @@ int CoFind(I begin, int count, const Eq& eq)
 	CoLoop(0, count,
 		[=, &found](int i, int e) {
 			while(i < e) {
-				if(found < i)
+				if(found < i) {
 					break;
+				}
 				if(eq(begin[i])) {
 					CoWork::FinLock();
-					found = i;
+					if(i < found)
+						found = i;
 					return;
 				}
 				i++;
@@ -97,23 +108,32 @@ CONSOLE_APP_MAIN
 #ifdef _DEBUG
 	for(int i = 0; i < 1; i++)
 #else
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < 10; i++)
 #endif
 	{
 		String f = data[Random(data.GetCount())];
+		int n = atoi(f);
+		f = "foo";
 		int a;
 		int b;
 		{
 			RTIMING("Serial");
-			a = FindIndex(data, f);
+			a = SerialFind(data.Begin(), data.GetCount(), [=](const String& s) { return atoi(s) == n; });
 		}
 		{
 			RTIMING("Parallel");
-			b = CoFind(data.Begin(), data.GetCount(), [=](const String& s) { return s == f; });
+			b = CoFind(data.Begin(), data.GetCount(), [=](const String& s) { return atoi(s) == n; });
 		}
-		
-		if(a != b)
+		if(a != b) {
+			RDUMP(n);
+			RDUMP(a);
+			RDUMP(b);
+			RDUMP(data[a]);
+			RDUMP(data[b]);
+			RDUMP(atoi(data[a]));
+			RDUMP(atoi(data[b]));
 			Panic("!!!");
+		}
 	}
 
 	return;
