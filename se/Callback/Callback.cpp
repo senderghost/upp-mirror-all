@@ -10,29 +10,124 @@ using namespace Upp;
 #define Callback1 NewCallback1
 #define callback1 newcallback1
 
+template<typename>
+class Function;
+
+template<typename Res, typename... ArgTypes>
+class Function<Res(ArgTypes...)> : Moveable<Function<Res(ArgTypes...)>> {
+	struct WrapperBase {
+		Atomic  refcount;
+
+		virtual Res Execute(ArgTypes... args) = 0;
+		
+		WrapperBase() { refcount = 1; }
+		virtual ~WrapperBase() {}
+	};
+
+	template <class F>
+	struct Wrapper : WrapperBase {
+		F fn;
+		virtual Res Execute(ArgTypes... args) { return fn(args...); }
+
+		Wrapper(F&& fn) : fn(pick(fn)) {}
+	};
+
+	template <class F>
+	struct Wrapper2 : WrapperBase {
+		Function l;
+		F        fn;
+
+		virtual Res Execute(ArgTypes... args) { l(args...); return fn(args...); }
+
+		Wrapper2(const Function& l, F&& fn) : l(l), fn(pick(fn)) {}
+	};
+
+	WrapperBase *ptr;
+	
+	static void Free(WrapperBase *ptr) {
+		if(ptr && AtomicDec(ptr->refcount) == 0)
+			delete ptr;
+	}
+	
+	void Copy(const Function& a) {
+		ptr = a.ptr;
+		if(ptr)
+			AtomicInc(ptr->refcount);
+	}
+
+public:
+	Function() { ptr = NULL; }
+	Function(const Function& a) { Copy(a); }
+	
+	Function& operator=(const Function& other) { WrapperBase *b = ptr; Copy(other); Free(b); return *this; }
+	
+	template <class F> Function(F fn) { ptr = new Wrapper<F>(pick(fn)); }
+	
+	template <class F>
+	Function& operator<<(F fn) {
+		WrapperBase *b = ptr;
+		ptr = new Wrapper2<F>(*this, pick(fn));
+		Free(b);
+		return *this;
+	}
+	
+	Res operator()(ArgTypes... args) const { return ptr ? ptr->Execute(args...) : Res(); }
+	
+	operator bool() const { return ptr; }
+	void Clear()          { Free(ptr); ptr = NULL; }
+
+	~Function()           { Free(ptr); }
+};
+
 typedef Function<void ()> Callback;
 
-Callback callback(void (*fn)()) { return fn; }
+#define classA
+#define A_
+#define A_cm_
+#define A_a_
+#define a_
 
-template <class O, class M>
-Callback callback(O *object, void (M::*method)()) {
-	return [=] { (object->*method)(); };
-}
+#include "CallbackN.i"
 
-template <class O, class M>
-Callback new_pteback(O *object, void (M::*method)()) {
-	Ptr<O> ptr = object;
-	return [=] { if(ptr) (ptr->*method)(); };
-}
+#define classA    , class A1
+#define A_        A1
+#define A_cm_     A1,
+#define A_a_      A1 a1
+#define a_        a1
 
+#include "CallbackN.i"
 
-template <class O, class M, class Q, class T1>
-Callback callback1(O *object, void (M::*method)(Q), T1 t1)
-{
-	return [=, t1 = pick(t1)] {
-		(object->*method)(t1);
-	};
-}
+#define classA    , class A1, class A2
+#define A_        A1, A2
+#define A_cm_     A1, A2,
+#define A_a_      A1 a1, A2 a2
+#define a_        a1, a2
+
+#include "CallbackN.i"
+
+#define classA    , class A1, class A2, class A3
+#define A_        A1, A2, A3
+#define A_cm_     A1, A2, A3,
+#define A_a_      A1 a1, A2 a2, A3 a3
+#define a_        a1, a2, a3
+
+#include "CallbackN.i"
+
+#define classA    , class A1, class A2, class A3, class A4
+#define A_        A1, A2, A3, A4
+#define A_cm_     A1, A2, A3, A4,
+#define A_a_      A1 a1, A2 a2, A3 a3, A4 a4,
+#define a_        a1, a2, a3, a4
+
+#include "CallbackN.i"
+
+#define classA    , class A1, class A2, class A3, class A4, class A5
+#define A_        A1, A2, A3, A4, A5
+#define A_cm_     A1, A2, A3, A4, A5,
+#define A_a_      A1 a1, A2 a2, A3 a3, A4 a4, A5 a5
+#define a_        a1, a2, a3, a4, a5
+
+#include "CallbackN.i"
 
 template <class P1>
 using Callback1 = Function<void (P1)>;
@@ -40,6 +135,12 @@ using Callback1 = Function<void (P1)>;
 template <class O, class M, class P1>
 Callback1<P1> callback(O *object, void (M::*method)(P1)) {
 	return [=](P1 p1) { (object->*method)(p1); };
+}
+
+template <class F, class... Args, class... BindArgs>
+Function<F> LastArgs(F fn, BindArgs... bind_args)
+{
+	return [=](Args... args) { return fn(args..., bind_args...); };
 }
 
 void Test1()
@@ -65,11 +166,17 @@ CONSOLE_APP_MAIN
 	const int N = 1000000;
 
 	std::function<void (int)> fn = [&](int v) { RDUMP(x); RDUMP(h); RDUMP(v); };
-	Function<void (int)> l = [&](int v) { RDUMP(x); RDUMP(h); RDUMP(v); };
+	Function<void (int64)> l = [&](int v) { RDUMP(x); RDUMP(h); RDUMP(v); };
+	
+	Function<void (int)> l1 = l;
+	
+	LOG("----------- Different value");
+	
+	l1(10000);
 
 	LOG("----------- COMBINE");
 	l << [&](int v) { RDUMP(v + 1); };
-
+	
 	l(77777);
 	l << l;
 	l(999);
@@ -98,7 +205,7 @@ CONSOLE_APP_MAIN
 		
 		{
 			Vector<int> a{1, 2, 3, 4, 5};
-			cb = callback1(&foo, &Foo::Set, pick(a));
+			cb = newcallback1(&foo, &Foo::Set, pick(a));
 	//		cb = [&, a = pick(a)] { foo.Set(a); };
 		}
 		
