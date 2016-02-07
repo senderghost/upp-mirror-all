@@ -3,7 +3,7 @@ uses
 
 file
 	CallbackNP.i highlight cpp,
-	CallbackN.i,
+	CallbackN.i highlight cpp,
 	Callback.cpp optimize_speed;
 
 mainconfig

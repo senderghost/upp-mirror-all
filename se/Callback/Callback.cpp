@@ -6,9 +6,11 @@ using namespace Upp;
 
 #define Callback NewCallback
 #define callback newcallback
+#define pteback  newpteback
 
 #define Callback1 NewCallback1
 #define callback1 newcallback1
+#define pteback1  newpteback1
 
 template<typename>
 class Function;
@@ -80,18 +82,19 @@ public:
 };
 
 typedef Function<void ()> Callback;
+template <class P1> using Callback1 = Function<void (P1)>;
 
 #define classA
 #define A_
-#define A_cm_
 #define A_a_
 #define a_
 
 #include "CallbackN.i"
 
+#define CB_hasA_
+
 #define classA    , class A1
 #define A_        A1
-#define A_cm_     A1,
 #define A_a_      A1 a1
 #define a_        a1
 
@@ -99,7 +102,6 @@ typedef Function<void ()> Callback;
 
 #define classA    , class A1, class A2
 #define A_        A1, A2
-#define A_cm_     A1, A2,
 #define A_a_      A1 a1, A2 a2
 #define a_        a1, a2
 
@@ -107,7 +109,6 @@ typedef Function<void ()> Callback;
 
 #define classA    , class A1, class A2, class A3
 #define A_        A1, A2, A3
-#define A_cm_     A1, A2, A3,
 #define A_a_      A1 a1, A2 a2, A3 a3
 #define a_        a1, a2, a3
 
@@ -115,7 +116,6 @@ typedef Function<void ()> Callback;
 
 #define classA    , class A1, class A2, class A3, class A4
 #define A_        A1, A2, A3, A4
-#define A_cm_     A1, A2, A3, A4,
 #define A_a_      A1 a1, A2 a2, A3 a3, A4 a4,
 #define a_        a1, a2, a3, a4
 
@@ -123,25 +123,10 @@ typedef Function<void ()> Callback;
 
 #define classA    , class A1, class A2, class A3, class A4, class A5
 #define A_        A1, A2, A3, A4, A5
-#define A_cm_     A1, A2, A3, A4, A5,
 #define A_a_      A1 a1, A2 a2, A3 a3, A4 a4, A5 a5
 #define a_        a1, a2, a3, a4, a5
 
 #include "CallbackN.i"
-
-template <class P1>
-using Callback1 = Function<void (P1)>;
-
-template <class O, class M, class P1>
-Callback1<P1> callback(O *object, void (M::*method)(P1)) {
-	return [=](P1 p1) { (object->*method)(p1); };
-}
-
-template <class F, class... Args, class... BindArgs>
-Function<F> LastArgs(F fn, BindArgs... bind_args)
-{
-	return [=](Args... args) { return fn(args..., bind_args...); };
-}
 
 void Test1()
 {
@@ -199,13 +184,13 @@ CONSOLE_APP_MAIN
 		cb1(10);
 		RDUMP(foo.x);
 		
-	//	cb = callback1(&foo, &Foo::Add, 5);
+		cb = callback1(&foo, &Foo::Add, 5);
 		cb();
 		RDUMP(foo.x);
 		
 		{
 			Vector<int> a{1, 2, 3, 4, 5};
-			cb = newcallback1(&foo, &Foo::Set, pick(a));
+	//		cb = newcallback1(&foo, &Foo::Set, pick(a));
 	//		cb = [&, a = pick(a)] { foo.Set(a); };
 		}
 		
@@ -213,7 +198,7 @@ CONSOLE_APP_MAIN
 		cb();
 		DUMP(foo.v);
 		
-		cb = new_pteback(&foo, &Foo::Ping);
+		cb = pteback(&foo, &Foo::Ping);
 		cb();
 	}
 	
