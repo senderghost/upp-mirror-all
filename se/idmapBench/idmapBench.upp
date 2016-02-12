@@ -2,8 +2,9 @@ uses
 	Core;
 
 file
-	idmapBench.cpp;
+	idmapBench.cpp optimize_speed;
 
 mainconfig
-	"" = "";
+	"" = "",
+	"" = "MT";
 

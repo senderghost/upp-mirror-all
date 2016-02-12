@@ -355,13 +355,13 @@ CONSOLE_APP_MAIN
 			BenchValueMap(fn);
 		RLOG("ValueMap time: " << tm.Elapsed() << " ms");
 	}
-	{
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchSortedVectorMap(fn);
 		RLOG("SortedVectorMap time: " << tm.Elapsed() << " ms");
 	}
-	{
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchNTL(fn);
