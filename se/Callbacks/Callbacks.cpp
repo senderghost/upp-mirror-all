@@ -40,9 +40,65 @@ struct Tuple : TupleN< sizeof(args...) >
 	
 };
 */
+
+template <int N, typename... T>
+struct TupleN;
+
+template <typename A>
+struct TupleN<1, A>
+{
+	typedef A type;
+
+	A a;
+};
+
+template <typename B, typename... T>
+struct TupleN<2, B, T...> : TupleN<1, T...>
+{
+	B b;
+};
+
+template <typename... T>
+struct Tuple : TupleN<sizeof...(T), T...>
+{
+};
+
+/*
+template <int N, typename C, typename... T>
+struct TupleN<3, C, T...> : TupleN<2, T...>
+{
+	C c;
+};
+
+template <int N, typename D, typename... T>
+struct TupleN<4, D, T...> : TupleN<3, T...>
+{
+	D d;
+};
+*/
 CONSOLE_APP_MAIN
 {
-	Cout() << String("Hello!") << 1;
+	{
+		Vector<int> a{1, 2}, b;
+		
+		a << 1 << 2 << 3;
+		
+		b = clone(a);
+		DUMP(a);
+		DUMP(b);
+		a = pick(b);
+		DUMP(a);
+		DUMP(b);
+	}
+	
+	
+	TupleN<2, int, String> tpl;
+/*	
+	Tuple<int, String> tpl2;
+	tpl2.a = 10;
+	tpl2.b = 20;
+	
+*/	Cout() << String("Hello!") << 1;
 
 	auto x = callback(Foo);
 	x("AAA");
