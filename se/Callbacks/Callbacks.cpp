@@ -4,7 +4,7 @@ using namespace Upp;
 
 void Foo(const String& h)
 {
-	DDUMP(h);
+	DUMP(h);
 }
 
 void Execute(Callback cb)
@@ -26,7 +26,20 @@ struct Tuple {
 	C c;
 };
 */
+/*
+template <size_t N, typename... T>
+struct Choose;
 
+template <size_t N, typename H, typename... T>
+struct Choose <N, H, T...> : Choose <N-1, T...> { };
+
+
+template <Args... args>
+struct Tuple : TupleN< sizeof(args...) >
+{
+	
+};
+*/
 CONSOLE_APP_MAIN
 {
 	Cout() << String("Hello!") << 1;
@@ -43,10 +56,10 @@ CONSOLE_APP_MAIN
 	
 	Vector<int> v { 1, 2, 3, 2, 1 };
 	
-	DDUMP(Sum(v));
+	DUMP(Sum(v));
 	
-	DDUMP(FindMin(v));
-	DDUMP(FindMax(v));
+	DUMP(FindMin(v));
+	DUMP(FindMax(v));
 	
 	v.Add(123);
 	v.Add(pick(123));
@@ -59,7 +72,15 @@ CONSOLE_APP_MAIN
 		vs.Add(h + "123");
 		vs.Add("aaa");
 	}
+	
+	String a = AsString(123) + "123";
+	
+	RDUMP(a);
 
+	WString ws;
+	ws = a.ToWString();
+
+	RDUMP(ws);
 //	h = [] { LOG("FUN2"); };
 
 	
