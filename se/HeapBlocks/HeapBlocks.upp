@@ -2,8 +2,8 @@ uses
 	Core;
 
 file
-	Callbacks.cpp;
+	HeapBlocks.cpp;
 
 mainconfig
-	"" = "MT";
+	"" = "";
 

@@ -76,8 +76,28 @@ struct TupleN<4, D, T...> : TupleN<3, T...>
 	D d;
 };
 */
+
+namespace Upp {
+void *MemoryAlloc_(size_t sz);
+};
+
 CONSOLE_APP_MAIN
 {
+	for(int i : { 16, 23, 32, 200, 1000, 100000 }) {
+		DDUMP(i);
+		void *ptr1 = MemoryAlloc(i);
+		DDUMP(ptr1);
+	}
+
+	struct Prec {
+		Prec   *ptr;
+		Atomic  n;
+	};
+	
+	DDUMP(sizeof(Prec));
+
+	DDUMP(sizeof(Atomic));
+
 	{
 		Vector<int> a{1, 2}, b;
 		
@@ -106,7 +126,7 @@ CONSOLE_APP_MAIN
 	auto y = callback1(x, "B");
 	y();
 
-	Callback h = [=] { LOG("FUN"); };
+	Callback h([=] { LOG("FUN"); });
 	Callback h1([=] { LOG("FUN"); });
 	
 	

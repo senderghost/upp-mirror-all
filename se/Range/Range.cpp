@@ -28,7 +28,7 @@ public:
 	I  begin() const { return l; }
 	I  end() const { return l + count; }
 	I  Begin() const { return l; }
-	I  End() const { return l + count; }pod
+	I  End() const { return l + count; }
 
 	RangeRef(I begin, int count) : l(begin), count(count) {}
 	RangeRef(I begin, I end)                              { l = begin; count = end - begin; }

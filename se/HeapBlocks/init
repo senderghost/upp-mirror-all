@@ -1,0 +1,4 @@
+#ifndef _HeapBlocks_icpp_init_stub
+#define _HeapBlocks_icpp_init_stub
+#include "Core/init"
+#endif
