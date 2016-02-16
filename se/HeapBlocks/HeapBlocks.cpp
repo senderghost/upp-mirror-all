@@ -4,6 +4,16 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
+	const int MAXBLOCK = 65536 - 64;
+	int p = 64;
+	int bi = 0;
+	while(p < MAXBLOCK) {
+		DLOG(bi++ << " " << p - 16 << " " << p / 64.0);
+		int add = minmax(8 * p / 100 / 64 * 64, 64, INT_MAX);
+		p += add;
+	}
+
+	return;
 	for(int sz = 32; sz < 2048; sz += 32) {
 		int blocks = (4096 - 32) / sz;
 		int overhead = 4096 - blocks * sz;

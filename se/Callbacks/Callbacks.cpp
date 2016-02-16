@@ -77,16 +77,88 @@ struct TupleN<4, D, T...> : TupleN<3, T...>
 };
 */
 
+#ifdef _DEBUG
 namespace Upp {
 void *MemoryAlloc_(size_t sz);
+void  MemoryFree_(void *ptr);
 };
+#else
+void *MemoryAlloc_(size_t sz) { return MemoryAlloc(sz); }
+void  MemoryFree_(void *ptr) { return MemoryFree(ptr); }
+#endif
+
+
+__m128i val1, val2;
+__m128i *vp1 = &val1, *vp2 = &val2;
+int count;
+
+force_inline bool Equal16(const char *a, const char *b)
+{
+	__m128i xmm0 = _mm_loadu_si128((__m128i*)(a));
+	__m128i xmm1 = _mm_loadu_si128((__m128i*)(b));
+	xmm0 = _mm_cmpeq_epi8(xmm0, xmm1);
+	return (_mm_movemask_epi8(xmm0) == 0xffff);
+}
+
+force_inline void SetZero16(char *t)
+{
+	_mm_storeu_si128((__m128i*)t, _mm_setzero_si128());
+}
+
+force_inline void Copy16(void *t, const void *s)
+{
+	_mm_storeu_si128((__m128i*)t, _mm_loadu_si128((__m128i*)s));
+}
+
+force_inline void SetZero32(char *t)
+{
+	SetZero16(t);
+	SetZero16(t + 16);
+}
+
+char str1[128];
+char str2[128];
 
 CONSOLE_APP_MAIN
 {
-	for(int i : { 16, 23, 32, 200, 1000, 100000 }) {
-		DDUMP(i);
+
+	char q1[] = "Ahoj kamarade jak se mas 023456789";
+	char q2[] = "Ahoj kamarade jak se mas 023456789";
+	
+	if(Equal16(q1, q2))
+		RDUMP("Equal 1");
+	
+	q1[0] = 'a';
+
+	if(Equal16(q1, q2))
+		RDUMP("Equal 2");
+	
+	String sh;
+	
+	Cout() << sh;
+
+	MemoryFree48(MemoryAlloc48());
+	
+	SetZero32(str1);
+	
+//	Copy16(str2, str1);
+
+	if(Equal16(q1, q2))
+		RDUMP("Equal 3");
+	
+	return;
+	MemoryFree48(MemoryAlloc48());
+	MemoryFree48(MemoryAlloc48());
+	MemoryAlloc_(32);
+//	MemoryFree_(MemoryAlloc_(100000));
+	MemoryFree_(MemoryAlloc_(32));
+//	MemoryFree_(MemoryAlloc_(10000));
+	
+	for(int i : { 16, 23, 32, 200, 500, 800, 1000, 1200, 100000 }) {
+		RDUMP(i);
 		void *ptr1 = MemoryAlloc(i);
-		DDUMP(ptr1);
+		RDUMP(ptr1);
+		MemoryFree(ptr1);
 	}
 
 	struct Prec {
@@ -94,9 +166,9 @@ CONSOLE_APP_MAIN
 		Atomic  n;
 	};
 	
-	DDUMP(sizeof(Prec));
+	DUMP(sizeof(Prec));
 
-	DDUMP(sizeof(Atomic));
+	DUMP(sizeof(Atomic));
 
 	{
 		Vector<int> a{1, 2}, b;
