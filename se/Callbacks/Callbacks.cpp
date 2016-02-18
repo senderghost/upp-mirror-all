@@ -176,7 +176,7 @@ CONSOLE_APP_MAIN
 		a << 1 << 2 << 3;
 		
 		b = clone(a);
-		DUMP(a);1
+		DUMP(a);
 		DUMP(b);
 		a = pick(b);
 		DUMP(a);

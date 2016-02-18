@@ -23,6 +23,8 @@ CONSOLE_APP_MAIN
 		kv.value = "123";
 	}
 
+	DLOG("=========");
+
 	const VectorMap<String, String>& ch = h;
 	for(auto& kv : ~ch) {
 		DDUMP(kv.key);
