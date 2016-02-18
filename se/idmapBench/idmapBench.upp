@@ -2,7 +2,8 @@ uses
 	Core;
 
 file
-	idmapBench.cpp optimize_speed;
+	idmapBench.cpp optimize_speed,
+	text16.txt;
 
 mainconfig
 	"" = "",

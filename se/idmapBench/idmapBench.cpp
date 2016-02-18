@@ -361,7 +361,7 @@ CONSOLE_APP_MAIN
 			BenchSortedVectorMap(fn);
 		RLOG("SortedVectorMap time: " << tm.Elapsed() << " ms");
 	}
-	if(0) {
+	if(1) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchNTL(fn);

@@ -121,6 +121,11 @@ char str2[128];
 
 CONSOLE_APP_MAIN
 {
+	String *s = tiny_new<String>('x', 100);
+	RDUMP(*s);
+	tiny_delete(s);
+	return;
+
 
 	char q1[] = "Ahoj kamarade jak se mas 023456789";
 	char q2[] = "Ahoj kamarade jak se mas 023456789";
