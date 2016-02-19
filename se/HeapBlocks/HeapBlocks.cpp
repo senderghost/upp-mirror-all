@@ -5,11 +5,11 @@ using namespace Upp;
 CONSOLE_APP_MAIN
 {
 	const int MAXBLOCK = 65536 - 64;
-	int p = 64;
+	int p = 256;
 	int bi = 0;
 	while(p < MAXBLOCK) {
 		DLOG(bi++ << " " << p - 16 << " " << p / 64.0);
-		int add = minmax(8 * p / 100 / 64 * 64, 64, INT_MAX);
+		int add = minmax(16 * p / 100 / 256 * 256, 256, INT_MAX);
 		p += add;
 	}
 
