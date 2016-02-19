@@ -121,6 +121,15 @@ char str2[128];
 
 CONSOLE_APP_MAIN
 {
+	{
+		Value a = "ahoj";
+		
+		Value b = a;
+		
+		a = b;
+	}
+	
+	
 	String *s = tiny_new<String>('x', 100);
 	RDUMP(*s);
 	tiny_delete(s);
