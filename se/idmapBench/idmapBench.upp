@@ -2,6 +2,7 @@ uses
 	Core;
 
 file
+	alice30.txt,
 	idmapBench.cpp optimize_speed,
 	text16.txt;
 

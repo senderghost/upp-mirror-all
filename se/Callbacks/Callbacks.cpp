@@ -119,14 +119,56 @@ force_inline void SetZero32(char *t)
 char str1[128];
 char str2[128];
 
+int acount;
+
 CONSOLE_APP_MAIN
 {
+	{
+		Function<void ()> a = [] { LOG("A"); };
+		Function<void ()> b = [] { LOG("B"); };
+		
+		Swap(a, b);
+		
+		a();
+	}
+	
+	{
+		String& a = Single<String>('A', 100);
+		String& b = Single<String>("Hello!");
+		String& c = Single<String>("Hello2");
+		String& d = Single<String>();
+		
+		DDUMP(&a);
+		DDUMP(&b);
+		DDUMP(&c);
+		DDUMP(&d);
+		return;
+	}
+	
+	{
+		String a = "Ahojsalsdkjfglsdj;flgjksdlgksdlkfg lsdkjfglksdj fg;";
+		String b = a + a;
+		a = AsString(Random());
+		b = AsString(Random());
+		if(a == b)
+			acount++;
+		if(memcmp(~a, ~b, a.GetLength()) == 0)
+			acount++;
+	}
+	ValueArray va;
+	
 	{
 		Value a = "ahoj";
 		
 		Value b = a;
 		
 		a = b;
+	}
+
+	{
+		std::string a = "Ahoj";
+		std::string b;
+		b = pick(a);
 	}
 	
 	

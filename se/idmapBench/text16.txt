@@ -1,3 +1,10 @@
 ValueMap time: 3047 ms
 VectorMap time: 1656 ms
 
+-------------
+BEFORE SSE2
+
+ValueMap time: 2812 ms
+VectorMap time: 1610 ms
+
+
