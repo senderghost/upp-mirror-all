@@ -1,5 +1,9 @@
 #include <Core/Core.h>
 
+#include <atomic>
+#include <thread>
+#include <mutex>
+
 using namespace Upp;
 
 void Foo(const String& h)
@@ -127,8 +131,42 @@ void DLLGetFn(U& fnptr, const char *dll, const char *name)
 	fnptr = (U)GetProcAddress(LoadLibrary(dll), name);
 }
 
+std::atomic<bool> test;
+
+std::atomic<int>  test2 = 10;
+std::atomic<int>  r3;
+
+void foo() {
+	LOG("HERE!");
+}
+
+std::once_flag flag1;
+
 CONSOLE_APP_MAIN
 {
+	static StaticMutex mtx;
+	
+	mtx.Enter();
+	
+	
+	int val = --test2;
+	r3 = val;
+	
+	for(int i = 0; i < 10; i++)
+		ONCELOCK {
+			RLOG("HI!");
+		}
+	return;
+	
+	if(test.load(std::memory_order_acquire))
+		count++;
+
+	if(--test2 == 0)
+		count++;
+	
+
+	return;
+	
 	VOID (WINAPI *InitializeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
 	DLLGetFn(InitializeConditionVariable, "kernel32", "InitializeConditionVariable");
 	VOID (WINAPI *WakeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
@@ -138,9 +176,9 @@ CONSOLE_APP_MAIN
 	BOOL (WINAPI *SleepConditionVariableCS)(PCONDITION_VARIABLE ConditionVariable, PCRITICAL_SECTION CriticalSection, DWORD dwMilliseconds);
 	DLLGetFn(SleepConditionVariableCS, "kernel32", "SleepConditionVariableCS");
 
-	DDUMP(InitializeConditionVariable);
-	DDUMP(SleepConditionVariableCS);
-	DDUMP(IsWinVista());
+	DUMP(InitializeConditionVariable);
+	DUMP(SleepConditionVariableCS);
+	DUMP(IsWinVista());
 	return;
 	
 	
@@ -159,10 +197,10 @@ CONSOLE_APP_MAIN
 		String& c = Single<String>("Hello2");
 		String& d = Single<String>();
 		
-		DDUMP(&a);
-		DDUMP(&b);
-		DDUMP(&c);
-		DDUMP(&d);
+		DUMP(&a);
+		DUMP(&b);
+		DUMP(&c);
+		DUMP(&d);
 		return;
 	}
 	

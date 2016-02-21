@@ -349,7 +349,7 @@ CONSOLE_APP_MAIN
 		RLOG("STL map time: " << tm.Elapsed() << " ms");
 	}
 
-	{
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchValueMap(fn);
