@@ -121,8 +121,29 @@ char str2[128];
 
 int acount;
 
+template<class U>
+void DLLGetFn(U& fnptr, const char *dll, const char *name)
+{
+	fnptr = (U)GetProcAddress(LoadLibrary(dll), name);
+}
+
 CONSOLE_APP_MAIN
 {
+	VOID (WINAPI *InitializeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
+	DLLGetFn(InitializeConditionVariable, "kernel32", "InitializeConditionVariable");
+	VOID (WINAPI *WakeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
+	DLLGetFn(WakeConditionVariable, "kernel32", "ConditionVariable");
+	VOID (WINAPI *WakeAllConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
+	DLLGetFn(WakeAllConditionVariable, "kernel32", "WakeAllConditionVariable");
+	BOOL (WINAPI *SleepConditionVariableCS)(PCONDITION_VARIABLE ConditionVariable, PCRITICAL_SECTION CriticalSection, DWORD dwMilliseconds);
+	DLLGetFn(SleepConditionVariableCS, "kernel32", "SleepConditionVariableCS");
+
+	DDUMP(InitializeConditionVariable);
+	DDUMP(SleepConditionVariableCS);
+	DDUMP(IsWinVista());
+	return;
+	
+	
 	{
 		Function<void ()> a = [] { LOG("A"); };
 		Function<void ()> b = [] { LOG("B"); };
