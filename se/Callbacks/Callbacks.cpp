@@ -125,12 +125,6 @@ char str2[128];
 
 int acount;
 
-template<class U>
-void DLLGetFn(U& fnptr, const char *dll, const char *name)
-{
-	fnptr = (U)GetProcAddress(LoadLibrary(dll), name);
-}
-
 std::atomic<bool> test;
 
 std::atomic<int>  test2 = 10;
@@ -144,6 +138,9 @@ std::once_flag flag1;
 
 CONSOLE_APP_MAIN
 {
+	DDUMP(sizeof(CONDITION_VARIABLE));
+	return;
+
 	static StaticMutex mtx;
 	
 	mtx.Enter();
@@ -166,15 +163,7 @@ CONSOLE_APP_MAIN
 	
 
 	return;
-	
-	VOID (WINAPI *InitializeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
-	DLLGetFn(InitializeConditionVariable, "kernel32", "InitializeConditionVariable");
-	VOID (WINAPI *WakeConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
-	DLLGetFn(WakeConditionVariable, "kernel32", "ConditionVariable");
-	VOID (WINAPI *WakeAllConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
-	DLLGetFn(WakeAllConditionVariable, "kernel32", "WakeAllConditionVariable");
-	BOOL (WINAPI *SleepConditionVariableCS)(PCONDITION_VARIABLE ConditionVariable, PCRITICAL_SECTION CriticalSection, DWORD dwMilliseconds);
-	DLLGetFn(SleepConditionVariableCS, "kernel32", "SleepConditionVariableCS");
+
 
 	DUMP(InitializeConditionVariable);
 	DUMP(SleepConditionVariableCS);
