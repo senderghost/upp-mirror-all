@@ -138,8 +138,27 @@ std::once_flag flag1;
 
 CONSOLE_APP_MAIN
 {
-	DDUMP(sizeof(CONDITION_VARIABLE));
-	return;
+	{
+		DDUMP(GetWindowsDirectory());
+		DDUMP(GetModuleFileName(LoadLibrary("kernel32")));
+		DDUMP(GetTempPath());
+		DDUMP(GetCurrentDirectory());
+		
+		String h = GetExeFilePath();
+		
+		SetCurrentDirectory(GetFileFolder(h));
+		DDUMP(GetFullPath(GetFileName(h)));
+		
+		for(FindFile ff(GetFileFolder(h) + "/*.*"); ff; ff.Next()) {
+			DDUMP(ff.GetPath());
+			DDUMP(ff.GetLength());
+//			DDUMP(ff.GetLastWriteTime());
+			DDUMP(ff.IsFolder());
+		}
+		
+		DDUMP(sizeof(CONDITION_VARIABLE));
+		return;
+	}
 
 	static StaticMutex mtx;
 	
