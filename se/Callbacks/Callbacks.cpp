@@ -127,7 +127,7 @@ int acount;
 
 std::atomic<bool> test;
 
-std::atomic<int>  test2 = 10;
+std::atomic<int>  test2(10);
 std::atomic<int>  r3;
 
 void foo() {
@@ -136,30 +136,17 @@ void foo() {
 
 std::once_flag flag1;
 
+struct FooTest {
+	
+	operator Callback() { return callback(foo); }
+};
+
 CONSOLE_APP_MAIN
 {
-	{
-		DDUMP(GetWindowsDirectory());
-		DDUMP(GetModuleFileName(LoadLibrary("kernel32")));
-		DDUMP(GetTempPath());
-		DDUMP(GetCurrentDirectory());
-		
-		String h = GetExeFilePath();
-		
-		SetCurrentDirectory(GetFileFolder(h));
-		DDUMP(GetFullPath(GetFileName(h)));
-		
-		for(FindFile ff(GetFileFolder(h) + "/*.*"); ff; ff.Next()) {
-			DDUMP(ff.GetPath());
-			DDUMP(ff.GetLength());
-//			DDUMP(ff.GetLastWriteTime());
-			DDUMP(ff.IsFolder());
-		}
-		
-		DDUMP(sizeof(CONDITION_VARIABLE));
-		return;
-	}
-
+	FooTest foo;
+	
+	Callback cb = foo;
+	
 	static StaticMutex mtx;
 	
 	mtx.Enter();
@@ -183,13 +170,6 @@ CONSOLE_APP_MAIN
 
 	return;
 
-
-	DUMP(InitializeConditionVariable);
-	DUMP(SleepConditionVariableCS);
-	DUMP(IsWinVista());
-	return;
-	
-	
 	{
 		Function<void ()> a = [] { LOG("A"); };
 		Function<void ()> b = [] { LOG("B"); };
@@ -321,8 +301,8 @@ CONSOLE_APP_MAIN
 	auto y = callback1(x, "B");
 	y();
 
-	Callback h([=] { LOG("FUN"); });
-	Callback h1([=] { LOG("FUN"); });
+	Callback h([=] { LOG("FUN"); }, 1);
+	Callback h1([=] { LOG("FUN"); }, 1);
 	
 	
 	Vector<int> v { 1, 2, 3, 2, 1 };
