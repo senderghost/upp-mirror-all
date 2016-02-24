@@ -23,6 +23,8 @@ public:
 //	typedef int           difference_type; \
 
 	int GetCount() const { return count; }
+	
+	RangeRef& operator~()               { return *this; }
 
 	value_type& operator[](int i) const { ASSERT(i >= 0 && i < count); return l[i]; }
 	I  begin() const { return l; }
@@ -52,18 +54,18 @@ auto Range(C& c, int pos, int count)
 	return Range(c.begin() + pos, count);
 }
 
-template <class F>
-struct FunctionRangeClass {
-	F   f;
+template <class T>
+struct ConstRangeClass {
+	T   value;
 	int count;
 	
-	typedef decltype(f(1)) value_type;
+	typedef T value_type;
 	typedef value_type ValueType;
 	
-	value_type operator[](int i) const { return f(i); }
-	int GetCount() const { return count; }
+	const value_type& operator[](int i) const { return value; }
+	int GetCount() const               { return count; }
 	
-	typedef ConstIIterator<FunctionRangeClass> Iterator;
+	typedef ConstIIterator<ConstRangeClass> Iterator;
 	
 	Iterator begin() const { return Iterator(*this, 0); }
 	Iterator end() const { return Iterator(*this, count); }
@@ -71,24 +73,24 @@ struct FunctionRangeClass {
 	Iterator Begin() const { return Iterator(*this, 0); }
 	Iterator End() const { return Iterator(*this, count); }
 
-	FunctionRangeClass(F f, int count) : f(f) {}
+	ConstRangeClass(const T& value, int count) : value(value), count(count) {}
 };
 
-template <class F>
-FunctionRangeClass<F> FunctionRange(F f, int count)
+template <class T>
+ConstRangeClass<T> ConstRange(const T& value, int count)
 {
-	return FunctionRangeClass<F>(f, count);
+	return ConstRangeClass<T>(value, count);
 }
 
 CONSOLE_APP_MAIN
 {
 	Vector<int> h = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-	Sort(Range(h, 2, 5));
+	Sort(~Range(h, 2, 5));
 	DDUMP(h);
-	Sort(Range(h.begin() + 1, h.end()));
+	Sort(~Range(h.begin() + 1, h.end()));
 	DDUMP(h);
-	Sort(Range(h.begin(), 5), std::greater<int>());
+	Sort(~Range(h.begin(), 5), std::greater<int>());
 	DDUMP(h);
 
-	DDUMPC(FunctionRange([](int i) { return i * i; }, 200));
+	DDUMPC(ConstRange(12, 5));
 }

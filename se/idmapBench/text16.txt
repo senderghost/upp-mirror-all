@@ -8,3 +8,17 @@ ValueMap time: 2812 ms
 VectorMap time: 1610 ms
 
 
+===================
+Optimized, USEMALLOC
+
+STL hash_map time: 7781 ms
+STL map time: 9828 ms
+ValueMap time: 3953 ms
+VectorMap time: 2406 ms
+
+Optimized, U++ alloc
+
+STL hash_map time: 7046 ms
+STL map time: 8813 ms
+ValueMap time: 2953 ms
+VectorMap time: 1516 ms

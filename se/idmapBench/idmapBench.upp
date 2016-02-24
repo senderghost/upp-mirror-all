@@ -8,5 +8,6 @@ file
 
 mainconfig
 	"" = "",
-	"" = "MT";
+	"" = "MT",
+	"" = "MT USEMALLOC";
 
