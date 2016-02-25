@@ -335,21 +335,21 @@ CONSOLE_APP_MAIN
 //	allocated_bytes0 = GetAllocatedBytes(f);
 #endif
 
-	if(1) {
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchHashMap(fn);
 		RLOG("STL hash_map time: " << tm.Elapsed() << " ms");
 	}
 
-	if(1) {
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchMap(fn);
 		RLOG("STL map time: " << tm.Elapsed() << " ms");
 	}
 
-	if(1) {
+	if(0) {
 		TimeStop tm;
 		for(int n = 0; n < N; n++)
 			BenchValueMap(fn);
