@@ -32,8 +32,29 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < 10; i++)
 		h.Add(Random(25));
 
+	DDUMP(FilterRange(h, [=](int x) { return x & 1; }));
+	DDUMP(FilterRange(h, [=](int x) { return !(x & 1); }));
+
 	Sort(FilterRange(h, [=](int x) { return x & 1; }).Write());
+	Sort(FilterRange(h, [=](int x) { return !(x & 1); }).Write(), std::greater<int>());
 	DDUMP(h);
 
 	DDUMPC(ConstRange(12, 5));
+	
+	h.Set(5, ConstRange(123, 3));
+	DDUMP(h);
+	
+	h.Insert(5, ConstRange(10, 5));
+	DDUMP(h);
+	
+	String vs = String::GetVoid();
+	DDUMP(vs.IsVoid());
+	vs.Clear();
+	DDUMP(vs.IsVoid());
+	
+	Array<int> ah;
+	ah.Append(h);
+	DDUMP(ah);
+	ah.Insert(4, ConstRange(54321, 2));
+	DDUMP(ah);
 }
