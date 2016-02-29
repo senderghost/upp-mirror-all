@@ -18,11 +18,13 @@ CONSOLE_APP_MAIN
 {
 	Array<Stream> file;
 	file.Create<FileIn>("/home/centrum/1320.log");
+	
+	SeedRandom(0);
 
 	Vector<int> h = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-	Sort(Range(h, 2, 5).Write());
+	Sort(SubRange(h, 2, 5).Write());
 	DDUMP(h);
-	Sort(Range(h.begin() + 1, h.end()).Write());
+	Sort(SubRange(h.begin() + 1, h.end()).Write());
 	DDUMP(h);
 //	Sort(Range(h.begin(), 5), std::greater<int>());
 	DDUMP(h);
@@ -57,4 +59,31 @@ CONSOLE_APP_MAIN
 	DDUMP(ah);
 	ah.Insert(4, ConstRange(54321, 2));
 	DDUMP(ah);
+	
+	Sort(h);
+	DDUMP(h);
+	Reverse(SubRange(h, 5, 5).Write());
+	DDUMP(h);
+	
+	DDUMP(FindMin(h));
+	DDUMP(FindMax(h));
+	DDUMP(Min(h));
+	DDUMP(Max(h));
+	
+	Sort(h);
+	DDUMPC(h);
+	DDUMP(FindUpperBound(h, 8));
+	DDUMP(FindLowerBound(h, 8));
+
+	DDUMP(FindUpperBound(h, 9));
+	DDUMP(FindLowerBound(h, 9));
+	
+	DDUMP(FindBinary(h, 10));
+	DDUMP(FindBinary(h, 20));
+	
+	DDUMP(Sum(h));
+	
+	Vector<int> empty;
+	DDUMP(Min(empty, 11));
+	DDUMP(Max(empty, 12));
 }

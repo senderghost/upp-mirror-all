@@ -143,6 +143,20 @@ struct FooTest {
 
 CONSOLE_APP_MAIN
 {
+	{
+		Vector<int> h;
+		
+		h.Add();
+		
+		auto x = h[0];
+		
+		DDUMP(typeid(int).name());
+		DDUMP(typeid(int &).name());
+		DDUMP(typeid(x).name());
+		DDUMP(typeid(decltype(h[0])).name());
+		return;
+	}
+	
 	FooTest foo;
 	
 	Callback cb = foo;
@@ -178,7 +192,8 @@ CONSOLE_APP_MAIN
 		
 		a();
 	}
-	
+
+#if 0
 	{
 		String& a = Single<String>('A', 100);
 		String& b = Single<String>("Hello!");
@@ -191,7 +206,7 @@ CONSOLE_APP_MAIN
 		DUMP(&d);
 		return;
 	}
-	
+#endif
 	{
 		String a = "Ahojsalsdkjfglsdj;flgjksdlgksdlkfg lsdkjfglksdj fg;";
 		String b = a + a;
