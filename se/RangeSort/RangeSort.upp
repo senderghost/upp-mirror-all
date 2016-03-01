@@ -5,5 +5,5 @@ file
 	RangeSort.cpp;
 
 mainconfig
-	"" = "";
+	"" = "MT";
 

@@ -141,8 +141,21 @@ struct FooTest {
 	operator Callback() { return callback(foo); }
 };
 
+void CTest(Function<void ()>&& h)
+{
+	h();
+}
+
 CONSOLE_APP_MAIN
 {
+	{
+		Function<void()> fn1 = [] { LOG("Hello world!"); };
+		Function<void()> fn2 = pick(fn1);
+		fn2();
+		CTest(clone(fn2));
+		return;
+	}
+	
 	{
 		Vector<int> h;
 		
