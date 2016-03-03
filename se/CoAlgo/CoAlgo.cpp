@@ -2,6 +2,62 @@
 
 using namespace Upp;
 
+template <typename Iter, typename Lambda>
+void CoLoopI(Iter begin, Iter end, const Lambda& lambda, int max_chunk = INT_MAX)
+{
+	size_t chunk = max(r.GetCount() / CPU_Cores(), 1);
+	chunk = min(chunk, (size_t)max_chunk);
+	CoWork co;
+	auto begin = r.begin();
+	auto end = r.end();
+	while(begin < end) {
+		co & [=] {
+			lambda(begin, begin + min(chunk, size_t(end - begin)));
+		};
+		begin += chunk;
+	}
+}
+
+template <typename Range, typename Lambda>
+void CoLoop(Range r, const Lambda& lambda, int max_chunk = INT_MAX)
+{
+	size_t chunk = max(r.GetCount() / CPU_Cores(), 1);
+	chunk = min(chunk, (size_t)max_chunk);
+	CoWork co;
+	auto begin = r.begin();
+	auto end = r.end();
+	while(begin < end) {
+		co & [=] {
+			lambda(SubRange(begin, begin + min(chunk, size_t(end - begin))));
+		};
+		begin += chunk;
+	}
+}
+
+template <typename Range, class Better>
+int CoBest(const Range& r, const Better& better)
+{
+	if(r.GetCount() <= 0)
+		return -1;
+	typedef ConstIterator<Range> I;
+	I best = r.begin();
+	CoLoopI(r.begin() + 1, r.end(),
+		[=, &best](I i, I e) {
+			I b = i++;
+			while(i < e) {
+				if(better(*i, *b))
+					b = i;
+				i++;
+			}
+			CoWork::FinLock();
+			if(better(*b, *best) || !better(*best, *b) && b < best)
+				best = b;
+		}
+	);
+	return best - r.begin();
+}
+
+
 template <typename I, typename Lambda>
 void CoLoop(I begin, I end, const Lambda& lambda, int max_chunk = INT_MAX)
 {
