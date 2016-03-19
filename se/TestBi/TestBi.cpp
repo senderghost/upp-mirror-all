@@ -32,10 +32,8 @@ CONSOLE_APP_MAIN
 	StdLogSetup(LOG_COUT|LOG_FILE);
 
 	Test<BiVector<int>>();
-	Test<BiArray<int>>();
 
 	Test2<Vector<int>>();
-	Test2<Array<int>>();
 	
 	LOG("=========== Everything OK");
 }
