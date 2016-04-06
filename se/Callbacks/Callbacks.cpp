@@ -45,6 +45,25 @@ struct Tuple : TupleN< sizeof(args...) >
 };
 */
 
+template <class T, class V>
+struct Tup {
+	T a;
+	V b;
+};
+
+template <class T1, class T2, class T3>
+struct Tup {
+	T1 a;
+	T2 b;
+	T3 c;
+};
+
+void Foo()
+{
+	Tup<String, int, Point> x1;
+	Tup<Point, Rect> x2;
+}
+
 template <int N, typename... T>
 struct TupleN;
 
@@ -145,6 +164,7 @@ void CTest(Function<void ()>&& h)
 {
 	h();
 }
+
 
 CONSOLE_APP_MAIN
 {
