@@ -12,14 +12,15 @@ template <typename V, typename T, typename I>
 const V& GetFromTuple(const T& t, const I&);
 
 template <typename... T>
-struct Tup;
+struct Tuple;
 
 template <typename A>
 struct TupleN<1, A>
 {
 	A a;
 
-	Value Get(int i) const   { ASSERT(i == 0); return a; }
+	Value Get(int i) const                 { ASSERT(i == 0); return a; }
+	void  Set(int i, const Value& v) const { ASSERT(i == 0); a = v; }
 };
 
 template <typename T>
@@ -31,12 +32,24 @@ auto GetFromTuple(const T& t, const IndexI__<0>&) -> decltype(t.a)
 template <typename A, typename B>
 struct TupleN<2, A, B> : TupleN<1, A>
 {
+	typedef TupleN<1, A> Base;
 	B b;
 
-	Value Get(int i) const { return i == 1 ? (Value)b : TupleN<1, A>::Get(i); }
+	bool operator==(const TupleN& x) const    { return Base::operator==(x) && b == x.b; }
+	int  Compare(const TupleN& x) const       { int q = Base::Compare(x); return q ? q : SgnCompare(b, x.b); }
+
+	void ToHash(CombineHash& h)               { Base::ToHash(h); h(b); }
+	void ToString(String& r)                  { Base::ToString(r); r << ", " << b; }
+	
+	void Serialize(Stream& s)                 { Base::Serialize(s); s % b; }
+	
+	int  GetCount() const                     { return 2; }
+
+	Value Get(int i) const                    { return i == 1 ? (Value)b : Base::Get(i); }
+	void  Set(int i, const Value& v) const    { if(i == 1) b = v; else Base::Set(i, v); }
 	
 	template <typename AA, typename BB>
-	operator Tup<AA, BB>() const           { Tup<AA, BB> t; t.a = (AA)a; t.b = (BB)b; return t; }
+	operator Tuple<AA, BB>()                  { Tuple<AA, BB> t; t.a = (AA)a; t.b = (BB)b; return t; }
 };
 
 template <typename T>
@@ -48,9 +61,11 @@ auto GetFromTuple(const T& t, const IndexI__<1>&) -> decltype(t.b)
 template <typename A, typename B, typename C>
 struct TupleN<3, A, B, C> : TupleN<2, A, B>
 {
+	typedef TupleN<2, A, B> Base;
 	C c;
 	
-	Value Get(int i) const { return i == 2 ? (Value)c : TupleN<2, A, B>::Get(i); }
+	Value Get(int i) const                   { return i == 2 ? (Value)c : TupleN<2, A, B>::Get(i); }
+	void  Set(int i, const Value& v)         { if(i == 2) c = v; else Base::Set(i, v); }
 };
 
 template <typename T>
@@ -60,7 +75,7 @@ auto GetFromTuple(const T& t, const IndexI__<2>&) -> decltype(t.c)
 }
 
 template <typename... T>
-struct Tup : TupleN<sizeof...(T), T...> {
+struct Tuple : TupleN<sizeof...(T), T...> {
 	typedef TupleN<sizeof...(T), T...> BaseClass;
 	
 	Value Get(int i) const { return BaseClass::Get(i); }
@@ -70,7 +85,7 @@ struct Tup : TupleN<sizeof...(T), T...> {
 };
 
 struct NonVal {
-	Tup<int, double> h;
+	Tuple<int, double> h;
 
 	int x;
 	int y;
@@ -78,11 +93,11 @@ struct NonVal {
 
 CONSOLE_APP_MAIN
 {
-	Tup<int, String> x;
+	Tuple<int, String> x;
 	x.a = 1;
 	x.b = "HHH";
 	
-	Tup<int, Point, String> z;
+	Tuple<int, Point, String> z;
 	z.a = 0;
 	z.b = Point(1, 2);
 	z.c = "HHH";
@@ -97,13 +112,13 @@ CONSOLE_APP_MAIN
 	DDUMP(z.Get<1>());
 	DDUMP(z.Get<2>());
 	
-	Tup<NonVal, int> y;
+	Tuple<NonVal, int> y;
 	y.a.x = 5;
 	
-	Tup<int, int> it;
+	Tuple<int, int> it;
 	it.a = 10;
 	it.b = 11;
-	Tup<float, float> ft = it;
+	Tuple<float, float> ft = it;
 	DDUMP(ft.a / 7);
 	DDUMP(ft.b);
 }
