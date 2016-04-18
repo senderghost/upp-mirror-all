@@ -45,61 +45,6 @@ struct Tuple : TupleN< sizeof(args...) >
 };
 */
 
-template <class T, class V>
-struct Tup {
-	T a;
-	V b;
-};
-
-template <class T1, class T2, class T3>
-struct Tup {
-	T1 a;
-	T2 b;
-	T3 c;
-};
-
-void Foo()
-{
-	Tup<String, int, Point> x1;
-	Tup<Point, Rect> x2;
-}
-
-template <int N, typename... T>
-struct TupleN;
-
-template <typename A>
-struct TupleN<1, A>
-{
-	typedef A type;
-
-	A a;
-};
-
-template <typename B, typename... T>
-struct TupleN<2, B, T...> : TupleN<1, T...>
-{
-	B b;
-};
-
-template <typename... T>
-struct Tuple : TupleN<sizeof...(T), T...>
-{
-};
-
-/*
-template <int N, typename C, typename... T>
-struct TupleN<3, C, T...> : TupleN<2, T...>
-{
-	C c;
-};
-
-template <int N, typename D, typename... T>
-struct TupleN<4, D, T...> : TupleN<3, T...>
-{
-	D d;
-};
-*/
-
 #ifdef _DEBUG
 namespace Upp {
 void *MemoryAlloc_(size_t sz);
@@ -168,6 +113,13 @@ void CTest(Function<void ()>&& h)
 
 CONSOLE_APP_MAIN
 {
+	{
+		const Point x(1, 2);
+		Value h = (Value)x;
+//		x = h;
+	}
+	
+	
 	{
 		Function<void()> fn1 = [] { LOG("Hello world!"); };
 		Function<void()> fn2 = pick(fn1);
@@ -335,7 +287,6 @@ CONSOLE_APP_MAIN
 	}
 	
 	
-	TupleN<2, int, String> tpl;
 /*	
 	Tuple<int, String> tpl2;
 	tpl2.a = 10;
