@@ -3,11 +3,13 @@
 using namespace Upp;
 
 void Do() {
+	DDUMP(CoWork::IsWorker());
+//	CoWork::StartPool(20);
 	Vector<int> h;
-	for(int i = 0; i < 10000000; i++)
+	for(int i = 0; i < 1000000; i++)
 		h.Add(Random());
 	CoSort(h);
-	DLOG("Exit thread");
+	DLOG("Exit Do");
 }
 
 CONSOLE_APP_MAIN
@@ -19,6 +21,9 @@ CONSOLE_APP_MAIN
 
 	a.Wait();
 	b.Wait();
-
 	DLOG("Exit main");
+	
+	Thread::ShutdownThreads();
+	DLOG("Exit main 2");
+	Thread::ShutdownThreads();
 }
