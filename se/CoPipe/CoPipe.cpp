@@ -2,21 +2,63 @@
 
 using namespace Upp;
 
+struct ReadIds {
+	CoWork        co;
+	Index<String> out;
+	
+	enum {
+		PROCESSLINE,
+		PROCESSID,
+	};
+
+	void Do(const char *path)
+	{
+		FileIn in(path);
+		if(!in)
+			return;
+		while(!in.IsEof()) {
+			String line = in.GetLine();
+			co.Step(PROCESSLINE, [=] { SplitLine(line); });
+		}
+		co.Finish();
+		
+		LOG(out);
+	}
+	
+	void SplitLine(const String& l)
+	{
+		const char *s = l;
+		while(*s)
+			if(IsAlpha(*s)) {
+				const char *b = s++;
+				while(IsAlNum(*s))
+					s++;
+				String w(b, s);
+				co.Step(PROCESSID, [=] { ProcessId(w); });
+			}
+			else
+				s++;
+	}
+	
+	void ProcessId(const String& w)
+	{
+		out.FindAdd(w);
+	}
+};
+
 CONSOLE_APP_MAIN
 {
-	CoWork pl;
+	StdLogSetup(LOG_COUT|LOG_FILE);
+
+	String fn;
+	int argc = CommandLine().GetCount();
+	const Vector<String>& argv = CommandLine();
+	if(argc < 1)
+		fn = GetDataFile("CoPipe.cpp");
+	else
+		fn = argv[0];
 	
-	String out;
-	
-	for(int i = 0; i < 1000; i++)
-		pl.Step(0, [=, &pl] {
-			double x = Randomf();
-			DDUMP(x);
-			pl.Step(1, [=, &pl] {
-				double y = exp(x);
-				pl.Step(2, [=, &pl] {
-					LOG(AsString(y));
-				});
-			});
-		});
+	ReadIds().Do(fn);
+		
+	Thread::ShutdownThreads();
 }
