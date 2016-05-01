@@ -2,28 +2,50 @@
 
 using namespace Upp;
 
-void Do() {
+void Do(Vector<int>& h) {
 	DUMP(CoWork::IsWorker());
-//	CoWork::StartPool(20);
-	Vector<int> h;
 	for(int i = 0; i < 1000000; i++)
 		h.Add(Random());
 	CoSort(h);
-	LOG("Exit Do");
+	LOG("Do finished");
+}
+
+bool IsSorted(const Vector<int>& h)
+{
+	for(int i = 1; i < h.GetCount(); i++)
+		if(h[i - 1] > h[i])
+			return false;
+	return true;
 }
 
 CONSOLE_APP_MAIN
 {
-	Thread a, b;
-	a.Run(callback(Do));
-	b.Run(callback(Do));
-	Do();
+	StdLogSetup(LOG_COUT|LOG_FILE);
+	
+	Vector<int> h1, h2, h3;
 
+	Thread a;
+	{
+		a.Run([&] { Do(h1); });
+	
+		CoWork co;
+		co & [&] { Do(h2); };
+	
+		Do(h3);
+	}
 	a.Wait();
-	b.Wait();
+
+	
+	ASSERT(IsSorted(h1));
+	ASSERT(IsSorted(h2));
+	ASSERT(IsSorted(h3));
+
 	LOG("Exit main");
 	
 	Thread::ShutdownThreads();
-	LOG("Exit main 2");
+
+	LOG("Exit main 2 (checking that ShutdownThreads can be called twice)");
 	Thread::ShutdownThreads();
+	
+	LOG("============== OK");
 }

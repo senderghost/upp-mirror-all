@@ -19,6 +19,8 @@ CONSOLE_APP_MAIN
 	CoWork co;
 	for(int i = 0; i < 1000; i++)
 		co.Step(0, [=, &co] { Process(co, AsString(i), 0); });
-		
+	co.Finish();
+	DDUMPC(result);
+
 	Thread::ShutdownThreads();
 }
