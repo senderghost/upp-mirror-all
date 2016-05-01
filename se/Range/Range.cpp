@@ -1,24 +1,9 @@
 #include <Core/Core.h>
 
 using namespace Upp;
-/*
-template <class Range>
-void Sort(Range&& x)
-{
-	Sort(x);
-}
 
-template <class Range, class Predicate>
-void Sort(Range&& x, Predicate order)
-{
-	Sort(x, order);
-}
-*/
 CONSOLE_APP_MAIN
 {
-	Array<Stream> file;
-	file.Create<FileIn>("/home/centrum/1320.log");
-	
 	SeedRandom(0);
 
 	Vector<int> h = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
