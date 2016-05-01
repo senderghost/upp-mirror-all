@@ -18,11 +18,9 @@ struct ReadIds {
 			return;
 		while(!in.IsEof()) {
 			String line = in.GetLine();
-			co.Step(PROCESSLINE, [=] { SplitLine(line); });
+			co.Pipe(PROCESSLINE, [=] { SplitLine(line); });
 		}
 		co.Finish();
-		
-		LOG(out);
 	}
 	
 	void SplitLine(const String& l)
@@ -34,7 +32,7 @@ struct ReadIds {
 				while(IsAlNum(*s))
 					s++;
 				String w(b, s);
-				co.Step(PROCESSID, [=] { ProcessId(w); });
+				co.Pipe(PROCESSID, [=] { ProcessId(w); });
 			}
 			else
 				s++;
@@ -58,7 +56,10 @@ CONSOLE_APP_MAIN
 	else
 		fn = argv[0];
 	
-	ReadIds().Do(fn);
-		
+	ReadIds h;
+	h.Do(fn);
+	
+	LOG(h.out);
+	
 	Thread::ShutdownThreads();
 }

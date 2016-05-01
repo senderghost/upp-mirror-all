@@ -1,3 +1,5 @@
+description "Demonstrates using CoWork pipe for pipeline threaded processing\377";
+
 uses
 	Core;
 

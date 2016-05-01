@@ -9,18 +9,24 @@ void Process(CoWork& co, String h, int n)
 	int x = atoi(h);
 	x++;
 	if(n < 100)
-		co.Step(n + 1, [=, &co] { Process(co, AsString(atoi(h) + 1), n + 1); });
+		co.Pipe(n + 1, [=, &co] { Process(co, AsString(atoi(h) + 1), n + 1); });
 	else
 		result.Add(h);
 }
 
 CONSOLE_APP_MAIN
 {
+	StdLogSetup(LOG_COUT|LOG_FILE);
+
 	CoWork co;
-	for(int i = 0; i < 1000; i++)
-		co.Step(0, [=, &co] { Process(co, AsString(i), 0); });
+	for(int i = 0; i < 10000; i++)
+		co.Pipe(0, [=, &co] { Process(co, AsString(i), 0); });
 	co.Finish();
-	DDUMPC(result);
+	
+	for(int i = 0; i < 10000; i++)
+		ASSERT(result[i] == AsString(i + 100));
 
 	Thread::ShutdownThreads();
+	
+	LOG("============== OK");
 }
