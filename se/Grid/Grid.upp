@@ -1,0 +1,11 @@
+uses
+	Core;
+
+file
+	DataArray.h,
+	Grid.h,
+	Grid.cpp optimize_speed;
+
+mainconfig
+	"" = "MT";
+
