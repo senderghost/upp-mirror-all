@@ -1,14 +1,3 @@
-struct StringStreamVals : StringStream {
-	Vector<Value> va;
-	int           ii;
-	
-	void  PutValue(const Value& v)                      { va.Add(v); }
-	Value GetValue()                                    { return va[ii++]; }
-	
-	StringStreamVals()                                  { ii = 0; }
-	StringStreamVals(const String& s) : StringStream(s) { ii = 0; }
-};
-
 template <class T>
 class DataArray : public ValueType<DataArray<T>, 3150, Moveable_<DataArray<T>>> {
 	struct Rc {
@@ -27,15 +16,28 @@ class DataArray : public ValueType<DataArray<T>, 3150, Moveable_<DataArray<T>>> 
 	void CheckWriting()                { ASSERT(data->refcount == 0); }
 
 public:
-	void Create(int64 count);
+	template <class DA>
+	struct Reference {
+		DA&    a;
+		size_t i;
+		
+		T operator=(const T& v)        { a.Set(i, v); }
+		operator T() const             { return a.Get(i); }
+		
+		Reference(DA& a, size_t i) : a(a), i(i) {}
+	};
+
+	void Create(size_t count);
 
 	T   *BeginWrite();
 	void EndWrite()                    { ASSERT(Ref()->refcount == 0); Ref()->refcount = 1; }
 	
-	const T& operator[](int i) const   { ASSERT(i < GetCount()); return data[i]; }
-	const T& Get(int i) const          { ASSERT(i < GetCount()); return data[i]; }
-	void  Set(int i, const T& v)       { ASSERT(i < GetCount()); Unshare(); data[i] = v; }
-	int64 GetCount() const             { return data ? Ref()->count : 0; }
+	const T& Get(size_t i) const       { ASSERT(i < GetCount()); return data[i]; }
+	void     Set(size_t i, const T& v) { ASSERT(i < GetCount()); Unshare(); data[i] = v; }
+	size_t   GetCount() const          { return data ? Ref()->count : 0; }
+
+	Reference<DataArray>       operator[](int i)       { return Reference<DataArray>(*this, i); }
+	Reference<const DataArray> operator[](int i) const { return Reference<const DataArray>(*this, i); }
 
 	DataArray& operator=(const DataArray& b) { if(this != &b) { Release(); Copy(b); } return *this; }
 	
@@ -90,7 +92,6 @@ void DataArray<T>::Copy(const DataArray& b)
 template <class T>
 void DataArray<T>::Create(int64 count)
 {
-	DDUMP(count);
 	Release();
 	Rc *rc = (Rc *)(new byte[sizeof(Rc) + sizeof(T) * (size_t)count]);
 	rc->refcount = 1;
