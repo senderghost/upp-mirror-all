@@ -323,6 +323,7 @@ class HttpRequest : public TcpSocket {
 	String       data;
 	int64        count;
 	bool         has_content_length;
+	bool         chunked_encoding;
 
 	HttpHeader   header;
 

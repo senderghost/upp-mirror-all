@@ -65,6 +65,7 @@ void HttpRequest::Init()
 	poststream = NULL;
 	postlen = Null;
 	has_content_length = false;
+	chunked_encoding = false;
 }
 
 HttpRequest::HttpRequest()
@@ -575,7 +576,7 @@ void HttpRequest::StartRequest()
 		if(ctype.GetCount())
 			data << "Content-Type: " << ctype << "\r\n";
 	}
-	VectorMap<String, Tuple2<String, int> > cms;
+	VectorMap<String, Tuple2<String, int>> cms;
 	for(int i = 0; i < cookies.GetCount(); i++) {
 		const HttpCookie& c = cookies[i];
 		if(host.EndsWith(c.domain) && path.StartsWith(c.path)) {
@@ -738,6 +739,7 @@ void HttpRequest::StartBody()
 	else
 	if(header["transfer-encoding"] == "chunked") {
 		count = 0;
+		chunked_encoding = true;
 		StartPhase(CHUNK_HEADER);
 	}
 	else
@@ -769,10 +771,12 @@ void HttpRequest::Out(const void *ptr, int size)
 	WhenContent(ptr, size);
 }
 
+
 bool HttpRequest::ReadingBody()
 {
 	LLOG("HTTP reading body " << count);
-	String s = TcpSocket::Get(has_content_length ? (int)min((int64)chunk, count) : chunk);
+	String s = TcpSocket::Get(has_content_length || chunked_encoding ? (int)min((int64)chunk, count)
+	                                                                 : chunk);
 	if(s.GetCount()) {
 	#ifndef ENDZIP
 		if(gzip)
