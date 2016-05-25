@@ -576,7 +576,7 @@ void HttpRequest::StartRequest()
 		if(ctype.GetCount())
 			data << "Content-Type: " << ctype << "\r\n";
 	}
-	VectorMap<String, Tuple2<String, int>> cms;
+	VectorMap<String, Tuple2<String, int> > cms;
 	for(int i = 0; i < cookies.GetCount(); i++) {
 		const HttpCookie& c = cookies[i];
 		if(host.EndsWith(c.domain) && path.StartsWith(c.path)) {
