@@ -64,6 +64,7 @@ void HttpRequest::Init()
 	ssl = false;
 	poststream = NULL;
 	postlen = Null;
+	has_content_length = false;
 }
 
 HttpRequest::HttpRequest()
@@ -564,7 +565,7 @@ void HttpRequest::StartRequest()
 	if(std_headers) {
 		data << "URL: " << url << "\r\n"
 		     << "Host: " << host_port << "\r\n"
-		     << "Connection: " << (keep_alive ? "keep-alive\r\n" : "close\r\n") 
+		     << "Connection: " << (keep_alive ? "keep-alive\r\n" : "close\r\n")
 		     << "Accept: " << Nvl(accept, "*/*") << "\r\n"
 		     << "Accept-Encoding: gzip\r\n"
 		     << "User-Agent: " << Nvl(agent, "U++ HTTP request") << "\r\n";
@@ -709,8 +710,7 @@ String HttpRequest::GetRedirectUrl()
 
 int64 HttpRequest::GetContentLength()
 {
-	int64 n = header.GetContentLength();
-	return n < INT_MAX ? (int)n : 0;
+	return header.GetContentLength();
 }
 
 void HttpRequest::StartBody()
@@ -731,6 +731,7 @@ void HttpRequest::StartBody()
 	LLOG("HTTP status code: " << status_code);
 
 	count = GetContentLength();
+	has_content_length = count;
 	
 	if(method == METHOD_HEAD)
 		phase = FINISHED;
@@ -771,18 +772,18 @@ void HttpRequest::Out(const void *ptr, int size)
 bool HttpRequest::ReadingBody()
 {
 	LLOG("HTTP reading body " << count);
-	String s = TcpSocket::Get((int)min((int64)chunk, count));
-	if(s.GetCount() == 0)
-		return !IsEof() && count;
-#ifndef ENDZIP
-	if(gzip)
-		z.Put(~s, s.GetCount());
-	else
-#endif
-		Out(~s, s.GetCount());
-	if(count > 0) {
-		count -= s.GetCount();
-		return !IsEof() && count > 0;
+	String s = TcpSocket::Get(has_content_length ? (int)min((int64)chunk, count) : chunk);
+	if(s.GetCount()) {
+	#ifndef ENDZIP
+		if(gzip)
+			z.Put(~s, s.GetCount());
+		else
+	#endif
+			Out(~s, s.GetCount());
+		if(count > 0) {
+			count -= s.GetCount();
+			return !IsEof() && count > 0;
+		}
 	}
 	return !IsEof();
 }

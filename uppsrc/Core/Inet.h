@@ -322,6 +322,7 @@ class HttpRequest : public TcpSocket {
 	int          phase;
 	String       data;
 	int64        count;
+	bool         has_content_length;
 
 	HttpHeader   header;
 
