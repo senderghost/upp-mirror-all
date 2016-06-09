@@ -1,0 +1,4 @@
+#ifndef _Delta_icpp_init_stub
+#define _Delta_icpp_init_stub
+#include "Core/init"
+#endif
