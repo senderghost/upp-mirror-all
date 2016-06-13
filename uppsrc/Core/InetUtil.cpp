@@ -641,4 +641,77 @@ bool HttpResponse(TcpSocket& socket, bool scgi, int code, const char *phrase,
 	return data.GetCount() == 0 || socket.PutAll(data);
 }
 
+void UrlInfo::Parse(const String& url_)
+{
+	Clear();
+
+	url = url_;
+	String h = url;
+	int q = h.ReverseFind('#');
+	if(q >= 0) {
+		fragment = UrlDecode(h.Mid(q + 1));
+		h.Trim(q);
+	}
+	q = h.ReverseFind('?');
+	if(q >= 0) {
+		query = UrlDecode(h.Mid(q + 1));
+		h.Trim(q);
+	}
+	q = h.Find("://");
+	if(q >= 0) {
+		scheme = UrlDecode(h.Mid(0, q));
+		h = h.Mid(q + 3);
+	}
+	else {
+		int q = 0;
+		while(h[q] == '/')
+			q++;
+		h.Remove(0, q);
+	}
+		
+	q = h.Find('@');
+	if(q >= 0) {
+		username = h.Mid(0, q);
+		h = h.Mid(q + 1);
+		q = username.Find(':');
+		if(q >= 0) {
+			password = username.Mid(q + 1);
+			username.Trim(q);
+		}
+	}
+	q = h.Find('/');
+	if(q >= 0) {
+		path = UrlDecode(h.Mid(q));
+		h.Trim(q);
+	}
+	q = h.Find(':');
+	if(q >= 0) {
+		port = UrlDecode(h.Mid(q + 1));
+		h.Trim(q);
+	}
+	host = h;
+	
+	const char *p = query;
+	while(*p) {
+		const char *last = p;
+		while(*p && *p != '=' && *p != '&')
+			p++;
+		String key = UrlDecode(last, p);
+		if(*p == '=')
+			p++;
+		last = p;
+		while(*p && *p != '&')
+			p++;
+		if(*key != '.' && *key != '@') {
+			String val = UrlDecode(last, p);
+			if(key.EndsWith("[]"))
+				array_parameters.GetAdd(key.Mid(0, key.GetCount() - 2)) << val;
+			else
+				parameters.GetAdd(key) = UrlDecode(last, p);
+		}
+		if(*p)
+			p++;
+	}
+}
+
 END_UPP_NAMESPACE
