@@ -282,8 +282,8 @@ struct UrlInfo {
 	String                            query;
 	String                            fragment;
 
-	VectorMap<String, String>         parameters;
-	VectorMap<String, Vector<String>> array_parameters;
+	VectorMap<String, String>          parameters;
+	VectorMap<String, Vector<String> > array_parameters;
 
 	void Clear()                      { *this = UrlInfo(); }
 	void Parse(const String& url);
