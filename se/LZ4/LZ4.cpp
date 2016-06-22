@@ -4,29 +4,6 @@
 
 using namespace Upp;
 
-void Test(const char *fn)
-{
-	RLOG("==============");
-	RLOG(fn);
-	String h = LoadFile(fn);
-	TimeStop tm;
-	String c = FastCompress(h, h.GetCount());
-	double secs = tm.Seconds();
-	RLOG("Original size:   " << h.GetCount());
-	RLOG("Compressed size: " << c.GetCount());
-	RLOG("Compression:     " << 100.0 * c.GetCount() / h.GetCount() << "%");
-	RLOG("Elapsed:         " << secs << " s");
-	RLOG("Throughput:      " << h.GetCount() / secs / 1024 / 1024 << " MB/s");
-
-	String w = FastDecompress(c);
-	
-	ASSERT(w == h);
-	
-	tm.Reset();
-	SaveFile("c:/xxx/trash.lz4", c);
-	RLOG("File save time:  " << tm << " s");
-}
-
 enum {
 	LZ4F_MAGIC       = 0x184D2204,
 
@@ -62,7 +39,7 @@ void WriteLZ4F(FileOut& out, const char *s, size_t len)
 	xxHashStream xxh;
 	
 	while(len > 0) {
-		int chunk = min(maxblock, len);
+		int chunk = (int)min(maxblock, len);
 		int clen = LZ4_compress(s, compressed, chunk);
 		xxh.Put(s, chunk);
 		if(clen >= chunk) {
@@ -147,38 +124,118 @@ String DecodeLZ4F(FileIn& in)
 	return Null;
 }
 
+#if 0
+void Test(const char *fn)
+{
+	RLOG("==============");
+	RLOG(fn);
+	String h = LoadFile(fn);
+	TimeStop tm;
+	String c = FastCompress(h, h.GetCount());
+	double secs = tm.Seconds();
+	RLOG("Original size:   " << h.GetCount());
+	RLOG("Compressed size: " << c.GetCount());
+	RLOG("Compression:     " << 100.0 * c.GetCount() / h.GetCount() << "%");
+	RLOG("Elapsed:         " << secs << " s");
+	RLOG("Throughput:      " << h.GetCount() / secs / 1024 / 1024 << " MB/s");
+
+	String w = FastDecompress(c);
+	
+	ASSERT(w == h);
+	
+	tm.Reset();
+	SaveFile("c:/xxx/trash.lz4", c);
+	RLOG("File save time:  " << tm << " s");
+}
+#endif
+
+void Test(const char *fn)
+{
+	RLOG("==============");
+	RLOG(fn);
+
+	String lz4fn = "c:/xxx/lz4/lz4f_test.lz4";
+//	String h = LoadFile(fn);
+
+//	String h = LoadFile("C:/u/aws.data/EastDurham_GE_1p6-100_80mHH_14WTGs_BatCurtailment_11May16.blb");
+
+	int64 origlen = GetFileLength(fn);
+
+	RLOG("Original size:   " << origlen);
+
+	{
+		TimeStop tm;
+		FileIn fin(fn);
+		FileOut fout(lz4fn);
+		Lz4 lz4;
+		OutFilterStream out(fout, lz4);
+		lz4.Compress();
+		out.Put(fin, fin.GetSize(), 1024*1024);
+		fin.Close();
+		out.Close();
+		fout.Close();
+		ASSERT(!lz4.IsError());
+		ASSERT(!fout.IsError());
+
+		double secs = tm.Seconds();
+
+		int64 clen = GetFileLength(lz4fn);
+		RLOG("Compressed size: " << clen);
+		RLOG("Compression:     " << 100.0 * clen / origlen << "%");
+		RLOG("Elapsed:         " << secs << " s");
+		RLOG("Throughput:      " << origlen / secs / 1024 / 1024 << " MB/s");
+	}
+
+	String outfn = ForceExt(lz4fn, ".orig");
+	{
+		FileOut fout(outfn);
+		FileIn  fin(lz4fn);
+		TimeStop tm;
+		LZ4Decompress(fout, fin);
+		double secs = tm.Seconds();
+		RLOG("----");
+		RLOG("Decode Elapsed:  " << secs << " s");
+		RLOG("Throughput:      " << origlen / secs / 1024 / 1024 << " MB/s");
+	}
+
+	FileIn in1(fn);
+	FileIn in2(fn);
+	int64 len = in1.GetSize();
+	ASSERT(in1.GetSize() == in2.GetSize());
+	while(len--)
+		ASSERT(in1.Get() == in2.Get());
+}
+
 CONSOLE_APP_MAIN
 {
-	String lz4fn = "c:/xxx/lz4f_test.lz4";
-	String h = LoadFile("C:/u/aws.data/EastDurham_GE_1p6-100_80mHH_14WTGs_BatCurtailment_11May16.blb");
-	{
-		FileOut out(lz4fn);
-		TimeStop tm;
-		WriteLZ4F(out, ~h, h.GetCount());
-		RDUMP(tm);
-		RDUMP(out.GetSize());
-	}
+	StdLogSetup(LOG_COUT|LOG_FILE);
 	
-	{
+	if(0) {
+		FileOut out("c:/xxx/lz4/simple.lz4");
+		FileIn in("C:/u/aws.data/BT2_Full.blb");
+		Buffer<char> all(in.GetSize());;
+		TimeStop load;
+		in.Get64(all, in.GetSize());
+		RDUMP(load);
 		TimeStop tm;
-		FileIn in(lz4fn);
-		String dh = DecodeLZ4F(in);
-		ASSERT(dh == h);
+		WriteLZ4F(out, all, in.GetSize());
 		RDUMP(tm);
 	}
-	
-	
-	Lz4 lz4;
 
-	RLOG("=============================");
-	
-/*	return;
+
+	for(auto dir : { "C:/u/aws.data/*.*", "c:/xxx/*.*", "c:/u/upp.src/uppsrc/core/*.*" })
+		for(FindFile ff(dir); ff; ff.Next())
+			if(ff.IsFile())
+				Test(ff.GetPath());
+
+/*
+	Test("C:/u/aws.data/EastDurham_GE_1p6-100_80mHH_14WTGs_BatCurtailment_11May16.blb");
+
 	Test("C:/xxx/xml.xml");
 	Test("C:/xxx/viking.json");
 	Test("C:/xxx/SSVS.cpp");
 	Test("C:/xxx/NOS-30.html");
-	Test("C:/u/aws.data/Middelgrunden_WN_forMirek.blb");*/
-	Test("C:/u/aws.data/EastDurham_GE_1p6-100_80mHH_14WTGs_BatCurtailment_11May16.blb");
-/*	Test("C:/u/hodnocení_37179.xls");
-	Test("C:/u/n-2016-137/uppsrc/ScatterCtrl/ScatterCtrl.cpp");*/
+	Test("C:/u/hodnocení_37179.xls");
+	Test("C:/u/n-2016-137/uppsrc/ScatterCtrl/ScatterCtrl.cpp");
+*/
 }
