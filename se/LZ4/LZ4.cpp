@@ -21,9 +21,8 @@ enum {
     LZ4F_MAXSIZE_4096KB   = 0x70,
 };
 
-void WriteLZ4F(FileOut& out, const char *s, size_t len)
+void WriteLZ4F(Stream& out, const char *s, size_t len)
 {
-	out.SetBufferSize(1024*1024);
 	out.Put32le(LZ4F_MAGIC);
 	
 	byte h[2];
@@ -210,16 +209,40 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 	
-	if(0) {
-		FileOut out("c:/xxx/lz4/simple.lz4");
+	if(1) {
+//		FileOut out("c:/xxx/lz4/simple.lz4");
+//		out.SetBufferSize(1024*1024);
+		StringStream out;
 		FileIn in("C:/u/aws.data/BT2_Full.blb");
 		Buffer<char> all(in.GetSize());;
 		TimeStop load;
 		in.Get64(all, in.GetSize());
 		RDUMP(load);
-		TimeStop tm;
+		TimeStop simple;
 		WriteLZ4F(out, all, in.GetSize());
-		RDUMP(tm);
+		RDUMP(simple);
+		{
+			TimeStop stream;
+//			FileOut fout("c:/xxx/lz4/stream.lz4");
+			StringStream fout;
+			Lz4 lz4;
+			OutFilterStream out(fout, lz4);
+			lz4.Compress();
+			out.Put64(all, in.GetSize());
+			out.Close();
+			String r = fout;
+			fout.Close();
+			RDUMP(stream);
+			
+			TimeStop unstream;
+			StringStream fin(r);
+			OutFilterStream out(fout, lz4);
+			lz4.DeCompress();
+			out.Close();
+			String r = fout;
+			fout.Close();
+			
+		}
 	}
 
 
