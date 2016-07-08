@@ -1,7 +1,7 @@
-using Foo = String *;
+struct FooBar {
+	int x;
+};
 
-template<class T>
-	using Vec = std::vector<T,My_alloc<T>> *;
-
-template<class T>
-	using Vec = std::vector<T,My_alloc<T>> volatile * const;
+void Autocomplete()
+{
+	::FooBar b;

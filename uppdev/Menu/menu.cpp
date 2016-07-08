@@ -37,7 +37,7 @@ struct App : public TopWindow {
 	void Menu(Bar& bar)
 	{
 		bar.Add("THISBACK2", THISBACK2(Action2, 10, 11));
-		bar.Add("Enable numbers", THISBACK(EnableNumbers))
+		bar.Add("Enable numbers", [&] { EnableNumbers(); })
 		   .Check(numbers_enabled);
 		bar.Add(numbers_enabled, "Numbers", CtrlImg::cut(), THISBACK(SubMenu));
 		bar.Add(numbers_enabled, "Numbers", CtrlImg::information(), THISBACK(SubMenu));
