@@ -5,9 +5,16 @@ NAMESPACE_UPP
 struct ParaFormatDlg : public WithParaFormatLayout<TopWindow> {
 	ParaFormatting para;
 
+	String header_qtf, footer_qtf;
+
+	void Sync() {
+		header_footer.SetFont(StdFont().Bold(header_qtf.GetCount() || footer_qtf.GetCount()));
+	}
+	
 	ParaFormatDlg() {
 		CtrlLayoutOKCancel(*this, t_("Paragraph format"));
 		ActiveFocus(para.before);
+		header_footer << [=] { EditRichHeaderFooter(header_qtf, footer_qtf); Sync(); };
 	}
 };
 
@@ -15,8 +22,22 @@ void RichEdit::ParaFormat()
 {
 	ParaFormatDlg d;
 	d.para.Set(unit, formatinfo);
-	if(d.Execute() != IDOK || !d.para.IsChanged()) return;
+	bool hdrftr = !IsSelection();
+	d.header_footer.Show(hdrftr);
+	if(hdrftr) {
+		d.header_qtf = formatinfo.header_qtf;
+		d.footer_qtf = formatinfo.footer_qtf;
+		d.Sync();
+	}
+	if(d.Execute() != IDOK || !d.para.IsChanged() &&
+	   (!hdrftr || d.header_qtf == formatinfo.header_qtf && d.footer_qtf == formatinfo.footer_qtf))
+		return;
 	dword v = d.para.Get(formatinfo);
+	if(hdrftr) {
+		formatinfo.header_qtf = d.header_qtf;
+		formatinfo.footer_qtf = d.footer_qtf;
+		v |= RichText::HEADER_QTF|RichText::FOOTER_QTF;
+	}
 	if(v) ApplyFormat(0, v);
 }
 

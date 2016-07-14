@@ -633,10 +633,10 @@ as table start/stop and [@(128.0.255) `|`| `-`-] to divide cells/lines.
 [s0; &]
 [s0; Global text header is defined using [%-C@(128.0.255) `^H][%-/C@(0.0.255) qtf`_text][%-C@(128.0.255) `^
 `^], footer [%-C@(128.0.255) `^F][%-/C@(0.0.255) qtf`_text][%-C@(128.0.255) `^`^], 
-where [%-C@(128.0.255) H][%-/C@(0.0.255) qtf`_text] is complete embeded 
-QTF representing header/footer. This QTF can contain field[@5  
-`{:VALUE:PAGENUMBER:`} ]to represent page number and[@5  `{:VALUE:PAGECOUNT:`}] 
-to represent total number of pages.&]
+where [%-/C@(0.0.255) qtf`_text] is complete embeded QTF representing 
+header/footer. This QTF can contain field[@5  `{:VALUE:PAGENUMBER:`} 
+]to represent page number and[@5  `{:VALUE:PAGECOUNT:`}] to represent 
+total number of pages.&]
 [s0;3 &]
 [s0;3 &]
 [s0;3 &]

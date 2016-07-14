@@ -362,6 +362,8 @@ int   FindStyleWithName(const RichStyles& style, const String& name);
 
 struct RichContext {
 	const RichStyles& styles;
+	String            header_qtf, footer_qtf;
+	int               header_cy, footer_cy;
 	Rect              page;
 	PageY             py;
 

@@ -123,6 +123,8 @@ struct FontHeight : public WithDropChoice<EditDouble> {
 #define LAYOUTFILE <RichEdit/RichEdit.lay>
 #include <CtrlCore/lay.h>
 
+bool EditRichHeaderFooter(String& header_qtf, String& footer_qtf);
+
 class ParaFormatting : public WithParaLayout<StaticRect> {
 public:
 	DropList n[8];
@@ -617,6 +619,7 @@ private:
 	void     ApplyStyleKey(int i);
 	
 	void     HeaderFooter();
+	bool     EditHeaderFooter(String& header_qtf, String& footer_qtf);
 
 	bool     BegSelTabFix();
 	void     BegSelTabFixEnd(bool fix);

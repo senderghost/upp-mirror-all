@@ -40,6 +40,8 @@ public:
 		RULER     = 0x00004000,
 		RULERINK  = 0x00002000,
 		RULERSTYLE= 0x00001000,
+		HEADER_QTF= 0x00000800,
+		FOOTER_QTF= 0x00000400,
 	};
 
 	struct FormatInfo : RichPara::Format {

@@ -118,12 +118,12 @@ private:
 		TabLayout() {}
 	};
 
-	mutable TabLayout clayout;
+	mutable TabLayout clayout; // TODO: MT?
 	mutable Rect      cpage;
 	mutable PageY     cpy;
 
 	Buffer< Buffer<CellInfo> > ci;
-	int              r_row, r_column;
+	int              r_row, r_column; // r_ - refresh info
 	Rect             r_page;
 	PageY            r_py, r_pyy;
 

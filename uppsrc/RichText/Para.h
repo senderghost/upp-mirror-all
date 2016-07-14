@@ -128,6 +128,7 @@ struct RichPara {
 		int         bullet;
 		int         linespacing;
 		bool        newpage, keep, keepnext, orphan;
+		String      header_qtf, footer_qtf;
 
 		void        SortTabs();
 
