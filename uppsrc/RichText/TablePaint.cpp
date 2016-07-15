@@ -134,7 +134,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 		int ny = cell.GetCount();
 		VectorMap<int, Rect> frr;
 		for(int i = 0; i < ny; i++)
-			if(RowPaint(pw, rc.styles, tab, i, ny, pg, frr, pi, 0, sel))
+			if(RowPaint(pw, *rc.styles, tab, i, ny, pg, frr, pi, 0, sel))
 				break;
 	
 		Color gc = format.gridcolor;
@@ -157,7 +157,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 			Draw& w = pw.Page(pgi);
 			if(pgi > tab.page0 && tab.hasheader)
 				for(int i = 0; i < hy; i++) {
-					RowPaint(pw, rc.styles, tab.header, i, hy, hpg, frr, pi, pgi, false);
+					RowPaint(pw, *rc.styles, tab.header, i, hy, hpg, frr, pi, pgi, false);
 					w.DrawRect(pg.left, hpg.bottom, pg.Width(), gridln, format.gridcolor);
 				}
 			Rect r = frr[i].Inflated(frameln);

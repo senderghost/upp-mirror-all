@@ -86,6 +86,7 @@ protected:
 		mutable Bits          spellerrors;
 		mutable bool          checked;
 		mutable bool          haspos;
+		mutable String        header_qtf, footer_qtf;
 		One<RichPara::NumberFormat> number;
 
 		void Invalidate();
@@ -100,6 +101,7 @@ protected:
 	};
 
 	Vector<Part>           part;
+	String                 header_qtf, footer_qtf;
 	mutable int            length;
 	mutable int            tabcount;
 	mutable Vector<PageY>  py;
@@ -134,8 +136,10 @@ protected:
 	void        Sync0(const Para& pp, int parti, const RichContext& rc) const;
 	void        Sync(int parti, const RichContext& rc) const;
 	bool        BreaksPage(PageY py, const Para& pp, int i, const Rect& page) const;
-	PageY       GetNextPageY(int parti, const RichContext& rc) const;
-	PageY       GetPartPageY(int parti, RichContext rc) const;
+	void        Advance(int parti, RichContext& rc) const;
+	RichContext GetAdvanced(int parti, const RichContext& rc) const;
+	RichContext GetPartContext(int parti, const RichContext& rc0) const;
+	PageY       GetPartPageY(int parti, const RichContext& rc) const { return GetPartContext(parti, rc).py; }
 
 	struct ParaOp {
 		virtual bool operator()(RichTxt::Para& p) = 0;
@@ -230,6 +234,13 @@ public:
 
 	Vector<int>           GetAllLanguages() const;
 	WString               GetPlainText(bool withcr = true) const;
+
+	void                  SetHeaderQtf(const char *qtf);
+	void                  SetFooterQtf(const char *qtf);
+	String                GetHeaderQtf() const                        { return header_qtf; }
+	String                GetFooterQtf() const                        { return footer_qtf; }
+	void                  ClearHeader()                               { SetHeaderQtf(NULL); }
+	void                  ClearFooter()                               { SetFooterQtf(NULL); }
 
 	struct UpdateIterator {
 		enum { CONTINUE = 0, STOP = 1, UPDATE = 2 };

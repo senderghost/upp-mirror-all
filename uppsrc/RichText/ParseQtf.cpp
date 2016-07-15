@@ -774,6 +774,9 @@ void RichQtfParser::Parse(const char *qtf, int _accesskey)
 						}
 						break;
 					case 't':
+						if(*term == 'H' || *term == 'F')
+							(*term++ == 'H' ? format.header_qtf : format.footer_qtf) = GetText2('^', '^');
+						else
 						if(IsDigit(*term)) //temporary fix... :(
 							format.tabsize = ReadNumber();
 						break;

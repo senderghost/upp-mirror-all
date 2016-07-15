@@ -129,6 +129,11 @@ void QTFEncodeParaFormat(String& qtf, const RichPara::Format& format, const Rich
 	}
 	if(!IsEmpty(format.label))
 		qtf << ':' << DeQtf(format.label) << ':';
+	if(format.header_qtf.GetCount())
+		qtf << "tH" << format.header_qtf << "^^";
+	if(format.footer_qtf.GetCount())
+		qtf << "tF" << format.footer_qtf << "^^";
+
 	if(NumberingDiffers(style, format)) {
 		if(format.before_number != style.before_number) {
 			qtf << "n";
@@ -305,7 +310,7 @@ void QTFEncodePara(String& qtf, const RichPara& p, const RichPara::Format& style
 						qtf.Cat(':');
 					else {
 						qtf.Cat('`');
-					   	qtf.Cat(c);
+						qtf.Cat(c);
 						d += 2;
 					}
 					if(crlf && d > 60 && c == ' ') {
@@ -481,11 +486,11 @@ String   AsQTF(const RichText& text, byte charset, dword options)
 //		for(i = 0; i < text.GetPartCount(); i++)
 //			sm.FindAdd(text.GetParaStyle(i));
 
-	String hdr = text.GetHeaderQtf(charset, options);
+	String hdr = text.GetHeaderQtf();
 	if(hdr.GetCount())
 		qtf << "^H" << hdr << "^^\r\n";
 
-	String ftr = text.GetFooterQtf(charset, options);
+	String ftr = text.GetFooterQtf();
 	if(ftr.GetCount())
 		qtf << "^F" << ftr << "^^\r\n";
 
