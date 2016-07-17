@@ -34,7 +34,7 @@ GUI_APP_MAIN
 
 	RichEditWithToolBar e;
 	e.Pick(ParseQTF(LoadFile(FileName())));
-	e.SetPage(Size(4000, 600));
+	e.SetPage(Size(4000, 1600));
 	MyApp w;
 	w.SetRect(0, 0, 700, 500);
 	w.Sizeable().Zoomable();
