@@ -65,11 +65,12 @@ void RichText::PaintHeaderFooter(PageDraw& pw, const Rect& page, const PaintInfo
 		while(last_page < rc.py.page) {
 			last_page++;
 			if(rc.header_qtf.GetCount())
-				GetHeaderFooterText(rc.header_qtf, last_page, pagecount).Paint(pw, PageY(i, page.top), page, pi);
+				GetHeaderFooterText(rc.header_qtf, last_page, pagecount).Paint(pw, PageY(last_page, page.top), page, pi);
 			if(rc.footer_qtf.GetCount())
-				GetHeaderFooterText(rc.footer_qtf, last_page, pagecount).Paint(pw, PageY(i, page.bottom - rc.footer_cy), page, pi);
+				GetHeaderFooterText(rc.footer_qtf, last_page, pagecount).Paint(pw, PageY(last_page, page.bottom - rc.footer_cy), page, pi);
 		}
-		Advance(i, rc);
+		RichContext begin;
+		Advance(i, rc, begin);
 	}
 }
 

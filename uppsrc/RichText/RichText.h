@@ -372,6 +372,7 @@ struct RichContext {
 	void              Page() { py.page++; py.y = page.top; }
 
 	RichContext(const RichStyles& styles) : styles(&styles) { level = 0; header_cy = footer_cy = 0; }
+	RichContext() {}
 };
 
 struct RichCellPos;

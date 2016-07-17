@@ -265,15 +265,11 @@ struct RichPara {
 	void        GetRichPos(RichPos& rp, int pos) const;
 
 	Lines       FormatLines(int cx) const;
-	void        Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi,
-	                  const Number& n, const Bits& spellerrors,
-	                  int nbefore, int nline) const;
-	RichCaret   GetCaret(int pos, const Rect& page, PageY py, int nbefore, int nline) const;
-	int         GetPos(int x, PageY y, const Rect& page, PageY py, int nbefore, int nline) const;
-	void        GatherLabels(Vector<RichValPos>& info, const Rect& page, PageY py,
-	                         int pos, int nbefore, int nline) const;
-	void        GatherIndexes(Vector<RichValPos>& info, const Rect& page, PageY py,
-	                          int pos, int nbefore, int nline) const;
+	void        Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi, const Number& n, const Bits& spellerror) const;
+	RichCaret   GetCaret(int pos, const Rect& page, PageY py) const;
+	int         GetPos(int x, PageY y, const Rect& page, PageY py) const;
+	void        GatherLabels(Vector<RichValPos>& info, const Rect& page, PageY py, int pos) const;
+	void        GatherIndexes(Vector<RichValPos>& info, const Rect& page, PageY py, int pos) const;
 	int         GetVertMove(int pos, int gx, const Rect& page, int dir) const;
 
 	WString     GetText() const;
@@ -300,7 +296,7 @@ struct RichPara {
 private:
 	Tab         GetNextTab(int pos, int cx) const;
 	void        Smh(Lines& lines, HeightInfo *th, int cx) const;
-	Lines       Begin(const Rect& page, PageY& py, int nbefore, int nline) const;
+	Lines       Begin(const Rect& page, PageY& py) const;
 	bool        BreaksPage(PageY py, const Lines& pl, int i, const Rect& page) const;
 	void        PackParts(Stream& out, const CharFormat& chrstyle,
 	                      const Array<Part>& part, CharFormat& cf,

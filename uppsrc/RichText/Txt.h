@@ -136,10 +136,10 @@ protected:
 	void        Sync0(const Para& pp, int parti, const RichContext& rc) const;
 	void        Sync(int parti, const RichContext& rc) const;
 	bool        BreaksPage(PageY py, const Para& pp, int i, const Rect& page) const;
-	void        Advance(int parti, RichContext& rc) const;
-	RichContext GetAdvanced(int parti, const RichContext& rc) const;
-	RichContext GetPartContext(int parti, const RichContext& rc0) const;
-	PageY       GetPartPageY(int parti, const RichContext& rc) const { return GetPartContext(parti, rc).py; }
+	void        Advance(int parti, RichContext& rc, RichContext& begin) const;
+	RichContext GetAdvanced(int parti, const RichContext& rc, RichContext& begin) const;
+	RichContext GetPartContext(int parti, const RichContext& rc0, RichContext& begin) const;
+	PageY       GetPartPageY(int parti, const RichContext& rc) const { RichContext dummy; return GetPartContext(parti, rc, dummy).py; }
 
 	struct ParaOp {
 		virtual bool operator()(RichTxt::Para& p) = 0;

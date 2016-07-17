@@ -104,13 +104,14 @@ bool RichText::GetInvalid(PageY& top, PageY& bottom, const Rect& page,
 		bottom = GetHeight(page);
 		return true;
 	}
+	RichContext begin;
 	if(rtype == SPARA) { // selection changed within single paragraph
-		RichContext rc = GetPartContext(r_parti, Context(page));
+		RichContext rc = GetPartContext(r_parti, Context(page), begin);
 		top = rc.py;
-		bottom = GetAdvanced(spi, rc).py;
+		bottom = GetAdvanced(spi, rc, begin).py;
 		return true;
 	}
-	RichContext rc = GetPartContext(r_parti, Context(page));
+	RichContext rc = GetPartContext(r_parti, Context(page), begin);
 	top = rc.py;
 	if(rtype == PARA) {
 		if(IsTable(r_parti))
@@ -129,7 +130,7 @@ bool RichText::GetInvalid(PageY& top, PageY& bottom, const Rect& page,
 			   r_keep == pp.keep &&
 			   r_keepnext == pp.keepnext &&
 			   r_newpage == pp.newpage) {
-				bottom = GetAdvanced(r_parti, rc).py;
+				bottom = GetAdvanced(r_parti, rc, begin).py;
 				return true;
 			}
 		}

@@ -65,10 +65,11 @@ bool RichTxt::BreaksPage(PageY py, const Para& pp, int i, const Rect& page) cons
 	return false;
 }
 
-void RichTxt::Advance(int parti, RichContext& rc) const
+void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 {
 	if(part[parti].Is<RichTable>()) {
 		rc.level++;
+		begin = rc; // TODO!!!
 		rc.py = GetTable(parti).GetHeight(rc);
 		rc.level--;
 	}
@@ -80,57 +81,56 @@ void RichTxt::Advance(int parti, RichContext& rc) const
 			cy += pp.cy;
 		else
 			cy += pp.linecy[0];
-		PageY py = rc.py;
 		if(rc.page.Height() < 30000) {
 			int nbefore = 0;
 			int nline = 0;
+			begin = rc;
 			if(pp.keepnext && parti + 1 < part.GetCount() && part[parti + 1].Is<Para>()) {
 				Sync(parti + 1, rc);
 				const Para& p = part[parti + 1].Get<Para>();
 				nbefore = p.before + p.ruler;
 				nline   = p.linecy[0];
 			}
-			if(pp.header_qtf.GetCount() + pp.footer_qtf.GetCount() && rc.level == 0) { // set new header/footer
+			if(pp.header_qtf.GetCount() + pp.footer_qtf.GetCount() && rc.level == 0) {
 				rc.NewHeaderFooter(pp.header_qtf, pp.footer_qtf);
 				rc.Page();
+				begin = rc;
 			}
 			else
-			if(pp.newpage || py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
+			if(pp.newpage || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height()) {
 				rc.Page();
-			py.y += pp.before + pp.ruler;
-			if(py.y + pp.cy < rc.page.bottom)
-				py.y += pp.cy;
+				begin = rc;
+			}
+			rc.py.y += pp.before + pp.ruler;
+			if(rc.py.y + pp.cy < rc.page.bottom)
+				rc.py.y += pp.cy;
 			else
 				for(int lni = 0; lni < pp.linecy.GetCount(); lni++) {
-					if(BreaksPage(py, pp, lni, rc.page)) {
-						py.y = rc.page.top;
-						py.page++;
-					}
-					py.y += pp.linecy[lni];
+					if(BreaksPage(rc.py, pp, lni, rc.page))
+						rc.Page();
+					rc.py.y += pp.linecy[lni];
 				}
 			rc.py.y += pp.after;
-			if(rc.py.y > rc.page.bottom) {
-				rc.py.y = rc.page.top;
-				rc.py.page++;
-			}
+			if(rc.py.y > rc.page.bottom)
+				rc.Page();
 		}
 		else
 			rc.py.y += pp.before + pp.cy + pp.after + pp.ruler;
 	}
 }
 
-RichContext RichTxt::GetAdvanced(int parti, const RichContext& rc) const
+RichContext RichTxt::GetAdvanced(int parti, const RichContext& rc, RichContext& begin) const
 {
 	RichContext r = rc;
-	Advance(parti, r);
+	Advance(parti, r, begin);
 	return r;
 }
 
-RichContext RichTxt::GetPartContext(int parti, const RichContext& rc0) const
+RichContext RichTxt::GetPartContext(int parti, const RichContext& rc0, RichContext& begin) const
 {
 	RichContext rc = rc0;
 	for(int i = 0; i < parti; i++)
-		Advance(i, rc);
+		Advance(i, rc, begin);
 	return rc;
 }
 
@@ -145,8 +145,9 @@ bool IsPainting(PageDraw& pw, Zoom z, const Rect& page, PageY top, PageY bottom)
 
 PageY RichTxt::GetHeight(RichContext rc) const
 {
+	RichContext begin;
 	for(int i = 0; i < GetPartCount(); i++)
-		Advance(i, rc);
+		Advance(i, rc, begin);
 	return rc.py;
 }
 
@@ -170,16 +171,9 @@ void RichTxt::Paint(PageDraw& pw, RichContext& rc, const PaintInfo& _pi) const
 				n.TestReset(*pp.number);
 				n.Next(*pp.number);
 			}
-			RichContext next = GetAdvanced(parti, rc);
+			RichContext begin;
+			RichContext next = GetAdvanced(parti, rc, begin);
 			if(next.py >= pi.top) {
-				int nbefore = 0;
-				int nline = 0;
-				if(pp.keepnext && parti + 1 < part.GetCount() && part[parti + 1].Is<Para>()) {
-					Sync(parti + 1, rc);
-					const Para& pp = part[parti + 1].Get<Para>();
-					nbefore = pp.before;
-					nline = pp.linecy[0];
-				}
 				RichPara p = Get(parti, *rc.styles, true);
 				if(pi.spellingchecker) {
 					if(!pp.checked) {
@@ -191,8 +185,8 @@ void RichTxt::Paint(PageDraw& pw, RichContext& rc, const PaintInfo& _pi) const
 					pp.checked = false;
 					pp.spellerrors.Clear();
 				}
-				if(IsPainting(pw, pi.zoom, rc.page, rc.py, next.py))
-					p.Paint(pw, rc.page, rc.py, pi, n, pp.spellerrors, nbefore, nline);
+				if(IsPainting(pw, pi.zoom, rc.page, begin.py, next.py))
+					p.Paint(pw, rc.page, begin.py, pi, n, pp.spellerrors);
 			}
 			rc = next;
 		}
@@ -212,27 +206,19 @@ RichCaret RichTxt::GetCaret(int pos, RichContext rc) const
 		pos = GetLength();
 	while(parti < part.GetCount()) {
 		int l = GetPartLength(parti) + 1;
+		RichContext begin;
+		Advance(parti, rc, begin);
 		if(pos < l) {
 			if(IsTable(parti))
-				return GetTable(parti).GetCaret(pos, rc);
+				return GetTable(parti).GetCaret(pos, begin);
 			else {
-				const Para& p = part[parti].Get<Para>();
-				int nbefore = 0;
-				int nline = 0;
-				if(p.keepnext && parti + 1 < part.GetCount() && part[parti + 1].Is<Para>()) {
-					Sync(parti + 1, rc);
-					const Para& pp = part[parti + 1].Get<Para>();
-					nbefore = pp.before + pp.ruler;
-					nline = pp.linecy[0];
-				}
-				RichCaret tp = Get(parti, *rc.styles, true)
-				               .GetCaret(pos, rc.page, rc.py, nbefore, nline);
-				tp.textpage = rc.page;
+				RichCaret tp = Get(parti, *rc.styles, true).GetCaret(pos, begin.page, begin.py);
+				tp.textpage = begin.page;
 				return tp;
 			}
 		}
+		parti++;
 		pos -= l;
-		Advance(parti++, rc);
 	}
 	return RichCaret();
 }
@@ -243,27 +229,15 @@ int   RichTxt::GetPos(int x, PageY y, RichContext rc) const
 	int pos = 0;
 
 	if(part.GetCount()) {
-		RichContext nnext = GetAdvanced(parti, rc);
 		while(parti < part.GetCount()) {
-			RichContext next = nnext;
-			if(parti + 1 < part.GetCount())
-				nnext = GetAdvanced(parti + 1, next);
-			if(y < next.py || y.page < next.py.page) {
+			RichContext begin;
+			Advance(parti, rc, begin);
+			RichContext next = GetAdvanced(parti, rc, begin);
+			if(y < next.py || y.page < next.py.page)
 				if(IsTable(parti))
-					return GetTable(parti).GetPos(x, y, rc) + pos;
-				else {
-					int nbefore = 0;
-					int nline = 0;
-					if(part[parti].Get<Para>().keepnext && parti + 1 < part.GetCount() && IsPara(parti + 1)) {
-						Sync(parti + 1, rc);
-						const Para& pp = part[parti + 1].Get<Para>();
-						nbefore = pp.before + pp.ruler;
-						nline = pp.linecy[0];
-					}
-					return Get(parti, *rc.styles, true)
-					       .GetPos(x, y, rc.page, rc.py, nbefore, nline) + pos;
-				}
-			}
+					return GetTable(parti).GetPos(x, y, begin) + pos;
+				else
+					return Get(parti, *rc.styles, true).GetPos(x, y, begin.page, begin.py) + pos;
 			pos += GetPartLength(parti) + 1;
 			parti++;
 			rc = next;
@@ -279,14 +253,12 @@ RichHotPos RichTxt::GetHotPos(int x, PageY y, int tolerance, RichContext rc) con
 	int pos = 0;
 	int ti = 0;
 	if(part.GetCount()) {
-		RichContext nnext = GetAdvanced(parti, rc);
 		while(parti < part.GetCount()) {
-			RichContext next = nnext;
-			if(parti + 1 < part.GetCount())
-				nnext = GetAdvanced(parti + 1, next);
+			RichContext begin;
+			RichContext next = GetAdvanced(parti, rc, begin);
 			if(y < next.py || y.page < next.py.page) {
 				if(IsTable(parti)) {
-					RichHotPos pos = GetTable(parti).GetHotPos(x, y, tolerance, rc);
+					RichHotPos pos = GetTable(parti).GetHotPos(x, y, tolerance, begin);
 					pos.table += ti + 1;
 					return pos;
 				}
@@ -341,27 +313,21 @@ void RichTxt::GatherValPos(Vector<RichValPos>& f, RichContext rc, int pos, int t
 {
 	int parti = 0;
 	while(parti < part.GetCount()) {
+		RichContext begin;
+		Advance(parti++, rc, begin);
 		if(part[parti].Is<RichTable>())
-			GetTable(parti).GatherValPos(f, rc, pos, type);
+			GetTable(parti).GatherValPos(f, begin, pos, type);
 		else {
 			int nbefore = 0;
 			int nline = 0;
 			const Para& p = part[parti].Get<Para>();
-			if(p.keepnext && parti + 1 < part.GetCount() && IsPara(parti + 1)) {
-				Sync(parti + 1, rc);
-				const Para& pp = part[parti + 1].Get<Para>();
-				nbefore = pp.before + pp.ruler;
-				nline = pp.linecy[0];
-			}
-			if(p.haspos) {
+			if(p.haspos)
 				if(type == LABELS)
-					Get(parti, *rc.styles, true).GatherLabels(f, rc.page, rc.py, pos, nbefore, nline);
+					Get(parti, *begin.styles, true).GatherLabels(f, begin.page, begin.py, pos);
 				else
-					Get(parti, *rc.styles, true).GatherIndexes(f, rc.page, rc.py, pos, nbefore, nline);
-			}
+					Get(parti, *begin.styles, true).GatherIndexes(f, begin.page, begin.py, pos);
 		}
 		pos += GetPartLength(parti) + 1;
-		Advance(parti++, rc);
 	}
 }
 
