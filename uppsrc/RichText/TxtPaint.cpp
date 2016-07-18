@@ -232,15 +232,13 @@ int   RichTxt::GetPos(int x, PageY y, RichContext rc) const
 		while(parti < part.GetCount()) {
 			RichContext begin;
 			Advance(parti, rc, begin);
-			RichContext next = GetAdvanced(parti, rc, begin);
-			if(y < next.py || y.page < next.py.page)
+			if(y < rc.py || y.page < rc.py.page)
 				if(IsTable(parti))
 					return GetTable(parti).GetPos(x, y, begin) + pos;
 				else
 					return Get(parti, *rc.styles, true).GetPos(x, y, begin.page, begin.py) + pos;
 			pos += GetPartLength(parti) + 1;
 			parti++;
-			rc = next;
 		}
 	}
 

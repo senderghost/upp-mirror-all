@@ -243,9 +243,9 @@ enum {
 	RICHHOT_RM = -2,
 };
 
-struct RichHotPos {
+struct RichHotPos { // used for resizing table dimensions by mouse
 	int table;
-	int column;
+	int column; // can be RICHHOT_LM or RICHHOT_RM or columns index
 	int delta;
 	int left, cx;
 	int textleft, textcx;
