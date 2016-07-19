@@ -4,8 +4,8 @@ struct GridRef {
 	size_t       *dim;
 	int           offset;
 	GridRef       operator[](int i)     { GridRef<T> r = *this; r.offset += *++dim++ * i; return r; }
-	T             operator=(const T& x) { data->Set(offset, x); return x; }
-	operator T() const                  { return data->Get(offset); }
+	T             operator=(const T& x) { DDUMP(offset); data->Set(offset, x); return x; }
+	operator T() const                  { DDUMP(offset); return data->Get(offset); }
 };
 
 template <int D, typename T>
@@ -47,10 +47,10 @@ public:
 	
 	void Create(int cx, int cy = 1, int cz = 1, int cu = 1, int cv = 1) {
 		dim[0] = cx;
-		dim[1] = cy;
-		dim[2] = cz;
-		dim[3] = cu;
-		dim[4] = cv;
+		dim[1] = cy * dim[0];
+		dim[2] = cz * dim[1];
+		dim[3] = cu * dim[2];
+		dim[4] = cv * dim[3];
 		
 		data.Create((int64)cx * cy * cz * cu * cv);
 	}

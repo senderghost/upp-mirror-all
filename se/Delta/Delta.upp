@@ -1,3 +1,15 @@
+<<<<<<< .mine
+uses
+	Core,
+	plugin/lz4;
+
+file
+	Delta.cpp;
+
+mainconfig
+	"" = "";
+
+=======
 uses
 	Core;
 
@@ -7,3 +19,4 @@ file
 mainconfig
 	"" = "";
 
+>>>>>>> .r10074

@@ -5,25 +5,39 @@ using namespace Upp;
 #include "DataArray.h"
 #include "Grid.h"
 
+cu * (cz * (x * cy + y) + z) + u
+
+(cu * cz * (x * cy + y) + cu * z) + u
+
+cu * cz * cy * x + cu * cz * y + cu * z + u
+
+
+
 CONSOLE_APP_MAIN
 {
 	Grid<int> test;
-	test.Create(10, 20, 30);
+	test.Create(3, 4, 5);
 	
 	int i = 0;
 
-	for(int x = 0; x < 10; x++)
-		for(int y = 0; y < 20; y++)
-			for(int z = 0; z < 30; z++)
+	for(int x = 0; x < 3; x++)
+		for(int y = 0; y < 4; y++)
+			for(int z = 0; z < 5; z++) {
+				DDUMP(x);
+				DDUMP(y);
+				DDUMP(z);
 				test[x][y][z] = i++;
+				DDUMP((int)test[x][y][z]);
+			}
 			
 	i = 0;
+	LOG("====================");
 
-	for(int x = 0; x < 10; x++)
-		for(int y = 0; y < 20; y++)
-			for(int z = 0; z < 30; z++) {
+	for(int x = 0; x < 3; x++)
+		for(int y = 0; y < 4; y++)
+			for(int z = 0; z < 5; z++) {
 				DDUMP((int)test[x][y][z]);
-				ASSERT(test[x][y][z] == i++);
+//				ASSERT(test[x][y][z] == i++);
 			}
 	return;
 

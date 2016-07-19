@@ -1,4 +1,12 @@
+<<<<<<< .mine
+#ifndef _Delta_icpp_init_stub
+#define _Delta_icpp_init_stub
+#include "Core/init"
+#include "plugin/lz4/init"
+#endif
+=======
 #ifndef _Delta_icpp_init_stub
 #define _Delta_icpp_init_stub
 #include "Core/init"
 #endif
+>>>>>>> .r10074

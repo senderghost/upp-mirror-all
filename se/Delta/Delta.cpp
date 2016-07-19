@@ -1,3 +1,29 @@
+<<<<<<< .mine
+#include <Core/Core.h>
+
+using namespace Upp;
+
+inline
+uint32_t rotl32 (uint32_t value, unsigned int count) {
+    const unsigned int mask = (CHAR_BIT*sizeof(value)-1);
+    count &= mask;
+    return (value<<count) | (value>>( (-count) & mask ));
+}
+
+uint32_t rotr32 (uint32_t value, unsigned int count) {
+    const unsigned int mask = (CHAR_BIT*sizeof(value)-1);
+    count &= mask;
+    return (value>>count) | (value<<( (-count) & mask ));
+}
+
+CONSOLE_APP_MAIN
+{
+	FileIn in("C:/u/upp.src/uppsrc/CtrlLib/ColumnList.cpp");
+	while(!in.IsEof())
+		rotl32(
+}
+
+=======
 #include <Core/Core.h>
 
 using namespace Upp;
@@ -180,3 +206,4 @@ CONSOLE_APP_MAIN
 	DDUMP(ref.GetCount());
 	DDUMP(hashmask);
 }
+>>>>>>> .r10074
