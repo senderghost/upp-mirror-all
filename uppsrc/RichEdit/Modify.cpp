@@ -436,15 +436,13 @@ void RichEdit::InsertLine()
 	}
 	anchor = cursor = cursor + 1;
 	begtabsel = false;
-	formatinfo.newpage = false;
-	formatinfo.header_qtf.Clear();
-	formatinfo.footer_qtf.Clear();
+	formatinfo.newpage = formatinfo.newhdrftr = false;
 	if(st) {
 		Uuid next = text.GetStyle(b.styleid).next;
 		if(next != formatinfo.styleid) {
 			formatinfo.label.Clear();
 			formatinfo.styleid = next;
-			ApplyFormat(0, RichText::STYLE|RichText::NEWPAGE|RichText::LABEL|RichText::HEADER_QTF|RichText::FOOTER_QTF);
+			ApplyFormat(0, RichText::STYLE|RichText::NEWPAGE|RichText::LABEL|RichText::NEWHDRFTR);
 			return;
 		}
 	}

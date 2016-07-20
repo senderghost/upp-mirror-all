@@ -37,6 +37,7 @@ void RichTxt::Sync0(const Para& pp, int parti, const RichContext& rc) const
 	pp.keep = p.format.keep;
 	pp.keepnext = p.format.keepnext;
 	pp.orphan = p.format.orphan;
+	pp.newhdrftr = p.format.newhdrftr;
 	pp.header_qtf = p.format.header_qtf;
 	pp.footer_qtf = p.format.footer_qtf;
 }
@@ -68,8 +69,18 @@ bool RichTxt::BreaksPage(PageY py, const Para& pp, int i, const Rect& page) cons
 void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 {
 	if(part[parti].Is<RichTable>()) {
+		const RichTable& tab = GetTable(parti);
+		if(rc.level == 0) {
+			if(tab.format.newhdrftr) {
+				rc.NewHeaderFooter(tab.format.header_qtf, tab.format.footer_qtf);
+				rc.Page();
+			}
+			else
+			if(tab.format.newpage)
+				rc.Page();
+		}
+		begin = rc;
 		rc.level++;
-		begin = rc; // TODO!!!
 		rc.py = GetTable(parti).GetHeight(rc);
 		rc.level--;
 	}
@@ -84,23 +95,20 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 		if(rc.page.Height() < 30000) {
 			int nbefore = 0;
 			int nline = 0;
-			begin = rc;
 			if(pp.keepnext && parti + 1 < part.GetCount() && part[parti + 1].Is<Para>()) {
 				Sync(parti + 1, rc);
 				const Para& p = part[parti + 1].Get<Para>();
 				nbefore = p.before + p.ruler;
 				nline   = p.linecy[0];
 			}
-			if(pp.header_qtf.GetCount() + pp.footer_qtf.GetCount() && rc.level == 0) {
+			if(pp.newhdrftr && rc.level == 0) {
 				rc.NewHeaderFooter(pp.header_qtf, pp.footer_qtf);
 				rc.Page();
-				begin = rc;
 			}
 			else
-			if(pp.newpage || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height()) {
+			if(pp.newpage && rc.level == 0 || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
 				rc.Page();
-				begin = rc;
-			}
+			begin = rc;
 			rc.py.y += pp.before + pp.ruler;
 			if(rc.py.y + pp.cy < rc.page.bottom)
 				rc.py.y += pp.cy;
@@ -126,8 +134,9 @@ RichContext RichTxt::GetAdvanced(int parti, const RichContext& rc, RichContext& 
 	return r;
 }
 
-RichContext RichTxt::GetPartContext(int parti, const RichContext& rc0, RichContext& begin) const
+RichContext RichTxt::GetPartContext(int parti, const RichContext& rc0) const
 {
+	RichContext begin;
 	RichContext rc = rc0;
 	for(int i = 0; i < parti; i++)
 		Advance(i, rc, begin);
@@ -161,8 +170,9 @@ void RichTxt::Paint(PageDraw& pw, RichContext& rc, const PaintInfo& _pi) const
 		if(part[parti].Is<RichTable>()) {
 			pi.tablesel--;
 			const RichTable& tab = GetTable(parti);
-			tab.Paint(pw, rc, pi);
-			rc.py = tab.GetHeight(rc);
+			RichContext begin;
+			Advance(parti, rc, begin);
+			tab.Paint(pw, begin, pi);
 			pi.tablesel -= tab.GetTableCount();
 		}
 		else {

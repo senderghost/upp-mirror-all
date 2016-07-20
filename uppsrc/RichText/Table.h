@@ -50,14 +50,15 @@ public:
 class RichTable : DeepCopyOption<RichTable> {
 public:
 	struct Format {
-		int   before, lm, rm, after;
-		int   frame;
-		Color framecolor;
-		int   grid;
-		Color gridcolor;
+		int    before, lm, rm, after;
+		int    frame;
+		Color  framecolor;
+		int    grid;
+		Color  gridcolor;
 		WithDeepCopy< Vector<int> > column;
-		int   header;
-		bool  keep;
+		int    header;
+		bool   keep, newpage, newhdrftr;
+		String header_qtf, footer_qtf;
 
 		Format();
 	};

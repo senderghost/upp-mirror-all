@@ -126,10 +126,8 @@ void RichTxt::FormatInfo::Combine(const RichPara::Format& fmt)
 		paravalid &= ~RULERINK;
 	if(rulerstyle != fmt.rulerstyle)
 		paravalid &= ~RULERSTYLE;
-	if(header_qtf != fmt.header_qtf)
-		paravalid &= ~HEADER_QTF;
-	if(footer_qtf != fmt.footer_qtf)
-		paravalid &= ~FOOTER_QTF;
+	if(newhdrftr != fmt.newhdrftr)
+		paravalid &= ~NEWHDRFTR;
 }
 
 void RichTxt::FormatInfo::ApplyTo(RichPara::CharFormat& fmt) const
@@ -215,10 +213,11 @@ void RichTxt::FormatInfo::ApplyTo(RichPara::Format& fmt) const
 		fmt.rulerink = rulerink;
 	if(paravalid & RULERSTYLE)
 		fmt.rulerstyle = rulerstyle;
-	if(paravalid & HEADER_QTF)
+	if(paravalid & NEWHDRFTR) {
+		fmt.newhdrftr = newhdrftr;
 		fmt.header_qtf = header_qtf;
-	if(paravalid & FOOTER_QTF)
 		fmt.footer_qtf = footer_qtf;
+	}
 }
 
 END_UPP_NAMESPACE

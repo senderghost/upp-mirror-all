@@ -136,6 +136,7 @@ private:
 	bool     keepindent;
 	Font     font;
 	bool     modified;
+	String   header_qtf, footer_qtf;
 
 	RichPara::NumberFormat GetNumbering();
 	bool                   IsNumbering();
@@ -151,6 +152,9 @@ public:
 	bool  IsChanged() const                          { return IsModified() || modified; }
 	void  EnableNumbering();
 	void  SetupIndent();
+	void  EditHdrFtr();
+	void  NewHdrFtr();
+	void  SyncHdrFtr();
 
 	ParaFormatting();
 };

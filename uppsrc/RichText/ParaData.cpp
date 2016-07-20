@@ -171,7 +171,7 @@ RichPara::Format::Format()
 	rulerink = Black;
 	rulerstyle = RULER_SOLID;
 	bullet = 0;
-	keep = newpage = keepnext = orphan = false;
+	keep = newpage = keepnext = orphan = newhdrftr = false;
 	tabsize = 296;
 	memset(number, 0, sizeof(number));
 	reset_number = false;
@@ -341,8 +341,7 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 	if(format.ruler != style.ruler)             pattr |= 0x10000;
 	if(format.rulerink != style.rulerink)       pattr |= 0x20000;
 	if(format.rulerstyle != style.rulerstyle)   pattr |= 0x40000;
-	if(!IsNull(format.header_qtf))              pattr |= 0x80000;
-	if(!IsNull(format.footer_qtf))              pattr |= 0x100000;
+	if(format.newhdrftr != style.newhdrftr)     pattr |= 0x80000;
 	
 	out.Put32(pattr);
 	if(pattr & 1)      out.Put16(format.align);
@@ -392,8 +391,14 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 	if(pattr & 0x40000)
 		out.Put16(format.rulerstyle);
 
-	if(pattr & 0x80000)   { String t = format.header_qtf; out % t; }
-	if(pattr & 0x100000)  { String t = format.footer_qtf; out % t; }
+	if(pattr & 0x80000) {
+		out.Put(format.newhdrftr);
+		if(format.newhdrftr) {
+			String t = format.header_qtf;
+			String f = format.footer_qtf;
+			out % t % f;
+		}
+	}
 
 	obj.Clear();
 	CharFormat cf = style;
@@ -620,8 +625,11 @@ void RichPara::Unpack(const String& data, const Array<RichObject>& obj,
 	if(pattr & 0x40000)
 		format.rulerstyle = in.Get16();
 
-	if(pattr & 0x80000)   { in % format.header_qtf; }
-	if(pattr & 0x100000)  { in % format.footer_qtf; }
+	if(pattr & 0x80000) {
+		format.newhdrftr = in.Get();
+		if(format.newhdrftr)
+			in % format.header_qtf % format.footer_qtf;
+	}
 
 	part.Clear();
 	int oi = 0;

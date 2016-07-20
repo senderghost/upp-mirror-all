@@ -129,10 +129,8 @@ void QTFEncodeParaFormat(String& qtf, const RichPara::Format& format, const Rich
 	}
 	if(!IsEmpty(format.label))
 		qtf << ':' << DeQtf(format.label) << ':';
-	if(format.header_qtf.GetCount())
-		qtf << "tH" << format.header_qtf << "^^";
-	if(format.footer_qtf.GetCount())
-		qtf << "tF" << format.footer_qtf << "^^";
+	if(style.newhdrftr != format.newhdrftr)
+		qtf << "tP" << format.header_qtf << "^^" << format.footer_qtf << "^^";
 
 	if(NumberingDiffers(style, format)) {
 		if(format.before_number != style.before_number) {
@@ -394,7 +392,11 @@ void QTFEncodeTxt(String& qtf, const RichTxt& text, const RichStyles& styles, co
 			FmtNumber(qtf, 'A', d.after, f.after);
 			FmtNumber(qtf, 'f', d.frame, f.frame);
 			if(f.keep)
-				qtf << "K";
+				qtf << 'K';
+			if(f.newpage)
+				qtf << 'P';
+			if(f.newhdrftr)
+				qtf << 'T' << f.header_qtf << "^^" << f.footer_qtf << "^^";
 			if(f.framecolor != d.framecolor)
 				qtf << 'F' << QtfFormat(f.framecolor);
 			FmtNumber(qtf, 'g', d.grid, f.grid);

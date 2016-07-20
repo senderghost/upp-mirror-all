@@ -10,7 +10,7 @@ RichTable::Format::Format()
 	framecolor = Black;
 	before = after = lm = rm = 0;
 	header = 0;
-	keep = false;
+	keep = newpage = newhdrftr = false;
 }
 
 #include "RichText.h"

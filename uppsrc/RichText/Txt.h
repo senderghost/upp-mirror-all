@@ -40,8 +40,7 @@ public:
 		RULER     = 0x00004000,
 		RULERINK  = 0x00002000,
 		RULERSTYLE= 0x00001000,
-		HEADER_QTF= 0x00000800,
-		FOOTER_QTF= 0x00000400,
+		NEWHDRFTR = 0x00000800,
 	};
 
 	struct FormatInfo : RichPara::Format {
@@ -86,6 +85,7 @@ protected:
 		mutable Bits          spellerrors;
 		mutable bool          checked;
 		mutable bool          haspos;
+		mutable bool          newhdrftr;
 		mutable String        header_qtf, footer_qtf;
 		One<RichPara::NumberFormat> number;
 
@@ -138,8 +138,8 @@ protected:
 	bool        BreaksPage(PageY py, const Para& pp, int i, const Rect& page) const;
 	void        Advance(int parti, RichContext& rc, RichContext& begin) const;
 	RichContext GetAdvanced(int parti, const RichContext& rc, RichContext& begin) const;
-	RichContext GetPartContext(int parti, const RichContext& rc0, RichContext& begin) const;
-	PageY       GetPartPageY(int parti, const RichContext& rc) const { RichContext dummy; return GetPartContext(parti, rc, dummy).py; }
+	RichContext GetPartContext(int parti, const RichContext& rc0) const;
+	PageY       GetPartPageY(int parti, const RichContext& rc) const     { return GetPartContext(parti, rc).py; }
 
 	struct ParaOp {
 		virtual bool operator()(RichTxt::Para& p) = 0;
