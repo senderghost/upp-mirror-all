@@ -146,7 +146,7 @@ private:
 	typedef ParaFormatting CLASSNAME;
 
 public:
-	void  Set(int unit, const RichText::FormatInfo& formatinfo);
+	void  Set(int unit, const RichText::FormatInfo& formatinfo, bool baselevel = false);
 	dword Get(RichText::FormatInfo& formatinfo);
 	void  SetFont(Font fnt)                          { font = fnt; }
 	bool  IsChanged() const                          { return IsModified() || modified; }

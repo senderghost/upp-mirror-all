@@ -265,7 +265,7 @@ struct RichPara {
 	void        GetRichPos(RichPos& rp, int pos) const;
 
 	Lines       FormatLines(int cx) const;
-	void        Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi, const Number& n, const Bits& spellerror) const;
+	void        Paint(PageDraw& pw, const Rect& page, PageY py, const PaintInfo& pi, const Number& n, const Bits& spellerror, bool baselevel) const;
 	RichCaret   GetCaret(int pos, const Rect& page, PageY py) const;
 	int         GetPos(int x, PageY y, const Rect& page, PageY py) const;
 	void        GatherLabels(Vector<RichValPos>& info, const Rect& page, PageY py, int pos) const;

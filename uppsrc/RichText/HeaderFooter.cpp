@@ -44,7 +44,7 @@ void RichContext::NewHeaderFooter(const String& header_qtf_, const String& foote
 
 RichContext RichText::Context(const Rect& page, PageY py, const String& header_qtf, const String& footer_qtf) const
 {
-	RichContext rc(style);
+	RichContext rc(style, this);
 	rc.page = page;
 	rc.py = py;
 	rc.NewHeaderFooter(header_qtf, footer_qtf);

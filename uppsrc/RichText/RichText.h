@@ -360,18 +360,20 @@ typedef ArrayMap<Uuid, RichStyle> RichStyles;
 const RichStyle& GetStyle(const RichStyles& s, const Uuid& id);
 int   FindStyleWithName(const RichStyles& style, const String& name);
 
+class RichText;
+
 struct RichContext {
+	const RichText   *text;
 	const RichStyles *styles;
 	String            header_qtf, footer_qtf;
 	int               header_cy, footer_cy;
 	Rect              page;
 	PageY             py;
-	int               level;
 
 	void              NewHeaderFooter(const String& header_qtf, const String& footer_qtf);
 	void              Page() { py.page++; py.y = page.top; }
 
-	RichContext(const RichStyles& styles) : styles(&styles) { level = 0; header_cy = footer_cy = 0; }
+	RichContext(const RichStyles& styles, const RichText *text) : styles(&styles), text(text) { header_cy = footer_cy = 0; }
 	RichContext() {}
 };
 

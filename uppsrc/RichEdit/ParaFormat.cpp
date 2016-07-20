@@ -14,7 +14,7 @@ struct ParaFormatDlg : public WithParaFormatLayout<TopWindow> {
 void RichEdit::ParaFormat()
 {
 	ParaFormatDlg d;
-	d.para.Set(unit, formatinfo);
+	d.para.Set(unit, formatinfo, !IsSelection() && cursorp.level == 0);
 	if(d.Execute() != IDOK || !d.para.IsChanged())
 		return;
 	dword v = d.para.Get(formatinfo);

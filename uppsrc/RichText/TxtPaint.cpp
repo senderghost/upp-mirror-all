@@ -70,7 +70,7 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 {
 	if(part[parti].Is<RichTable>()) {
 		const RichTable& tab = GetTable(parti);
-		if(rc.level == 0) {
+		if(rc.text == this) {
 			if(tab.format.newhdrftr) {
 				rc.NewHeaderFooter(tab.format.header_qtf, tab.format.footer_qtf);
 				rc.Page();
@@ -80,9 +80,7 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 				rc.Page();
 		}
 		begin = rc;
-		rc.level++;
 		rc.py = GetTable(parti).GetHeight(rc);
-		rc.level--;
 	}
 	else {
 		Sync(parti, rc);
@@ -101,12 +99,12 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 				nbefore = p.before + p.ruler;
 				nline   = p.linecy[0];
 			}
-			if(pp.newhdrftr && rc.level == 0) {
+			if(pp.newhdrftr && rc.text == this) {
 				rc.NewHeaderFooter(pp.header_qtf, pp.footer_qtf);
 				rc.Page();
 			}
 			else
-			if(pp.newpage && rc.level == 0 || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
+			if(pp.newpage && rc.text == this || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
 				rc.Page();
 			begin = rc;
 			rc.py.y += pp.before + pp.ruler;
@@ -196,7 +194,7 @@ void RichTxt::Paint(PageDraw& pw, RichContext& rc, const PaintInfo& _pi) const
 					pp.spellerrors.Clear();
 				}
 				if(IsPainting(pw, pi.zoom, rc.page, begin.py, next.py))
-					p.Paint(pw, rc.page, begin.py, pi, n, pp.spellerrors);
+					p.Paint(pw, rc.page, begin.py, pi, n, pp.spellerrors, rc.text == this);
 			}
 			rc = next;
 		}

@@ -105,7 +105,7 @@ struct RichEditTableProperties : WithTablePropertiesLayout<TopWindow> {
 	
 	void SyncHdrFtr()
 	{
-		hdrftr.Enable(newhdrftr);
+		hdrftr.Enable(newhdrftr && newhdrftr.IsEnabled());
 	}
 	
 	typedef RichEditTableProperties CLASSNAME;
@@ -149,6 +149,9 @@ void RichEdit::TableProps()
 	dlg.footer_qtf = fmt.footer_qtf;
 	r(dlg.gridcolor, fmt.gridcolor);
 	dlg.SyncHdrFtr();
+	dlg.newpage.Enable(cursorp.level == 1);
+	dlg.newhdrftr.Enable(cursorp.level == 1);
+	dlg.hdrftr.Enable(cursorp.level == 1);
 	for(;;) {
 		switch(dlg.Run()) {
 		case IDCANCEL:

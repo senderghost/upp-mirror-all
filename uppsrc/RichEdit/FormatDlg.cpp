@@ -80,11 +80,14 @@ void ParaFormatting::NewHdrFtr()
 
 void ParaFormatting::SyncHdrFtr()
 {
-	hdrftr.Enable(newhdrftr);
+	hdrftr.Enable(newhdrftr && newhdrftr.IsEnabled());
 }
 
-void ParaFormatting::Set(int unit, const RichText::FormatInfo& formatinfo)
+void ParaFormatting::Set(int unit, const RichText::FormatInfo& formatinfo, bool baselevel)
 {
+	page.Enable(baselevel);
+	newhdrftr.Enable(baselevel);
+	hdrftr.Enable(baselevel);
 	font = formatinfo;
 	ruler.Set(unit, RichText::RULER & formatinfo.paravalid ? formatinfo.ruler : Null);
 	before.Set(unit, RichText::BEFORE & formatinfo.paravalid ? formatinfo.before : Null);

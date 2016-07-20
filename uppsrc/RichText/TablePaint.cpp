@@ -28,7 +28,7 @@ bool RichTable::RowPaint(PageDraw& pw, const RichStyles& st, const Layout& tab,
                           int i, int ny, const Rect& pg, VectorMap<int, Rect>& frr,
                           PaintInfo& pi, int pd, bool sel) const
 {
-	RichContext rc(st);
+	RichContext rc(st, NULL);
 	const Array<RichCell>& row = cell[i];
 	const PaintRow& pr = tab[i];
 	rc.py = pr.py;
