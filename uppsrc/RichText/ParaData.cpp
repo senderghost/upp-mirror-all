@@ -37,7 +37,6 @@ RichPara::~RichPara()
 				cache.SetCount(i);
 				break;
 			}
-			i++;
 		}
 	}
 }
@@ -172,7 +171,7 @@ RichPara::Format::Format()
 	rulerink = Black;
 	rulerstyle = RULER_SOLID;
 	bullet = 0;
-	keep = newpage = keepnext = orphan = false;
+	keep = newpage = keepnext = orphan = newhdrftr = false;
 	tabsize = 296;
 	memset(number, 0, sizeof(number));
 	reset_number = false;
@@ -275,7 +274,7 @@ void RichPara::Cat(Id field, const String& param, const RichPara::CharFormat& f)
 	VectorMap<String, Value> dummy;
 	FieldType *ft = fieldtype().Get(field, NULL);
 	if(ft)
-		p.fieldpart ^= ft->Evaluate(param, dummy, f);
+		p.fieldpart = pick(ft->Evaluate(param, dummy, f));
 }
 
 struct TabLess {
@@ -342,6 +341,8 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 	if(format.ruler != style.ruler)             pattr |= 0x10000;
 	if(format.rulerink != style.rulerink)       pattr |= 0x20000;
 	if(format.rulerstyle != style.rulerstyle)   pattr |= 0x40000;
+	if(format.newhdrftr != style.newhdrftr)     pattr |= 0x80000;
+	
 	out.Put32(pattr);
 	if(pattr & 1)      out.Put16(format.align);
 	if(pattr & 2)      out.Put16(format.before);
@@ -389,6 +390,16 @@ String RichPara::Pack(const RichPara::Format& style, Array<RichObject>& obj) con
 	}
 	if(pattr & 0x40000)
 		out.Put16(format.rulerstyle);
+
+	if(pattr & 0x80000) {
+		out.Put(format.newhdrftr);
+		if(format.newhdrftr) {
+			String t = format.header_qtf;
+			String f = format.footer_qtf;
+			out % t % f;
+		}
+	}
+
 	obj.Clear();
 	CharFormat cf = style;
 	if(part.GetCount())
@@ -613,6 +624,13 @@ void RichPara::Unpack(const String& data, const Array<RichObject>& obj,
 		format.rulerink.Serialize(in);
 	if(pattr & 0x40000)
 		format.rulerstyle = in.Get16();
+
+	if(pattr & 0x80000) {
+		format.newhdrftr = in.Get();
+		if(format.newhdrftr)
+			in % format.header_qtf % format.footer_qtf;
+	}
+
 	part.Clear();
 	int oi = 0;
 	UnpackParts(in, style, part, obj, oi);
@@ -642,15 +660,13 @@ WString RichPara::GetText() const
 	return r;
 }
 
-typedef VectorMap<Id, RichPara::FieldType *> FieldTypeMap;
-GLOBAL_VAR(FieldTypeMap, fieldtype0)
-
-const VectorMap<Id, RichPara::FieldType *>& RichPara::fieldtype()
+VectorMap<Id, RichPara::FieldType *>& RichPara::fieldtype0()
 {
-	return fieldtype0();
+	static VectorMap<Id, RichPara::FieldType *> h;
+	return h;
 }
 
-void RichPara::Register(Id id, FieldType& ft) init_
+void RichPara::Register(Id id, FieldType& ft)
 {
 	AssertST();
 	fieldtype0().GetAdd(id, &ft);
@@ -664,7 +680,7 @@ bool RichPara::EvaluateFields(VectorMap<String, Value>& vars)
 		if(p.field) {
 			FieldType *f = fieldtype().Get(p.field, NULL);
 			if(f) {
-				p.fieldpart ^= f->Evaluate(p.fieldparam, vars, p.format);
+				p.fieldpart = pick(f->Evaluate(p.fieldparam, vars, p.format));
 				b = true;
 			}
 		}
