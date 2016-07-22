@@ -1,8 +1,8 @@
 class RichText : public RichTxt, public DeepCopyOption<RichText> {
-	RichStyles style;
-	String     footer_hack; // ugly hack
-
-	bool       nolinks;
+	mutable Mutex mutex; // To cover all those laze evaluation scenarios
+	RichStyles    style;
+	String        footer_hack; // ugly hack
+	bool          nolinks; // another ugly hack
 
 	void       Init();
 
@@ -36,11 +36,11 @@ public:
 
 	RichPara              Get(int i) const                     { return RichTxt::Get(i, style); }
 	void                  Cat(const RichPara& p)               { RichTxt::Cat(p, style); }
-	void                  CatPick(RichText pick_ p);
+	void                  CatPick(RichText rval_ p);
 	using                 RichTxt::CatPick;
 
-	RichContext           Context(const Rect& page, PageY py, const String& header_qtf, const String& footer_qtf) const;
-	RichContext           Context(const Rect& page, PageY py) const { return Context(page, py, header_qtf, footer_qtf); }
+	RichContext           Context(const Rect& page, PageY py, RichText *header, RichText *footer) const;
+	RichContext           Context(const Rect& page, PageY py) const { return Context(page, py, ~header, ~footer); }
 	RichContext           Context(const Rect& page) const { return Context(page, PageY(0, 0)); }
 
 	RichPos               GetRichPos(int pos, int maxlevel = INT_MAX) const;
@@ -139,7 +139,8 @@ public:
 
 	RichText()            { Init(); }
 	RichText(const RichText& x, int);
-	RichText(RichTxt pick_ x, RichStyles pick_ st);
-
-	rval_default(RichText);
+	RichText(RichText rval_ x);
+	RichText(RichTxt rval_ x, RichStyles rval_ st);
+	
+	RichText& operator=(RichText rval_ x);
 };

@@ -38,19 +38,21 @@ void RichTxt::Sync0(const Para& pp, int parti, const RichContext& rc) const
 	pp.keepnext = p.format.keepnext;
 	pp.orphan = p.format.orphan;
 	pp.newhdrftr = p.format.newhdrftr;
-	pp.header_qtf = p.format.header_qtf;
-	pp.footer_qtf = p.format.footer_qtf;
+	if(~pp.header_qtf != ~p.format.header_qtf) { // we compare just pointers
+		pp.header_qtf = p.format.header_qtf;
+		Upp::SetQTF(pp.header, pp.header_qtf);
+	}
+	if(~pp.footer_qtf != ~p.format.footer_qtf) { // we compare just pointers
+		pp.footer_qtf = p.format.footer_qtf;
+		Upp::SetQTF(pp.footer, pp.footer_qtf);
+	}
 }
 
 void RichTxt::Sync(int parti, const RichContext& rc) const {
 	ASSERT(part[parti].Is<Para>());
 	const Para& pp = part[parti].Get<Para>();
 	if(rc.page.Width() != pp.ccx)
-		pp.dirty.Invalidate();
-	if(pp.dirty.BeginUpdate()) {
 		Sync0(pp, parti, rc);
-		pp.dirty.EndUpdate();
-	}
 }
 
 bool RichTxt::BreaksPage(PageY py, const Para& pp, int i, const Rect& page) const
@@ -60,8 +62,7 @@ bool RichTxt::BreaksPage(PageY py, const Para& pp, int i, const Rect& page) cons
 	if(linecy + py.y > page.bottom)
 		return true;
 	if(pp.orphan || pp.linecy.GetCount() < 2) return false;
-	if((i == 0 || i == pp.linecy.GetCount() - 2) &&
-	   py.y + linecy + pp.linecy[i + 1] > page.bottom)
+	if((i == 0 || i == pp.linecy.GetCount() - 2) &&  py.y + linecy + pp.linecy[i + 1] > page.bottom)
 		return true;
 	return false;
 }
@@ -70,15 +71,13 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 {
 	if(part[parti].Is<RichTable>()) {
 		const RichTable& tab = GetTable(parti);
-		if(rc.text == this) {
-			if(tab.format.newhdrftr) {
-				rc.NewHeaderFooter(tab.format.header_qtf, tab.format.footer_qtf);
-				rc.Page();
-			}
-			else
-			if(tab.format.newpage)
-				rc.Page();
+		if(tab.format.newhdrftr && rc.text == this) {
+			rc.NewHeaderFooter(~tab.header, ~tab.footer);
+			rc.Page();
 		}
+		else
+		if(tab.format.newpage)
+			rc.Page();
 		begin = rc;
 		rc.py = GetTable(parti).GetHeight(rc);
 	}
@@ -100,11 +99,11 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 				nline   = p.linecy[0];
 			}
 			if(pp.newhdrftr && rc.text == this) {
-				rc.NewHeaderFooter(pp.header_qtf, pp.footer_qtf);
+				rc.NewHeaderFooter(~pp.header, ~pp.footer);
 				rc.Page();
 			}
 			else
-			if(pp.newpage && rc.text == this || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
+			if(pp.newpage || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())
 				rc.Page();
 			begin = rc;
 			rc.py.y += pp.before + pp.ruler;
@@ -120,8 +119,11 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 			if(rc.py.y > rc.page.bottom)
 				rc.Page();
 		}
-		else
-			rc.py.y += pp.before + pp.cy + pp.after + pp.ruler;
+		else {
+			rc.py.y += pp.before;
+			begin = rc;
+			rc.py.y += pp.cy + pp.after + pp.ruler;
+		}
 	}
 }
 

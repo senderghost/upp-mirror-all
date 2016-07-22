@@ -7,7 +7,6 @@ void RichTxt::Para::Invalidate()
 	INTERLOCKED {
 		static int64 ss;
 		updateserial = ++ss;
-		dirty.Invalidate();
 		ccx = -1;
 	}
 }
@@ -38,7 +37,6 @@ void RichTxt::Invalidate()
 {
 	length = -1;
 	tabcount = -1;
-	py.Clear();
 }
 
 int RichTxt::GetPartLength(int pi) const
@@ -159,7 +157,7 @@ void RichTxt::RemovePart(int parti)
 	Invalidate();
 }
 
-void RichTxt::SetPick(int i, RichTable pick_ p)
+void RichTxt::SetPick(int i, RichTable rval_ p)
 {
 	const_cast<RichTable&>(p).Normalize();
 	part.At(i).Create<RichTable>() = pick(p);
@@ -167,7 +165,7 @@ void RichTxt::SetPick(int i, RichTable pick_ p)
 	SetRefresh(i);
 }
 
-void RichTxt::CatPick(RichTable pick_ table)
+void RichTxt::CatPick(RichTable rval_ table)
 {
 	SetPick(GetPartCount(), pick(table));
 }
@@ -464,7 +462,6 @@ RichTxt::RichTxt(const RichTxt& src, int)
 	part <<= src.part;
 	length = src.length;
 	tabcount = src.tabcount;
-	py.Clear();
 }
 
 #ifdef _DEBUG

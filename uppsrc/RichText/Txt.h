@@ -69,7 +69,6 @@ protected:
 		int                   length;
 		String                content;
 		Array<RichObject>     object;
-		mutable LazyUpdate    dirty;
 		int64                 updateserial;
 		mutable int           ccx;
 		mutable int           cy;
@@ -87,6 +86,7 @@ protected:
 		mutable bool          haspos;
 		mutable bool          newhdrftr;
 		mutable String        header_qtf, footer_qtf;
+		mutable One<RichText> header, footer;
 		One<RichPara::NumberFormat> number;
 
 		void Invalidate();
@@ -102,9 +102,9 @@ protected:
 
 	Vector<Part>           part;
 	String                 header_qtf, footer_qtf;
+	mutable One<RichText>  header, footer;
 	mutable int            length;
 	mutable int            tabcount;
-	mutable Vector<PageY>  py;
 
 	enum {
 		NONE, SPARA, PARA, FROM, ALL
@@ -222,8 +222,8 @@ public:
 
 	void                  ClearSpelling();
 
-	void                  SetPick(int parti, RichTable pick_ table);
-	void                  CatPick(RichTable pick_ table);
+	void                  SetPick(int parti, RichTable rval_ table);
+	void                  CatPick(RichTable rval_ table);
 	void                  Set(int parai, const RichPara& p, const RichStyles& s);
 	void                  Insert(int parai, const RichPara& p, const RichStyles& s);
 	void                  Cat(const RichPara& p, const RichStyles& s) { Set(GetPartCount(), p, s); }
