@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	LZ3_2.cpp;
+
+mainconfig
+	"" = "";
+
