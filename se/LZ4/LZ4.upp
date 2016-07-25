@@ -2,7 +2,8 @@ uses
 	Core,
 	plugin/lz4,
 	Core,
-	plugin/lz4;
+	plugin/lz4,
+	plugin/lzma;
 
 file
 	LZ4.cpp;

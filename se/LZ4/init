@@ -2,4 +2,5 @@
 #define _LZ4_icpp_init_stub
 #include "Core/init"
 #include "plugin/lz4/init"
+#include "plugin/lzma/init"
 #endif

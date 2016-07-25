@@ -1,0 +1,4 @@
+#ifndef _Bench1MB_icpp_init_stub
+#define _Bench1MB_icpp_init_stub
+#include "Core/init"
+#endif

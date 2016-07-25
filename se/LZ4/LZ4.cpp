@@ -13,8 +13,8 @@ CONSOLE_APP_MAIN
 			String s;
 			LZ4CompressStream lz4;
 			StringStream ss;
-			lz4.Open(ss);
 			lz4.Concurrent(co);
+			lz4.Open(ss);
 			while(!in.IsEof()) {
 				if(pass) {
 					s.Cat(in.Term());
@@ -31,11 +31,13 @@ CONSOLE_APP_MAIN
 			DDUMP(lz4.IsError());
 			
 			String c = ss.GetResult();
-			String d = LZ4Decompress(c);
 			
-			DDUMP(c.GetCount());
 			DDUMP(s.GetCount());
+			DDUMP(c.GetCount());
+
+			String d = LZ4Decompress(c);
 			DDUMP(d.GetCount());
+
 			
 			DDUMPHEX(s.Mid(0, 100));
 			DDUMPHEX(d.Mid(0, 100));

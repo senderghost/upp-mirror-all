@@ -1,0 +1,11 @@
+uses
+	Core,
+	plugin/lz4;
+
+file
+	lz4benchmark.cpp;
+
+mainconfig
+	"" = "MT",
+	"" = "COMPLEXLZ4 MT";
+

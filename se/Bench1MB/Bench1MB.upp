@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	Bench1MB.cpp;
+
+mainconfig
+	"" = "";
+
