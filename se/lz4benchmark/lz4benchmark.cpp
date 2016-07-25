@@ -9,7 +9,7 @@ CONSOLE_APP_MAIN
 	
 	RDUMP(sizeof(ConditionVariable));
 
-	FileIn in("C:/u/aws.data/BT2_Full2.blb");
+	FileIn in("C:/u/aws.data/BT2_Full.blb");
 #ifdef _DEBUG0
 	String src = in.Get(32 * 1024*1024);
 #else
