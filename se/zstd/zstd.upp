@@ -1,0 +1,11 @@
+uses
+	Core,
+	plugin/zstd,
+	plugin/lz4;
+
+file
+	zstd.cpp;
+
+mainconfig
+	"" = "MT";
+

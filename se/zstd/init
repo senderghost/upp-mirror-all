@@ -1,0 +1,6 @@
+#ifndef _zstd_icpp_init_stub
+#define _zstd_icpp_init_stub
+#include "Core/init"
+#include "plugin/zstd/init"
+#include "plugin/lz4/init"
+#endif
