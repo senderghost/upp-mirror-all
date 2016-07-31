@@ -1549,6 +1549,27 @@ GetLineCy(r) > y]).&]
 [s7; [*C@3 y]-|vertical pixel coordinate to locate&]
 [s7; [*/ Return value]-|zero`-based row number or `-1 when not found&]
 [s3; &]
+[s4;%- &]
+[s5;:Upp`:`:ArrayCtrl`:`:GetCellRect`(int`,int`)const:%- [_^Upp`:`:Rect^ Rect]_[* GetCell
+Rect]([@(0.0.255) int]_[*@3 i], [@(0.0.255) int]_[*@3 col])_[@(0.0.255) const]&]
+[s2; Returns the view Rect of cell at line [%-*@3 i] and column [%-*@3 col].&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:ArrayCtrl`:`:GetCellRectM`(int`,int`)const:%- [_^Upp`:`:Rect^ Rect]_[* GetCel
+lRectM]([@(0.0.255) int]_[*@3 i], [@(0.0.255) int]_[*@3 col])_[@(0.0.255) const]&]
+[s2; Similar to GetCellRect, however left and right of Rect are reduced 
+by corresponding margin.&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:ArrayCtrl`:`:GetScreenCellRect`(int`,int`)const:%- [_^Upp`:`:Rect^ Rect]_[* G
+etScreenCellRect]([@(0.0.255) int]_[*@3 i], [@(0.0.255) int]_[*@3 col])_[@(0.0.255) const]&]
+[s2; Similar to GetCellRect, but with screen coordinates.&]
+[s3; &]
+[s4;%- &]
+[s5;:Upp`:`:ArrayCtrl`:`:GetScreenCellRectM`(int`,int`)const:%- [_^Upp`:`:Rect^ Rect]_[* G
+etScreenCellRectM]([@(0.0.255) int]_[*@3 i], [@(0.0.255) int]_[*@3 col])_[@(0.0.255) const]&]
+[s2; Similar to GetCellRectM, but with screen coordinates.&]
+[s3; &]
 [s4; &]
 [s5;:ArrayCtrl`:`:GetClickColumn`(`)const: [@(0.0.255) int]_[* GetClickColumn]()_[@(0.0.255) c
 onst]&]

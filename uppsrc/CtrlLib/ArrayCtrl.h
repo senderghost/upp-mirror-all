@@ -269,8 +269,6 @@ private:
 	int    GetClickColumn(int ii, Point p);
 	void   ClickColumn(Point p);
 	void   ClickSel(dword flags);
-	Rect   GetCellRect(int i, int col) const;
-	Rect   GetCellRectM(int i, int col) const;
 
 	Point           FindCellCtrl(Ctrl *c);
 	Ctrl           *SyncLineCtrls(int i, Ctrl *p = NULL);
@@ -575,6 +573,9 @@ public:
 	int        GetLineCy(int i) const;
 	int        GetTotalCy() const;
 	int        GetLineAt(int y) const;
+
+	Rect       GetCellRect(int i, int col) const;
+	Rect       GetCellRectM(int i, int col) const;
 
 	Rect       GetScreenCellRect(int i, int col) const;
 	Rect       GetScreenCellRectM(int i, int col) const;
