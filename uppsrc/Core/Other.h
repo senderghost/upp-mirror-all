@@ -1,11 +1,16 @@
 template <class T>
 T& Single() {
+#ifdef CPP_11
+	static T o;
+	return o;
+#else
 	static T *p;
 	ONCELOCK {
 		static T o;
 		p = &o;
 	}
 	return *p;
+#endif
 }
 
 int RegisterTypeNo__(const char *type);
