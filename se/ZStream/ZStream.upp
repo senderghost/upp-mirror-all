@@ -1,0 +1,13 @@
+uses
+	Core,
+	plugin/lz4,
+	plugin/lzma,
+	plugin/bz2,
+	plugin/zstd;
+
+file
+	ZStream.cpp;
+
+mainconfig
+	"" = "";
+

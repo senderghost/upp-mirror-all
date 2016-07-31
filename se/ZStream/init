@@ -1,0 +1,8 @@
+#ifndef _ZStream_icpp_init_stub
+#define _ZStream_icpp_init_stub
+#include "Core/init"
+#include "plugin/lz4/init"
+#include "plugin/lzma/init"
+#include "plugin/bz2/init"
+#include "plugin/zstd/init"
+#endif
