@@ -1,6 +1,6 @@
 #include "RichText.h"
 
-NAMESPACE_UPP
+namespace Upp {
 
 Color (*QTFColor[])() = {
 	Black, LtGray, White, Red, Green, Blue, LtRed, WhiteGray, LtCyan, Yellow
@@ -252,15 +252,14 @@ void RichQtfParser::EndPart()
 	}
 	else {
 		Flush();
-		bool b = paragraph.format.newpage;
-		if(breakpage)
-			paragraph.format.newpage = true;
 		if(table.GetCount())
 			table.Top().text.Cat(paragraph, target.GetStyles());
-		else
+		else {
+			if(breakpage)
+				paragraph.format.newpage = true;
 			target.Cat(paragraph);
-		paragraph.part.Clear();;
-		paragraph.format.newpage = b;
+		}
+		paragraph.part.Clear();
 		SetFormat();
 		breakpage = false;
 	}
@@ -843,6 +842,13 @@ void RichQtfParser::Parse(const char *qtf, int _accesskey)
 			Table().AddColumn(r);
 			while(Key(':'))
 				Table().AddColumn(ReadNumber());
+			if(breakpage) {
+				RichTable& tab = Table();
+				RichTable::Format tabformat = tab.GetFormat();
+				tabformat.newpage = true;
+				tab.SetFormat(tabformat);
+				breakpage = false;
+			}
 			TableFormat();
 			SetFormat();
 		}
@@ -1079,4 +1085,4 @@ QtfRichObject::QtfRichObject(const RichObject& o)
 	: obj(o)
 {}
 
-END_UPP_NAMESPACE
+}
