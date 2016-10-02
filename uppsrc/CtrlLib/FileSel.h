@@ -121,7 +121,7 @@ public:
 };
 
 bool Load(FileList& list, const String& dir, const char *patterns, bool dirs = false,
-          Event<bool, const String&, Image&> WhenIcon = CNULL,
+          Event<bool, const String&, Image&> WhenIcon = Null,
           FileSystemInfo& filesystem = StdFileSystemInfo(), const String& search = String(),
           bool hidden = true, bool hiddenfiles = true, bool lazyicons = false);
 void SortByName(FileList& list);

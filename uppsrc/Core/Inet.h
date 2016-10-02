@@ -457,7 +457,7 @@ public:
 	Event<const void *, int>  WhenContent;
 	Event<>                   WhenStart;
 	Event<>                   WhenDo;
-	Gate                      WhenAuthenticate;
+	Gate<>                    WhenAuthenticate;
 
 	HttpRequest&  MaxHeaderSize(int m)                   { max_header_size = m; return *this; }
 	HttpRequest&  MaxContentSize(int m)                  { max_content_size = m; return *this; }

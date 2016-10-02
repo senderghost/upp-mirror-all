@@ -344,11 +344,11 @@ public:
 	Event<>           WhenSel; // the most usual ArrayCtrl callbak
 
 	Event<>           WhenLeftDouble;
-	Event<Point>  WhenMouseMove;
+	Event<Point>      WhenMouseMove;
 	Event<>           WhenEnterKey;
 	Event<>           WhenLeftClick;
-	Event<Bar&>   WhenBar;
-	Gate              WhenAcceptRow;
+	Event<Bar&>       WhenBar;
+	Gate<>            WhenAcceptRow;
 	Event<>           WhenUpdateRow;
 	Event<>           WhenArrayAction;
 	Event<>           WhenStartEdit;

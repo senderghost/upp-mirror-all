@@ -25,7 +25,7 @@ public:
 	Stream                      *in;
 	Event<const void *, int>     Filter;
 	Event<>                      End;
-	Gate                         More;
+	Gate<>                       More;
 	void                         Out(const void *ptr, int size);
 	
 	Event<>                      WhenOut;

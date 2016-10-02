@@ -3009,7 +3009,7 @@ ArrayCtrl::ArrayCtrl() {
 	header.WhenScroll = THISBACK(HeaderScroll);
 	sb.WhenScroll = THISBACK(Scroll);
 	header.Moving();
-	WhenAcceptRow = true;
+	WhenAcceptRow = [] { return true; };
 	WhenBar = THISBACK(StdBar);
 	SetFrame(ViewFrame());
 	oddpaper = evenpaper = SColorPaper;

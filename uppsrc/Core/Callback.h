@@ -1,95 +1,5 @@
-enum CNULLer { CNULL };
+// Backward compatibility
 
-template<typename Res, typename... ArgTypes>
-class Function<Res(ArgTypes...)> : Moveable<Function<Res(ArgTypes...)>> {
-	struct WrapperBase {
-		Atomic  refcount;
-
-		virtual Res Execute(ArgTypes... args) = 0;
-		
-		WrapperBase() { refcount = 1; }
-		virtual ~WrapperBase() {}
-	};
-
-	template <class F>
-	struct Wrapper : WrapperBase {
-		F fn;
-		virtual Res Execute(ArgTypes... args) { return fn(args...); }
-
-		Wrapper(F&& fn) : fn(pick(fn)) {}
-	};
-
-	template <class F>
-	struct Wrapper2 : WrapperBase {
-		Function l;
-		F        fn;
-
-		virtual Res Execute(ArgTypes... args) { l(args...); return fn(args...); }
-
-		Wrapper2(const Function& l, F&& fn) : l(l), fn(pick(fn)) {}
-		Wrapper2(const Function& l, const F& fn) : l(l), fn(fn) {}
-	};
-
-	WrapperBase *ptr;
-	
-	static void Free(WrapperBase *ptr) {
-		if(ptr && AtomicDec(ptr->refcount) == 0)
-			delete ptr;
-	}
-	
-	void Copy(const Function& a) {
-		ptr = a.ptr;
-		if(ptr)
-			AtomicInc(ptr->refcount);
-	}
-	
-	void Pick(Function&& src) {
-		ptr = src.ptr;
-		src.ptr = NULL;
-	}
-
-public:
-	Function()                                 { ptr = NULL; }
-	Function(CNULLer)                          { ptr = NULL; }
-	
-	template <class F> Function(F fn)          { ptr = new Wrapper<F>(pick(fn)); }
-	
-	Function(const Function& src)              { Copy(src); }
-	Function& operator=(const Function& src)   { auto b = ptr; Copy(src); Free(b); return *this; }
-
-	Function(Function&& src)                   { Pick(pick(src)); }
-	Function& operator=(Function&& src)        { if(&src != this) { Free(ptr); ptr = src.ptr; src.ptr = NULL; } return *this; }
-	
-	Function Proxy() const                     { return [=] (ArgTypes... args) { return (*this)(args...); }; }
-
-	template <class F>
-	Function& operator<<(F fn)                 { if(!ptr) { Copy(fn); return *this; }
-	                                             WrapperBase *b = ptr; ptr = new Wrapper2<F>(*this, fn); Free(b); return *this; }
-
-	Function& operator<<(const Function& fn)   { if(!ptr) { Copy(fn); return *this; }
-	                                             WrapperBase *b = ptr; ptr = new Wrapper2<Function>(*this, fn); Free(b); return *this; }
-
-	Function& operator<<(Function&& fn)        { if(!ptr) { Pick(pick(fn)); return *this; }
-	                                             WrapperBase *b = ptr; ptr = new Wrapper2<Function>(*this, pick(fn)); Free(b); return *this; }
-
-	Res operator()(ArgTypes... args) const     { return ptr ? ptr->Execute(args...) : Res(); }
-	
-	operator bool() const                      { return ptr; }
-	void Clear()                               { Free(ptr); ptr = NULL; }
-
-	~Function()                                { Free(ptr); }
-
-	friend Function Proxy(const Function& a)   { return a.Proxy(); }
-	friend void Swap(Function& a, Function& b) { UPP::Swap(a.ptr, b.ptr); }
-};
-
-template <typename... ArgTypes>
-using Event = Function<void (ArgTypes...)>;
-
-template <typename... ArgTypes>
-using EventGate = Function<bool (ArgTypes...)>;
-
-// Rest of header contains backward compatibility routines:
 template <class... ArgTypes>
 class CallbackN : Moveable<CallbackN<ArgTypes...>> {
 	typedef Function<void (ArgTypes...)> Fn;
@@ -183,7 +93,7 @@ template <class P1, class P2, class P3, class P4, class P5> using Callback5 = Ca
 #define  Cb_ CallbackN
 #include "CallbackR.i"
 
-using Gate = GateN<>;
+using Gate0 = GateN<>;
 template <class P1> using Gate1 = GateN<P1>;
 template <class P1, class P2> using Gate2 = GateN<P1, P2>;
 template <class P1, class P2, class P3> using Gate3 = GateN<P1, P2, P3>;
