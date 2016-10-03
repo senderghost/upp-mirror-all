@@ -170,7 +170,7 @@ void XmlizeLang(XmlIO& xml, const char *tag, int& lang, const char *id)
 	XmlizeLangAttr(n, lang, id);
 }
 
-String StoreAsXML(Event<XmlIO> xmlize, const char *name)
+String DoStoreAsXML(Event<XmlIO> xmlize, const char *name)
 {
 	String n = Filter(name ? name : "app", CharFilterAlpha);
 	XmlNode node;
@@ -192,7 +192,7 @@ bool LoadFromXML0(Event<XmlIO> xmlize, const String& xml)
 	return true;
 }
 
-bool LoadFromXML(Event<XmlIO> xmlize, const String& xml)
+bool DoLoadFromXML(Event<XmlIO> xmlize, const String& xml)
 {
 	try {
 		return LoadFromXML0(xmlize, xml);
@@ -201,7 +201,7 @@ bool LoadFromXML(Event<XmlIO> xmlize, const String& xml)
 	return false;
 }
 
-bool TryLoadFromXML(Event<XmlIO> xmlize, const String& xml)
+bool DoTryLoadFromXML(Event<XmlIO> xmlize, const String& xml)
 {
 	return LoadFromXML0(xmlize, xml);
 }
@@ -213,17 +213,17 @@ static String sXMLFile(const char *file)
 
 bool StoreAsXMLFile(Event<XmlIO> xmlize, const char *name, const char *file)
 {
-	return SaveFile(sXMLFile(file), StoreAsXML(xmlize, name ? (String)name : GetExeTitle()));
+	return SaveFile(sXMLFile(file), DoStoreAsXML(xmlize, name ? (String)name : GetExeTitle()));
 }
 
 bool LoadFromXMLFile(Event<XmlIO> xmlize, const char *file)
 {
-	return LoadFromXML(xmlize, LoadFile(sXMLFile(file)));
+	return DoLoadFromXML(xmlize, LoadFile(sXMLFile(file)));
 }
 
 bool TryLoadFromXMLFile(Event<XmlIO> xmlize, const char *file)
 {
-	return TryLoadFromXML(xmlize, LoadFile(sXMLFile(file)));
+	return DoTryLoadFromXML(xmlize, LoadFile(sXMLFile(file)));
 }
 
 void StoreJsonValue(XmlIO& xio, const Value& v)
