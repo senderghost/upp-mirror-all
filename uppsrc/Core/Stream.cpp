@@ -41,6 +41,26 @@ void Stream::Seek(int64) {
 	NEVER();
 }
 
+int Stream::Skip(int size)
+{
+	int r = 0;
+	while(size) {
+		int n = min(rdlim - ptr, size);
+		if(n == 0) {
+			if(Get() < 0)
+				break;
+			r++;
+			size--;
+		}
+		else {
+			size -= n;
+			r += n;
+			ptr += n;
+		}
+	}
+	return r;
+}
+
 int64 Stream::GetSize() const {
 	return 0;
 }
