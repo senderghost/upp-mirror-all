@@ -45,7 +45,7 @@ int Stream::Skip(int size)
 {
 	int r = 0;
 	while(size) {
-		int n = min(rdlim - ptr, size);
+		int n = min(int(rdlim - ptr), size);
 		if(n == 0) {
 			if(Get() < 0)
 				break;

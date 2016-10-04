@@ -98,7 +98,7 @@ private:
 	bool          Next();
 	void          Fetch();
 
-public:	
+public:
 	bool Open(Stream& in);
 
 #ifdef _MULTITHREADED
