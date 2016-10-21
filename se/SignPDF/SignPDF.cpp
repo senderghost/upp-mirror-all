@@ -201,51 +201,13 @@ String Test3()
 	return out1.GetResult();
 }
 
-String GetP7Signature(const void *data, int length, const String& cert_pem, const String& pkey_pem)
-{
-	SslCertificate x509;
-	SslKey pkey;
-	if(!x509.Load(cert_pem))
-		return Null;
-	if(!pkey.Load(pkey_pem))
-		return Null;
-
-	SslStream in;
-	in.OpenBuffer((const char *)data, length);
-
-    PKCS7 *p7 = PKCS7_sign(x509, pkey, NULL, in, PKCS7_DETACHED|PKCS7_STREAM|PKCS7_BINARY);
-
-    if (!p7)
-        Error();
-
-	SslStream out;
-	out.CreateBuffer();
-
-	String r;
-    if (SMIME_write_PKCS7(out, p7, in, PKCS7_DETACHED|PKCS7_STREAM|PKCS7_BINARY)) {
-		SslStream out1;
-		out1.CreateBuffer();
-		i2d_PKCS7_bio(out1, p7);
-		r = out1.GetResult();
-    }
-  
-    PKCS7_free(p7);
-    
-	return r;
-}
-
-String GetP7Signature(const String& data, const String& cert_pem, const String& pkey_pem)
-{
-	return GetP7Signature(data, data.GetLength(), cert_pem, pkey_pem);
-}
-
 CONSOLE_APP_MAIN
 {
 	data = LoadFile(GetDataFile("SignPDF.cpp"));
 
 	String s = Test1();
 	ASSERT(s == Test2());
-	ASSERT(s == Test3());
+//	ASSERT(s == Test3());
 	ASSERT(s == GetP7Signature(data, LoadDataFile("server.crt"), LoadDataFile("server.key")));
 	
 	DDUMP(GetP7Signature(String(), LoadDataFile("server.crt"), LoadDataFile("server.key")).GetCount());
