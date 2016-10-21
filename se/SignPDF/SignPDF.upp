@@ -1,0 +1,13 @@
+uses
+	Core,
+	PdfDraw,
+	Core/SSL;
+
+file
+	server.crt,
+	server.key,
+	SignPDF.cpp;
+
+mainconfig
+	"" = "";
+

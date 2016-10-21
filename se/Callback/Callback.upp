@@ -2,9 +2,7 @@ uses
 	Core;
 
 file
-	CallbackNP.i highlight cpp,
-	CallbackN.i highlight cpp,
-	Callback.cpp optimize_speed;
+	Callback.cpp;
 
 mainconfig
 	"" = "MT",
