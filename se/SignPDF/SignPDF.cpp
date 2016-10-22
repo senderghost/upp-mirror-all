@@ -29,5 +29,5 @@ CONSOLE_APP_MAIN
 	String fn = GetHomeDirFile("test.pdf");
 	SaveFile(fn, pdf.Finish(f));
 
-	system("acroread " + fn);
+	LaunchWebBrowser(fn);
 }
