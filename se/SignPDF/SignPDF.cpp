@@ -12,8 +12,12 @@ CONSOLE_APP_MAIN
 	PdfDraw pdf;
 	
 	PdfSignatureInfo f;
-	f.cert = LoadDataFile("server.crt");
-	f.pkey = LoadDataFile("server.key");
+
+//	f.cert = LoadDataFile("server.crt");
+//	f.pkey = LoadDataFile("server.key");
+
+	f.cert = LoadDataFile("C:/u/nos.data/public.pem");
+	f.pkey = LoadDataFile("C:/u/nos.data/private2.pem");
 	
 	f.name = "John Smith";
 	f.location = "Berlin";
