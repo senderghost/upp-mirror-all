@@ -1,0 +1,4 @@
+#ifndef _VerifyPDF_icpp_init_stub
+#define _VerifyPDF_icpp_init_stub
+#include "Core/init"
+#endif
