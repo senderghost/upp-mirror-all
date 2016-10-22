@@ -1,7 +1,8 @@
 uses
 	Core,
 	PdfDraw,
-	Core/SSL;
+	Core/SSL,
+	RichText;
 
 file
 	server.crt,
