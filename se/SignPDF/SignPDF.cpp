@@ -13,11 +13,11 @@ CONSOLE_APP_MAIN
 	
 	PdfSignatureInfo f;
 
-//	f.cert = LoadDataFile("server.crt");
-//	f.pkey = LoadDataFile("server.key");
+	f.cert = LoadDataFile("server.crt");
+	f.pkey = LoadDataFile("server.key");
 
-	f.cert = LoadDataFile("C:/u/nos.data/public.pem");
-	f.pkey = LoadDataFile("C:/u/nos.data/private2.pem");
+//	f.cert = LoadDataFile("C:/u/nos.data/public.pem");
+//	f.pkey = LoadDataFile("C:/u/nos.data/private2.pem");
 	
 	f.name = "John Smith";
 	f.location = "Berlin";
@@ -29,5 +29,5 @@ CONSOLE_APP_MAIN
 	String fn = GetHomeDirFile("test.pdf");
 	SaveFile(fn, pdf.Finish(f));
 
-	LaunchWebBrowser(fn);
+	system("acroread " + fn);
 }
