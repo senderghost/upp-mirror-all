@@ -1,6 +1,6 @@
 uses
-	gdal,
-	Core;
+	Core,
+	plugin/gdal;
 
 file
 	Test.cpp charset "UTF-8";

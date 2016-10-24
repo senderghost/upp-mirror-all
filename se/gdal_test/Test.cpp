@@ -1,11 +1,25 @@
 #include <Core/Core.h>
 
-#include <gdal\gcore\gdal_priv.h>
-#include <gdal\port\cpl_conv.h>
+#include <plugin/gdal/ogr/ogr_spatialref.h>
+
+using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	GDALAllRegister();
-	GDALDataset  *poDataset = (GDALDataset *) GDALOpen("something", GA_ReadOnly );
+	OGRSpatialReference oSRS;
+	
+	String h = LoadFile("D:/aws.data/Ireland/OSNI_Open_Data_50K_Admin_Boundaries_–_Counties.prj");
+	
+	StringBuffer b = h;
+	char *x = ~b;
+	DDUMP(oSRS.importFromWkt(&x));
+	
+	DDUMP(x);
+	DDUMP(oSRS.exportToProj4(&x));
+	
+	DDUMP(oSRS.importFromEPSG(29900));
+	oSRS.exportToProj4(&x);
+	DDUMP(x);
+
 }
 
