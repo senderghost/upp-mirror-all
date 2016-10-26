@@ -13,21 +13,27 @@ CONSOLE_APP_MAIN
 	
 	PdfSignatureInfo f;
 
-//	f.cert = LoadDataFile("server.crt");
-//	f.pkey = LoadDataFile("server.key");
+	f.cert = LoadDataFile("server.crt");
+	f.pkey = LoadDataFile("server.key");
 
-	f.cert = LoadFile("C:/u/nos.data/public.pem");
-	f.pkey = LoadFile("C:/u/nos.data/private2.pem");
+//	f.cert = LoadFile("C:/u/nos.data/public.pem");
+//	f.pkey = LoadFile("C:/u/nos.data/private2.pem");
 	
 	f.name = "John Smith";
 	f.location = "Berlin";
 	f.reason = "I'd like to sign this pdf";
 	f.contact_info = "Email me!";
-	
-	pdf.DrawText(200, 200, "Hello world!", Serif(200), Magenta());
 
 	String fn = GetHomeDirFile("test.pdf");
-	SaveFile(fn, pdf.Finish(f));
+	
+	SaveFile(fn, Pdf(ParseQTF(
+			"[9* Hello world!&&&[^www.ultimatepp.org^ URL]^^&&&&&[^<<signature>>^ Signature]"
+			),
+	         Size(3968, 6074), 200, false, &f));
+/*	
+	pdf.DrawText(200, 200, "Hello world!", Serif(200), Magenta());
 
+	SaveFile(fn, pdf.Finish(&f));
+*/
 	LaunchWebBrowser(fn);
 }

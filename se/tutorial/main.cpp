@@ -77,5 +77,8 @@ GUI_APP_MAIN
 	f.b++;
 	DUMP(IsNull(f));
 	
+	CParser p("x + 123");
+	String x
+	
 	END
 }
