@@ -1,0 +1,14 @@
+uses
+	Core,
+	PdfDraw,
+	Core/SSL,
+	RichText;
+
+file
+	SignPDF.cpp,
+	certificate.pem,
+	privatekey.pem;
+
+mainconfig
+	"" = "";
+
