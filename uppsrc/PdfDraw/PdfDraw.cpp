@@ -1,6 +1,6 @@
 #include "PdfDraw.h"
 
-NAMESPACE_UPP
+namespace Upp {
 
 #include "ICCColorSpace.i"
 
@@ -36,7 +36,7 @@ void  PdfDraw::Clear()
 	out.Clear();
 	page.Clear();
 	offset.Clear();
-	out << "%PDF-1.3\n";
+	out << "%PDF-1.7\n";
 	out << "%\xf1\xf2\xf3\xf4\n\n";
 	empty = true;
 }
@@ -264,6 +264,19 @@ void  PdfDraw::FlushText(int dx, int fi, int height, const String& txt)
 String PdfDraw::PdfColor(Color c)
 {
 	return NFormat("%3nf %3nf %3nf", c.GetR() / 255.0, c.GetG() / 255.0, c.GetB() / 255.0);
+}
+
+String PdfDraw::PdfString(const char *s)
+{
+	StringBuffer b;
+	b.Cat('(');
+	while(*s) {
+		if(findarg(*s, '(', ')', '\\') >= 0)
+			b.Cat('\\');
+		b.Cat(*s++);
+	}
+	b.Cat(')');
+	return b;
 }
 
 void PdfDraw::PutFontHeight(int fi, double ht)
@@ -563,7 +576,7 @@ String GetGrayPdfImage(const Image& m, const Rect& sr)
 	return data;
 }
 
-String PdfDraw::Finish()
+String PdfDraw::Finish(const PdfSignatureInfo *sign)
 {
 	if(page.GetLength()) {
 		PutStream(page);
@@ -612,17 +625,6 @@ String PdfDraw::Finish()
 			smask = PutStream(data, String().Cat()
 			                    << "/Type /XObject /Subtype /Image" << wh
 				                << " /BitsPerComponent 8 /ColorSpace /DeviceGray /Decode [0 1] ");
-		}
-		data.Clear();
-		for(int y = sr.top; y < sr.bottom; y++) {
-			const RGBA *p = m[y] + sr.left;
-			const RGBA *e = m[y] + sr.right;
-			while(p < e) {
-				data.Cat(p->r);
-				data.Cat(p->g);
-				data.Cat(p->b);
-				p++;
-			}
 		}
 		String imgobj;
 		data = GetMonoPdfImage(m, sr);
@@ -945,9 +947,8 @@ String PdfDraw::Finish()
 		out << ">>\n";
 	}
 	if(!patternobj.IsEmpty()) {
-		out <<
-		"/ColorSpace << /Cspat " << patcsobj << " 0 R >>\n"
-		"/Pattern << ";
+		out << "/ColorSpace << /Cspat " << patcsobj << " 0 R >>\n"
+		       "/Pattern << ";
 		for(int i = 0; i < patterns.GetCount(); i++)
 			out << "/Pat" << (i + 1) << ' ' << patternobj[i] << " 0 R ";
 		out << ">>\n";
@@ -958,125 +959,233 @@ String PdfDraw::Finish()
 	out << ">>\n";
 	EndObj();
 	
-	Vector<String> url_ann;
-	for(int pi = 0; pi < min(page_url.GetCount(), pagecount); pi++) {
-		const Array<UrlInfo>& url = page_url[pi];
-		for(int i = 0; i < url.GetCount(); i++) {
-			const UrlInfo& u = url[i];
-			url_ann.At(pi) << ' ' << BeginObj() << " 0 R";
-			out << "<</Type/Annot/Subtype/Link/Border[0 0 0]/Rect["
-				<< Pt(u.rect.left) << ' ' << Pt(pgsz.cy - u.rect.bottom) << ' '
-				<< Pt(u.rect.right) << ' ' << Pt(pgsz.cy - u.rect.top)
-				<< "]/A<</Type/Action/S/URI/URI("
-				<< u.url
-				<< ")>>\n>>\n";
+	int p7s_len = HexString(GetP7Signature(String(), sign->cert, sign->pkey)).GetCount();
+
+	int len0 = out.GetCount();
+	int offset0 = offset.GetCount();
+	
+	for(;;) { // in case that signature_len grows...
+		int signature = -1;
+		int signature_widget = -1;
+		int p7s_start, p7s_end, pdf_length_pos;
+	
+		int sign_page = Null;
+		String sign_rect;
+
+		if(sign) {
+			signature = BeginObj();
+			out << "<< /Type /Sig\n";
+			out << "/Contents ";
+			p7s_start = out.GetCount();
+			out << "<" + String('0', p7s_len) + ">";
+			p7s_end = out.GetCount();
+			out << "\n";
+	
+			out << "/ByteRange [0 " << p7s_start << ' ' << p7s_end << ' ';
+			pdf_length_pos = out.GetCount();
+			      //1234567890 -  %10d
+			out << "**********]\n";
+			out << "/Filter /Adobe.PPKLite\n";
+			out << "/SubFilter /adbe.pkcs7.detached\n";
+			Time tm = Nvl(sign->time, GetSysTime());
+			
+			int tz = GetTimeZone();
+			int az = abs(tz) % (24 * 60); // (24 * 60) - sanity clamp to single day...
+			out << Format("/M (%02d%02d%02d%02d%02d%02d%c%02d'%02d')", tm.year, tm.month, tm.day,
+			              tm.hour, tm.minute, tm.second, (tz < 0 ? '-' : '+'), az / 60, az % 60);
+			if(sign->reason.GetCount())
+				out << "/Reason " << PdfString(sign->reason) << "\n";
+			if(sign->name.GetCount())
+				out << "/Name " << PdfString(sign->name) << "\n";
+			if(sign->location.GetCount())
+				out << "/Location " << PdfString(sign->location) << "\n";
+			if(sign->contact_info.GetCount())
+				out << "/ContactInfo " << PdfString(sign->contact_info) << "\n";
+			out << ">>\n";
+	
 			EndObj();
 		}
-	}
+	
+		Vector<String> url_ann;
+		for(int pi = 0; pi < min(page_url.GetCount(), pagecount); pi++) {
+			const Array<UrlInfo>& url = page_url[pi];
+			for(int i = 0; i < url.GetCount(); i++) {
+				const UrlInfo& u = url[i];
+				String r;
+				r << "/Border[0 0 0]/Rect["
+				  << Pt(u.rect.left) << ' ' << Pt(pgsz.cy - u.rect.bottom) << ' '
+				  << Pt(u.rect.right) << ' ' << Pt(pgsz.cy - u.rect.top) << "]\n";
+				if(u.url == "<<signature>>") {
+					sign_page = pi;
+					sign_rect = r;
+				}
+				else {
+					url_ann.At(pi) << ' ' << BeginObj() << " 0 R";
+					out << "<</Type/Annot"
+					    << r
+						<< "/A<</Type/Action/S/URI/URI" << PdfString(u.url) << ">>\n"
+						<< "/Subtype/Link";
+					out << ">>\n";
+					EndObj();
+				}
+			}
+		}
 
-	int pages = BeginObj();
-	out << "<< /Type /Pages\n"
-	    << "/Kids [";
-	for(int i = 0; i < pagecount; i++)
-		out << i + pages + 1 << " 0 R ";
-	out << "]\n"
-	    << "/Count " << pagecount << "\n";
-	out << ">>\n";
-	EndObj();
-	for(int i = 0; i < pagecount; i++) {
-		BeginObj();
-		out << "<< /Type /Page\n"
-		    << "/Parent " << pages << " 0 R\n"
-		    << "/MediaBox [0 0 " << Pt(pgsz.cx) << ' ' << Pt(pgsz.cy) << "]\n"
-		    << "/Contents " << i + 1 << " 0 R\n"
-		    << "/Resources " << resources << " 0 R\n";
-		if(i < url_ann.GetCount() && url_ann[i].GetCount())
-			out << "/Annots[" << url_ann[i] << "]\n";
+		if(sign) {
+			signature_widget = BeginObj();
+			out << "<< /Type /Annot\n"
+				   "/Subtype /Widget\n"
+			       "/FT /Sig\n"
+				   "/Ff 0\n" // not sure what is this...
+				   "/T(Signature)\n"
+				   "/V " << signature << " 0 R\n"
+			;
+			if(IsNull(sign_page)) { // invisible signature
+				out << "/F 132 /Rect[0 0 0 0]\n";
+				sign_page = 0;
+			}
+			else
+				out << "/F 4 " << sign_rect;
+			out << "/P " << signature_widget + 2 + sign_page << " 0 R\n" // next entry is Pages and then Page
+			    << ">>\n";
+			EndObj();
+		}
+
+		int pages = BeginObj();
+		out << "<< /Type /Pages\n"
+		    << "/Kids [";
+		for(int i = 0; i < pagecount; i++)
+			out << i + pages + 1 << " 0 R ";
+		out << "]\n"
+		    << "/Count " << pagecount << "\n";
 		out << ">>\n";
 		EndObj();
-	}
-	int outlines = BeginObj();
-	out << "<< /Type /Outlines\n"
-	       "/Count 0\n"
-	       ">>\n";
-	EndObj();
-	int pdfa_metadata = -1;
-	if(pdfa) {
-		StringBuffer metadata;
-		metadata <<
-		"<?xpacket id=\"" << Uuid::Create() << "\"?>\n"
-		"<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"PDFNet\">\n"
-		"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"
-		"<rdf:Description rdf:about=\"\"\n"
-		"xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\">\n"
-		"<xmp:CreateDate>0000-01-01</xmp:CreateDate>\n"
-		"<xmp:ModifyDate>0000-01-01</xmp:ModifyDate>\n"
-		"<xmp:CreatorTool/>\n"
-		"</rdf:Description>\n"
-		"<rdf:Description rdf:about=\"\"\n"
-		"xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n"
-		"<dc:title>\n"
-		"<rdf:Alt>\n"
-		"<rdf:li xml:lang=\"x-default\"/>\n"
-		"</rdf:Alt>\n"
-		"</dc:title>\n"
-		"<dc:creator>\n"
-		"<rdf:Seq>\n"
-		"<rdf:li/>\n"
-		"</rdf:Seq>\n"
-		"</dc:creator>\n"
-		"<dc:description>\n"
-		"<rdf:Alt>\n"
-		"<rdf:li xml:lang=\"x-default\"/>\n"
-		"</rdf:Alt>\n"
-		"</dc:description>\n"
-		"</rdf:Description>\n"
-		"<rdf:Description rdf:about=\"\"\n"
-		"xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\">\n"
-		"<pdf:Keywords/>\n"
-		"<pdf:Producer/>\n"
-		"</rdf:Description>\n"
-		"<rdf:Description rdf:about=\"\"\n"
-		"xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\">\n"
-		"<pdfaid:part>1</pdfaid:part>\n"
-		"<pdfaid:conformance>B</pdfaid:conformance>\n"
-		"</rdf:Description>\n"
-		"</rdf:RDF>\n"
-		"</x:xmpmeta>\n";
+		for(int i = 0; i < pagecount; i++) {
+			BeginObj();
+			out << "<< /Type /Page\n"
+			    << "/Parent " << pages << " 0 R\n"
+			    << "/MediaBox [0 0 " << Pt(pgsz.cx) << ' ' << Pt(pgsz.cy) << "]\n"
+			    << "/Contents " << i + 1 << " 0 R\n"
+			    << "/Resources " << resources << " 0 R\n";
+			bool sgned = sign && sign_page == i;
+			bool urls = i < url_ann.GetCount() && url_ann[i].GetCount();
+			if(sgned || urls) {
+				out << "/Annots [";
+				if(urls)
+					out << url_ann[i];
+				if(urls && sgned)
+					out << ' ';
+				if(sgned)
+					out << signature_widget << " 0 R";
+				out << "]\n";
+			}
+			out << ">>\n";
+			EndObj();
+		}
+		int outlines = BeginObj();
+		out << "<< /Type /Outlines\n"
+		       "/Count 0\n"
+		       ">>\n";
+		EndObj();
+		int pdfa_metadata = -1;
+		if(pdfa) {
+			StringBuffer metadata;
+			metadata <<
+			"<?xpacket id=\"" << Uuid::Create() << "\"?>\n"
+			"<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"PDFNet\">\n"
+			"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"
+			"<rdf:Description rdf:about=\"\"\n"
+			"xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\">\n"
+			"<xmp:CreateDate>0000-01-01</xmp:CreateDate>\n"
+			"<xmp:ModifyDate>0000-01-01</xmp:ModifyDate>\n"
+			"<xmp:CreatorTool/>\n"
+			"</rdf:Description>\n"
+			"<rdf:Description rdf:about=\"\"\n"
+			"xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n"
+			"<dc:title>\n"
+			"<rdf:Alt>\n"
+			"<rdf:li xml:lang=\"x-default\"/>\n"
+			"</rdf:Alt>\n"
+			"</dc:title>\n"
+			"<dc:creator>\n"
+			"<rdf:Seq>\n"
+			"<rdf:li/>\n"
+			"</rdf:Seq>\n"
+			"</dc:creator>\n"
+			"<dc:description>\n"
+			"<rdf:Alt>\n"
+			"<rdf:li xml:lang=\"x-default\"/>\n"
+			"</rdf:Alt>\n"
+			"</dc:description>\n"
+			"</rdf:Description>\n"
+			"<rdf:Description rdf:about=\"\"\n"
+			"xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\">\n"
+			"<pdf:Keywords/>\n"
+			"<pdf:Producer/>\n"
+			"</rdf:Description>\n"
+			"<rdf:Description rdf:about=\"\"\n"
+			"xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\">\n"
+			"<pdfaid:part>1</pdfaid:part>\n"
+			"<pdfaid:conformance>B</pdfaid:conformance>\n"
+			"</rdf:Description>\n"
+			"</rdf:RDF>\n"
+			"</x:xmpmeta>\n";
+			
+			StringBuffer meta_head;
+			meta_head << "/Type/Metadata/Subtype/XML";
+			
+			pdfa_metadata = PutStream(metadata, meta_head, false);
+		}
 		
-		StringBuffer meta_head;
-		meta_head << "/Type/Metadata/Subtype/XML";
+		int catalog = BeginObj();
+		out << "<< /Type /Catalog\n"
+		    << "/Outlines " << outlines << " 0 R\n"
+		    << "/Pages " << pages << " 0 R\n";
 		
-		pdfa_metadata = PutStream(metadata, meta_head, false);
+		if(pdfa_metadata >= 0)
+			out << "/Metadata " << pdfa_metadata << " 0 R\n";
+		
+		if(sign)
+			out << " /AcroForm << /Fields [" << signature_widget << " 0 R] /SigFlags 3 "
+			       " /Perms << /DocMDP " << signature << " 0 R >>>>";
+	
+		out << ">>\n";
+		EndObj();
+		int startxref = out.GetCount();
+		out << "xref\n"
+		    << "0 " << offset.GetCount() + 1 << "\n";
+		out << "0000000000 65535 f\r\n";
+		for(int i = 0; i < offset.GetCount(); i++)
+			out << Sprintf("%010d 00000 n\r\n", offset[i]);
+		out << "\n"
+		    << "trailer\n"
+		    << "<< /Size " << offset.GetCount() + 1 << "\n"
+		    << "/Root " << catalog << " 0 R\n"
+			<< "/ID [ <" << Uuid::Create() << "> <" << Uuid::Create() << "> ]\n"
+		    << ">>\n"
+		    << "startxref\r\n"
+		    << startxref << "\r\n"
+		    << "%%EOF\r\n";
+	
+		if(sign) {
+			memcpy(~out + pdf_length_pos, Format("%10d", out.GetLength() - p7s_end), 10);
+			String data(~out, p7s_start);
+			data.Cat(~out + p7s_end, out.End());
+			String p7s = HexString(GetP7Signature(data, sign->cert, sign->pkey));
+			if(p7s.GetCount() <= p7s_len) {
+				memcpy(~out + p7s_start + 1, p7s, p7s.GetCount());
+				break;
+			}
+			p7s_len = p7s.GetCount();
+		}
+		else
+			break;
+
+		out.SetLength(len0); // p7s signature grew, scratch pdf ending and try again
+		offset.SetCount(offset0);
 	}
-	
-	int catalog = BeginObj();
-	out << "<< /Type /Catalog\n"
-	    << "/Outlines " << outlines << " 0 R\n"
-	    << "/Pages " << pages << " 0 R\n";
-	
-	if(pdfa_metadata >= 0) {
-		out << "/Metadata " << pdfa_metadata << " 0 R\n";
-	}
-	
-	out << ">>\n";
-	EndObj();
-	int startxref = out.GetCount();
-	out << "xref\n"
-	    << "0 " << offset.GetCount() + 1 << "\n";
-	out << "0000000000 65535 f\r\n";
-	for(int i = 0; i < offset.GetCount(); i++)
-		out << Sprintf("%010d 00000 n\r\n", offset[i]);
-	out << "\n"
-	    << "trailer\n"
-	    << "<< /Size " << offset.GetCount() + 1 << "\n"
-	    << "/Root " << catalog << " 0 R\n"
-		<< "/ID [ <" << Uuid::Create() << "> <" << Uuid::Create() << "> ]\n"
-	    << ">>\n"
-	    << "startxref\r\n"
-	    << startxref << "\r\n"
-	    << "%%EOF\r\n";
+	   
 	return out;
 }
 
-END_UPP_NAMESPACE
+}

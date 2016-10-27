@@ -5,7 +5,7 @@
 #include <plugin/z/z.h>
 
 
-NAMESPACE_UPP
+namespace Upp {
 
 class TTFReader {
 	struct TTFStream {
@@ -225,6 +225,20 @@ public:
 	~TTFReader();
 };
 
+struct PdfSignatureInfo {
+	String pkey;
+	String cert;
+
+	String name;
+	String location;
+	String reason;
+	String contact_info;
+
+	Time   time;
+	
+	PdfSignatureInfo() { time = Null; }
+};
+
 class PdfDraw : public Draw {
 public:
 	virtual dword GetInfo() const;
@@ -314,6 +328,7 @@ private:
 	CharPos GetCharPos(Font fnt, wchar chr);
 	void    FlushText(int dx, int fi, int height, const String& txt);
 	static String PdfColor(Color c);
+	static String PdfString(const char *s);
 
 	void PushOffset();
 	void PopOffset();
@@ -347,7 +362,7 @@ private:
 	RGlyph RasterGlyph(Font fnt, int chr);
 
 public:
-	String Finish();
+	String Finish(const PdfSignatureInfo *sign = NULL);
 	void   Clear();
 	bool   IsEmpty() const                                   { return empty; }
 	
@@ -357,6 +372,6 @@ public:
 
 String Pdf(const Array<Drawing>& report, Size pagesize, int margin, bool pdfa = false);
 
-END_UPP_NAMESPACE
+}
 
 #endif
