@@ -1,0 +1,15 @@
+uses
+	CtrlLib;
+
+library(WIN32) oleaut32;
+
+file
+	IE.h,
+	ActiveX_base.h,
+	ActiveX.cpp,
+	IExplorerBrowser.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "GUI MT";
+
