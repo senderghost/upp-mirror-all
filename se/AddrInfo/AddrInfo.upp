@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	AddrInfo.cpp;
+
+mainconfig
+	"" = "";
+
