@@ -16,8 +16,8 @@ CONSOLE_APP_MAIN
 	f.cert = LoadDataFile("server.crt");
 	f.pkey = LoadDataFile("server.key");
 
-//	f.cert = LoadFile("C:/u/nos.data/public.pem");
-//	f.pkey = LoadFile("C:/u/nos.data/private2.pem");
+	f.cert = LoadFile("C:/u/nos.data/public.pem");
+	f.pkey = LoadFile("C:/u/nos.data/private2.pem");
 	
 	f.name = "John Smith";
 	f.location = "Berlin";
