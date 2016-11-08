@@ -2,15 +2,12 @@
 
 using namespace Upp;
 
-#define BEGIN     {
-#define END       }
-#define TITLE(x)  } LOG("----------------------"); LOG(x); {
+#undef LOG
+#define LOG(a)           UPP::VppLog() << __FILE__ << ':' << __LINE__ << ':' << a << UPP::EOL
 
 GUI_APP_MAIN
 {
-	BEGIN;
-
-	TITLE("Logging");
+	//. Logging
 	
 	// Logging is a useful technique to trace the flow of the code and examine results. In this
 	// tutorial we will be using logging extensively, so let us start tutorial with the
@@ -35,11 +32,10 @@ GUI_APP_MAIN
 	
 	// All normal LOGs are removed in release mode. If you need to log things in release mode,
 	// you need to use RLOG / RDUMP macro instead:
-	
+
+/*	
 	RLOG("This will also log in release mode");
 	RDUMP(x);
-	
-	// 
 	
 	DLOG("This will not compile in release mode");
 	DDUMP(x);
@@ -59,7 +55,7 @@ GUI_APP_MAIN
 	foo.b = 123;
 	
 	DUMP(foo);
-	
+
 	TITLE("Basic utilities");
 	
 	DUMP(max(1, 4, 2, 3));
@@ -103,7 +99,5 @@ GUI_APP_MAIN
 	
 	FindFile
 	
-	
-	
-	END
+*/
 }

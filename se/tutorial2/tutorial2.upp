@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	tutorial2.cpp;
+
+mainconfig
+	"" = "";
+
