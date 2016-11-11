@@ -2,6 +2,10 @@ uses
 	Core;
 
 file
+	Tutorial.h,
+	ToDo.cpp,
+	Range.cpp,
+	Logging.cpp,
 	tutorial2.cpp;
 
 mainconfig
