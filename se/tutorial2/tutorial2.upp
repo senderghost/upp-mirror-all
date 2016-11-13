@@ -1,5 +1,6 @@
 uses
-	Core;
+	Core,
+	RichEdit;
 
 file
 	Tutorial.h,
@@ -9,5 +10,5 @@ file
 	tutorial2.cpp;
 
 mainconfig
-	"" = "";
+	"" = "GUI";
 

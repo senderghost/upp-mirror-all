@@ -10,7 +10,9 @@ void Logging()
 	//
 	// In debug mode, macro LOG puts string into output log file. Log file is placed into
 	// 'config-directory', which by default is .exe directory in Win32 and ~/.upp/appname in POSIX.
+
 	// In TheIDE, you can access the log using 'Debug'/'View the log file Alt+L'.
+	
 	
 	LOG("Hello world");
 	
