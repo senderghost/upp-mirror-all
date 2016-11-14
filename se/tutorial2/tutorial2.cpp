@@ -4,9 +4,44 @@ using namespace Upp;
 
 String out;
 
-String qtf;
+int    major = 0;
+int    minor = 0;
+String qtf =
+"[ $$0,0#00000000000000000000000000000000:Default]"
+"[a83;*R6 $$1,3#31310162474203024125188417583966:caption]"
+"[H4;b83;*4 $$2,3#07864147445237544204411237157677:title]"
+"[b42;a42;ph2 $$3,3#45413000475342174754091244180557:text]"
+"[l321;C@5;1 $$4,4#20902679421464641399138805415013:code]"
+"[l321;b83;a83;*C$7;2 $$5,5#07531550463529505371228428965313:result`-line]"
+"[l321;*C$7;2 $$6,6#03451589433145915344929335295360:result]"
+"[b73;*3 $$2,3#07864147445237544204111237153677:subtitle]"
+;
 
 #define OUT(x) out << x << '\n';
+
+void FlushDoc(String& docblock)
+{
+	docblock = TrimBoth(docblock);
+	if(docblock.GetCount() == 0)
+		return;
+	OUT("============= DOC");
+	OUT(docblock);
+	
+	String style = "[s3;";
+	if(docblock.StartsWith("..")) {
+		docblock = AsString(major) + "." + AsString(++minor) + ' ' + TrimBoth(docblock.Mid(2));
+		style = "[s7;";
+	}
+	else
+	if(docblock.StartsWith(".")) {
+		docblock = AsString(++major) + "." + ' ' + TrimBoth(docblock.Mid(1));
+		minor = 0;
+		style = "[s2;";
+	}
+	
+	qtf << style << " \1" << docblock << "\1&]";
+	docblock.Clear();
+}
 
 void FlushLog(Vector<String>& log)
 {
@@ -15,19 +50,8 @@ void FlushLog(Vector<String>& log)
 	OUT("============ LOG");
 	OUT(Join(log, "\r\n"));
 	
-	qtf << "&[C* \1" << Join(log, "\n") << "\1&]&";
+	qtf << "[s5; \1" << Join(log, "\n") << "\1&]";
 	log.Clear();
-}
-
-void FlushDoc(String& docblock)
-{
-	if(docblock.GetCount() == 0)
-		return;
-	OUT("============= DOC");
-	OUT(docblock);
-	
-	qtf << '\1' << docblock << "\1&";
-	docblock.Clear();
 }
 
 void FlushCode(Vector<String>& code)
@@ -41,7 +65,7 @@ void FlushCode(Vector<String>& code)
 	OUT("============= CODE");
 	OUT(Join(code, "\r\n"));
 
-	qtf << "&[C@b \1" << Join(code, "\n") << "\1]&";
+	qtf << "&[s4; \1" << Join(code, "\n") << "\1]&";
 	code.Clear();
 }
 
@@ -106,7 +130,10 @@ GUI_APP_MAIN
 	LOG("--------------------------------------------");
 	LOG(out);
 	
-	RichEdit edit;
+	LOG("--------------------------------------------");
+	LOG(qtf);
+	
+	RichEditWithToolBar edit;
 	edit <<= qtf;
 	TopWindow win;
 	win.Add(edit.SizePos());

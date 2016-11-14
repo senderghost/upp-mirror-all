@@ -4,12 +4,16 @@ void Logging()
 {
 	//. Logging
 	
+	//..Basic info
+	
 	// Logging is a useful technique to trace the flow of the code and examine results. In this
 	// tutorial we will be using logging extensively, so let us start tutorial with the
 	// explanation of logging.
 	//
 	// In debug mode, macro LOG puts string into output log file. Log file is placed into
 	// 'config-directory', which by default is .exe directory in Win32 and ~/.upp/appname in POSIX.
+
+	//..Advanced info
 
 	// In TheIDE, you can access the log using 'Debug'/'View the log file Alt+L'.
 	
