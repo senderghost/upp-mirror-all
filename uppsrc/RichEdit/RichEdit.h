@@ -625,7 +625,7 @@ private:
 	void     HeaderFooter();
 	bool     EditHeaderFooter(String& header_qtf, String& footer_qtf);
 
-	bool     BegSelTabFix();
+	bool     BegSelTabFix(int& count);
 	void     BegSelTabFixEnd(bool fix);
 
 	Size     GetPhysicalSize(const RichObject& obj);

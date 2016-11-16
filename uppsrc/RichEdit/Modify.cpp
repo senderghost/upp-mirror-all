@@ -45,7 +45,7 @@ RichEdit::UndoRec * RichEdit::UndoBegSelUnFix::GetRedo(const RichText& txt)
 	return new RichEdit::UndoBegSelFix;
 }
 
-bool RichEdit::BegSelTabFix()
+bool RichEdit::BegSelTabFix(int& count)
 {
 	if(begtabsel) {
 		int c = cursor;
@@ -53,6 +53,7 @@ bool RichEdit::BegSelTabFix()
 		BegSelFixRaw(text);
 		Move(0);
 		Move(c + 1, true);
+		count++;
 		begtabsel = false;
 		return true;
 	}
@@ -121,7 +122,7 @@ void RichEdit::SaveFormat()
 		pos = cursor;
 		count = 0;
 	}
-	bool b = BegSelTabFix();
+	bool b = BegSelTabFix(count);
 	SaveFormat(pos, count);
 	BegSelTabFixEnd(b);
 }
@@ -137,7 +138,7 @@ void RichEdit::ModifyFormat(int pos, const RichText::FormatInfo& fi, int count)
 {
 	if(IsReadOnly())
 		return;
-	bool b = BegSelTabFix();
+	bool b = BegSelTabFix(count);
 	Limit(pos, count);
 	SaveFormat(pos, count);
 	text.ApplyFormatInfo(pos, fi, count);

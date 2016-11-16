@@ -4,6 +4,8 @@ NAMESPACE_UPP
 
 void RichEdit::FinishNF()
 {
+	cursor = clamp(cursor, 0, text.GetLength());
+	anchor = clamp(anchor, 0, text.GetLength());
 	anchorp = text.GetRichPos(anchor);
 	cursorp = text.GetRichPos(cursor);
 	tablesel = 0;
@@ -17,6 +19,8 @@ void RichEdit::FinishNF()
 		else
 		if(p.table != anchorp.table) {
 			if(anchor == 0 && anchorp.level == 1 && text.GetRichPos(anchor, 1).table == 1 && anchor < cursor) {
+				while(cursor > 0 && cursorp.level) // selection must at at plain text
+					cursorp = text.GetRichPos(--cursor);
 				begtabsel = true;
 				anchor = 0;
 			}
@@ -341,7 +345,8 @@ bool RichEdit::RemoveSelection(bool back)
 			Move(text.GetCellPos(tablesel, cells.top, cells.left).pos);
 		}
 		else {
-			BegSelTabFix();
+			int dummy;
+			BegSelTabFix(dummy);
 			int c = min(cursor, anchor);
 			Remove(c, abs(cursor - anchor), back);
 			found = notfoundfw = false;
