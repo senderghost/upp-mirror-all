@@ -8,7 +8,7 @@ CONSOLE_APP_MAIN
 
 	struct gaicb req[1], *reqptr[1];
 	
-	String url = "www.ultimateppzxv.org";
+	String url = "www.ultimateppzxv2222.org";
 	
 	memset(req, 0, sizeof(req));
 	req->ar_name = ~url;
@@ -18,29 +18,17 @@ CONSOLE_APP_MAIN
 		return;
 	}
 	
-	DDUMP(gai_strerror(gai_error(req)));
-	DDUMP(gai_strerror(gai_cancel(req)));
-	DDUMP(gai_strerror(gai_error(req)));
-	Sleep(1000);
-	DDUMP(gai_strerror(gai_cancel(req)));
-	DDUMP(gai_strerror(gai_error(req)));
-	return;
-	
 	int c = GetTickCount();
 	for(;;) {
 		int code = gai_error(req);
 		if(code == 0)
 			break;
 		if(code != EAI_INPROGRESS) {
-			LOG("Error processing");
-			return;
-		}
-		if(GetTickCount() - c > 1000) {
-			LOG("Timeout 1s");
+			DDUMP(GetTickCount() - c);
+			LOG("Error processing " << gai_strerror(code));
 			return;
 		}
 	}
-
 
 	addrinfo *rp = req->ar_result;
 	while(rp) {

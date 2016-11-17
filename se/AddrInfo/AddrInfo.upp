@@ -1,6 +1,9 @@
 uses
 	Core;
 
+library
+	anl;
+
 file
 	AddrInfo.cpp;
 
