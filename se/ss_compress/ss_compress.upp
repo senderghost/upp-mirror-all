@@ -1,0 +1,10 @@
+uses
+	CtrlLib,
+	plugin/lzma;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

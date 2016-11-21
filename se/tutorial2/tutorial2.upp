@@ -7,6 +7,9 @@ file
 	ToDo.cpp,
 	Range.cpp,
 	Logging.cpp,
+	String.cpp,
+	StringBuffer.cpp,
+	WString.cpp,
 	tutorial2.cpp,
 	help.qtf;
 
