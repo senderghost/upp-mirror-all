@@ -108,6 +108,7 @@ GUI_APP_MAIN
 	
 	DO(StringBufferTutorial);
 	DO(WStringTutorial);
+	DO(DateTime);
 	
 	String log = LoadFile(GetStdLogPath());
 	StringStream ss(log);

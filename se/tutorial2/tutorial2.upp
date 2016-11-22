@@ -10,6 +10,7 @@ file
 	String.cpp,
 	StringBuffer.cpp,
 	WString.cpp,
+	DateTime.cpp,
 	tutorial2.cpp,
 	help.qtf;
 
