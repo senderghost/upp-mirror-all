@@ -1,0 +1,8 @@
+macro "Zero line" {
+	currentLineLength = GetLineLength(GetLine(GetCursor()));
+
+    if (currentLineLength == 0)
+        Echo("The line is empty.");
+    else
+        Echo("Not empty.");
+}

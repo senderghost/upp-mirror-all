@@ -1,0 +1,10 @@
+uses
+	Core;
+
+file
+	test.usc,
+	Esc0.cpp;
+
+mainconfig
+	"" = "";
+
