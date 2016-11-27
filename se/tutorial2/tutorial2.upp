@@ -4,6 +4,7 @@ uses
 
 file
 	Tutorial.h,
+	Tutorial.cpp,
 	ToDo.cpp,
 	Range.cpp,
 	Logging.cpp,
@@ -11,6 +12,11 @@ file
 	StringBuffer.cpp,
 	WString.cpp,
 	DateTime.cpp,
+	AsString.cpp,
+	Value.cpp,
+	Null.cpp,
+	Value2.cpp,
+	CombineHash.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

@@ -13,7 +13,7 @@ void StringBufferTutorial()
 	/// If you need a direct write access to `String`'s C-string character buffer, you can use
 	/// complementary `StringBuffer` class. One of reasons to do so is when you have to deal
 	/// with some C-API functions that expects to write directly to `char *` and you would like
-	/// that result converted to the `String`
+	/// that result converted to the `String`:
 
 #if 0
 	void CApiFunction(char *c)
@@ -37,7 +37,7 @@ void StringBufferTutorial()
 	/// `StringBuffer` content (operation is fast and does not depend on the number of
 	/// characters).
 	
-	/// Another usage scenario of StringBuffer is altering existing String
+	/// Another usage scenario of StringBuffer is altering existing String:
 
 	b = x;
 	b[1] = 'a';

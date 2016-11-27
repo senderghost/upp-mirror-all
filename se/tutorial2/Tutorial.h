@@ -45,3 +45,7 @@ using namespace Upp;
 #define RDUMPM(c)         LOGPOS UPP::DumpMap(VppLog() << #c << ':' << UPP::EOL, (c))
 #define RLOGHEX(x)        LOGPOS UPP::LogHex(x)
 #define RDUMPHEX(x)       LOGPOS UPP::VppLog() << #x << " = ", UPP::LogHex(x)
+
+#define DO(x) void x(); x();
+
+void MakeTutorial();

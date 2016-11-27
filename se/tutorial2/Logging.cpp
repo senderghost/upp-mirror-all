@@ -34,7 +34,7 @@ void Logging()
 	DUMPHEX(h);
 	
 	/// To log the value of a container (or generic Range), you can either use normal
-	/// `LOG` / `DUMP`
+	/// `LOG` / `DUMP`:
 	
 	Vector<int> v = { 1, 2, 3 };
 	
@@ -67,7 +67,7 @@ void Logging()
 	
 	/// The last flavor of `LOG` you can encounter while reading U++ sources is the one prefixed
 	/// with '`L`'. This one is not actually defined in U++ library and is just a convention. On
-	/// the start of file, there is usually something like
+	/// the start of file, there is usually something like:
 	
 	#define LLOG(x) // DLOG(x)
 	
@@ -75,7 +75,7 @@ void Logging()
 	
 	/// While logging to .log file is default, there are various ways how to affect logging,
 	/// for example following line adjusts logging to output the log both to the console and
-	/// .log file
+	/// .log file:
 
 #if 0
 	StdLogSetup(LOG_COUT|LOG_FILE);

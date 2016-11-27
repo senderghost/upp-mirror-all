@@ -10,28 +10,28 @@ void DateTime()
 	
 	DUMP(date);
 
-	/// All data members of `Date` structure are public
+	/// All data members of `Date` structure are public:
 
-	DUMP((int)date.year);
-	DUMP((int)date.month);
-	DUMP((int)date.day);
+	DUMP((int)date.year); // we need to cast to int because some date members
+	DUMP((int)date.month); // are of unsigned character type which would log
+	DUMP((int)date.day); // as characters
 
-	/// Dates can be compared
+	/// Dates can be compared:
 
 	DUMP(date > Date(2000, 1, 1));
 
 	/// Adding a number to `Date` adds a number of days to it, incrementing/decrementing goes to
-	/// the next/previous day
+	/// the next/previous day:
 
 	DUMP(date + 1);
 	DUMP(--date);
 	DUMP(++date);
 
-	/// Subtraction of dates yields a number of days between them
+	/// Subtraction of dates yields a number of days between them:
 	
 	DUMP(date - Date(2000, 1, 1));
 	
-	/// There are several `Date` and calendar related functions
+	/// There are several `Date` and calendar related functions:
 
 	DUMP(IsLeapYear(2012));
 	DUMP(IsLeapYear(2014));
@@ -76,12 +76,12 @@ void DateTime()
 	DUMP(EasterDay(2016));
 	
 	/// U++ defines the beginning and the end of era, most algorithms can safely assume that as
-	/// minimal and maximal values `Date` can represent
+	/// minimal and maximal values `Date` can represent:
 
 	DUMP(Date::Low());
 	DUMP(Date::High());
 
-	/// Time is derived from `Date`, adding members to represent time
+	/// Time is derived from `Date`, adding members to represent time:
 
 	Time time = GetSysTime();
 	DUMP(time);
@@ -90,26 +90,26 @@ void DateTime()
 	DUMP((int)time.minute);
 	DUMP((int)time.second);
 
-	/// Times can be compared
+	/// Times can be compared:
 
 	DUMP(time > Time(1970, 0, 0));
 
 	/// Warning: As `Time` is derived from the `Date`, most operations automatically convert
 	/// `Time` back to `Date`. You have to use `ToTime` conversion function to convert `Date`
-	/// to `Time`
+	/// to `Time`:
 
 	DUMP(time > date); // time gets converted to Date...
 	DUMP(time > ToTime(date));
 
 	/// Like `Date`, `Time` supports add and subtract operations, but numbers represent seconds
-	/// (using `int64` datatype)
+	/// (using `int64` datatype):
 	
 	DUMP(time + 1);
 	DUMP(time + 24 * 3600);
 	DUMP(time - date); // time converts to Date, so the result is in days
 	DUMP(time - ToTime(date)); // Time - Time is in seconds
 	
-	/// `Time` defines era limits
+	/// `Time` defines era limits too:
 	
 	DUMP(Time::Low());
 	DUMP(Time::High());
