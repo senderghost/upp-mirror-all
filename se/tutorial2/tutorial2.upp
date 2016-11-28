@@ -17,6 +17,9 @@ file
 	Null.cpp,
 	Value2.cpp,
 	CombineHash.cpp,
+	Vector.cpp,
+	Vector2.cpp,
+	Transfer.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

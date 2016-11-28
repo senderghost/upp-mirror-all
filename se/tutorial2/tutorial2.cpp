@@ -4,9 +4,8 @@
 
 GUI_APP_MAIN
 {
-	void Logging(); Logging();
-	void StringTutorial(); StringTutorial();
-	
+	DO(Logging);
+	DO(StringTutorial);
 	DO(StringBufferTutorial);
 	DO(WStringTutorial);
 	DO(DateTime);
@@ -15,6 +14,10 @@ GUI_APP_MAIN
 	DO(NullTutorial);
 	DO(Value2Tutorial);
 	DO(CombineHashTutorial);
+
+	DO(Vector1);
+	DO(Vector2);
+	DO(Transfer);
 	
 	MakeTutorial();
 }
