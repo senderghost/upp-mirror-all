@@ -5,10 +5,11 @@ void Transfer()
 {
 	/// .Transfer issues
 
-	/// Often you need to pass content of one container to another of the same type. NTL
-	/// containers always support pick semantics (synonym of std::move), and, depending on
-	/// type stored, also might support clone sematics. When transfering the value, you have to
-	/// explicitly specify which one to use:
+	/// Often you need to pass content of one container to another of the same type. U++
+	/// containers always support ^topic://Core/srcdoc/pick_$en-us:pick semantics^ (synonym of
+	/// std::move), and, depending on type stored, also might support
+	/// ^topic://Core/srcdoc/pick_$en-us:clone semantics^. When transferring the value, you
+	/// have to explicitly specify which one to use:
 	
 	Vector<int> v{ 1, 2 };
 
@@ -50,8 +51,8 @@ void Transfer()
 			DUMP(j);
 #endif
 
-	/// That said, in certain cases it is simpler for containers to have default copy
-	/// constructor. You can easily achieve that with `WithDeepCopy` template:
+	/// That said, in certain cases it is simpler to have default copy instead of explicit
+	/// `clone`. You can easily achieve that using `WithDeepCopy` template:
 	
 	WithDeepCopy<Vector<int>> v2;
 	
@@ -60,5 +61,5 @@ void Transfer()
 	DUMP(v);
 	DUMP(v2);
 	
-	///
+	/// ^www.ultimatepp.org^
 }

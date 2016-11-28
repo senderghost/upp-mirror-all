@@ -43,12 +43,27 @@ void FlushDoc(String& docblock)
 	const char *s = docblock;
 	
 	while(*s)
-		if((s == ~docblock || findarg(s[-1], '(', ' ', '\'', '\"') >= 0) && findarg(s[0], '*', '%', '_', '`') >= 0 && s[1] && s[1] != ' ') {
+		if((s == ~docblock || findarg(s[-1], '(', ' ', '\'', '\"') >= 0) && findarg(s[0], '*', '%', '_', '`', '^') >= 0 && s[1] && s[1] != ' ') {
 			int c = *s++;
 			const char *b = s;
-			while(*s && *s != c)
+			const char *dc = NULL;
+			while(*s && *s != c) {
+				if(*s == ':')
+					dc = s;
 				s++;
-			qtf << decode(c, '*', "[* ", '%', "[/ ", '_', "[_ ", '`', "[C@5* ", "");
+			}
+			if(c == '^') {
+				qtf << "[^";
+				if(dc) {
+					qtf.Cat(b, dc);
+					b = dc + 1;
+				}
+				else
+					qtf.Cat(b, s);
+				qtf << "^ ";
+			}
+			else
+				qtf << decode(c, '*', "[* ", '%', "[/ ", '_', "[_ ", '`', "[C@5* ", "");
 			while(b < s)
 				qtf << '\`' << *b++;
 			qtf << "]";
