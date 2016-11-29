@@ -26,16 +26,20 @@ void FlushDoc(String& docblock)
 	OUT("============= DOC");
 	OUT(docblock);
 	
+	bool title = false;
+	
 	String style = "[s3;";
 	if(docblock.StartsWith("..")) {
 		docblock = AsString(major) + "." + AsString(++minor) + ' ' + TrimBoth(docblock.Mid(2));
 		style = "[s7;";
+		title = true;
 	}
 	else
 	if(docblock.StartsWith(".")) {
 		docblock = AsString(++major) + "." + ' ' + TrimBoth(docblock.Mid(1));
 		minor = 0;
 		style = "[s2;";
+		title = true;
 	}
 	
 	qtf << style << " ";
@@ -63,7 +67,7 @@ void FlushDoc(String& docblock)
 				qtf << "^ ";
 			}
 			else
-				qtf << decode(c, '*', "[* ", '%', "[/ ", '_', "[_ ", '`', "[C@5* ", "");
+				qtf << decode(c, '*', "[* ", '%', "[/ ", '_', "[_ ", '`', title ? "[C@5 " : "[C@5* ", "");
 			while(b < s)
 				qtf << '\`' << *b++;
 			qtf << "]";

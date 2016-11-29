@@ -18,6 +18,9 @@ GUI_APP_MAIN
 	DO(Vector1);
 	DO(Vector2);
 	DO(Transfer);
+	DO(ContainerClientTypes);
+	DO(ArrayTutorial);
+	DO(PolyArray);
 	
 	MakeTutorial();
 }

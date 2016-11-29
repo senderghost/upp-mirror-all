@@ -5,6 +5,7 @@ uses
 file
 	Tutorial.h,
 	Tutorial.cpp,
+	Core readonly separator,
 	ToDo.cpp,
 	Range.cpp,
 	Logging.cpp,
@@ -20,6 +21,9 @@ file
 	Vector.cpp,
 	Vector2.cpp,
 	Transfer.cpp,
+	ClientTypes.cpp,
+	Array.cpp,
+	PolyArray.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

@@ -61,5 +61,5 @@ void Transfer()
 	DUMP(v);
 	DUMP(v2);
 	
-	/// ^www.ultimatepp.org^
+	///
 }
