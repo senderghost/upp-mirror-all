@@ -27,6 +27,7 @@ file
 	Bidirectional.cpp,
 	Index.cpp,
 	IndexClient.cpp,
+	Map.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

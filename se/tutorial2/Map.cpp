@@ -1,0 +1,154 @@
+#include "Tutorial.h"
+
+void Map()
+{
+	/// .`VectorMap`, `ArrayMap`
+
+	/// `VectorMap` is nothing else than a simple composition of `Index` of keys and `Vector`
+	/// of values. You can use `Add` methods to put elements into the `VectorMap`:
+
+	struct Person : Moveable<Person> {
+		String name;
+		String surname;
+		
+		
+	
+		Person(String name, String surname) : name(name), surname(surname) {}
+		Person() {}
+	};
+
+	VectorMap<String, Person> m;
+	
+	m.Add("1", Person("John", "Smith"));
+	m.Add("2", Person("Carl", "Engles"));
+
+	Person& p = m.Add("3");
+	p.name = "Paul";
+	p.surname = "Carpenter";
+	
+	DUMP(m);
+
+	/// `VectorMap` provides read-only access to its `Index` of keys and read-write access to its
+	/// `Vector` of values:
+
+	DUMP(m.GetKeys());
+	DUMP(m.GetValues());
+	
+	///
+	
+	m.GetValues()[2].name = "Peter";
+	
+	DUMP(m);
+	
+	
+	/// You can use indices to iterate `VectorMap` contents:
+
+	for(int i = 0; i < m.GetCount(); i++)
+		LOG(m.GetKey(i) << ": " << m[i]);
+	
+	/// Standard `begin`/`end` pair for `VectorMap` is the range of just values (internal Vector)
+	/// - it corresponds with `operator[]` returning values:
+
+	for(const auto& p : m)
+		DUMP(p);
+	
+	/// To iterate through keys, you can use `begin`/`end` of internal `Index`:
+	
+	for(const auto& k : m.GetKeys())
+		DUMP(p);
+	
+	/// Alternatively, it is possible to create 'projection' of VectorMap that provides
+	/// convenient key/value iteration, using `operator~` (note that is also removes 'unliked'
+	/// items, see later):
+	
+	for(const auto& e : ~m) {
+		DUMP(e.key);
+		DUMP(e.value);
+	}
+
+	/// You can use Find method to retrieve position of element with required key
+
+	DUMP(m.Find("2"));
+
+	/// or Get method to retrieve corresponding value
+
+	DUMP(m.Get("2"));
+
+	/// Passing key not present in `VectorMap` as `Get` parameter is undefined behavior (ASSERT
+	/// fails in debug mode), but there exists two parameter version of `Get` that returns second
+	/// parameter if the key is not found in VectorMap:
+
+	DUMP(m.Get("33", Person("unknown", "person")));
+
+	/// As with `Index`, you can use `Unlink` to make elements invisible for Find operations
+
+	m.Unlink(1);
+	DUMP(m.Find("2"));
+
+	/// You can use SetKey method to change the key of the element
+
+	m.SetKey(1, "33");
+	DUMP(m.Get("33", Person("unknown", "person")));
+
+
+#if 0
+	/// If there are more elements with the same key in VectorMap, you can iterate them using FindNext method:
+	m.Add("33", Person("Peter", "Pan"));
+
+m.GetKeys() = { 1, 33, 3, 33 }
+m.GetValues() = { John Smith, Carl Engles, Paul Carpenter, Peter Pan }
+
+	int q = m.Find("33");
+	while(q >= 0) {
+		cout << m[q] << 'n';
+		q = m.FindNext(q);
+	}
+	
+Carl Engles
+Peter Pan
+
+You can reuse unlinked positions using Put method:
+	m.UnlinkKey("33");
+	m.Put("22", Person("Ali", "Baba"));
+	m.Put("44", Person("Ivan", "Wilks"));
+
+m.GetKeys() = { 1, 22, 3, 44 }
+m.GetValues() = { John Smith, Ali Baba, Paul Carpenter, Ivan Wilks }
+
+GetSortOrder algorithm returns order of elements as Vector<int> container. You can use it to order content of VectorMap without actually moving its elements
+	bool operator<(const Person& a, const Person& b)
+	{
+		return a.surname == b.surname ? a.name < b.name
+	                              : a.surname < b.surname;
+	}
+
+.......
+
+	Vector<int> order = GetSortOrder(m.GetValues());
+order = { 1, 2, 0, 3 }
+	for(int i = 0; i < order.GetCount(); i++)
+		cout << m.GetKey(order[i]) << ": " << m[order[i]] << 'n';
+
+22: Ali Baba
+3: Paul Carpenter
+1: John Smith
+44: Ivan Wilks
+
+You can get Vector of values or keys using PickValues resp. PickKeys methods in low constant time, while destroying content of source VectorMap
+	Vector<Person> ps = m.PickValues();
+ps = { John Smith, Ali Baba, Paul Carpenter, Ivan Wilks }
+If type of values does not satisfy requirements for Vector elements or if references to elements are needed, you can use ArrayMap instead
+	ArrayMap<String, Number> am;
+	am.Create<Integer>("A").n = 11;
+	am.Create<Double>("B").n = 2.1;
+
+am.GetKeys() = { A, B }
+am.GetValues() = { 11, 2.1 }
+
+	DUMP(am.Get("A"));
+	DUMP(am.Find("B"));
+
+am.Get("A") = 11
+am.Find("B") = 1
+#endif
+}
