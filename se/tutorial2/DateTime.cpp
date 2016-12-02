@@ -60,7 +60,8 @@ void DateTime()
 	///
 
 	DUMP(AddMonths(date, 20));
-	DUMP(GetMonths(date, date + 100)); // the most accurate number of 'whole months'
+	DUMP(GetMonths(date, date + 100)); // number of 'whole months' between two dates
+	DUMP(GetMonthsP(date, date + 100)); // number of 'whole or partial months' between two dates
 	DUMP(AddYears(date, 2));
 	
 	///

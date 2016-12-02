@@ -8,24 +8,18 @@ void PolyArray()
 
 	struct Number {
 		virtual double Get() const = 0;
-	
 		String ToString() const { return AsString(Get()); }
-		
 		virtual ~Number() {}
 	};
 	
 	struct Integer : public Number {
 		int n;
 		virtual double Get() const { return n; }
-	
-		Integer() {}
 	};
 	
 	struct Double : public Number {
 		double n;
 		virtual double Get() const { return n; }
-	
-		Double() {}
 	};
 	
 	/// To add such derived types to `Array`, you can best use in-place creation with `Create`

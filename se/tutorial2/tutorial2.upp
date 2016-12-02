@@ -24,6 +24,9 @@ file
 	ClientTypes.cpp,
 	Array.cpp,
 	PolyArray.cpp,
+	Bidirectional.cpp,
+	Index.cpp,
+	IndexClient.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

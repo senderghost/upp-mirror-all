@@ -2,13 +2,23 @@
 
 using namespace Upp;
 
-struct Foo : DeepCopyOption<Foo> {
+struct Foo : WithClone<Foo> {
 	Foo() {}
 	Foo(Foo&&) { LOG("Foo move constructor"); }
 	Foo& operator=(Foo&&) { LOG("Foo move assignment"); return *this; }
 	Foo(const Foo& x, int) {
 		LOG("Foo clone");
 	}
+};
+
+struct Bar1 {
+	String a;
+	Foo b;
+};
+
+struct Bar2 {
+	String a;
+	WithDeepCopy<Foo> b;
 };
 
 struct Bar : WithClone<Bar> {
@@ -32,15 +42,42 @@ namespace Upp {
 
 CONSOLE_APP_MAIN
 {
-	Bar a, b;
+	{
+		Bar1 a, b;
+		
+	//	a = b;
+		
+	//	LOG("==== Clone");
+	//	a = clone(b);
+		
+		LOG("==== Pick");
+		a = pick(b);
+	}
 	
-//	a = b;
+	{
+		Bar2 a, b;
 	
-	LOG("==== Clone");
-	a = Upp::cloneit(b);
+		LOG("==== Copy");
+		a = b;
+		
+		LOG("==== Clone");
+		a = clone(b);
+		
+		LOG("==== Pick");
+		a = pick(b);
+	}
 	
-	LOG("==== Pick");
-	a = pick(b);
+	{
+		Bar a, b;
+		
+	//	a = b;
+		
+		LOG("==== Clone");
+		a = clone(b);
+		
+		LOG("==== Pick");
+		a = pick(b);
+	}
 	
 	
 	{

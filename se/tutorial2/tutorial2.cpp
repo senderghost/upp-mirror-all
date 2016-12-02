@@ -1,7 +1,5 @@
 #include "Tutorial.h"
 
-
-
 GUI_APP_MAIN
 {
 	DO(Logging);
@@ -22,5 +20,10 @@ GUI_APP_MAIN
 	DO(ArrayTutorial);
 	DO(PolyArray);
 	
+	DO(Bidirectional);
+	
+	DO(IndexTutorial);
+	DO(IndexClient);
+
 	MakeTutorial();
 }
