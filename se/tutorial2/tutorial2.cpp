@@ -24,6 +24,7 @@ GUI_APP_MAIN
 	
 	DO(IndexTutorial);
 	DO(IndexClient);
+	DO(Map);
 
 	MakeTutorial();
 }

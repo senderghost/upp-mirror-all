@@ -11,7 +11,7 @@ void Map()
 		String name;
 		String surname;
 		
-		
+		String ToString() const { return String() << name << ' ' << surname; }
 	
 		Person(String name, String surname) : name(name), surname(surname) {}
 		Person() {}
@@ -80,75 +80,60 @@ void Map()
 
 	DUMP(m.Get("33", Person("unknown", "person")));
 
-	/// As with `Index`, you can use `Unlink` to make elements invisible for Find operations
+	/// As with `Index`, you can use `Unlink` to make elements invisible for Find operations:
 
 	m.Unlink(1);
 	DUMP(m.Find("2"));
 
-	/// You can use SetKey method to change the key of the element
+	/// `SetKey` changes the key of the element:
 
 	m.SetKey(1, "33");
 	DUMP(m.Get("33", Person("unknown", "person")));
 
+	/// If there are more elements with the same key in `VectorMap`, you can iterate them using
+	/// `FindNext` method:
 
-#if 0
-	/// If there are more elements with the same key in VectorMap, you can iterate them using FindNext method:
 	m.Add("33", Person("Peter", "Pan"));
-
-m.GetKeys() = { 1, 33, 3, 33 }
-m.GetValues() = { John Smith, Carl Engles, Paul Carpenter, Peter Pan }
 
 	int q = m.Find("33");
 	while(q >= 0) {
-		cout << m[q] << 'n';
+		DUMP(m[q]);
 		q = m.FindNext(q);
 	}
 	
-Carl Engles
-Peter Pan
+	/// Unlinked positions can be 'reused' using Put method:
 
-You can reuse unlinked positions using Put method:
 	m.UnlinkKey("33");
 	m.Put("22", Person("Ali", "Baba"));
 	m.Put("44", Person("Ivan", "Wilks"));
 
-m.GetKeys() = { 1, 22, 3, 44 }
-m.GetValues() = { John Smith, Ali Baba, Paul Carpenter, Ivan Wilks }
+	DUMP(m);
 
-GetSortOrder algorithm returns order of elements as Vector<int> container. You can use it to order content of VectorMap without actually moving its elements
-	bool operator<(const Person& a, const Person& b)
-	{
-		return a.surname == b.surname ? a.name < b.name
-	                              : a.surname < b.surname;
-	}
+	/// `PickValues` / `PickIndex` / `PickKeys` / pick internal `Vector` / `Index` / `Vector`
+	/// of `Index`:
 
-.......
-
-	Vector<int> order = GetSortOrder(m.GetValues());
-order = { 1, 2, 0, 3 }
-	for(int i = 0; i < order.GetCount(); i++)
-		cout << m.GetKey(order[i]) << ": " << m[order[i]] << 'n';
-
-22: Ali Baba
-3: Paul Carpenter
-1: John Smith
-44: Ivan Wilks
-
-You can get Vector of values or keys using PickValues resp. PickKeys methods in low constant time, while destroying content of source VectorMap
 	Vector<Person> ps = m.PickValues();
-ps = { John Smith, Ali Baba, Paul Carpenter, Ivan Wilks }
-If type of values does not satisfy requirements for Vector elements or if references to elements are needed, you can use ArrayMap instead
-	ArrayMap<String, Number> am;
-	am.Create<Integer>("A").n = 11;
-	am.Create<Double>("B").n = 2.1;
+	Vector<String> ks = m.PickKeys();
+	
+	DUMP(ps);
+	DUMP(ks);
+	DUMP(m);
+	
+	/// `VectorMap` pick constructor to create map by picking:
+	
+	ks[0] = "Changed key";
 
-am.GetKeys() = { A, B }
-am.GetValues() = { 11, 2.1 }
+	m = VectorMap<String, Person>(pick(ks), pick(ps));
+	
+	DUMP(m);
 
-	DUMP(am.Get("A"));
-	DUMP(am.Find("B"));
+	/// `ArrayMap` is composition of Index and Array, for cases where Array is better fit for
+	/// value type (e.g. they are polymorphic):
 
-am.Get("A") = 11
-am.Find("B") = 1
-#endif
+	ArrayMap<String, Person> am;
+	am.Create<Person>("key", "new", "person");
+	
+	DUMP(am);
+	
+	///
 }
