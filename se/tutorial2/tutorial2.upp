@@ -28,6 +28,8 @@ file
 	Index.cpp,
 	IndexClient.cpp,
 	Map.cpp,
+	One.cpp,
+	Any.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

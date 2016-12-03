@@ -40,7 +40,6 @@ void Map()
 	
 	DUMP(m);
 	
-	
 	/// You can use indices to iterate `VectorMap` contents:
 
 	for(int i = 0; i < m.GetCount(); i++)
@@ -57,7 +56,7 @@ void Map()
 	for(const auto& k : m.GetKeys())
 		DUMP(p);
 	
-	/// Alternatively, it is possible to create 'projection' of VectorMap that provides
+	/// Alternatively, it is possible to create 'projection range' of VectorMap that provides
 	/// convenient key/value iteration, using `operator~` (note that is also removes 'unliked'
 	/// items, see later):
 	
@@ -66,11 +65,11 @@ void Map()
 		DUMP(e.value);
 	}
 
-	/// You can use Find method to retrieve position of element with required key
+	/// You can use Find method to retrieve position of element with required key:
 
 	DUMP(m.Find("2"));
 
-	/// or Get method to retrieve corresponding value
+	/// or Get method to retrieve corresponding value:
 
 	DUMP(m.Get("2"));
 
