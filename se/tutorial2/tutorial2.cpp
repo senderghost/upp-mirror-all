@@ -29,6 +29,7 @@ GUI_APP_MAIN
 	DO(AnyTutorial);
 	DO(InVectorTutorial);
 	DO(SortedMap);
+	DO(TupleTutorial);
 
 	MakeTutorial();
 }
