@@ -30,6 +30,9 @@ file
 	Map.cpp,
 	One.cpp,
 	Any.cpp,
+	InVector.cpp,
+	SortedMap.cpp,
+	Tuple.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

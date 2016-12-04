@@ -27,6 +27,8 @@ GUI_APP_MAIN
 	DO(Map);
 	DO(OneTutorial);
 	DO(AnyTutorial);
+	DO(InVectorTutorial);
+	DO(SortedMap);
 
 	MakeTutorial();
 }
