@@ -69,12 +69,12 @@ void FlushDoc(String& docblock)
 			else
 				qtf << decode(c, '*', "[* ", '%', "[/ ", '_', "[_ ", '`', title ? "[C@5 " : "[C@5* ", "");
 			while(b < s)
-				qtf << '\`' << *b++;
+				qtf << '`' << *b++;
 			qtf << "]";
 			if(*s) s++;
 		}
 		else
-			qtf << '\`' << *s++;
+			qtf << '`' << *s++;
 
 	qtf << "&]";
 	docblock.Clear();
@@ -139,7 +139,7 @@ void MakeTutorial()
 			logline.GetAdd(path).Add(MakeTuple(line, ln));
 	}
 	
-	for(auto& f : ~logline) {
+	for(auto&& f : ~logline) {
 		Vector<String> src = Split(Filter(LoadFile(f.key), [] (int c) { return c == '\r' ? 0 : c; }), '\n', false);
 		int i = 0;
 		int logi = 0;

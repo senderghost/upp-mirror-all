@@ -45,7 +45,7 @@ void Map()
 	for(int i = 0; i < m.GetCount(); i++)
 		LOG(m.GetKey(i) << ": " << m[i]);
 	
-	/// Standard `begin`/`end` pair for `VectorMap` is the range of just values (internal Vector)
+	/// Standard `begin` / `end` pair for `VectorMap` is the range of just values (internal Vector)
 	/// - it corresponds with `operator[]` returning values:
 
 	for(const auto& p : m)
