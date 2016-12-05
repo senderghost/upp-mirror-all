@@ -33,6 +33,7 @@ file
 	InVector.cpp,
 	SortedMap.cpp,
 	Tuple.cpp,
+	Sort.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

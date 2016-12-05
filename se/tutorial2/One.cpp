@@ -38,7 +38,7 @@ void OneTutorial()
 	DUMP(s.Is<Base>());
 	DUMP(s.Is<Derived2>());
 	
-	/// To get a pointer to the contained instance, use `operator~':
+	/// To get a pointer to the contained instance, use `operator~`:
 	
 	Base *b = ~s;
 	DUMP(b->Get());
