@@ -32,6 +32,7 @@ GUI_APP_MAIN
 	DO(TupleTutorial);
 
 	DO(Sorting);
+	DO(Range);
 
 	MakeTutorial();
 }
