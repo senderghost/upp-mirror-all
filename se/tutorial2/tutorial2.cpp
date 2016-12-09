@@ -31,8 +31,8 @@ GUI_APP_MAIN
 	DO(SortedMap);
 	DO(TupleTutorial);
 
-	DO(Sorting);
 	DO(Range);
+	DO(Sorting);
 
 	MakeTutorial();
 }

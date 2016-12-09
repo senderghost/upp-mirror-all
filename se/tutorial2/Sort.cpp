@@ -13,13 +13,15 @@ void Sorting()
 	
 	DUMP(x);
 	
+	///
+	
 	Sort(x, [](const String& a, const String& b) { return atoi(a) < atoi(b); });
 	
 	DUMP(x);
 	
 
 	/// `IndexSort` is sort variant that is able to sort two ranges (like `Vector` or `Array`)
-	/// of the same size, based on values in one of containers:
+	/// of the same size, based on values in the first range:
 
 	Vector<int> a { 5, 10, 2, 9, 7, 3 };
 	Vector<String> b { "five", "ten", "two", "nine", "seven", "three" };
