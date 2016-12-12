@@ -18,6 +18,7 @@ file
 	Null.cpp,
 	Value2.cpp,
 	CombineHash.cpp,
+	Compare.cpp,
 	Vector.cpp,
 	Vector2.cpp,
 	Transfer.cpp,
@@ -35,6 +36,7 @@ file
 	Tuple.cpp,
 	Ranges.cpp,
 	Sort.cpp,
+	Function.cpp,
 	tutorial2.cpp,
 	help.qtf;
 

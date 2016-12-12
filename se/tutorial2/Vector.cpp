@@ -4,7 +4,7 @@ void Vector1()
 {
 	/// .`Vector` basics
 	
-	/// `Vector` is the basic container of U++. It is random access container similar to
+	/// `Vector` is the basic container of U++. It is the random access container similar to
 	/// `std::vector` with one important performance related difference: There are rules for
 	/// elements of `Vector` that allow its implementation to move elements in memory using
 	/// plain `memcpy`/`memmove` ("Moveable" concept).
@@ -39,17 +39,17 @@ void Vector1()
 
 		DUMP(v);
 
-	/// To iterate Vector you can use indices
+	/// To iterate `Vector` you can use indices:
 	
 		for(int i = 0; i < v.GetCount(); i++)
 			LOG(v[i]);
 	
-	/// Alternative, U++ also provides standard C++ begin/end interface
+	/// begin/end interface:
 
 		for(auto q = v.begin(), e = v.end(); q != e; q++)
 			LOG(*q);
 	
-	/// or with C++11 range-for syntax:
+	/// C++11 range-for syntax:
 	
 		for(const auto& q : v)
 			LOG(q);

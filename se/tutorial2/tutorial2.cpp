@@ -12,6 +12,7 @@ GUI_APP_MAIN
 	DO(NullTutorial);
 	DO(Value2Tutorial);
 	DO(CombineHashTutorial);
+	DO(ComparableTutorial);
 
 	DO(Vector1);
 	DO(Vector2);
@@ -33,6 +34,8 @@ GUI_APP_MAIN
 
 	DO(Range);
 	DO(Sorting);
+	
+	DO(FunctionTutorial);
 
 	MakeTutorial();
 }
