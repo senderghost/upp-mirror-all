@@ -426,7 +426,7 @@ public:
 	double GetDouble(String separators = "")  	{return atof(GetText(separators));};
 	int GetInt(String separators = "")			{return atoi(GetText(separators));};
 	long GetLong(String separators = "")		{return atol(GetText(separators));};
-	uint64 GetUInt64(String separators = "")	{return atoll(GetText(separators));};
+	uint64 GetUInt64(String separators = "")	{return ScanInt64(GetText(separators));};
 	
 	String Right() 			{return String::Mid(pos+1);}
 	int GetLastSeparator() 	{return lastSeparator;}
