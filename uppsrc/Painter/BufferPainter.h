@@ -357,7 +357,7 @@ private:
 	void             DoMove0();
 	void             ClearPath();
 	void             ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
-	Buffer<ClippingLine> RenderPath(double width, SpanSource *ss, const RGBA& color);
+	Buffer<ClippingLine> RenderPath(double width, Event<One<SpanSource>&> ssgen, const RGBA& color);
 	void             RenderImage(double width, const Image& image, const Xform2D& transsrc,
 	                             dword flags);
 	void             RenderRadial(double width, const Pointf& f, const RGBA& color1,

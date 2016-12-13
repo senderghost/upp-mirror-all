@@ -243,7 +243,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 }
 #endif
 
-Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, const RGBA& color)
+Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSource>&> ss, const RGBA& color)
 {
 	PAINTER_TIMING("RenderPath");
 	Buffer<ClippingLine> newclip;
@@ -325,6 +325,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 		ClipFiller          clip_filler;
 		NoAAFillerFilter    noaa_filler;
 		MaskFillerFilter    mf;
+		One<SpanSource>     ss;
 	};
 	
 	CoWorkerResources<Res> res;
@@ -332,6 +333,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 	bool issubpixel = mode == MODE_SUBPIXEL;
 
 	for(Res& r : res) {
+		PAINTER_TIMING("Preparing Res");
 		if(issubpixel) {
 			r.subpixel.Alloc(render_cx + 30);
 			r.subpixel_filler.sbuffer = r.subpixel;
@@ -344,15 +346,16 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 		}
 		else
 		if(ss) {
+			ss(r.ss);
 			r.span.Alloc((issubpixel ? 3 : 1) * ib.GetWidth() + 3);
 			if(issubpixel) {
-				r.subpixel_filler.ss = ss;
+				r.subpixel_filler.ss = ~r.ss;
 				r.subpixel_filler.buffer = r.span;
 				r.subpixel_filler.alpha = opacity;
 				r.rg = &r.subpixel_filler;
 			}
 			else {
-				r.span_filler.ss = ss;
+				r.span_filler.ss = ~r.ss;
 				r.span_filler.buffer = r.span;
 				r.span_filler.alpha = opacity;
 				r.rg = &r.span_filler;
@@ -476,17 +479,17 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 
 void BufferPainter::FillOp(const RGBA& color)
 {
-	RenderPath(FILL, NULL, color);
+	RenderPath(FILL, Null, color);
 }
 
 void BufferPainter::StrokeOp(double width, const RGBA& color)
 {
-	RenderPath(width, NULL, color);
+	RenderPath(width, Null, color);
 }
 
 void BufferPainter::ClipOp()
 {
-	Buffer<ClippingLine> newclip = RenderPath(CLIP, NULL, RGBAZero());
+	Buffer<ClippingLine> newclip = RenderPath(CLIP, Null, RGBAZero());
 	if(attr.hasclip)
 		clip.Top() = pick(newclip);
 	else {
