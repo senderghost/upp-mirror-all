@@ -332,7 +332,7 @@ void SpanFiller::Render(int val, int len)
 			AlphaBlendCover8(*t++, *s++, val);
 }
 
-ClipFiller::ClipFiller(int _cx)
+void ClipFiller::Init(int _cx)
 {
 	cx = _cx;
 	buffer.Alloc(2 * cx);

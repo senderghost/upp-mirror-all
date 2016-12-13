@@ -321,7 +321,6 @@ private:
 	
 	ImageBuffer&               ib;
 	int                        mode;
-	Buffer<int16>              subpixel;
 	int                        render_cx;
 	bool                       dopreclip;
 
@@ -343,7 +342,6 @@ private:
 	Pointf       path_min, path_max;
 	
 	Rasterizer   rasterizer;
-	Buffer<RGBA> span;
 
 	Vector<PathLine> onpath;
 	double           pathlen;

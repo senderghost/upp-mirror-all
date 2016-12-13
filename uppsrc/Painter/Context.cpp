@@ -119,10 +119,8 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 	ClearPath();
 
 	render_cx = ib.GetWidth();
-	if(mode == MODE_SUBPIXEL) {
+	if(mode == MODE_SUBPIXEL)
 		render_cx *= 3;
-		subpixel.Alloc(render_cx + 30);
-	}
 	attr.cap = LINECAP_BUTT;
 	attr.join = LINEJOIN_MITER;
 	attr.miter_limit = 4;
