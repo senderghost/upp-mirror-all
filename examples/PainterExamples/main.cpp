@@ -180,7 +180,7 @@ App::App() {
 	ctrl.print <<= THISBACK(Print);
 	Reset();
 	LoadFromFile(*this);
-	Title("Painter 2.0");
+	Title("Painter 2.0 MT");
 }
 
 App::~App()
