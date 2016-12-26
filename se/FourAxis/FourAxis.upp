@@ -3,6 +3,10 @@ uses
 	Painter;
 
 file
+	Hot4d.h,
+	Util.cpp,
+	Rod.cpp,
+	Text.cpp,
 	main.cpp,
 	dlg.lay;
 

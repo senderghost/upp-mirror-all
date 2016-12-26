@@ -1,18 +1,6 @@
-#include <CtrlLib/CtrlLib.h>
-#include <Painter/Painter.h>
+#include "Hot4d.h"
 
-using namespace Upp;
-
-#define LAYOUTFILE <FourAxis/dlg.lay>
-#include <CtrlCore/lay.h>
-
-struct Target {
-	virtual void To(Pointf p) = 0;
-	
-	void To(double x, double y) { To(Pointf(x, y)); }
-};
-
-struct GCode : Target {
+struct GCode {
 	FileOut& out;
 	Pointf   pos;
 	int      speed;
@@ -42,75 +30,6 @@ void GCode::To(Pointf p)
 	pos = p;
 }
 
-struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
-	typedef FourAxisDlg CLASSNAME;
-	
-	void Circle(Target& path);
-
-	void Sync();
-	void Save();
-	void Render(Target& r) { Circle(r); }
-
-	FourAxisDlg();
-};
-
-/*
-void FourAxisDlg::Circle(Target& path)
-{
-	Pointf start(~leadin, ~central);
-
-	path.To(0, start.y);
-	path.To(start.x, start.y);
-	
-	double rx = (double)~diameter_x / 2;
-	double ry = (double)~diameter_y / 2;
-	Pointf center = start + Sizef(rx, 0);
-
-	int n = ~steps;
-	int nn = n - int((double)~leadoutp * steps / 100);
-	for(int i = 0; i <= nn; i++) {
-		double angle = 2 * M_PI * i / n;
-		Pointf c = Pointf(rx * -cos(angle) + center.x, ry * sin(angle) + center.y);
-		path.To(c);
-	}
-	path.To(0, start.y);
-	path.To(0, 0);
-}
-*/
-
-void FourAxisDlg::Circle(Target& path)
-{
-
-	int n4 = (int)~steps / 4;
-
-	Sizef rect(~rect_x, ~rect_y);
-	Sizef left(~left_x, ~left_y);
-	Sizef right(~right_x, ~right_y);
-
-	Pointf center((double)~leadin + left.cx / 2 + rect.cx / 2, ~central);
-
-	path.To(0, center.y);
-	
-	for(int i = 0; i < 4; i++) {
-		int ts = findarg(i, 0, 1) >= 0 ? 1 : -1;
-		int rs = findarg(i, 0, 3) >= 0 ? -1 : 1;
-	
-		double rx = (findarg(i, 0, 3) >= 0 ? left.cx : right.cx) / 2;
-		double ry = (findarg(i, 0, 3) >= 0 ? left.cy : right.cy) / 2;
-
-		Pointf c;
-		c.x = center.x + rs * rect.cx / 2;
-		c.y = center.y + ts * rect.cy / 2;
-		
-		for(int a = 0; a <= n4; a++) {
-			double angle = M_PI * a / n4 / 2 + i * M_PI / 2;
-			path.To(rx * -cos(angle) + c.x, ry * sin(angle) + c.y);
-		}
-	}
-	path.To(center.x - left.cx / 2 - rect.cx / 2, center.y + rect.cy / 2);
-	path.To(0, 0);
-}
-
 void FourAxisDlg::Save()
 {
 	if(!Accept())
@@ -128,32 +47,21 @@ void FourAxisDlg::Save()
 	gcode.Put("G21");
 	gcode.Put("G17");
 	gcode.Put("G91");
-	Circle(gcode);
+	
+	for(auto p :  CurrentShape().Get())
+		gcode.To(p);
+	
+	gcode.To(Pointf(0, 0));
 }
 
 void FourAxisDlg::Sync()
 {
-	struct Extents : Target {
-		Rectf r = Rect(0, 0, 0, 0);
-
-		virtual void To(Pointf p) {
-			r.Union(p);
-		}
-	} e;
-
-	Render(e);
+	auto path = CurrentShape().Get();
+	Rectf r = Rect(0, 0, 0, 0);
+	for(auto p : path)
+		r.Union(p);
 	
 	Size isz = preview.GetSize();
-	
-	struct PaintPath : Target, ImagePainter {
-		Pointf pp;
-
-		virtual void To(Pointf p) {
-			Line(p);
-		}
-
-		PaintPath(Size isz) : ImagePainter(isz) { pp = Pointf(0, 0); }
-	} p(isz);
 	
 	int scale = ~this->scale;
 	
@@ -168,6 +76,8 @@ void FourAxisDlg::Sync()
 	Point origin(b, isz.cy - b);
 	
 	Size psz = isz - Size(b, b);
+	
+	ImagePainter p(isz);
 
 	p.Translate(0.5, 0.5);
 	p.Clear(White());
@@ -193,7 +103,10 @@ void FourAxisDlg::Sync()
 		p.Translate(origin);
 		p.Scale(scale, -scale);
 		p.Move(0, 0);
-		Render(p);
+		
+		for(auto pt : path)
+			p.Line(pt);
+
 		p.Stroke(1.0 / scale, Red());
 
 		int a = ~arrows;
@@ -206,6 +119,22 @@ void FourAxisDlg::Sync()
 	}
 
 	preview.SetImage(p);
+	
+	DUMP(AsJSON(CurrentShape().Get()));
+}
+
+Shape& FourAxisDlg::CurrentShape()
+{
+	if(~type == 1)
+		return text;
+	return rod;
+}
+
+void FourAxisDlg::Type()
+{
+	rod.Show(~type == 0);
+	text.Show(~type == 1);
+	Sync();
 }
 
 FourAxisDlg::FourAxisDlg()
@@ -214,38 +143,36 @@ FourAxisDlg::FourAxisDlg()
 	
 	WhenClose = [=] { Break(); };
 	
-	save << [=] { Save(); };
+	save_as << [=] { Save(); };
 	
-	central <<= 15;
-	leadin <<= 10;
-	leadoutp <<= 0;
-	left_x <<= 30;
-	left_y <<= 20;
-	right_x <<= 30;
-	right_y <<= 20;
-	rect_x <<= 5;
-	rect_y <<= 5;
-	steps <<= 1000;
 	speed <<= 140;
 	
 	for(auto i : { 1, 2, 3, 5, 10, 20, 30, 50, 100 })
 		scale.Add(i, AsString(i) + " pixels / mm");
 	scale <<= 5;
 	scale << [=] { Sync(); };
+	
+	shape.Add(rod.SizePos());
+	shape.Add(text.SizePos());
+	
+	type.Add(0, "Rod");
+	type.Add(1, "Text");
+	type << [=] { Type(); };
+	type <<= 0;
 
 	arrows.Add(0, "None");
 	for(int i = 0; i < 100; i += 4)
 		arrows.Add(i, AsString(i));
 	arrows <<= 16;
 	arrows << [=] { Sync(); };
-	
-	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
-		if(dynamic_cast<EditField *>(q))
+
+	for(int i = 0; i < 3; i++)
+		for(Ctrl *q = decode(i, 0, (TopWindow *)&rod, 1, (TopWindow *)&text, (TopWindow *)this)->GetFirstChild(); q; q = q->GetNext())
 			*q << [=] { Sync(); };
 			
 	preview.SetFrame(ViewFrame());
 	
-	Sync();
+	Type();
 }
 
 GUI_APP_MAIN
