@@ -13,14 +13,16 @@ VectorMap<String, Ctrl *> GetCtrlMap(Ctrl& parent)
 
 void SetValues(Ctrl& parent, const ValueMap& json)
 {
-	for(auto&& e : ~GetCtrlMap(parent))
+	auto h = GetCtrlMap(parent);
+	for(auto& e : ~h)
 		*e.value <<= json[e.key];
 }
 
 ValueMap GetValues(Ctrl& parent)
 {
 	ValueMap m;
-	for(auto&& e : ~GetCtrlMap(parent))
+	auto h = GetCtrlMap(parent);
+	for(auto& e : ~h)
 		m.Add(e.key, ~*e.value);
 	return m;
 }

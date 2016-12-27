@@ -30,6 +30,48 @@ void GCode::To(Pointf p)
 	pos = p;
 }
 
+const char *begin_source_tag = ";<<<source>>>";
+const char *end_source_tag = ";>>>source<<<";
+
+FourAxisDlg::FourAxisDlg()
+{
+	CtrlLayout(*this, "4 axis CNC G-code generator");
+	
+	WhenClose = [=] { Break(); };
+	
+	save_as << [=] { Save(); };
+	
+	speed <<= 140;
+	
+	for(auto i : { 1, 2, 3, 5, 10, 20, 30, 50, 100 })
+		scale.Add(i, AsString(i) + " pixels / mm");
+	scale <<= 5;
+	scale << [=] { Sync(); };
+
+	AddShape(rod);
+	AddShape(text);
+	
+	type << [=] { Type(); };
+	type <<= 0;
+
+	arrows.Add(0, "None");
+	for(int i = 0; i < 100; i += 4)
+		arrows.Add(i, AsString(i));
+	arrows <<= 16;
+	arrows << [=] { Sync(); };
+
+	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
+		*q << [=] { Sync(); };
+
+	for(int i = 0; i < shape.GetCount(); i++)
+		for(Ctrl *q = shape[i]->GetFirstChild(); q; q = q->GetNext())
+			*q << [=] { Sync(); };
+
+	preview.SetFrame(ViewFrame());
+	
+	Type();
+}
+
 void FourAxisDlg::Save()
 {
 	if(!Accept())
@@ -42,8 +84,20 @@ void FourAxisDlg::Save()
 #endif
 	if(!out)
 		return;
+
+	out.PutLine("");
+	String s = Base64Encode(MakeSave());
+	out.PutLine(begin_source_tag);
+	while(s.GetCount()) {
+		int n = min(s.GetCount(), 78);
+		out.PutLine(';' + s.Mid(0, n));
+		s.Remove(0, n);
+	}
+	out.PutLine(end_source_tag);
+	out.PutLine("");
 	
 	GCode gcode(out, ~speed);
+	
 	gcode.Put("G21");
 	gcode.Put("G17");
 	gcode.Put("G91");
@@ -106,7 +160,6 @@ void FourAxisDlg::Sync()
 		
 		for(auto pt : path)
 			p.Line(pt);
-
 		p.Stroke(1.0 / scale, Red());
 
 		int a = ~arrows;
@@ -120,64 +173,85 @@ void FourAxisDlg::Sync()
 
 	preview.SetImage(p);
 	
-	DUMP(AsJSON(CurrentShape().Get()));
+	DUMP(MakeSave());
+}
+
+String FourAxisDlg::MakeSave()
+{
+	ValueMap m;
+	m("type", CurrentShape().GetId());
+	m("data", CurrentShape().Save());
+	return AsJSON(m);
 }
 
 Shape& FourAxisDlg::CurrentShape()
 {
-	if(~type == 1)
-		return text;
-	return rod;
+	return *shape[~type];
 }
 
 void FourAxisDlg::Type()
 {
-	rod.Show(~type == 0);
-	text.Show(~type == 1);
+	for(int i = 0; i < shape.GetCount(); i++)
+		shape[i]->Show(~type == i);
 	Sync();
 }
 
-FourAxisDlg::FourAxisDlg()
+void FourAxisDlg::AddShape(Shape& s)
 {
-	CtrlLayout(*this, "4 axis CNC G-code generator");
-	
-	WhenClose = [=] { Break(); };
-	
-	save_as << [=] { Save(); };
-	
-	speed <<= 140;
-	
-	for(auto i : { 1, 2, 3, 5, 10, 20, 30, 50, 100 })
-		scale.Add(i, AsString(i) + " pixels / mm");
-	scale <<= 5;
-	scale << [=] { Sync(); };
-	
-	shape.Add(rod.SizePos());
-	shape.Add(text.SizePos());
-	
-	type.Add(0, "Rod");
-	type.Add(1, "Text");
-	type << [=] { Type(); };
-	type <<= 0;
+	shape.Add(s.GetId(), &s);
+	type.Add(type.GetCount(), s.GetName());
+	shape_dlg.Add(s);
+}
 
-	arrows.Add(0, "None");
-	for(int i = 0; i < 100; i += 4)
-		arrows.Add(i, AsString(i));
-	arrows <<= 16;
-	arrows << [=] { Sync(); };
-
-	for(int i = 0; i < 3; i++)
-		for(Ctrl *q = decode(i, 0, (TopWindow *)&rod, 1, (TopWindow *)&text, (TopWindow *)this)->GetFirstChild(); q; q = q->GetNext())
-			*q << [=] { Sync(); };
-			
-	preview.SetFrame(ViewFrame());
-	
+void FourAxisDlg::Load(const char *path)
+{
+	FileIn in(path);
+		String src;
+	while(!in.IsEof()) {
+		String s = in.GetLine();
+		if(s == begin_source_tag) {
+			while(!in.IsEof()) {
+				String l = in.GetLine();
+				if(l == end_source_tag)
+					break;
+				src.Cat(TrimBoth(l.Mid(1)));
+			}
+			break;
+		}
+	}
+	DUMP(src);
+	Value m = ParseJSON(Base64Decode(src));
+	DDUMP(m);
+	int q = shape.Find(m["type"]);
+	if(q < 0) {
+		Exclamation("Invalid file");
+		return;
+	}
+	filepath = path;
+	type <<= q;
 	Type();
+	CurrentShape().Load(m["data"]);
+	Sync();
+}
+
+void FourAxisDlg::Load()
+{
+#ifdef _DEBUG
+	String path = "c:/xxx/circle.nc";
+#else
+	String path = SelectFileOpen("*.nc");
+#endif
+	if(IsNull(path))
+		return;
+	Load(path);
 }
 
 GUI_APP_MAIN
 {
 	FourAxisDlg dlg;
+
+	dlg.Load("c:/xxx/circle.nc");
+
 #ifdef _DEBUG0
 	dlg.Save();
 #else

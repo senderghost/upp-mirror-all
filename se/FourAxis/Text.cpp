@@ -94,7 +94,7 @@ void DoApproximateChar(Vector<Pointf>& path, Pointf pos, int ch, Font fnt, doubl
 		static LRUCache<Value, GlyphKey> cache;
 		cache.Shrink(500000);
 		sHMakeGlyph h;
-		h.gk.fnt = fnt;
+		h.gk.fnt = fnt.Height(100 * fnt.GetHeight());
 		h.gk.chr = ch;
 		h.gk.tolerance = tolerance;
 		v = cache.Get(h);
@@ -107,12 +107,12 @@ void DoApproximateChar(Vector<Pointf>& path, Pointf pos, int ch, Font fnt, doubl
 		if(p.x > 1e30) {
 			p.x = g[i++];
 			p.y = -g[i++];
-			path.Add(p + pos);
+			path.Add(p / 100.0 + pos);
 		}
 		else {
 			PAINTER_TIMING("ApproximateChar::Line");
 			p.y = -g[i++];
-			path.Add(p + pos);
+			path.Add(p / 100.0 + pos);
 		}
 	}
 }
@@ -120,7 +120,7 @@ void DoApproximateChar(Vector<Pointf>& path, Pointf pos, int ch, Font fnt, doubl
 Vector<Pointf> Text::Get()
 {
 	Vector<Pointf> r;
-	Font fnt = Font(~font, ~height).Bold(~bold).Italic(~italic);
+	Font fnt = Font(~font, (int)~height).Bold(~bold).Italic(~italic);
 	String h = ~text;
 	Pointf pos = Pointf(~leadin, ~line);
 	r.Add(Pointf(0, pos.y));
@@ -131,9 +131,11 @@ Vector<Pointf> Text::Get()
 		npos.x += fnt[h[i]] + (int)~spacing;
 		r.Add(npos);
 		DoApproximateChar(ch, pos, h[i], fnt, 0.05);
-		int ei = FindBest(ch, [=](Pointf p1, Pointf p2) { return SquaredDistance(p1, pos) < SquaredDistance(p2, pos); });
-		r.AppendRange(SubRange(ch, ei, ch.GetCount() - ei));
-		r.AppendRange(SubRange(ch, 0, ei + 1));
+		if(ch.GetCount() > 2) {
+			int ei = FindBest(ch, [=](Pointf p1, Pointf p2) { return SquaredDistance(p1, pos) < SquaredDistance(p2, pos); });
+			r.AppendRange(SubRange(ch, ei, ch.GetCount() - ei));
+			r.AppendRange(SubRange(ch, 0, ei + 1));
+		}
 		pos = npos;
 	}
 	r.Add(pos);
@@ -160,7 +162,7 @@ Text::Text()
 	font.Add(Font::MONOSPACE, "Monospace");
 	
 	font <<= Font::SERIF;
-	
+	height <<= 20;
 	line <<= 8;
 	leadin <<= 10;
 	spacing <<= 0;

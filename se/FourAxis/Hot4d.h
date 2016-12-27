@@ -17,12 +17,16 @@ struct Shape : ParentCtrl {
 	virtual Vector<Pointf> Get() = 0;
 	virtual void     Load(const ValueMap& json) = 0;
 	virtual ValueMap Save() = 0;
+	virtual String   GetId() const = 0;
+	virtual String   GetName() const = 0;
 };
 
 struct Rod : WithRodLayout<Shape> {
 	virtual Vector<Pointf> Get();
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
+	virtual String   GetId() const   { return "rod"; }
+	virtual String   GetName() const { return "Rod"; }
 
 	typedef Rod CLASSNAME;
 
@@ -35,6 +39,8 @@ struct Text : WithTextLayout<Shape> {
 	virtual Vector<Pointf> Get();
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
+	virtual String   GetId() const   { return "text"; }
+	virtual String   GetName() const { return "Text"; }
 
 	Text();
 };
@@ -43,14 +49,24 @@ struct Text : WithTextLayout<Shape> {
 struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
 	
+	String filepath;
+	
 	Rod  rod;
 	Text text;
 
+	VectorMap<String, Shape *> shape;
+
 	Shape& CurrentShape();
 	
-	void Type();
-	void Sync();
-	void Save();
+	void   Type();
+	void   Sync();
+	void   Save();
+	void   Load(const char *path);
+	void   Load();
+	
+	String MakeSave();
+
+	void   AddShape(Shape& s);
 
 	FourAxisDlg();
 };
