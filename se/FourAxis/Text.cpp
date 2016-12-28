@@ -144,16 +144,6 @@ Vector<Pointf> Text::Get()
 	return r;
 }
 
-void Text::Load(const ValueMap& json)
-{
-	SetValues(*this, json);
-}
-
-ValueMap Text::Save()
-{
-	return GetValues(*this);
-}
-
 Text::Text()
 {
 	CtrlLayout(*this);

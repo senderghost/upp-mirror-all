@@ -51,3 +51,15 @@ LAYOUT(TextLayout, 400, 84)
 	ITEM(Option, italic, SetLabel(t_("Italic")).LeftPosZ(332, 56).TopPosZ(32, 16))
 END_LAYOUT
 
+LAYOUT(AngleLayout, 400, 200)
+	ITEM(Label, dv___0, SetLabel(t_("Y1")).LeftPosZ(8, 60).TopPosZ(4, 19))
+	ITEM(EditDouble, y1, LeftPosZ(68, 80).TopPosZ(4, 19))
+	ITEM(Label, dv___2, SetLabel(t_("X")).LeftPosZ(8, 60).TopPosZ(28, 19))
+	ITEM(EditDouble, x, LeftPosZ(68, 80).TopPosZ(28, 19))
+	ITEM(Label, dv___4, SetLabel(t_("Angle")).LeftPosZ(8, 60).TopPosZ(52, 19))
+	ITEM(EditDouble, angle, LeftPosZ(68, 80).TopPosZ(52, 19))
+	ITEM(Label, dv___6, SetLabel(t_("degreees")).LeftPosZ(152, 56).TopPosZ(52, 19))
+	ITEM(Label, dv___7, SetLabel(t_("Y2")).LeftPosZ(8, 60).TopPosZ(76, 19))
+	ITEM(EditDouble, y2, LeftPosZ(68, 80).TopPosZ(76, 19))
+END_LAYOUT
+

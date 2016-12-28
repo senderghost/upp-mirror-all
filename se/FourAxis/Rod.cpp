@@ -49,13 +49,3 @@ Vector<Pointf> Rod::Get()
 	path.Add(Pointf(center.x - left.cx / 2 - rect.cx / 2, center.y + rect.cy / 2));
 	return path;
 }
-
-void Rod::Load(const ValueMap& json)
-{
-	SetValues(*this, json);
-}
-
-ValueMap Rod::Save()
-{
-	return GetValues(*this);
-}

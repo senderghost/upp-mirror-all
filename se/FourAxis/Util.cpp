@@ -26,3 +26,14 @@ ValueMap GetValues(Ctrl& parent)
 		m.Add(e.key, ~*e.value);
 	return m;
 }
+
+
+void Shape::Load(const ValueMap& json)
+{
+	SetValues(*this, json);
+}
+
+ValueMap Shape::Save()
+{
+	return GetValues(*this);
+}

@@ -50,6 +50,7 @@ FourAxisDlg::FourAxisDlg()
 
 	AddShape(rod);
 	AddShape(text);
+	AddShape(angle);
 	
 	type << [=] { Type(); };
 	type <<= 0;
@@ -172,8 +173,6 @@ void FourAxisDlg::Sync()
 	}
 
 	preview.SetImage(p);
-	
-	DUMP(MakeSave());
 }
 
 String FourAxisDlg::MakeSave()
@@ -219,9 +218,7 @@ void FourAxisDlg::Load(const char *path)
 			break;
 		}
 	}
-	DUMP(src);
 	Value m = ParseJSON(Base64Decode(src));
-	DDUMP(m);
 	int q = shape.Find(m["type"]);
 	if(q < 0) {
 		Exclamation("Invalid file");

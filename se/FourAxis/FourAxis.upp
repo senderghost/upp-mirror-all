@@ -7,6 +7,7 @@ file
 	Util.cpp,
 	Rod.cpp,
 	Text.cpp,
+	Angle.cpp,
 	main.cpp,
 	dlg.lay;
 
