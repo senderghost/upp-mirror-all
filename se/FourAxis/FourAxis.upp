@@ -8,6 +8,7 @@ file
 	Rod.cpp,
 	Text.cpp,
 	Angle.cpp,
+	Kerf.cpp,
 	main.cpp,
 	dlg.lay;
 

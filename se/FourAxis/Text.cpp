@@ -107,6 +107,7 @@ void DoApproximateChar(Vector<Pointf>& path, Pointf pos, int ch, Font fnt, doubl
 		if(p.x > 1e30) {
 			p.x = g[i++];
 			p.y = -g[i++];
+			path.Add(Null); // next point is move
 			path.Add(p / 100.0 + pos);
 		}
 		else {
@@ -117,30 +118,45 @@ void DoApproximateChar(Vector<Pointf>& path, Pointf pos, int ch, Font fnt, doubl
 	}
 }
 
-Vector<Pointf> Text::Get()
+Path Text::Get()
 {
-	Vector<Pointf> r;
+	Path r;
 	Font fnt = Font(~font, (int)~height).Bold(~bold).Italic(~italic);
 	String h = ~text;
 	Pointf pos = Pointf(~leadin, ~line);
-	r.Add(Pointf(0, pos.y));
-	r.Add(Pointf(pos.x, pos.y));
+	r.To(0, pos.y);
+	r.To(pos.x, pos.y);
 	for(int i = 0; i < h.GetCount(); i++) {
 		Vector<Pointf> ch;
 		Pointf npos = pos;
 		npos.x += fnt[h[i]] + (int)~spacing;
-		r.Add(npos);
+		r.To(pos);
 		DoApproximateChar(ch, pos, h[i], fnt, 0.05);
 		if(ch.GetCount() > 2) {
-			int ei = FindBest(ch, [=](Pointf p1, Pointf p2) { return SquaredDistance(p1, pos) < SquaredDistance(p2, pos); });
-			r.AppendRange(SubRange(ch, ei, ch.GetCount() - ei));
-			r.AppendRange(SubRange(ch, 0, ei + 1));
+			int ei = FindBest(ch, [=](Pointf p1, Pointf p2) {
+				return SquaredDistance(Nvl(p1, Pointf(INT_MAX, INT_MAX)), pos) <
+				       SquaredDistance(Nvl(p2, Pointf(INT_MAX, INT_MAX)), pos);
+			});
+			bool kerf = false;
+			for(int q = 0; q < ch.GetCount() + 2; q++) {
+				Pointf pt = ch[(q + ei) % ch.GetCount()];
+				if(IsNull(pt))
+					kerf = false;
+				else {
+					if(kerf)
+						r.Kerf(pt);
+					else
+						r.To(pt);
+					kerf = true;
+				}
+			}
 		}
+		r.To(pos);
 		pos = npos;
 	}
-	r.Add(pos);
-	r.Add(Pointf(0, pos.y));
-	r.Add(Pointf(0, 0));
+	r.To(pos);
+	r.To(0, pos.y);
+	r.To(0, 0);
 	return r;
 }
 

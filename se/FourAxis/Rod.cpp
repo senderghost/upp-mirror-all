@@ -16,9 +16,9 @@ Rod::Rod()
 	steps <<= 1000;
 }
 
-Vector<Pointf> Rod::Get()
+Path Rod::Get()
 {
-	Vector<Pointf> path;
+	Path path;
 
 	int n4 = (int)~steps / 4;
 
@@ -28,7 +28,7 @@ Vector<Pointf> Rod::Get()
 
 	Pointf center((double)~leadin + left.cx / 2 + rect.cx / 2, ~central);
 
-	path.Add(Pointf(0, center.y));
+	path.To(0, center.y);
 	
 	for(int i = 0; i < 4; i++) {
 		int ts = findarg(i, 0, 1) >= 0 ? 1 : -1;
@@ -43,9 +43,9 @@ Vector<Pointf> Rod::Get()
 		
 		for(int a = 0; a <= n4; a++) {
 			double angle = M_PI * a / n4 / 2 + i * M_PI / 2;
-			path.Add(Pointf(rx * -cos(angle) + c.x, ry * sin(angle) + c.y));
+			path.Kerf(rx * -cos(angle) + c.x, ry * sin(angle) + c.y);
 		}
 	}
-	path.Add(Pointf(center.x - left.cx / 2 - rect.cx / 2, center.y + rect.cy / 2));
+	path.To(center.x - left.cx / 2 - rect.cx / 2, center.y + rect.cy / 2);
 	return path;
 }
