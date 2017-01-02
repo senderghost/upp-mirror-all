@@ -34,7 +34,7 @@ void RichTextExample(Painter& sw)
 		"[s0; Dimension units of QTF are dots `- one dot is defined as 1/600 "
 		"of inch.&]"
 		"[s0; &]"
-		"[s0; Colors are described as either number [@(128.0.255) 0]`-[@(128.0.255) 9], "
+		"[s0; [- Colors] [_ are] described as either number [@(128.0.255) 0]`-[@(128.0.255) 9], "
 		"with meaning&]"
 		"[s0; &]"
 		"[ {{1000:1000:1000:1000:1000:1000:1000:1000:1000:1000<96;>96;f4; [s0;%- [* 0]]"

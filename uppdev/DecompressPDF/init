@@ -1,0 +1,5 @@
+#ifndef _DecompressPDF_icpp_init_stub
+#define _DecompressPDF_icpp_init_stub
+#include "Core/init"
+#include "plugin\z/init"
+#endif

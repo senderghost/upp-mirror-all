@@ -5,8 +5,8 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	FileIn in("u:/Dokument-A.pdf");
-	FileOut out("u:/out.pdf");
+	FileIn in("C:/u/nos.data/sample08.pdf");
+	FileOut out("C:/u/nos.data/sample08dc.pdf");
 	while(!in.IsEof()) {
 		String s = in.GetLine();
 		int q = s.Find("stream");
