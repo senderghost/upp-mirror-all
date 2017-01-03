@@ -83,12 +83,12 @@ void HelloWorld::Animate()
 
 void HelloWorld::Paint(Draw& w)
 {
-	ImagePainter iw(50, 50);
-//	iw.Clear(RGBAZero());
-	iw.DrawImage(0, 0, CtrlImg::exclamation());
-	Image m = iw;
-	w.DrawRect(GetSize(), Gray);
-	w.DrawImage(100, 100, m);
+	ImagePainter iw(GetSize());
+	iw.Clear(White());
+	#ifdef _DEBUG
+	iw.DrawText(500, 500, 20, "Hello World DBG !", Arial(100));
+	#endif
+	w.DrawImage(0, 0, iw);
 }
 
 GUI_APP_MAIN
