@@ -8,6 +8,8 @@ file
 	Rod.cpp,
 	Text.cpp,
 	Angle.cpp,
+	Wing.cpp,
+	Airfoil.cpp,
 	Kerf.cpp,
 	Path.cpp,
 	Preview.cpp,

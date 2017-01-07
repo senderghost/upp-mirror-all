@@ -50,6 +50,7 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(rod);
 	AddShape(text);
 	AddShape(angle);
+	AddShape(wing);
 	
 	type << [=] { Type(); };
 	type <<= 0;
@@ -205,8 +206,10 @@ void FourAxisDlg::Save()
 void FourAxisDlg::SaveAs()
 {
 	filepath = SelectFileSaveAs("*.nc");
-	if(filepath.GetCount())
+	if(filepath.GetCount()) {
 		Save(filepath);
+		lrufile.NewEntry(filepath);
+	}
 }
 
 void FourAxisDlg::Exit()

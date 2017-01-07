@@ -21,7 +21,7 @@ Vector<Pointf> FourAxisDlg::GetPath(double k)
 	while(i < path.pt.GetCount())
 		if(k && path.pt[i].kerf) {
 			Vector<Pointf> kh;
-			while(i && i < path.pt.GetCount() && path.pt[i].kerf)
+			while(i < path.pt.GetCount() && path.pt[i].kerf)
 				kh.Add(path.pt[i++].pt);
 			if(kh.GetCount() > 2)
 				h.Append(KerfCompensation(pt, kh, 0, kh.GetCount(), k / 2));

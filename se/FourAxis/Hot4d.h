@@ -67,14 +67,35 @@ struct Angle : WithAngleLayout<Shape> {
 	Angle();
 };
 
+struct AirfoilCtrl : public DataPusher {
+	virtual void DoAction();
+	
+	void Render(Path& path, double width, Pointf p0);
+	
+	AirfoilCtrl();
+};
+
+struct Wing : WithWingLayout<Shape> {
+	typedef Wing CLASSNAME;
+	
+	AirfoilCtrl airfoil;
+
+	virtual Path    Get();
+	virtual String  GetId() const   { return "wing"; }
+	virtual String  GetName() const { return "Wing panel"; }
+
+	Wing();
+};
+
 struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
 	
 	String filepath;
 	
-	Rod  rod;
-	Text text;
+	Rod   rod;
+	Text  text;
 	Angle angle;
+	Wing  wing;
 	
 	LRUList lrufile;
 
