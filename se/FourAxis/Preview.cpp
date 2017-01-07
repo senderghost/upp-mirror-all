@@ -54,7 +54,7 @@ void FourAxisDlg::Sync()
 			for(auto pt : path)
 				p.Line(pt);
 			if(show_kerf)
-				p.Stroke(k, Blend(White(), LtRed(), 50));
+				p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
 			if(show_wire)
 				p.Stroke(1.0 / scale, Red());
 			PaintArrows(p, scale);

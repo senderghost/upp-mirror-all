@@ -5,16 +5,21 @@ uses
 file
 	Hot4d.h,
 	Util.cpp,
-	Rod.cpp,
-	Text.cpp,
-	Angle.cpp,
-	Wing.cpp,
-	Airfoil.cpp,
 	Kerf.cpp,
 	Path.cpp,
 	Preview.cpp,
 	Bar.cpp,
 	main.cpp,
+	Airfoil.cpp,
+	Jobs readonly separator,
+	airfoils\rough.dat,
+	airfoils\s3021.dat,
+	Rod.cpp,
+	Angle.cpp,
+	Text.cpp,
+	Wing.cpp,
+	Motor.cpp,
+	TextPath.cpp,
 	dlg.lay;
 
 mainconfig

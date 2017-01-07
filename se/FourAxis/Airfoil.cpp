@@ -51,16 +51,65 @@ AirfoilCtrl::AirfoilCtrl()
 	SetConvert(Single<CvAirfoil>());
 }
 
-void AirfoilCtrl::Render(Path& path, double width, Pointf p0)
+Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
+{
+	DDUMPC(foil);
+	if(foil.GetCount() < 4)
+		return clone(foil);
+
+	struct Cons : LinearPathConsumer {
+		Vector<Pointf> r;
+		
+		virtual void Line(const Pointf& p) { r.Add(p); }
+		virtual void Move(const Pointf& p) {}
+		virtual void End() {}
+	} r;
+
+	r.r.Add(foil[0]);
+	r.r.Add(foil[1]);
+	int i;
+	for(i = 1; i < foil.GetCount() - 2; i++) {
+		Pointf p2 = LineIntersection(foil[i - 1], foil[i], foil[i + 1], foil[i + 2]);
+		if(!IsNull(p2)) {
+		#if 1
+			r.r.Add(p2);
+			r.r.Add(foil[i + 1]);
+		#else
+			ApproximateQuadratic(r, foil[i], Mid(Mid(foil[i], foil[i + 1]), p2), foil[i + 1], 0.0001);
+		#endif
+		}
+		else
+			r.r.Add(foil[i + 1]);
+	}
+	r.r.Add(foil[i++]);
+	r.r.Add(foil[i++]);
+	DDUMPC(r.r);
+	return pick(r.r);
+}
+
+void AirfoilCtrl::Render(Path& path, double width, Pointf p0, double te, bool smooth)
 {
 	Value p = GetData()["data"];
-	DUMP(p);
+
+	Vector<Pointf> foil;
+
 	try {
-		for(int i = 0; i < p.GetCount(); i++) {
-			Pointf pt(p[i]["x"], p[i]["y"]);
-			pt.x = 1 - pt.x;
-			path.Kerf(width * pt + p0);
-		}
+		for(int i = 0; i < p.GetCount(); i++)
+			foil.Add(Pointf(p[i]["x"], p[i]["y"]));
+		
+		if(smooth)
+			foil = SmoothAirfoil(foil);
 	}
-	catch(ValueTypeError) {}
+	catch(ValueTypeError) {
+		return;
+	}
+
+	for(int i = 0; i < foil.GetCount(); i++) {
+		Pointf pt = foil[i];
+		pt.x = 1 - pt.x;
+		Pointf a = width * pt;
+		if(te && a.x < width / 4 && i < p.GetCount() / 2) // adjust te thickness in entry phase
+			a.y = max(a.y, te);
+		path.Kerf(a + p0);
+	}
 }

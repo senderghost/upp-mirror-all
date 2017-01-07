@@ -1,5 +1,17 @@
 #include "Hot4d.h"
 
+void Path::To(Pointf p, bool kerf)
+{
+	auto& h = pt.Add();
+	h.pt = transform.Transform(p);
+	h.kerf = kerf;
+}
+
+void Path::Rotate(double x, double y, double angle)
+{
+	transform = transform * Xform2D::Translation(-x, -y) * Xform2D::Rotation(angle) * Xform2D::Translation(x, y);
+}
+
 Vector<Pointf> FourAxisDlg::GetPath(double k)
 {
 	Path path = CurrentShape().Get();

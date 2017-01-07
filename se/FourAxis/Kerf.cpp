@@ -67,28 +67,18 @@ Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from
 				     << k2 + Unit(k2 - k3) * 2 * kerf
 				     << k2;
 			else
-				path << c
-				     << Null // need the same number of points per vertex for tapered cuts
-				     << Null
-				     << Null;
+				path << c;
 		}
 		else {
 			if(sin(angle / 2) * min(Distance(p0, p1), Distance(p1, p2)) < kerf)
-				path << kerf * axis + p1
-				     << Null
-				     << Null
-				     << Null;
+				path << kerf * axis + p1;
 			else
 			if(SquaredDistance(p1, c) > 1.3 * 1.3 * kerf * kerf)
 				path << c
 				     << kerf * axis + p1
-				     << c
-				     << Null;
+				     << c;
 			else
-				path << c
-				     << Null
-				     << Null
-				     << Null;
+				path << c;
 		}
 	}
 	path.Add(k3);

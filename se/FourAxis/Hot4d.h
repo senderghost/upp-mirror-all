@@ -15,18 +15,25 @@ ValueMap GetValues(Ctrl& parent);
 
 Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from, int count, double kerf);
 
+Pointf MakePoint(Ctrl& a, Ctrl& b);
+Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
+
 struct Line : Moveable<Line> {
 	Pointf pt;
 	bool   kerf = false;
 };
 
 struct Path {
+	Xform2D      transform;
 	Vector<Line> pt;
 	
-	void To(Pointf p, bool kerf = false)             { auto& h = pt.Add(); h.pt = p; h.kerf = kerf; }
+	void To(Pointf p, bool kerf = false);
 	void To(double x, double y, bool kerf = false)   { To(Pointf(x, y), kerf); }
 	void Kerf(Pointf p)                              { To(p, true); }
 	void Kerf(double x, double y)                    { To(x, y, true); }
+	
+	void Rotate(double x, double y, double angle);
+	void Identity()                                  { transform = Xform2D::Identity(); }
 };
 
 struct Shape : ParentCtrl {
@@ -70,7 +77,7 @@ struct Angle : WithAngleLayout<Shape> {
 struct AirfoilCtrl : public DataPusher {
 	virtual void DoAction();
 	
-	void Render(Path& path, double width, Pointf p0);
+	void Render(Path& path, double width, Pointf p0, double te, bool smooth);
 	
 	AirfoilCtrl();
 };
@@ -87,21 +94,45 @@ struct Wing : WithWingLayout<Shape> {
 	Wing();
 };
 
+struct Motor : WithMotorLayout<Shape> {
+	typedef Motor CLASSNAME;
+
+	virtual Path    Get();
+	virtual String  GetId() const   { return "motor_mount"; }
+	virtual String  GetName() const { return "Motor mount"; }
+
+	Motor();
+};
+
+struct TextPath : WithTextPath<Shape> {
+	typedef TextPath CLASSNAME;
+
+	virtual Path    Get();
+	virtual String  GetId() const   { return "free_text"; }
+	virtual String  GetName() const { return "Free text path"; }
+
+	TextPath();
+};
+
 struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
 	
 	String filepath;
 	
-	Rod   rod;
-	Text  text;
-	Angle angle;
-	Wing  wing;
+	Rod      rod;
+	Text     text;
+	Angle    angle;
+	Wing     wing;
+	Motor    motor;
+	TextPath textpath;
 	
 	LRUList lrufile;
 
 	VectorMap<String, Shape *> shape;
 
 	Shape& CurrentShape();
+	
+	virtual void Layout();
 	
 	void   Type();
 	void   Sync();

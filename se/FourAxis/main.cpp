@@ -24,9 +24,11 @@ String GFormat(double x)
 void GCode::To(Pointf p)
 {
 	Pointf d = p - pos;
-	String x = GFormat(d.x);
-	String y = GFormat(d.y);
-	Put(String() << "G1X" << x << "Y" << y << "Z" << x << "A" << y << "F" << speed);
+	if(d.x || d.y) {
+		String x = GFormat(d.x);
+		String y = GFormat(d.y);
+		Put(String() << "G1X" << x << "Y" << y << "Z" << x << "A" << y << "F" << speed);
+	}
 	pos = p;
 }
 
@@ -51,6 +53,8 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(text);
 	AddShape(angle);
 	AddShape(wing);
+	AddShape(motor);
+	AddShape(textpath);
 	
 	type << [=] { Type(); };
 	type <<= 0;
@@ -61,6 +65,8 @@ FourAxisDlg::FourAxisDlg()
 	arrows <<= 16;
 	
 	show_shape <<= true;
+	show_wire <<= true;
+	show_kerf <<= false;
 
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 		*q << [=] { Sync(); };
@@ -74,6 +80,8 @@ FourAxisDlg::FourAxisDlg()
 	kerf.NullText("0");
 	
 	Type();
+	
+	Sizeable().Zoomable();
 }
 
 void FourAxisDlg::Save(const char *path)
@@ -115,12 +123,15 @@ String FourAxisDlg::MakeSave()
 	ValueMap m;
 	m("type", CurrentShape().GetId());
 	m("data", CurrentShape().Save());
+	m("kerf", (double)~kerf);
+	m("feed", (double)~speed);
 	return AsJSON(m);
 }
 
 Shape& FourAxisDlg::CurrentShape()
 {
-	return *shape[~type];
+	int q = ~type;
+	return q >= 0 && q < shape.GetCount() ? *shape[~type] : rod;
 }
 
 void FourAxisDlg::Type()
@@ -155,14 +166,21 @@ bool FourAxisDlg::Load(const char *path)
 			break;
 		}
 	}
-	Value m = ParseJSON(Base64Decode(src));
-	int q = shape.Find(m["type"]);
-	if(q < 0)
+	try {
+		Value m = ParseJSON(Base64Decode(src));
+		int q = shape.Find(m["type"]);
+		if(q < 0)
+			return false;
+		filepath = path;
+		type <<= q;
+		Type();
+		CurrentShape().Load(m["data"]);
+		kerf <<= m["kerf"];
+		speed <<= m["feed"];
+	}
+	catch(ValueTypeError) {
 		return false;
-	filepath = path;
-	type <<= q;
-	Type();
-	CurrentShape().Load(m["data"]);
+	}
 	lrufile.NewEntry(filepath);
 	lrufile.Limit(16);
 	Sync();
@@ -225,6 +243,13 @@ void FourAxisDlg::Serialize(Stream& s)
 {
 	SerializeGlobalConfigs(s);
 	s % lrufile;
+	SerializePlacement(s);
+	s % show_shape % show_wire % show_kerf;
+}
+
+void FourAxisDlg::Layout()
+{
+	Sync();
 }
 
 GUI_APP_MAIN
