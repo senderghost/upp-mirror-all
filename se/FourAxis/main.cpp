@@ -254,6 +254,11 @@ void FourAxisDlg::Layout()
 
 GUI_APP_MAIN
 {
+#ifdef _DEBUG0
+	TestKerf();
+	return;
+#endif
+
 	FourAxisDlg dlg;
 
 	LoadFromFile(dlg);

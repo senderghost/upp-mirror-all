@@ -114,6 +114,10 @@ struct TextPath : WithTextPath<Shape> {
 	TextPath();
 };
 
+#ifdef _DEBUG
+void TestKerf();
+#endif
+
 struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
 	

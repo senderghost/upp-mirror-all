@@ -91,3 +91,70 @@ Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from
 	
 	return path;
 }
+
+#ifdef _DEBUG
+struct KerfTestWindow : TopWindow {
+	Pointf p0 = Pointf(200, 200);
+	Pointf p1 = Pointf(300, 100);
+	Pointf p2 = Pointf(400, 100);
+	Pointf p3 = Pointf(500, 200);
+	
+	virtual void Paint(Draw& w) {
+		double kerf = 10;
+
+		ImagePainter p(GetSize());
+		p.Clear(White());
+		
+		Vector<Pointf> in, path;
+		in << Pointf(50, 150) << p0 << p1 << p2 << p3 << Pointf(600, 400);
+		
+		
+		path.Add(in[0]);
+		path.Append(KerfCompensation(Pointf(0, 0), in, 1, 4, kerf));
+		path.Add(in[5]);
+
+		bool first = true;
+		for(auto x : path)
+			if(!IsNaN(x))
+				if(first) {
+					p.Move(x);
+					first = false;
+				}
+				else
+					p.Line(x);
+		if(!first)
+			p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(2 * kerf, Blend(White(), LtRed(), 20)).Stroke(1, Red());
+
+		p.Move(0, 0);
+		for(auto pt : in)
+			p.Line(pt);
+		p.Stroke(1, Black());
+
+		w.DrawImage(0, 0, p);
+	}
+	
+	virtual void MouseMove(Point p, dword keyflags) {
+		p2 = p;
+		Refresh();
+	}
+	
+	virtual void LeftDown(Point p, dword keyflags) {
+		p1 = p;
+		Refresh();
+	}
+
+	virtual void RightDown(Point p, dword keyflags) {
+		p3 = p;
+		Refresh();
+	}
+	
+	KerfTestWindow() {
+		Sizeable().Zoomable();
+	}
+};
+#endif
+
+void TestKerf()
+{
+	KerfTestWindow().Run();
+}

@@ -6,71 +6,82 @@ void FourAxisDlg::Sync()
 
 	Size isz = preview.GetSize();
 	
-	int scale = ~this->scale;
+	if(isz.cx > 0 && isz.cy > 0) {
+		int scale = ~this->scale;
+		
+		bool ok = true;
+		for(auto q = GetFirstChild(); q; q = q->GetNext())
+			if(q->GetData().IsError())
+				ok = false;
 	
-	bool ok = true;
-	for(auto q = GetFirstChild(); q; q = q->GetNext())
-		if(q->GetData().IsError())
-			ok = false;
-
-	Font fnt = Arial(Zy(12));
-	int  w = Zx(4);
-	int b = fnt.GetLineHeight() + w;
-	Point origin(b, isz.cy - b);
+		Font fnt = Arial(Zy(12));
+		int  w = Zx(4);
+		int b = fnt.GetLineHeight() + w;
+		Point origin(b, isz.cy - b);
+		
+		Size psz = isz - Size(b, b);
+		
+		ImagePainter p(isz);
 	
-	Size psz = isz - Size(b, b);
+		p.Translate(0.5, 0.5);
+		p.Clear(White());
 	
-	ImagePainter p(isz);
-
-	p.Translate(0.5, 0.5);
-	p.Clear(White());
-	p.Move(origin).Line(isz.cx, origin.y).Stroke(1, Gray());
-	p.Move(origin).Line(origin.x, 0).Stroke(1, Gray());
-
-	for(int i = 0; i < max(psz.cy / scale, psz.cx / scale); i += 5) {
-		int si = i * scale;
-		bool ten = i % 10 == 0;
-		int w1 = Zx(ten ? 4 : 2);
-		Color c = ten ? LtGray() : WhiteGray();
-		p.Move(origin.x + si, origin.y + w1).Line(origin.x + si, 0).Stroke(1, c);
-		p.Move(origin.x - w, origin.y - si).Line(isz.cx, origin.y - si).Stroke(1, c);
-		if(i % 10 == 0 && (scale > 1 || i % 20 == 0)) {
-			String s = AsString(i / 10);
+		int ny = INT_MIN;
+		int nx = INT_MIN;
+		for(int i = 0; i < max(psz.cy / scale, psz.cx / scale); i += 5) {
+			int si = i * scale;
+			bool ten = i % 10 == 0;
+			int w1 = Zx(ten ? 4 : 2);
+			Color c = ten ? LtGray() : WhiteGray();
+			p.Move(origin.x + si, origin.y + w1).Line(origin.x + si, 0).Stroke(1, c);
+			p.Move(origin.x - w, origin.y - si).Line(isz.cx, origin.y - si).Stroke(1, c);
+			String s = AsString(i);
 			Size tsz = GetTextSize(s, fnt);
-			p.Text(origin.x + si - tsz.cx / 2, origin.y + w, s, fnt).Fill(Gray());
-			p.Text(origin.x - tsz.cx - w1 - Zx(2), origin.y - si - tsz.cy / 2, s, fnt).Fill(Gray());
+			int x = origin.x + si - tsz.cx / 2;
+			if(x > nx + Zx(2)) {
+				p.Text(x, origin.y + w, s, fnt).Fill(Black());
+				nx = x + tsz.cx;
+			}
+			int y = origin.y - si - tsz.cy / 2;
+			if(y < ny - Zy(2)) {
+				p.Text(origin.x - tsz.cx - Zx(6), y, s, fnt).Fill(Black());
+				ny = y - tsz.cy;
+			}
 		}
-	}
 
-	if(ok) {
-		p.Translate(origin);
-		p.Scale(scale, -scale);
-		p.Move(0, 0);
-		
-		
-		double k = Nvl((double)~kerf);
-		if(k) {
-			auto path = GetPath(k);
+		p.Move(origin).Line(isz.cx, origin.y).Stroke(1, Black());
+		p.Move(origin).Line(origin.x, 0).Stroke(1, Black());
+	
+		if(ok) {
+			p.Translate(origin);
+			p.Scale(scale, -scale);
+			p.Move(0, 0);
+			
+			
+			double k = Nvl((double)~kerf);
+			if(k) {
+				auto path = GetPath(k);
+				for(auto pt : path)
+					p.Line(pt);
+				if(show_kerf)
+					p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
+				if(show_wire)
+					p.Stroke(1.0 / scale, Red());
+				PaintArrows(p, scale);
+			}
+	
+			auto path = GetPath(0);
 			for(auto pt : path)
 				p.Line(pt);
-			if(show_kerf)
-				p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
-			if(show_wire)
-				p.Stroke(1.0 / scale, Red());
-			PaintArrows(p, scale);
+			if(show_shape || !k && show_wire)
+				p.Stroke(1.0 / scale, k ? Blue() : Red());
+			
+			if(!k)
+				PaintArrows(p, scale);
 		}
-
-		auto path = GetPath(0);
-		for(auto pt : path)
-			p.Line(pt);
-		if(show_shape || !k && show_wire)
-			p.Stroke(1.0 / scale, k ? Blue() : Red());
-		
-		if(!k)
-			PaintArrows(p, scale);
+	
+		preview.SetImage(p);
 	}
-
-	preview.SetImage(p);
 	
 	SetBar();
 }

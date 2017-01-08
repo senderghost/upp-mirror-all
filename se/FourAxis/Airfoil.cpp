@@ -51,6 +51,9 @@ AirfoilCtrl::AirfoilCtrl()
 	SetConvert(Single<CvAirfoil>());
 }
 
+
+// TODO: https://www.particleincell.com/2012/bezier-splines/
+
 Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
 {
 	DDUMPC(foil);
