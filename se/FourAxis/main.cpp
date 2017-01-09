@@ -1,11 +1,15 @@
 #include "Hot4d.h"
 
+#define IMAGECLASS HotImg
+#define IMAGEFILE <FourAxis/HotImg.iml>
+#include <Draw/iml_source.h>
+
 struct GCode {
 	FileOut& out;
 	Pointf   pos;
 	int      speed;
 	
-	void Put(const String& s) { out.PutLine(s); LOG(s); }
+	void Put(const String& s) { out.PutLine(s); }
 	
 	void To(Pointf p);
 	
@@ -35,19 +39,18 @@ void GCode::To(Pointf p)
 const char *begin_source_tag = ";<<<source>>>";
 const char *end_source_tag = ";>>>source<<<";
 
+bool FourAxisDlg::Key(dword key, int count)
+{
+	if(key == K_HOME) {
+		Home();
+		return true;
+	}
+	return TopWindow::Key(key, count);
+}
+
 FourAxisDlg::FourAxisDlg()
 {
 	CtrlLayout(*this, "4 axis CNC G-code generator");
-	
-	WhenClose = [=] { Exit(); };
-	
-//	save_as << [=] { Save(); };
-	
-	speed <<= 140;
-	
-	for(auto i : { 1, 2, 3, 5, 10, 20, 30, 50, 100 })
-		scale.Add(i, AsString(i) + " pixels / mm");
-	scale <<= 5;
 
 	AddShape(rod);
 	AddShape(text);
@@ -55,18 +58,31 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(wing);
 	AddShape(motor);
 	AddShape(textpath);
+
+	WhenClose = [=] { Exit(); };
 	
+//	save_as << [=] { Save(); };
+	
+	speed <<= 140;
+	
+	for(auto i : { 1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 500, 1000 })
+		scale.Add(i, AsString(i) + " pixels / mm");
+	scale <<= 5;
+
 	type << [=] { Type(); };
 	type <<= 0;
-
-	arrows.Add(0, "None");
-	for(int i = 0; i < 100; i += 4)
-		arrows.Add(i, AsString(i));
-	arrows <<= 16;
 	
+	view.fa = this;
+	view.Add(home.BottomPos(0, Zy(14)).LeftPos(0, Zy(14)));
+	home.NoWantFocus();
+	home.SetImage(HotImg::Home());
+	home << [=] { Home(); };
+
 	show_shape <<= true;
+	show_arrows <<= true;
 	show_wire <<= true;
 	show_kerf <<= false;
+	show_points <<= false;
 
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 		*q << [=] { Sync(); };
@@ -75,8 +91,6 @@ FourAxisDlg::FourAxisDlg()
 		for(Ctrl *q = shape[i]->GetFirstChild(); q; q = q->GetNext())
 			*q << [=] { Sync(); };
 
-	preview.SetFrame(ViewFrame());
-	
 	kerf.NullText("0");
 	
 	Type();
@@ -250,6 +264,19 @@ void FourAxisDlg::Serialize(Stream& s)
 void FourAxisDlg::Layout()
 {
 	Sync();
+}
+
+void Shape::SyncView()
+{
+	Ctrl *q = this;
+	while(q) {
+		auto *h = dynamic_cast<FourAxisDlg *>(q);
+		if(h) {
+			h->Sync();
+			break;
+		}
+		q = q->GetParent();
+	}
 }
 
 GUI_APP_MAIN

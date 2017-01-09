@@ -28,6 +28,8 @@ Vector<Pointf> FourAxisDlg::GetPath(double k)
 	
 	Vector<Pointf> h;
 	
+	DLOG("=========== GetPath");
+	
 	int i = 0;
 	Pointf pt(0, 0);
 	while(i < path.pt.GetCount())

@@ -56,7 +56,6 @@ AirfoilCtrl::AirfoilCtrl()
 
 Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
 {
-	DDUMPC(foil);
 	if(foil.GetCount() < 4)
 		return clone(foil);
 
@@ -86,7 +85,6 @@ Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
 	}
 	r.r.Add(foil[i++]);
 	r.r.Add(foil[i++]);
-	DDUMPC(r.r);
 	return pick(r.r);
 }
 

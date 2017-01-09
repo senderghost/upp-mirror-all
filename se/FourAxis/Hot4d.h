@@ -9,14 +9,23 @@ using namespace Upp;
 #define LAYOUTFILE <FourAxis/dlg.lay>
 #include <CtrlCore/lay.h>
 
+#define IMAGECLASS HotImg
+#define IMAGEFILE <FourAxis/HotImg.iml>
+#include <Draw/iml_header.h>
+
 VectorMap<String, Ctrl *> GetCtrlMap(Ctrl& parent);
 void SetValues(Ctrl& parent, const ValueMap& json);
 ValueMap GetValues(Ctrl& parent);
 
-Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from, int count, double kerf);
-
 Pointf MakePoint(Ctrl& a, Ctrl& b);
+
+double LineIntersectionT(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
 Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
+double PathLength(const Vector<Pointf>& path, int from, int count);
+double PathLength(const Vector<Pointf>& path);
+Pointf AtPath(const Vector<Pointf>& path, double at, Pointf *dir1 = 0, int from = NULL);
+
+Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from, int count, double kerf);
 
 struct Line : Moveable<Line> {
 	Pointf pt;
@@ -42,6 +51,9 @@ struct Shape : ParentCtrl {
 	virtual ValueMap Save();
 	virtual String   GetId() const = 0;
 	virtual String   GetName() const = 0;
+	virtual void     AddPoint(Pointf& p) {}
+	
+	void SyncView();
 };
 
 struct Rod : WithRodLayout<Shape> {
@@ -110,6 +122,7 @@ struct TextPath : WithTextPath<Shape> {
 	virtual Path    Get();
 	virtual String  GetId() const   { return "free_text"; }
 	virtual String  GetName() const { return "Free text path"; }
+	virtual void    AddPoint(Pointf& p);
 
 	TextPath();
 };
@@ -117,6 +130,23 @@ struct TextPath : WithTextPath<Shape> {
 #ifdef _DEBUG
 void TestKerf();
 #endif
+
+struct FourAxisDlg;
+
+struct View : Ctrl {
+	FourAxisDlg *fa = NULL;
+	Image img;
+	
+	virtual void Paint(Draw& w);
+	virtual void LeftDown(Point p, dword);
+	virtual void LeftUp(Point p, dword);
+	virtual void MouseMove(Point p, dword);
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
+	virtual void LeftDrag(Point p, dword keyflags);
+	virtual void LeftHold(Point p, dword keyflags);
+	
+	View();
+};
 
 struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
@@ -130,6 +160,14 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Motor    motor;
 	TextPath textpath;
 	
+	View     view;
+	Button   home;
+	Point    org = Point(0, 0);
+	bool     drag = false;
+	Point    click;
+	Point    click_org;
+
+	
 	LRUList lrufile;
 
 	VectorMap<String, Shape *> shape;
@@ -137,12 +175,24 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Shape& CurrentShape();
 	
 	virtual void Layout();
+	virtual bool Key(dword key, int count);
+
+	void ViewDown(Point p);
+	void ViewUp(Point p);
+	void ViewMove(Point p);
+	void ViewWheel(Point p, int zdelta);
+	void ViewDrag(Point p);
 	
+	void   Zoom(int dir, Point p);
+	void   Home()                       { org = Pointf(0, 0); Sync(); }
 	void   Type();
 	void   Sync();
-	void   PaintArrows(Painter& p, double scale);
-	void   SetBar();
+	void   PaintArrows(Painter& p, const Vector<Pointf>& path, double scale);
+	void   ViewPars(Font& fnt, int& w, Point& origin) const;
+	Point  ViewOrigin() const;
+	Pointf GetViewPos(Point p);
 	
+	void   SetBar();
 	void   Save(const char *path);
 	bool   Load(const char *path);
 	bool   OpenS(const String& fp);

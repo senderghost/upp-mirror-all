@@ -51,3 +51,9 @@ Path TextPath::Get()
 
 	return r;
 }
+
+void TextPath::AddPoint(Pointf& p)
+{
+	text.Paste((String() << '\n' << p.x << " " << p.y).ToWString());
+	SyncView();
+}

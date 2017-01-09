@@ -58,8 +58,13 @@ Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from
 		Pointf s1 = k1 - k0;
 		Pointf s2 = k3 - k2;
 		double t = (s2.x * (k0.y - k2.y) - s2.y * (k0.x - k2.x)) / (s1.x * s2.y - s2.x * s1.y);
-
+		DUMP(angle);
+		DUMP(t);
 		Pointf c = t * (k1 - k0) + k0;
+		DDUMP(Distance(p1, c));
+		if(angle > M_PI - 0.001 && angle < M_PI + 0.001) // Almost straight line, just use k1
+			path << k1;
+		else
 		if(angle < M_PI) {
 			if(SquaredDistance(p1, c) > 5 * kerf * kerf)
 				path << k1
@@ -152,9 +157,9 @@ struct KerfTestWindow : TopWindow {
 		Sizeable().Zoomable();
 	}
 };
-#endif
 
 void TestKerf()
 {
 	KerfTestWindow().Run();
 }
+#endif
