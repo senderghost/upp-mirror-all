@@ -14,6 +14,7 @@ file
 	Jobs readonly separator,
 	airfoils\rough.dat,
 	airfoils\s3021.dat,
+	airfoils\ag24.dat,
 	Rod.cpp,
 	Angle.cpp,
 	Text.cpp,

@@ -192,25 +192,29 @@ void FourAxisDlg::Sync()
 			p.Translate(org.x, org.y);
 			p.Translate(origin);
 			p.Scale(scale, -scale);
-			p.Move(0, 0);
 
 			double k = Nvl((double)~kerf);
 			if(k) {
 				auto path = GetPath(k);
-				for(auto pt : path)
-					p.Line(pt);
-				if(show_kerf)
-					p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
-				if(show_wire)
-					p.Stroke(1.0 / scale, Red());
+				if(show_kerf || show_wire) {
+					p.Move(0, 0);
+					for(auto pt : path)
+						p.Line(pt);
+					if(show_kerf)
+						p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
+					if(show_wire)
+						p.Stroke(1.0 / scale, Red());
+				}
 				PaintArrows(p, path, scale);
 			}
 	
 			auto path = GetPath(0);
-			for(auto pt : path)
-				p.Line(pt);
-			if(show_shape || !k && show_wire)
+			if(show_shape || !k && show_wire) {
+				p.Move(0, 0);
+				for(auto pt : path)
+					p.Line(pt);
 				p.Stroke(1.0 / scale, k ? Blue() : Red());
+			}
 			
 			if(show_points)
 				for(auto pt : path) {
@@ -246,7 +250,7 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pointf>& path, double sca
 		p.Begin();
 		p.Translate(f);
 		p.Rotate(Bearing(dir));
-		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Close().Fill(LtBlue());
+		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Fill(LtBlue());
 		p.End();
 	}
 	

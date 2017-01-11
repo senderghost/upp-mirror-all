@@ -18,33 +18,31 @@ void KerfLine(Pointf p0, Pointf p1, Pointf& k0, Pointf& k1, double kerf)
 	k1 = p1 + o;
 }
 
-Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from, int count, double kerf)
+Vector<Pointf> KerfCompensation(const Vector<Pointf>& in0, double kerf)
 {
 	Vector<Pointf> path;
+
+	if(in0.GetCount() == 0)
+		return path;
+
+	Vector<Pointf> in;
+	in.Add(in0[0]);
+	for(int i = 1; i < in0.GetCount(); i++)
+		if(in.Top() != in0[i])
+			in.Add(in0[i]);
 	
 	Pointf k3, p2;
 	
-	bool first = true;
-	
-	for(int i = from; i < from + count - 2; i++) {
-		Pointf p0 = i > 0 ? in[i] : start;
+	for(int i = 0; i < in.GetCount() - 2; i++) {
+		Pointf p0 = in[i];
 		Pointf p1 = in[i + 1];
 		p2 = in[i + 2];
-		
-		if(p1 == p0) // TODO: Ugly but working
-			p1 += Pointf(0.0001, 0.0001);
-		if(p2 == p1)
-			p2 += Pointf(0.0001, 0.0001);
-		if(p2 == p0)
-			p2 += Pointf(0.0001, 0.0001);
 		
 		Pointf k0, k1;
 		KerfLine(p0, p1, k0, k1, kerf);
 		
-		if(first) {
+		if(i == 0)
 			path << k0;
-			first = false;
-		}
 
 		double angle = Bearing(p2 - p1) - Bearing(p0 - p1);
 		if(angle < 0)
@@ -58,10 +56,7 @@ Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from
 		Pointf s1 = k1 - k0;
 		Pointf s2 = k3 - k2;
 		double t = (s2.x * (k0.y - k2.y) - s2.y * (k0.x - k2.x)) / (s1.x * s2.y - s2.x * s1.y);
-		DUMP(angle);
-		DUMP(t);
 		Pointf c = t * (k1 - k0) + k0;
-		DDUMP(Distance(p1, c));
 		if(angle > M_PI - 0.001 && angle < M_PI + 0.001) // Almost straight line, just use k1
 			path << k1;
 		else
@@ -86,13 +81,7 @@ Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from
 				path << c;
 		}
 	}
-	path.Add(k3);
-	
-	for(auto& pt : path)
-		if(IsNaN(pt) || IsNull(pt))
-			pt = start;
-		else
-			start = pt;
+	path << k3 << in.Top();
 	
 	return path;
 }
@@ -111,15 +100,17 @@ struct KerfTestWindow : TopWindow {
 		p.Clear(White());
 		
 		Vector<Pointf> in, path;
-		in << Pointf(50, 150) << p0 << p1 << p2 << p3 << Pointf(600, 400);
+		Pointf b = Pointf(50, 150);
+		Pointf n = Pointf(600, 400);
+		in << p0 << p1 << p2 << p3;
 		
-		
+		path.Add(b);
 		path.Add(in[0]);
-		path.Append(KerfCompensation(Pointf(0, 0), in, 1, 4, kerf));
-		path.Add(in[5]);
+		path.Append(KerfCompensation(in, kerf));
+		path.Add(n);
 
 		bool first = true;
-		for(auto x : path)
+		for(auto x : path) {
 			if(!IsNaN(x))
 				if(first) {
 					p.Move(x);
@@ -127,20 +118,17 @@ struct KerfTestWindow : TopWindow {
 				}
 				else
 					p.Line(x);
+		}
 		if(!first)
 			p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(2 * kerf, Blend(White(), LtRed(), 20)).Stroke(1, Red());
 
-		p.Move(0, 0);
+		p.Move(b);
 		for(auto pt : in)
 			p.Line(pt);
+		p.Line(n);
 		p.Stroke(1, Black());
 
 		w.DrawImage(0, 0, p);
-	}
-	
-	virtual void MouseMove(Point p, dword keyflags) {
-		p2 = p;
-		Refresh();
 	}
 	
 	virtual void LeftDown(Point p, dword keyflags) {
@@ -148,6 +136,11 @@ struct KerfTestWindow : TopWindow {
 		Refresh();
 	}
 
+	virtual void MouseMove(Point p, dword keyflags) {
+		p2 = p;
+		Refresh();
+	}
+	
 	virtual void RightDown(Point p, dword keyflags) {
 		p3 = p;
 		Refresh();

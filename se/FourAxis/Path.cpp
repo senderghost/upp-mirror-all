@@ -12,6 +12,11 @@ void Path::Rotate(double x, double y, double angle)
 	transform = transform * Xform2D::Translation(-x, -y) * Xform2D::Rotation(angle) * Xform2D::Translation(x, y);
 }
 
+void Path::Offset(double x, double y)
+{
+	transform = transform * Xform2D::Translation(x, y);
+}
+
 Vector<Pointf> FourAxisDlg::GetPath(double k)
 {
 	Path path = CurrentShape().Get();
@@ -28,19 +33,15 @@ Vector<Pointf> FourAxisDlg::GetPath(double k)
 	
 	Vector<Pointf> h;
 	
-	DLOG("=========== GetPath");
-	
 	int i = 0;
 	Pointf pt(0, 0);
 	while(i < path.pt.GetCount())
 		if(k && path.pt[i].kerf) {
 			Vector<Pointf> kh;
+			kh.Add(pt);
 			while(i < path.pt.GetCount() && path.pt[i].kerf)
 				kh.Add(path.pt[i++].pt);
-			if(kh.GetCount() > 2)
-				h.Append(KerfCompensation(pt, kh, 0, kh.GetCount(), k / 2));
-			else
-				h.Append(kh);
+			h.Append(KerfCompensation(kh, k / 2));
 		}
 		else {
 			pt = path.pt[i++].pt;

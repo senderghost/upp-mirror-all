@@ -59,6 +59,32 @@ Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2)
 	return t * (a2 - a1) + a1;
 }
 
+int LineCircleIntersections(Pointf c, double radius, Pointf p1, Pointf p2, double& t1, double& t2, double def)
+{
+	Pointf d = p2 - p1;
+	
+	double A = Squared(d);
+	double B = 2 * (d.x * (p1.x - c.x) + d.y * (p1.y - c.y));
+	double C = Squared(p1 - c) - radius * radius;
+
+	t1 = t2 = def;
+	
+	double det = B * B - 4 * A * C;
+	if(A == 0 || det < 0) // TODO: Check A==0 condition
+		return 0;
+	else
+	if (det == 0) {
+		t1 = -B / (2 * A);
+		return 1;
+	}
+	else {
+		double h = sqrt(det);
+		t1 = (-B + h) / (2 * A);
+		t2 = (-B - h) / (2 * A);
+		return 2;
+	}
+}
+
 double PathLength(const Vector<Pointf>& path, int from, int count)
 {
 	double length = 0;

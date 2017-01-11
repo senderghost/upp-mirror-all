@@ -131,14 +131,16 @@ Path Text::Get()
 		Pointf npos = pos;
 		npos.x += fnt[h[i]] + (int)~spacing;
 		r.To(pos);
-		DoApproximateChar(ch, pos, h[i], fnt, 0.05);
+		DoApproximateChar(ch, pos, h[i], fnt, 10		DoApproximateChar(ch, pos, h[i], fnt, 10);
+		DoApproximateChar(ch, pos, h[i], fnt, 10);
+);
 		if(ch.GetCount() > 2) {
 			int ei = FindBest(ch, [=](Pointf p1, Pointf p2) {
 				return SquaredDistance(Nvl(p1, Pointf(INT_MAX, INT_MAX)), pos) <
 				       SquaredDistance(Nvl(p2, Pointf(INT_MAX, INT_MAX)), pos);
 			});
 			bool kerf = false;
-			for(int q = 0; q < ch.GetCount() + 2; q++) {
+			for(int q = 0; q < ch.GetCount() + 1; q++) {
 				Pointf pt = ch[(q + ei) % ch.GetCount()];
 				if(IsNull(pt))
 					kerf = false;

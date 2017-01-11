@@ -114,3 +114,20 @@ void AirfoilCtrl::Render(Path& path, double width, Pointf p0, double te, bool sm
 		path.Kerf(a + p0);
 	}
 }
+
+Vector<Pointf> AirfoilCtrl::Get()
+{
+	Value p = GetData()["data"];
+
+	Vector<Pointf> foil;
+
+	try {
+		for(int i = 0; i < p.GetCount(); i++)
+			foil.Add(Pointf(p[i]["x"], p[i]["y"]));
+	}
+	catch(ValueTypeError) {
+		return foil;
+	}
+	
+	return foil;
+}

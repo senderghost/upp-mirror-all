@@ -21,11 +21,12 @@ Pointf MakePoint(Ctrl& a, Ctrl& b);
 
 double LineIntersectionT(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
 Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
+int    LineCircleIntersections(Pointf c, double radius, Pointf p1, Pointf p2, double& t1, double& t2, double def = Null);
 double PathLength(const Vector<Pointf>& path, int from, int count);
 double PathLength(const Vector<Pointf>& path);
 Pointf AtPath(const Vector<Pointf>& path, double at, Pointf *dir1 = 0, int from = NULL);
 
-Vector<Pointf> KerfCompensation(Pointf start, const Vector<Pointf>& in, int from, int count, double kerf);
+Vector<Pointf> KerfCompensation(const Vector<Pointf>& in0, double kerf);
 
 struct Line : Moveable<Line> {
 	Pointf pt;
@@ -42,6 +43,7 @@ struct Path {
 	void Kerf(double x, double y)                    { To(x, y, true); }
 	
 	void Rotate(double x, double y, double angle);
+	void Offset(double x, double y);
 	void Identity()                                  { transform = Xform2D::Identity(); }
 };
 
@@ -90,6 +92,8 @@ struct AirfoilCtrl : public DataPusher {
 	virtual void DoAction();
 	
 	void Render(Path& path, double width, Pointf p0, double te, bool smooth);
+	
+	Vector<Pointf> Get();
 	
 	AirfoilCtrl();
 };
