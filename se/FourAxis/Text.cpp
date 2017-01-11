@@ -131,9 +131,7 @@ Path Text::Get()
 		Pointf npos = pos;
 		npos.x += fnt[h[i]] + (int)~spacing;
 		r.To(pos);
-		DoApproximateChar(ch, pos, h[i], fnt, 10		DoApproximateChar(ch, pos, h[i], fnt, 10);
 		DoApproximateChar(ch, pos, h[i], fnt, 10);
-);
 		if(ch.GetCount() > 2) {
 			int ei = FindBest(ch, [=](Pointf p1, Pointf p2) {
 				return SquaredDistance(Nvl(p1, Pointf(INT_MAX, INT_MAX)), pos) <
