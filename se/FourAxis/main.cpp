@@ -98,38 +98,44 @@ FourAxisDlg::FourAxisDlg()
 	Sizeable().Zoomable();
 }
 
-void FourAxisDlg::Save(const char *path)
+bool FourAxisDlg::Save(const char *path)
 {
 	if(!Accept())
-		return;
+		return false;
 
 	FileOut out(path);
 
-	if(!out)
-		return;
-
-	out.PutLine("");
-	String s = Base64Encode(MakeSave());
-	out.PutLine(begin_source_tag);
-	while(s.GetCount()) {
-		int n = min(s.GetCount(), 78);
-		out.PutLine(';' + s.Mid(0, n));
-		s.Remove(0, n);
+	if(out) {
+		out.PutLine("");
+		String s = Base64Encode(MakeSave());
+		out.PutLine(begin_source_tag);
+		while(s.GetCount()) {
+			int n = min(s.GetCount(), 78);
+			out.PutLine(';' + s.Mid(0, n));
+			s.Remove(0, n);
+		}
+		out.PutLine(end_source_tag);
+		out.PutLine("");
+		
+		GCode gcode(out, ~speed);
+		
+		gcode.Put("G21");
+		gcode.Put("G17");
+		gcode.Put("G91");
+		
+		double k = Nvl((double)~kerf);
+		for(auto p : GetPath(k))
+			gcode.To(p);
+		
+		gcode.To(Pointf(0, 0));
+		out.Close();
+		
+		if(!out.IsError())
+			return true;
 	}
-	out.PutLine(end_source_tag);
-	out.PutLine("");
-	
-	GCode gcode(out, ~speed);
-	
-	gcode.Put("G21");
-	gcode.Put("G17");
-	gcode.Put("G91");
-	
-	double k = Nvl((double)~kerf);
-	for(auto p : GetPath(k))
-		gcode.To(p);
-	
-	gcode.To(Pointf(0, 0));
+
+	Exclamation("Error while saving the file.");
+	return false;
 }
 
 String FourAxisDlg::MakeSave()
@@ -209,18 +215,24 @@ bool FourAxisDlg::OpenS(const String& fp)
 	return false;
 }
 
+/*
 void FourAxisDlg::OpenFile(const String& fp)
 {
-	if(filepath.GetCount()) {
-		LocalProcess p;
-	#ifdef PLATFORM_POSIX
-		p.DoubleFork();
-	#endif
-		p.Start(GetExeFilePath() + " " + fp);
-		p.Detach();
-		return;
-	}
-	OpenS(fp);
+	if(filepath.GetCount())
+		NewInstance(fp);
+	else
+		OpenS(fp);
+}
+*/
+
+void FourAxisDlg::NewInstance(const String& path)
+{
+	LocalProcess p;
+#ifdef PLATFORM_POSIX
+	p.DoubleFork();
+#endif
+	p.Start(Merge(" ", GetExeFilePath(), path));
+	p.Detach();
 }
 
 void FourAxisDlg::Open()
@@ -230,26 +242,64 @@ void FourAxisDlg::Open()
 		OpenFile(fp);
 }
 
-void FourAxisDlg::Save()
+void FourAxisDlg::OpenFile(const String& fp)
 {
-	Save(filepath);
+	if(filepath.GetCount()) {
+	#if PLATFORM_WIN32
+		String s = Merge(" ", GetExeFilePath() + " " + fp);
+		Buffer<char> cmd(s.GetCount() + 1);
+		memcpy(cmd, s, s.GetCount() + 1);
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.lpSecurityDescriptor = NULL;
+		sa.bInheritHandle = TRUE;
+		PROCESS_INFORMATION pi;
+		STARTUPINFO si;
+		ZeroMemory(&si, sizeof(STARTUPINFO));
+		si.cb = sizeof(STARTUPINFO);
+		if(CreateProcess(NULL, cmd, &sa, &sa, TRUE,
+			             NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
+		                 NULL, NULL, &si, &pi)) {
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+		}
+	#else
+		LocalProcess p;
+		p.DoubleFork();
+		p.Start(GetExeFilePath() + " " + fp);
+		p.Detach();
+	#endif
+		return;
+	}
+	OpenS(fp);
 }
 
-void FourAxisDlg::SaveAs()
+bool FourAxisDlg::Save()
 {
-	filepath = SelectFileSaveAs("*.nc");
-	if(filepath.GetCount()) {
-		Save(filepath);
+	return Save(filepath);
+}
+
+bool FourAxisDlg::SaveAs()
+{
+	String p = SelectFileSaveAs("*.nc");
+	if(p.GetCount() && Save(p)) {
+		filepath = p;
 		lrufile.NewEntry(filepath);
+		Sync();
+		return true;
 	}
+	return false;
 }
 
 void FourAxisDlg::Exit()
 {
+	bool ok;
 	if(filepath.GetCount() == 0)
-		SaveAs();
+		ok = SaveAs();
 	else
-		Save();
+		ok = Save();
+	if(!ok && !PromptYesNo("File is not saved. Do you really want to quit?"))
+		return;
 	Close();
 }
 
@@ -286,9 +336,17 @@ GUI_APP_MAIN
 	return;
 #endif
 
+	SetVppLogName("c:/xxx/fa/" + AsString(GetCurrentProcessId()) + ".log");
+	
+	DUMP("A");
+
 	FourAxisDlg dlg;
 
+	DUMP("B");
+
 	LoadFromFile(dlg);
+
+	DUMP("C");
 
 	const Vector<String>& cmdline = CommandLine();
 	int argc = cmdline.GetCount();
@@ -299,6 +357,8 @@ GUI_APP_MAIN
 		if(!dlg.OpenS(cmdline[0]))
 			return;
 	}
+
+	DUMP("D");
 
 	Ctrl::EventLoop();
 	

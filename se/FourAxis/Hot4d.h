@@ -197,13 +197,14 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Pointf GetViewPos(Point p);
 	
 	void   SetBar();
-	void   Save(const char *path);
+	bool   Save(const char *path);
 	bool   Load(const char *path);
 	bool   OpenS(const String& fp);
 	void   OpenFile(const String& p);
 	void   Open();
-	void   SaveAs();
-	void   Save();
+	bool   SaveAs();
+	void   NewInstance(const String& path);
+	bool   Save();
 	void   Exit();
 	
 	Vector<Pointf> GetPath(double k);
