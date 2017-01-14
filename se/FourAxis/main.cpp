@@ -106,17 +106,6 @@ bool FourAxisDlg::Save(const char *path)
 	FileOut out(path);
 
 	if(out) {
-		out.PutLine("");
-		String s = Base64Encode(MakeSave());
-		out.PutLine(begin_source_tag);
-		while(s.GetCount()) {
-			int n = min(s.GetCount(), 78);
-			out.PutLine(';' + s.Mid(0, n));
-			s.Remove(0, n);
-		}
-		out.PutLine(end_source_tag);
-		out.PutLine("");
-		
 		GCode gcode(out, ~speed);
 		
 		gcode.Put("G21");
@@ -128,6 +117,18 @@ bool FourAxisDlg::Save(const char *path)
 			gcode.To(p);
 		
 		gcode.To(Pointf(0, 0));
+
+		out.PutLine("");
+		String s = Base64Encode(MakeSave());
+		out.PutLine(begin_source_tag);
+		while(s.GetCount()) {
+			int n = min(s.GetCount(), 78);
+			out.PutLine(';' + s.Mid(0, n));
+			s.Remove(0, n);
+		}
+		out.PutLine(end_source_tag);
+		out.PutLine("");
+
 		out.Close();
 		
 		if(!out.IsError())
@@ -293,6 +294,7 @@ bool FourAxisDlg::SaveAs()
 
 void FourAxisDlg::Exit()
 {
+#ifndef _DEBUG
 	bool ok;
 	if(filepath.GetCount() == 0)
 		ok = SaveAs();
@@ -300,6 +302,7 @@ void FourAxisDlg::Exit()
 		ok = Save();
 	if(!ok && !PromptYesNo("File is not saved. Do you really want to quit?"))
 		return;
+#endif
 	Close();
 }
 
