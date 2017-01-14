@@ -45,22 +45,22 @@ Path Rod::Get()
 	left /= 2;
 	right /= 2;
 
-	Pointf center((double)~leadin + left.cx + rect.cx, ~central);
+	Pointf center((double)~leadin + rect.cx, ~central);
 
 	path.To(0, center.y);
 	Pointf start(center.x - left.cx - rect.cx, center.y);
 
-	path.To(start);
+	path.Kerf(start);
 
-	path.Kerf(center.x - rect.cx - left.cx, center.y + rect.cy);
-	Qel(path, center.x - rect.cx, center.y + rect.cy, -left.cx, left.cy);
-	path.Kerf(center.x + rect.cx, center.y + rect.cy + right.cy);
-	Qel(path, center.x + rect.cx, center.y + rect.cy, -right.cx, right.cy, M_PI / 2);
+//	path.Kerf(center.x - rect.cx, center.y + rect.y + left.y);
+	Qel(path, center.x - rect.cx + left.cx, center.y + rect.cy - left.cy, -left.cx, left.cy);
+//	path.Kerf(center.x + rect.cx, center.y + rect.cy + right.cy);
+	Qel(path, center.x + rect.cx - right.cx, center.y + rect.cy - left.cy, -right.cx, right.cy, M_PI / 2);
 
 	
 	if(inner) {
 		Pointf h(center.x + rect.cx + right.cx, center.y);
-		path.Kerf(h);
+		path.To(h);
 
 		Sizef rect(~inner_rect_x, ~inner_rect_y);
 		Sizef left(~inner_left_x, ~inner_left_y);
@@ -79,7 +79,7 @@ Path Rod::Get()
 
 		path.Kerf(center.x + rect.cx + right.cx, center.y);
 
-		path.Kerf(h);
+		path.To(h);
 	}
 
 	path.Kerf(center.x + rect.cx + right.cx, center.y - rect.cy);
@@ -87,5 +87,7 @@ Path Rod::Get()
 	Qel(path, center.x - rect.cx, center.y - rect.cy, -left.cx, left.cy, 3 * M_PI / 2);
 
 	path.Kerf(start);
+	path.Kerf(0, center.y);
+
 	return path;
 }
