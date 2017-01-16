@@ -9,6 +9,7 @@ file
 	Path.cpp,
 	View.cpp,
 	Bar.cpp,
+	File.cpp,
 	main.cpp,
 	Airfoil.cpp,
 	Jobs readonly separator,

@@ -1,9 +1,9 @@
 #include "Hot4d.h"
 
-void Path::To(Pointf p, bool kerf)
+void Path::To(Pt p, bool kerf)
 {
-	auto& h = pt.Add();
-	h.pt = transform.Transform(p);
+	auto& h = Add();
+	(Pointf&)h = transform.Transform(p);
 	h.kerf = kerf;
 }
 
@@ -17,34 +17,34 @@ void Path::Offset(double x, double y)
 	transform = transform * Xform2D::Translation(x, y);
 }
 
-Vector<Pointf> FourAxisDlg::GetPath(double k)
+Vector<Pt> FourAxisDlg::GetPath(double k, bool right)
 {
-	Path path = CurrentShape().Get();
+	Path path = CurrentShape(right).Get();
 /*
 	int j = 0;
 	for(int i = 1; i < path.pt.GetCount(); i++) {
-		Pointf d = path.pt[i].pt - path.pt[j].pt;
+		Pt d = path.pt[i].pt - path.pt[j].pt;
 		if(abs(d.x) > 0.00001 || abs(d.y) > 0.00001)
 			path.pt[++j] = path.pt[i];
 	}
 	path.pt.Trim(j);
 */	
-	path.To(Pointf(0, 0));
+	path.To(Pt(0, 0));
 	
-	Vector<Pointf> h;
+	Vector<Pt> h;
 	
 	int i = 0;
-	Pointf pt(0, 0);
-	while(i < path.pt.GetCount())
-		if(k && path.pt[i].kerf) {
-			Vector<Pointf> kh;
+	Pt pt(0, 0);
+	while(i < path.GetCount())
+		if(k && path[i].kerf) {
+			Vector<Pt> kh;
 			kh.Add(pt);
-			while(i < path.pt.GetCount() && path.pt[i].kerf)
-				kh.Add(path.pt[i++].pt);
+			while(i < path.GetCount() && path[i].kerf)
+				kh.Add(path[i++]);
 			h.Append(KerfCompensation(kh, k / 2));
 		}
 		else {
-			pt = path.pt[i++].pt;
+			pt = path[i++];
 			h.Add(pt);
 		}
 

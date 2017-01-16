@@ -38,20 +38,20 @@ ValueMap Shape::Save()
 	return GetValues(*this);
 }
 
-Pointf MakePoint(Ctrl& a, Ctrl& b)
+Pt MakePoint(Ctrl& a, Ctrl& b)
 {
-	return Pointf(Nvl((double)~a), Nvl((double)~b));
+	return Pt(Nvl((double)~a), Nvl((double)~b));
 }
 
-double LineIntersectionT(Pointf a1, Pointf a2, Pointf b1, Pointf b2)
+double LineIntersectionT(Pt a1, Pt a2, Pt b1, Pt b2)
 {
-	Pointf s1 = a2 - a1;
-	Pointf s2 = b2 - b1;
+	Pt s1 = a2 - a1;
+	Pt s2 = b2 - b1;
 	double t = (s2.x * (a1.y - b1.y) - s2.y * (a1.x - b1.x)) / (s1.x * s2.y - s2.x * s1.y);
 	return IsNaN(t) ? Null : t;
 }
 
-Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2)
+Pt LineIntersection(Pt a1, Pt a2, Pt b1, Pt b2)
 {
 	double t = LineIntersectionT(a1, a2, b1, b2);
 	if(IsNaN(t))
@@ -59,9 +59,9 @@ Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2)
 	return t * (a2 - a1) + a1;
 }
 
-int LineCircleIntersections(Pointf c, double radius, Pointf p1, Pointf p2, double& t1, double& t2, double def)
+int LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, double& t2, double def)
 {
-	Pointf d = p2 - p1;
+	Pt d = p2 - p1;
 	
 	double A = Squared(d);
 	double B = 2 * (d.x * (p1.x - c.x) + d.y * (p1.y - c.y));
@@ -85,7 +85,7 @@ int LineCircleIntersections(Pointf c, double radius, Pointf p1, Pointf p2, doubl
 	}
 }
 
-double PathLength(const Vector<Pointf>& path, int from, int count)
+double PathLength(const Vector<Pt>& path, int from, int count)
 {
 	double length = 0;
 	for(int i = from; i < from + count - 1; i++)
@@ -93,19 +93,19 @@ double PathLength(const Vector<Pointf>& path, int from, int count)
 	return length;
 }
 
-double PathLength(const Vector<Pointf>& path)
+double PathLength(const Vector<Pt>& path)
 {
 	return PathLength(path, 0, path.GetCount());
 }
 
-Pointf AtPath(const Vector<Pointf>& path, double at, Pointf *dir1, int from)
+Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1, int from)
 {
 	double length = 0;
 	for(int i = from; i < path.GetCount(); i++) {
 		double d = Distance(path[i], path[i + 1]);
 		double h = at - length;
 		if(h < d) {
-			Pointf d1 = (path[i + 1] - path[i]) / d;
+			Pt d1 = (path[i + 1] - path[i]) / d;
 			if(dir1)
 				*dir1 = d1;
 			return path[i] + h * d1;

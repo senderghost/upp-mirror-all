@@ -13,7 +13,7 @@ void AirfoilCtrl::DoAction()
 	while(!in.IsEof()) {
 		String ln = in.GetLine();
 		CParser p(ln);
-		Pointf pt = Null;
+		Pt pt = Null;
 		try {
 			pt.x = p.ReadDouble();
 			pt.y = p.ReadDouble();
@@ -54,13 +54,13 @@ AirfoilCtrl::AirfoilCtrl()
 
 // TODO: https://www.particleincell.com/2012/bezier-splines/
 
-Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
+Vector<Pt> SmoothAirfoil(const Vector<Pt>& foil)
 {
 	if(foil.GetCount() < 4)
 		return clone(foil);
 
 	struct Cons : LinearPathConsumer {
-		Vector<Pointf> r;
+		Vector<Pt> r;
 		
 		virtual void Line(const Pointf& p) { r.Add(p); }
 		virtual void Move(const Pointf& p) {}
@@ -71,7 +71,7 @@ Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
 	r.r.Add(foil[1]);
 	int i;
 	for(i = 1; i < foil.GetCount() - 2; i++) {
-		Pointf p2 = LineIntersection(foil[i - 1], foil[i], foil[i + 1], foil[i + 2]);
+		Pt p2 = LineIntersection(foil[i - 1], foil[i], foil[i + 1], foil[i + 2]);
 		if(!IsNull(p2)) {
 		#if 1
 			r.r.Add(p2);
@@ -88,15 +88,15 @@ Vector<Pointf> SmoothAirfoil(const Vector<Pointf>& foil)
 	return pick(r.r);
 }
 
-void AirfoilCtrl::Render(Path& path, double width, Pointf p0, double te, bool smooth)
+void AirfoilCtrl::Render(Path& path, double width, Pt p0, double te, bool smooth)
 {
 	Value p = GetData()["data"];
 
-	Vector<Pointf> foil;
+	Vector<Pt> foil;
 
 	try {
 		for(int i = 0; i < p.GetCount(); i++)
-			foil.Add(Pointf(p[i]["x"], p[i]["y"]));
+			foil.Add(Pt(p[i]["x"], p[i]["y"]));
 		
 		if(smooth)
 			foil = SmoothAirfoil(foil);
@@ -106,24 +106,24 @@ void AirfoilCtrl::Render(Path& path, double width, Pointf p0, double te, bool sm
 	}
 
 	for(int i = 0; i < foil.GetCount(); i++) {
-		Pointf pt = foil[i];
+		Pt pt = foil[i];
 		pt.x = 1 - pt.x;
-		Pointf a = width * pt;
+		Pt a = width * pt;
 		if(te && a.x < width / 4 && i < p.GetCount() / 2) // adjust te thickness in entry phase
 			a.y = max(a.y, te);
 		path.Kerf(a + p0);
 	}
 }
 
-Vector<Pointf> AirfoilCtrl::Get()
+Vector<Pt> AirfoilCtrl::Get()
 {
 	Value p = GetData()["data"];
 
-	Vector<Pointf> foil;
+	Vector<Pt> foil;
 
 	try {
 		for(int i = 0; i < p.GetCount(); i++)
-			foil.Add(Pointf(p[i]["x"], p[i]["y"]));
+			foil.Add(Pt(p[i]["x"], p[i]["y"]));
 	}
 	catch(ValueTypeError) {
 		return foil;

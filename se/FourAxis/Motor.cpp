@@ -28,7 +28,7 @@ Path Motor::Get()
 {
 	Path p;
 	
-	Pointf center = MakePoint(leadin_x, central_y);
+	Pt center = MakePoint(leadin_x, central_y);
 	Sizef front = MakePoint(front_cx, front_cy);
 	Sizef firewall = MakePoint(firewall_cx, firewall_cy);
 	Sizef back = MakePoint(back_cx, back_cy);

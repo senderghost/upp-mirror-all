@@ -13,38 +13,52 @@ using namespace Upp;
 #define IMAGEFILE <FourAxis/HotImg.iml>
 #include <Draw/iml_header.h>
 
+struct Pt : Moveable<Pt, Pointf> {
+	bool   kerf = false;
+	int    segment = 0;
+	
+	Pt Attr(const Pt& b)     { Pt p = *this; p.kerf = b.kerf; p.segment = b.segment; return b; }
+	
+	Pt(double x_, double y_) { x = x_, y = y_; }
+	Pt(const Pointf& a)      { x = a.x; y = a.y; }
+	Pt(const Point& a)       { x = a.x; y = a.y; }
+	Pt(Sizef& a)             { x = a.cx; y = a.cy; }
+	Pt(const Nuller& n)      { x = y = Null; }
+	Pt() {}
+};
+
 VectorMap<String, Ctrl *> GetCtrlMap(Ctrl& parent);
 void SetValues(Ctrl& parent, const ValueMap& json);
 ValueMap GetValues(Ctrl& parent);
 
-Pointf MakePoint(Ctrl& a, Ctrl& b);
+Pt MakePoint(Ctrl& a, Ctrl& b);
 
-double LineIntersectionT(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
-Pointf LineIntersection(Pointf a1, Pointf a2, Pointf b1, Pointf b2);
-int    LineCircleIntersections(Pointf c, double radius, Pointf p1, Pointf p2, double& t1, double& t2, double def = Null);
-double PathLength(const Vector<Pointf>& path, int from, int count);
-double PathLength(const Vector<Pointf>& path);
-Pointf AtPath(const Vector<Pointf>& path, double at, Pointf *dir1 = 0, int from = NULL);
+double LineIntersectionT(Pt a1, Pt a2, Pt b1, Pt b2);
+Pt LineIntersection(Pt a1, Pt a2, Pt b1, Pt b2);
+int    LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, double& t2, double def = Null);
+double PathLength(const Vector<Pt>& path, int from, int count);
+double PathLength(const Vector<Pt>& path);
+Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = NULL);
 
-Vector<Pointf> KerfCompensation(const Vector<Pointf>& in0, double kerf);
+Vector<Pt> KerfCompensation(const Vector<Pt>& in0, double kerf);
 
-struct Line : Moveable<Line> {
-	Pointf pt;
-	bool   kerf = false;
-};
-
-struct Path {
-	Xform2D      transform;
-	Vector<Line> pt;
+struct Path : Vector<Pt> {
+	Xform2D     transform;
+	int         segment = 0; // used to split path for tapering
 	
-	void To(Pointf p, bool kerf = false);
-	void To(double x, double y, bool kerf = false)   { To(Pointf(x, y), kerf); }
-	void Kerf(Pointf p)                              { To(p, true); }
+	void To(Pt p, bool kerf = false);
+	void To(double x, double y, bool kerf = false)   { To(Pt(x, y), kerf); }
+	void Kerf(Pt p)                                  { To(p, true); }
 	void Kerf(double x, double y)                    { To(x, y, true); }
+	void NewSegment()                                { segment++; }
 	
 	void Rotate(double x, double y, double angle);
 	void Offset(double x, double y);
 	void Identity()                                  { transform = Xform2D::Identity(); }
+};
+
+enum {
+	TAPERED = 1
 };
 
 struct Shape : ParentCtrl {
@@ -53,7 +67,9 @@ struct Shape : ParentCtrl {
 	virtual ValueMap Save();
 	virtual String   GetId() const = 0;
 	virtual String   GetName() const = 0;
-	virtual void     AddPoint(Pointf& p) {}
+	virtual void     AddPoint(Pt& p) {}
+	virtual dword    GetInfo() const { return 0; }
+	virtual bool     IsTapered() const { return GetInfo() & TAPERED; }
 	
 	void SyncView();
 };
@@ -62,6 +78,7 @@ struct Rod : WithRodLayout<Shape> {
 	virtual Path     Get();
 	virtual String   GetId() const   { return "rod"; }
 	virtual String   GetName() const { return "Rod"; }
+	virtual dword    GetInfo() const { return TAPERED; }
 
 	typedef Rod CLASSNAME;
 
@@ -91,9 +108,9 @@ struct Angle : WithAngleLayout<Shape> {
 struct AirfoilCtrl : public DataPusher {
 	virtual void DoAction();
 	
-	void Render(Path& path, double width, Pointf p0, double te, bool smooth);
+	void Render(Path& path, double width, Pt p0, double te, bool smooth);
 	
-	Vector<Pointf> Get();
+	Vector<Pt> Get();
 	
 	AirfoilCtrl();
 };
@@ -106,6 +123,7 @@ struct Wing : WithWingLayout<Shape> {
 	virtual Path    Get();
 	virtual String  GetId() const   { return "wing"; }
 	virtual String  GetName() const { return "Wing panel"; }
+	virtual dword   GetInfo() const { return TAPERED; }
 
 	Wing();
 };
@@ -126,7 +144,7 @@ struct TextPath : WithTextPath<Shape> {
 	virtual Path    Get();
 	virtual String  GetId() const   { return "free_text"; }
 	virtual String  GetName() const { return "Free text path"; }
-	virtual void    AddPoint(Pointf& p);
+	virtual void    AddPoint(Pt& p);
 
 	TextPath();
 };
@@ -157,12 +175,12 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	
 	String filepath;
 	
-	Rod      rod;
-	Text     text;
-	Angle    angle;
-	Wing     wing;
-	Motor    motor;
-	TextPath textpath;
+	Rod      rod[2];
+	Text     text[1];
+	Angle    angle[1];
+	Wing     wing[2];
+	Motor    motor[1];
+	TextPath textpath[1];
 	
 	View     view;
 	Button   home;
@@ -170,13 +188,12 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	bool     drag = false;
 	Point    click;
 	Point    click_org;
-
 	
 	LRUList lrufile;
 
-	VectorMap<String, Shape *> shape;
+	VectorMap<String, Tuple<Shape *, Shape *>> shape;
 
-	Shape& CurrentShape();
+	Shape& CurrentShape(bool right = false);
 	
 	virtual void Layout();
 	virtual bool Key(dword key, int count);
@@ -188,13 +205,15 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	void ViewDrag(Point p);
 	
 	void   Zoom(int dir, Point p);
-	void   Home()                       { org = Pointf(0, 0); Sync(); }
+	void   Home()                       { org = Pt(0, 0); Sync(); }
 	void   Type();
 	void   Sync();
-	void   PaintArrows(Painter& p, const Vector<Pointf>& path, double scale);
+	void   PaintArrows(Painter& p, const Vector<Pt>& path, double scale);
 	void   ViewPars(Font& fnt, int& w, Point& origin) const;
 	Point  ViewOrigin() const;
-	Pointf GetViewPos(Point p);
+	Pt GetViewPos(Point p);
+	
+	bool   IsTapered()                  { return CurrentShape().IsTapered() && tapered; }
 	
 	void   SetBar();
 	bool   Save(const char *path);
@@ -207,11 +226,11 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	bool   Save();
 	void   Exit();
 	
-	Vector<Pointf> GetPath(double k);
+	Vector<Pt> GetPath(double k, bool right);
 	
 	String MakeSave();
 
-	void   AddShape(Shape& s);
+	void   AddShape(Shape *l, Shape *r = NULL);
 	
 	void   Serialize(Stream& s);
 

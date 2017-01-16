@@ -23,8 +23,8 @@ Path TextPath::Get()
 	String h = ~text;
 	CParser p(h);
 	
-	Pointf pt0 = Pointf(0, 0);
-	Pointf pt1 = pt0;
+	Pt pt0 = Pt(0, 0);
+	Pt pt1 = pt0;
 	
 	int mode = 'G';
 	
@@ -35,7 +35,7 @@ Path TextPath::Get()
 			int current_mode = mode;
 			while(p.IsChar('g') || p.IsChar('r') || p.IsChar('a'))
 				current_mode = ToUpper(p.GetChar());
-			Pointf pt;
+			Pt pt;
 			pt.x = p.ReadDouble();
 			pt.y = p.ReadDouble();
 			if(current_mode == 'R')
@@ -52,7 +52,7 @@ Path TextPath::Get()
 	return r;
 }
 
-void TextPath::AddPoint(Pointf& p)
+void TextPath::AddPoint(Pt& p)
 {
 	text.Paste((String() << '\n' << p.x << " " << p.y).ToWString());
 	SyncView();

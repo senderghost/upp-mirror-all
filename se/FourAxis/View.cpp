@@ -75,16 +75,16 @@ void FourAxisDlg::ViewDrag(Point p)
 	drag = true;
 }
 
-Pointf FourAxisDlg::GetViewPos(Point p)
+Pt FourAxisDlg::GetViewPos(Point p)
 {
 	Point origin = ViewOrigin();
 	p -= org;
-	return Pointf(p.x - origin.x, origin.y - p.y) / (double)~scale;
+	return Pt(p.x - origin.x, origin.y - p.y) / (double)~scale;
 }
 
 void FourAxisDlg::Zoom(int dir, Point p)
 {
-	Pointf pos = GetViewPos(p);
+	Pt pos = GetViewPos(p);
 	scale.SetIndex(minmax(scale.GetIndex() + dir, 0, scale.GetCount() - 1));
 
 	Point origin = ViewOrigin();
@@ -103,7 +103,7 @@ void FourAxisDlg::ViewPars(Font& fnt, int& w, Point& origin) const
 	Size isz = view.GetSize();
 	fnt = Arial(Zy(12));
 	w = Zx(4);
-	origin = Pointf(GetTextSize("9999", fnt).cx + w, isz.cy - fnt.GetLineHeight() - w);
+	origin = Pt(GetTextSize("9999", fnt).cx + w, isz.cy - fnt.GetLineHeight() - w);
 }
 
 Point FourAxisDlg::ViewOrigin() const
@@ -189,42 +189,52 @@ void FourAxisDlg::Sync()
 		p.Clip();
 	
 		if(ok) {
-			p.Translate(org.x, org.y);
-			p.Translate(origin);
-			p.Scale(scale, -scale);
-
-			double k = Nvl((double)~kerf);
-			if(k) {
-				auto path = GetPath(k);
-				if(show_kerf || show_wire) {
-					p.Move(0, 0);
-					for(auto pt : path)
-						p.Line(pt);
-					if(show_kerf)
-						p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND).Stroke(k, Blend(White(), LtRed(), 50));
-					if(show_wire)
-						p.Stroke(1.0 / scale, Red());
-				}
-				PaintArrows(p, path, scale);
-			}
-	
-			auto path = GetPath(0);
-			if(show_shape || !k && show_wire) {
-				p.Move(0, 0);
-				for(auto pt : path)
-					p.Line(pt);
-				p.Stroke(1.0 / scale, k ? Blue() : Red());
-			}
 			
-			if(show_points)
-				for(auto pt : path) {
-					p.Move(pt + Pointf(-3, -3) / scale).Line(pt + Pointf(3, 3) / scale)
-					 .Move(pt + Pointf(-3, 3) / scale).Line(pt + Pointf(3, -3) / scale)
-					 .Stroke(1.0 / scale, Black());
-				}
+			for(int r = 0; r < 2; r++) {
+				if(r ? show_right : show_left) {
+					p.Begin();
+					p.Translate(org.x, org.y);
+					p.Translate(origin);
+					p.Scale(scale, -scale);
+		
+					double k = Nvl((double)~kerf);
+					if(k) {
+						auto path = GetPath(k, r);
+						if(show_kerf || show_wire) {
+							p.Move(0, 0);
+							for(auto pt : path)
+								p.Line(pt);
+							if(show_kerf)
+								p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND)
+								 .Stroke(k, Blend(White(), r ? LtMagenta() : LtRed(), 50));
+							if(show_wire)
+								p.Stroke(1.0 / scale, r ? Magenta() : Red());
+						}
+						PaintArrows(p, path, scale);
+					}
 			
-			if(!k)
-				PaintArrows(p, path, scale);
+					auto path = GetPath(0, r);
+					if(show_shape || !k && show_wire) {
+						p.Move(0, 0);
+						for(auto pt : path)
+							p.Line(pt);
+						p.Stroke(1.0 / scale, k ? r ? Green() : Blue() : r ? Magenta() : Red());
+					}
+					
+					if(show_points)
+						for(auto pt : path) {
+							p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
+							 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
+							 .Stroke(1.0 / scale, Black());
+						}
+					
+					if(!k)
+						PaintArrows(p, path, scale);
+					p.End();
+				}
+				if(!IsTapered())
+					break;
+			}
 		}
 		p.End();
 	
@@ -235,7 +245,7 @@ void FourAxisDlg::Sync()
 	SetBar();
 }
 
-void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pointf>& path, double scale)
+void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 {
 	if(!show_arrows)
 		return;
@@ -245,8 +255,8 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pointf>& path, double sca
 	int n = int(len / 30 * scale);
 	
 	for(int i = 0; i < n; i++) {
-		Pointf dir;
-		Pointf f = AtPath(path, i * len / n, &dir);
+		Pt dir;
+		Pt f = AtPath(path, i * len / n, &dir);
 		p.Begin();
 		p.Translate(f);
 		p.Rotate(Bearing(dir));
