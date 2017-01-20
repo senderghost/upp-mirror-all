@@ -38,7 +38,7 @@ Pt LineIntersection(Pt a1, Pt a2, Pt b1, Pt b2);
 int    LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, double& t2, double def = Null);
 double PathLength(const Vector<Pt>& path, int from, int count);
 double PathLength(const Vector<Pt>& path);
-Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = NULL);
+Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = 0);
 
 Vector<Pt> KerfCompensation(const Vector<Pt>& in0, double kerf);
 

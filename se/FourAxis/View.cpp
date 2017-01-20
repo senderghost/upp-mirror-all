@@ -61,7 +61,9 @@ void FourAxisDlg::ViewMove(Point p)
 		Sync();
 		view.Sync();
 	}
-	info = AsString(GetViewPos(p));
+	Pointf h = GetViewPos(p);
+	info_x = Format("X: %.3f", h.x);
+	info_y = Format("Y: %.3f", h.y);
 }
 
 void FourAxisDlg::ViewWheel(Point p, int zdelta)
