@@ -14,10 +14,10 @@ using namespace Upp;
 #include <Draw/iml_header.h>
 
 struct Pt : Moveable<Pt, Pointf> {
-	bool   kerf = false;
+	int    kerf = 0;
 	int    segment = 0;
 	
-	Pt Attr(const Pt& b)     { Pt p = *this; p.kerf = b.kerf; p.segment = b.segment; return b; }
+	Pt Attr(const Pt& b)     { Pt p = *this; p.kerf = b.kerf; p.segment = b.segment; return p; }
 	
 	Pt(double x_, double y_) { x = x_, y = y_; }
 	Pt(const Pointf& a)      { x = a.x; y = a.y; }
@@ -39,6 +39,15 @@ int    LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, do
 double PathLength(const Vector<Pt>& path, int from, int count);
 double PathLength(const Vector<Pt>& path);
 Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = 0);
+
+void Mix(const Vector<Pt>& left, int li, int lcount,
+         const Vector<Pt>& right, int ri, int rcount,
+         Vector<Pt>& left_out, Vector<Pt>& right_out);
+
+void MixAll(const Vector<Pt>& left, const Vector<Pt>& right,
+            Vector<Pt>& left_out, Vector<Pt>& right_out);
+
+void CncPath(Vector<Pt>& left, Vector<Pt>& right, double width, double tower_distance, double left_distance);
 
 Vector<Pt> KerfCompensation(const Vector<Pt>& in0, double kerf);
 
@@ -227,6 +236,7 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	void   Exit();
 	
 	Vector<Pt> GetPath(double k, bool right);
+	void       MakePaths(Vector<Pt> *path, Vector<Pt> *cnc);
 	
 	String MakeSave();
 

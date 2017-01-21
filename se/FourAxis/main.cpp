@@ -26,7 +26,10 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(textpath);
 	
 	WhenClose = [=] { Exit(); };
-	
+
+	panel_width <<= 500;
+	tower_distance <<= 700;
+	left_gap <<= 80;
 //	save_as << [=] { Save(); };
 	
 	speed <<= 140;
@@ -53,6 +56,7 @@ FourAxisDlg::FourAxisDlg()
 	show_points <<= false;
 	show_left <<= true;
 	show_right <<= true;
+	show_cnc <<= true;
 
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 		*q << [=] { Sync(); };
@@ -157,6 +161,12 @@ void Shape::SyncView()
 
 GUI_APP_MAIN
 {
+#ifdef _DEBUG0
+	void TestMix();
+	TestMix();
+	return;
+#endif
+	
 #ifdef _DEBUG0
 	TestKerf();
 	return;

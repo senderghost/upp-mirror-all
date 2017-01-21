@@ -5,6 +5,7 @@ void Path::To(Pt p, bool kerf)
 	auto& h = Add();
 	(Pointf&)h = transform.Transform(p);
 	h.kerf = kerf;
+	h.segment = segment;
 }
 
 void Path::Rotate(double x, double y, double angle)
@@ -55,4 +56,22 @@ Vector<Pt> FourAxisDlg::GetPath(double k, bool right)
 		}
 
 	return h;
+}
+
+void FourAxisDlg::MakePaths(Vector<Pt> *path, Vector<Pt> *cnc)
+{
+	for(int r = 0; r < 1 + IsTapered(); r++)
+		path[r] = GetPath(Nvl((double)~kerf), r);
+
+	if(IsTapered()) {
+		cnc[0].Add(Pointf(0, 0));
+		cnc[1].Add(Pointf(0, 0));
+		MixAll(path[0], path[1], cnc[0], cnc[1]);
+		CncPath(cnc[0], cnc[1], Nvl((double)~panel_width),
+		        Nvl((double)~tower_distance), Nvl((double)~left_gap));
+	}
+	else {
+		cnc[0] = clone(path[0]);
+		cnc[1] = clone(path[0]);
+	}
 }

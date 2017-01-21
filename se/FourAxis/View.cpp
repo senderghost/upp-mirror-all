@@ -117,6 +117,14 @@ Point FourAxisDlg::ViewOrigin() const
 	return origin;
 }
 
+bool IsOk(const Vector<Pt>& path)
+{
+	for(auto p : path)
+		if(IsNull(p) || IsNaN(p.x) || IsNaN(p.y))
+			return false;
+	return true;
+}
+
 void FourAxisDlg::Sync()
 {
 	Title(filepath);
@@ -191,20 +199,38 @@ void FourAxisDlg::Sync()
 		p.Clip();
 	
 		if(ok) {
+			double k = Nvl((double)~kerf);
 			
-			for(int r = 0; r < 2; r++) {
-				if(r ? show_right : show_left) {
+			Vector<double> dash;
+			dash.Add(1 / scale);
+			
+			Vector<Pt> path[2];
+			Vector<Pt> cnc[2];
+			
+			MakePaths(path, cnc);
+
+			bool show[2];
+			
+			if(IsTapered()) {
+				show[0] = show_left;
+				show[1] = show_right;
+			}
+			else {
+				show[0] = true;
+				show[1] = false;
+			}
+			
+			for(int r = 0; r < 1 + IsTapered(); r++) {
+				if(show[r]) {
 					p.Begin();
 					p.Translate(org.x, org.y);
 					p.Translate(origin);
 					p.Scale(scale, -scale);
 		
-					double k = Nvl((double)~kerf);
 					if(k) {
-						auto path = GetPath(k, r);
 						if(show_kerf || show_wire) {
 							p.Move(0, 0);
-							for(auto pt : path)
+							for(auto pt : path[r])
 								p.Line(pt);
 							if(show_kerf)
 								p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND)
@@ -212,26 +238,42 @@ void FourAxisDlg::Sync()
 							if(show_wire)
 								p.Stroke(1.0 / scale, r ? Magenta() : Red());
 						}
-						PaintArrows(p, path, scale);
+						PaintArrows(p, path[r], scale);
 					}
 			
-					auto path = GetPath(0, r);
+					auto shape = GetPath(0, r);
 					if(show_shape || !k && show_wire) {
 						p.Move(0, 0);
-						for(auto pt : path)
+						for(auto pt : GetPath(0, r))
 							p.Line(pt);
 						p.Stroke(1.0 / scale, k ? r ? Green() : Blue() : r ? Magenta() : Red());
 					}
 					
 					if(show_points)
-						for(auto pt : path) {
+						for(auto pt : shape)
 							p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
 							 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
 							 .Stroke(1.0 / scale, Black());
-						}
 					
 					if(!k)
-						PaintArrows(p, path, scale);
+						PaintArrows(p, shape, scale);
+
+					
+					if(IsTapered() && IsOk(cnc[r]) && show_cnc) {
+						for(auto pt : cnc[r])
+							p.Line(pt);
+						p.Dash(dash, 0).Stroke(1.0 / scale, r ? LtMagenta() : LtRed());
+						
+						if(show_points)
+							for(auto pt : cnc[r])
+								p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
+								 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
+								 .Stroke(1.0 / scale, Black());
+
+						PaintArrows(p, cnc[r], scale);
+					}
+
+					
 					p.End();
 				}
 				if(!IsTapered())
@@ -239,7 +281,7 @@ void FourAxisDlg::Sync()
 			}
 		}
 		p.End();
-	
+
 		view.img = p;
 		view.Refresh();
 	}

@@ -2,14 +2,15 @@
 
 struct GCode {
 	FileOut& out;
-	Pt   pos;
+	Pt       lpos, rpos;
 	int      speed;
 	
 	void Put(const String& s) { out.PutLine(s); }
+
+	void To(Pt l, Pt r);
+	void To(Pt p)             { To(p, p); }
 	
-	void To(Pt p);
-	
-	GCode(FileOut& out, int speed) : out(out), pos(0, 0), speed(speed) {};
+	GCode(FileOut& out, int speed) : out(out), lpos(0, 0), rpos(0, 0), speed(speed) {};
 };
 
 String GFormat(double x)
@@ -21,15 +22,19 @@ String GFormat(double x)
 #endif
 }
 
-void GCode::To(Pt p)
+void GCode::To(Pt l, Pt r)
 {
-	Pt d = p - pos;
-	if(d.x || d.y) {
-		String x = GFormat(d.x);
-		String y = GFormat(d.y);
-		Put(String() << "G1X" << x << "Y" << y << "Z" << x << "A" << y << "F" << speed);
+	Pt ld = l - lpos;
+	Pt rd = r - rpos;
+	if(ld.x || ld.y || rd.x || rd.y) {
+		String lx = GFormat(ld.x);
+		String ly = GFormat(ld.y);
+		String rx = GFormat(rd.x);
+		String ry = GFormat(rd.y);
+		Put(String() << "G1X" << lx << "Y" << ly << "Z" << rx << "A" << ry << "F" << speed);
 	}
-	pos = p;
+	lpos = l;
+	rpos = r;
 }
 
 const char *begin_source_tag = ";<<<source>>>";
@@ -49,17 +54,17 @@ bool FourAxisDlg::Save(const char *path)
 		gcode.Put("G21");
 		gcode.Put("G17");
 		gcode.Put("G91");
-		
-		double k = Nvl((double)~kerf);
-		for(auto p : GetPath(k, false))
-			gcode.To(p);
+
+		Vector<Pt> path[2];
+		Vector<Pt> cnc[2];
+		MakePaths(path, cnc);
+		for(int i = 0; i < cnc[0].GetCount(); i++)
+			gcode.To(cnc[0][i], cnc[1][i]);
 		
 		gcode.To(Pt(0, 0));
 
 		out.PutLine("");
-		DDUMP(MakeSave());
 		String s = Base64Encode(MakeSave());
-		DDUMP(s.GetCount());
 		out.PutLine(begin_source_tag);
 		while(s.GetCount()) {
 			int n = min(s.GetCount(), 78);

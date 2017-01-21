@@ -25,6 +25,7 @@ Rod::Rod()
 
 void Qel(Path& path, double cx, double cy, double rx, double ry, double from = 0)
 {
+	path.NewSegment();
 	int n4 = int(sqrt(rx * rx + ry * ry) / 0.5);
 	if(n4)
 		for(int a = 0; a <= n4; a++) {
@@ -33,6 +34,7 @@ void Qel(Path& path, double cx, double cy, double rx, double ry, double from = 0
 		}
 	else
 		path.Kerf(cx, cy);
+	path.NewSegment();
 }
 
 Path Rod::Get()
@@ -55,13 +57,15 @@ Path Rod::Get()
 	path.To(0, center.y);
 
 	Pt begin(center.x - rect.cx, center.y);
-	
+
+	path.NewSegment();
 	path.Kerf(begin);
 	Qel(path, center.x - rect.cx + left.cx, center.y + rect.cy - left.cy, -left.cx, left.cy);
 //	path.Kerf(center.x + rect.cx, center.y + rect.cy + right.cy);
 	Qel(path, center.x + rect.cx - right.cx, center.y + rect.cy - right.cy, -right.cx, right.cy, M_PI / 2);
 	
 	if(inner) {
+		path.NewSegment();
 		Pt h(center.x + rect.cx, center.y);
 		path.To(h);
 
@@ -85,13 +89,16 @@ Path Rod::Get()
 		path.Kerf(icenter.x + irect.cx, icenter.y);
 
 		path.To(h);
+		path.NewSegment();
 	}
 
 //	path.Kerf(center.x + rect.cx + right.cx, center.y - rect.cy);
 	Qel(path, center.x + rect.cx - right.cx, center.y - rect.cy + right.cy, -right.cx, right.cy, M_PI);
 	Qel(path, center.x - rect.cx + left.cx, center.y - rect.cy + left.cy, -left.cx, left.cy, 3 * M_PI / 2);
-
+	path.NewSegment();
 	path.Kerf(begin);
+
+	path.NewSegment();
 	path.To(0, center.y);
 
 	return path;
