@@ -114,3 +114,12 @@ Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1, int from)
 	}
 	return Null;
 }
+
+
+bool IsOk(const Vector<Pt>& path)
+{
+	for(auto p : path)
+		if(!(p.x > -100000 && p.x < 100000 && p.y > -100000 && p.y < 100000))
+			return false;
+	return true;
+}

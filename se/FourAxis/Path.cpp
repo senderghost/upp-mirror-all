@@ -49,11 +49,8 @@ Vector<Pt> FourAxisDlg::GetPath(double k, bool right)
 			h.Add(pt);
 		}
 
-	for(const auto& p : h)
-		if(IsNull(p.x) || IsNull(p.y) || IsNaN(p.x) || IsNaN(p.y)) {
-			h.Clear();
-			break;
-		}
+	if(!IsOk(h))
+		h.Clear();
 
 	return h;
 }
@@ -67,8 +64,13 @@ void FourAxisDlg::MakePaths(Vector<Pt> *path, Vector<Pt> *cnc)
 		cnc[0].Add(Pointf(0, 0));
 		cnc[1].Add(Pointf(0, 0));
 		MixAll(path[0], path[1], cnc[0], cnc[1]);
-		CncPath(cnc[0], cnc[1], Nvl((double)~panel_width),
-		        Nvl((double)~tower_distance), Nvl((double)~left_gap));
+		if(cnc[0].GetCount() == cnc[1].GetCount())
+			CncPath(cnc[0], cnc[1], Nvl((double)~panel_width),
+			        Nvl((double)~tower_distance), Nvl((double)~left_gap));
+		else {
+			cnc[0].Clear();
+			cnc[1].Clear();
+		}
 	}
 	else {
 		cnc[0] = clone(path[0]);

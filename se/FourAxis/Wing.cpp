@@ -57,6 +57,13 @@ void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circl
 	}
 }
 
+Rectf Wing::GetBounds()
+{
+	Pointf start = MakePoint(x, y);
+	double w = Nvl((double)~width);
+	return Rectf(start, Sizef(w, 1));
+}
+
 Path Wing::Get()
 {
 	Path r;
@@ -78,7 +85,7 @@ Path Wing::Get()
 	Pt pp(0, start.y + te);
 	
 	r.To(pp);
-	r.Kerf(pp);
+	r.NewSegment();
 
 	Vector<Pt> foil = airfoil.Get();
 	for(int i = 0; i < foil.GetCount(); i++) {
@@ -90,9 +97,13 @@ Path Wing::Get()
 	}
 
 	r.Offset(start.x, start.y);
-	
+	bool top = true;
 	for(int i = 0; i < foil.GetCount(); i++) {
 		Pt p = foil[i];
+		if(top && i > 0 && p.x < foil[i - 1].x) {
+			top = false;
+			r.NewSegment();
+		}
 		if(!IsNull(ts) && p.x > ts && i > 0) {
 			CutSpar(r, foil, i, Pt(ts, Null), tdim, top_spar_circle, Point(1, 0));
 			ts = Null;
@@ -144,9 +155,13 @@ Path Wing::Get()
 
 	if(cutte) {
 		r.Kerf(start.x, start.y + te);
+		r.NewSegment();
 		r.To(0, start.y + te);
 	}
-	r.Kerf(0, start.y);
+	else {
+		r.NewSegment();
+		r.Kerf(0, start.y);
+	}
 
 	return r;
 }

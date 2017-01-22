@@ -57,6 +57,7 @@ FourAxisDlg::FourAxisDlg()
 	show_left <<= true;
 	show_right <<= true;
 	show_cnc <<= true;
+	show_planform <<= true;
 
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
 		*q << [=] { Sync(); };
@@ -74,6 +75,8 @@ FourAxisDlg::FourAxisDlg()
 	Type();
 	
 	Sizeable().Zoomable();
+	
+	StoreRevision();
 }
 
 Shape& FourAxisDlg::CurrentShape(bool right)
@@ -104,8 +107,11 @@ void FourAxisDlg::Type()
 	panel_width.Show(b);
 	tower_distance.Show(b);
 	
+	
 	show_left.Show(b);
 	show_right.Show(b);
+	show_cnc.Show(b);
+	show_planform.Show(b);
 
 	Sync();
 }
@@ -121,15 +127,15 @@ bool FourAxisDlg::Key(dword key, int count)
 
 void FourAxisDlg::Exit()
 {
-#ifndef _DEBUG0
-	bool ok;
-	if(filepath.GetCount() == 0)
-		ok = SaveAs();
-	else
-		ok = Save();
-	if(!ok && !PromptYesNo("File is not saved. Do you really want to quit?"))
-		return;
-#endif
+	if(FastCompress(MakeSave()) != revision)
+		switch(PromptYesNoCancel("Do you want to save the changes to the file?")) {
+		case 1:
+			if(!Save())
+				return;
+			break;
+		case -1:
+			return;
+		}
 	Close();
 }
 

@@ -37,6 +37,13 @@ void Qel(Path& path, double cx, double cy, double rx, double ry, double from = 0
 	path.NewSegment();
 }
 
+Rectf Rod::GetBounds()
+{
+	Sizef sz = MakePoint(rect_x, rect_y);
+	Pointf p = MakePoint(leadin, central);
+	return Rectf(p - Pointf(0, sz.cy / 2), sz);
+}
+
 Path Rod::Get()
 {
 	Path path;

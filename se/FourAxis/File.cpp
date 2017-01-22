@@ -101,6 +101,12 @@ String FourAxisDlg::MakeSave()
 	return AsJSON(m);
 }
 
+void FourAxisDlg::StoreRevision()
+{
+	revision = FastCompress(MakeSave());
+	DDUMP(revision.GetCount());
+}
+
 bool FourAxisDlg::Load(const char *path)
 {
 	FileIn in(path);
@@ -120,7 +126,6 @@ bool FourAxisDlg::Load(const char *path)
 		}
 	}
 	try {
-		DDUMP(Base64Decode(src));
 		Value m = ParseJSON(Base64Decode(src));
 		int q = shape.Find(m["type"]);
 		if(q < 0)
@@ -147,6 +152,7 @@ bool FourAxisDlg::Load(const char *path)
 	lrufile.NewEntry(filepath);
 	lrufile.Limit(16);
 	Sync();
+	StoreRevision();
 	return true;
 }
 
@@ -219,6 +225,8 @@ void FourAxisDlg::OpenFile(const String& fp)
 
 bool FourAxisDlg::Save()
 {
+	if(IsNull(filepath))
+		return SaveAs();
 	return Save(filepath);
 }
 

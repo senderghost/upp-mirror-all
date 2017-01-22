@@ -39,6 +39,7 @@ int    LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, do
 double PathLength(const Vector<Pt>& path, int from, int count);
 double PathLength(const Vector<Pt>& path);
 Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = 0);
+bool IsOk(const Vector<Pt>& path);
 
 void Mix(const Vector<Pt>& left, int li, int lcount,
          const Vector<Pt>& right, int ri, int rcount,
@@ -72,6 +73,7 @@ enum {
 
 struct Shape : ParentCtrl {
 	virtual Path     Get() = 0;
+	virtual Rectf    GetBounds() { return Null; }
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
 	virtual String   GetId() const = 0;
@@ -85,6 +87,7 @@ struct Shape : ParentCtrl {
 
 struct Rod : WithRodLayout<Shape> {
 	virtual Path     Get();
+	virtual Rectf    GetBounds();
 	virtual String   GetId() const   { return "rod"; }
 	virtual String   GetName() const { return "Rod"; }
 	virtual dword    GetInfo() const { return TAPERED; }
@@ -130,6 +133,7 @@ struct Wing : WithWingLayout<Shape> {
 	AirfoilCtrl airfoil;
 
 	virtual Path    Get();
+	virtual Rectf   GetBounds();
 	virtual String  GetId() const   { return "wing"; }
 	virtual String  GetName() const { return "Wing panel"; }
 	virtual dword   GetInfo() const { return TAPERED; }
@@ -183,6 +187,7 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	typedef FourAxisDlg CLASSNAME;
 	
 	String filepath;
+	String revision;
 	
 	Rod      rod[2];
 	Text     text[1];
@@ -225,6 +230,7 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	bool   IsTapered()                  { return CurrentShape().IsTapered() && tapered; }
 	
 	void   SetBar();
+	void   StoreRevision();
 	bool   Save(const char *path);
 	bool   Load(const char *path);
 	bool   OpenS(const String& fp);

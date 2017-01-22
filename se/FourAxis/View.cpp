@@ -117,14 +117,6 @@ Point FourAxisDlg::ViewOrigin() const
 	return origin;
 }
 
-bool IsOk(const Vector<Pt>& path)
-{
-	for(auto p : path)
-		if(IsNull(p) || IsNaN(p.x) || IsNaN(p.y))
-			return false;
-	return true;
-}
-
 void FourAxisDlg::Sync()
 {
 	Title(filepath);
@@ -214,6 +206,21 @@ void FourAxisDlg::Sync()
 			if(IsTapered()) {
 				show[0] = show_left;
 				show[1] = show_right;
+
+				if(show_planform) {
+					Rectf l = CurrentShape(false).GetBounds();
+					Rectf r = CurrentShape(true).GetBounds();
+					double width = Nvl((double)~panel_width);
+					
+					if(!IsNull(l) && !IsNull(r) && width > 0) {
+						double x = isz.cx - 30 - width;
+						p.Move(x, 20 + l.left)
+				         .Line(x + width, 20 + r.left)
+				         .Line(x + width, 20 + r.right)
+				         .Line(x, 20 + l.right)
+				         .Close().Stroke(2, Gray());
+					}
+				}
 			}
 			else {
 				show[0] = true;
