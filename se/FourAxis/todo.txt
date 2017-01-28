@@ -3,9 +3,11 @@
 
 - planform area
 
+- save view options
 - tappered run in/out - avoid long stay of wire in bigger part
 - reorient spar position from LE
 - spar compensation
 - negative kerf
+- sheeting
 
 DONE:

@@ -11,13 +11,13 @@ void Circle(Path& path, Pt c, double r, double a0)
 
 void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circle, Point dir)
 {
-	r.NewSegment();
 	DLOG("Spar");
 	Pt p = LineIntersection(foil[i - 1], foil[i],
 	                        Pt(Nvl(pos.x, 0.0), Nvl(pos.y, 0.0)), Pt(Nvl(pos.x, 1.0), Nvl(pos.y, 1.0)));
 	if(circle) {
 		Pt u = Orthogonal(p - foil[i - 1]) / Distance(p, foil[i - 1]);
 		r.Kerf(p);
+		r.NewSegment();
 		r.To(p - u * dim.y);
 		Circle(r, p - u * (dim.x / 2 + dim.y), dim.x / 2, dir.x < 0 ? M_PI : 0);
 		r.To(p - u * dim.y);
@@ -49,13 +49,14 @@ void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circl
 		}
 		if(!IsNull(p2)) {
 			r.Kerf(p);
+			r.NewSegment();
 			Pt u = Orthogonal(p2 - p) / Distance(p2, p);
 			p -= u * dim.y;
 			r.Kerf(p);
 			p -= Orthogonal(u) * dim.x;
 			r.Kerf(p);
-			r.NewSegment();
 			r.Kerf(p2);
+			r.NewSegment();
 			r.Kerf(foil[i]);
 		}
 	}
@@ -113,15 +114,21 @@ Path Wing::Get(double inverted)
 	r.Offset(start.x, start.y);
 	if(rot)
 		r.Rotate(width - Nvl((double)~rotate_around), 0, M_2PI * rot / 360.0);
-	
+
 	Pt pp(-start.x, te);
+	r.NewSegment();
 	r.To(pp);
 	r.NewSegment();
+
+	DLOG("!!!");
+	r.Kerf(-(start.x > 5 ? 5 : start.x / 3), te); // this is lead-in to avoid long stay of wire
+	r.NewSegment();
+	DLOG("!!!");
 
 	bool top = true;
 	for(int i = 0; i < foil.GetCount(); i++) {
 		Pt p = foil[i];
-		if(top && i > 0 && p.x < foil[i - 1].x) {
+		if(top && i + 1 < foil.GetCount() && p.x > foil[i + 1].x) { // LE split to new segment
 			top = false;
 			r.NewSegment();
 		}
@@ -135,54 +142,25 @@ Path Wing::Get(double inverted)
 			bs = Null;
 		}
 		else
-		if(tedim.x > 0 && i > 0 && p.x < foil[i - 1].x && Distance(p, Pt(0, 0)) <= tedim.x) {
-			r.NewSegment();
-			double t, t2;
-			Pt p0 = foil[i - 1];
-			LineCircleIntersections(Pt(0, 0), tedim.x, p0, p, t, t2);
-			if(t < 0 || t > 1)
-				t = t2;
-			if(t >= 0 && t <= 1) {
-				p = (p - p0) * t + p0;
-				Pt u = (p - p0) / Distance(p, foil[i - 1]);
-				r.Kerf(p);
-				r.Kerf(p - Orthogonal(u) * tedim.y);
-				r.Kerf(p - Orthogonal(u) * tedim.y + u * tedim.x);
-				break;
-			}
-			r.NewSegment();
-		}
-		else
-		if(ledim.x > 0 && p.y < ledim.x / 2 && i > 0 && p.y < foil[i - 1].y && !le_spar_circle) {
-			CutSpar(r, foil, i, Pt(Null, ledim.x / 2), ledim, le_spar_circle, Point(0, -1));
-			ledim.x = 0;
-		}
-		else
-		if(le_spar_circle && ledim.x > 0 && i > 0 && p.y < foil[i - 1].y && p.y < 0) {
-			r.NewSegment();
-			Pt p1(width, 0);
-			r.Kerf(p1);
-			r.To(width - ledim.y, 0);
-			Circle(r, Pt(width - ledim.y - ledim.x / 2, 0), ledim.x / 2, -M_PI / 2);
-			r.To(p1);
-			r.Kerf(p);
-			ledim.x = 0;
-			r.NewSegment();
-		}
-		else
 			r.Kerf(p);
 	}
 	
 //	airfoil.Render(r, Nvl((double)~width), start, t, ~smooth);
 
-	r.NewSegment();
+	DLOG("======== ENDING");
 
-	if(cutte)
+	if(cutte) {
+		r.NewSegment();
 		r.Kerf(0, te);
+	}
 
 	r.NewSegment();
+	r.Kerf(-(start.x > 5 ? 5 : start.x / 3), 0); // this is lead-out to avoid long stay of wire
 
+	r.NewSegment();
 	r.Kerf(-start.x, 0);
+
+	r.NewSegment();
 
 	r.Identity();
 

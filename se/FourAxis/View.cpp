@@ -303,29 +303,16 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 
 	int segment = -1;
 	int sgi = 0;
-	static Color c[] = { Blue(), Green(), Red(), Gray() };
+	static Color c[] = { Blue(), Green(), Magenta(), Gray() };
+	LOG("arrows");
 	for(int i = 0; i < n; i++) {
 		Pt dir;
 		Pt f = AtPath(path, i * len / n, &dir);
-		DDUMP(f.segment);
-		if(f.segment != segment) {
-			sgi = sgi++ % __countof(c);
-			segment = f.segment;
-		}
+		DLOG(f << " " << f.segment);
 		p.Begin();
 		p.Translate(f);
 		p.Rotate(Bearing(dir));
-		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Fill(c[sgi]);
+		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Fill(c[f.segment % __countof(c)]);
 		p.End();
 	}
-	
-/*
-	int a = ~arrows;
-	if(a)
-		for(double i = 0; i < a; i++) {
-			p.BeginOnPath(i / (a - 1));
-			p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Close().Stroke(1.0 / scale, LtRed());
-			p.End();
-		}
-*/
 }

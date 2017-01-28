@@ -6,7 +6,7 @@ void Path::To(Pt p, bool kerf)
 	(Pointf&)h = transform.Transform(p);
 	h.kerf = kerf;
 	h.segment = segment;
-	DLOG(p << ", segment " << segment << ", kerf " << kerf);
+	DLOG(h << ", segment " << segment << ", kerf " << kerf);
 }
 
 void Path::Rotate(double x, double y, double angle)
