@@ -141,6 +141,8 @@ void FourAxisDlg::Sync()
 		ViewPars(fnt, w, origin);
 		
 		ImagePainter p(isz);
+		
+		p.PreClip();
 	
 		p.Translate(0.5, 0.5);
 		p.Clear(White());
@@ -193,13 +195,11 @@ void FourAxisDlg::Sync()
 		if(ok) {
 			double k = Nvl((double)~kerf);
 			
-			Vector<double> dash;
-			dash.Add(1 / scale);
-			
+			Vector<Pt> shape[2];
 			Vector<Pt> path[2];
 			Vector<Pt> cnc[2];
 			
-			MakePaths(path, cnc);
+			MakePaths(shape, path, cnc, show_inverted ? 15.0 : (double)Null);
 
 			bool show[2];
 			
@@ -234,52 +234,15 @@ void FourAxisDlg::Sync()
 					p.Translate(origin);
 					p.Scale(scale, -scale);
 		
-					if(k) {
-						if(show_kerf || show_wire) {
-							p.Move(0, 0);
-							for(auto pt : path[r])
-								p.Line(pt);
-							if(show_kerf)
-								p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND)
-								 .Stroke(k, Blend(White(), r ? LtMagenta() : LtRed(), 50));
-							if(show_wire)
-								p.Stroke(1.0 / scale, r ? Magenta() : Red());
-						}
-						PaintArrows(p, path[r], scale);
-					}
+					PaintPath(p, path[r], scale,
+					          show_wire ? r ? Magenta() : Red() : Null, false,
+					          show_kerf ? Blend(White(), r ? LtMagenta() : LtRed(), 120) : Null, GetKerf(r));
 			
-					auto shape = GetPath(0, r);
-					if(show_shape || !k && show_wire) {
-						p.Move(0, 0);
-						for(auto pt : GetPath(0, r))
-							p.Line(pt);
-						p.Stroke(1.0 / scale, k ? r ? Green() : Blue() : r ? Magenta() : Red());
-					}
+					if(show_shape)
+						PaintPath(p, shape[r], scale, r ? Magenta() : Red());
 					
-					if(show_points)
-						for(auto pt : shape)
-							p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
-							 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
-							 .Stroke(1.0 / scale, Black());
-					
-					if(!k)
-						PaintArrows(p, shape, scale);
-
-					
-					if(IsTapered() && IsOk(cnc[r]) && show_cnc) {
-						for(auto pt : cnc[r])
-							p.Line(pt);
-						p.Dash(dash, 0).Stroke(1.0 / scale, r ? LtMagenta() : LtRed());
-						
-						if(show_points)
-							for(auto pt : cnc[r])
-								p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
-								 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
-								 .Stroke(1.0 / scale, Black());
-
-						PaintArrows(p, cnc[r], scale);
-					}
-
+					if(IsTapered() && IsOk(cnc[r]) && show_cnc)
+						PaintPath(p, cnc[r], scale, r ? LtMagenta() : LtRed(), true);
 					
 					p.End();
 				}
@@ -296,6 +259,39 @@ void FourAxisDlg::Sync()
 	SetBar();
 }
 
+void FourAxisDlg::PaintPath(Painter& p, const Vector<Pt>& path, double scale,
+                            Color color, bool dashed, Color kerf_color, double kerf)
+{
+	p.Move(0, 0);
+
+	for(auto pt : path)
+		p.Line(pt);
+
+	if(!IsNull(kerf_color))
+		p.LineCap(LINECAP_ROUND).LineJoin(LINEJOIN_ROUND)
+		 .Stroke(kerf, kerf_color);
+
+	if(!IsNull(color)) {
+		if(dashed) {
+			Vector<double> dash;
+			dash.Add(1 / scale);
+			p.Dash(dash, 0);
+		}
+		p.Stroke(1 / scale, color);
+		
+		if(show_points) {
+			for(auto pt : path)
+				p.Move(pt + Pt(-3, -3) / scale).Line(pt + Pt(3, 3) / scale)
+				 .Move(pt + Pt(-3, 3) / scale).Line(pt + Pt(3, -3) / scale)
+				 .Stroke(1.0 / scale, Black());
+		}
+
+		PaintArrows(p, path, scale);
+	}
+	
+	p.EndPath();
+}
+
 void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 {
 	if(!show_arrows)
@@ -304,14 +300,22 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 	double len = PathLength(path);
 	
 	int n = int(len / 30 * scale);
-	
+
+	int segment = -1;
+	int sgi = 0;
+	static Color c[] = { Blue(), Green(), Red(), Gray() };
 	for(int i = 0; i < n; i++) {
 		Pt dir;
 		Pt f = AtPath(path, i * len / n, &dir);
+		DDUMP(f.segment);
+		if(f.segment != segment) {
+			sgi = sgi++ % __countof(c);
+			segment = f.segment;
+		}
 		p.Begin();
 		p.Translate(f);
 		p.Rotate(Bearing(dir));
-		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Fill(LtBlue());
+		p.Move(0, -4.0 / scale).Line(4.0 / scale, 0).Line(0, 4.0 / scale).Fill(c[sgi]);
 		p.End();
 	}
 	

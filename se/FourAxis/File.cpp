@@ -55,9 +55,10 @@ bool FourAxisDlg::Save(const char *path)
 		gcode.Put("G17");
 		gcode.Put("G91");
 
+		Vector<Pt> shape[2];
 		Vector<Pt> path[2];
 		Vector<Pt> cnc[2];
-		MakePaths(path, cnc);
+		MakePaths(shape, path, cnc);
 		for(int i = 0; i < cnc[0].GetCount(); i++)
 			gcode.To(cnc[0][i], cnc[1][i]);
 		
@@ -137,7 +138,7 @@ bool FourAxisDlg::Load(const char *path)
 		kerf <<= m["kerf"];
 		speed <<= m["feed"];
 		Value h = m["taper"];
-		if(!IsNull(h) && CurrentShape().IsTapered()) {
+		if(!IsNull(h) && CurrentShape().IsTaperable()) {
 			tapered <<= true;
 			Type();
 			CurrentShape(true).Load(h);

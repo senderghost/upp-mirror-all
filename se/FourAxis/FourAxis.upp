@@ -16,6 +16,7 @@ file
 	dlg.lay,
 	HotImg.iml,
 	Jobs readonly separator,
+	todo.txt,
 	airfoils\rough.dat,
 	airfoils\s3021.dat,
 	airfoils\ag24.dat,

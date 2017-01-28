@@ -34,12 +34,12 @@ void Mix(const Vector<Pt>& left, int li, int lcount,
 		if(rd < ld) {
 			right_out.Add(ra = rb);
 			ri++;
-			left_out.Add(la = (lb - la) * (rd / ld) + la);
+			left_out.Add(la = Pt((lb - la) * (rd / ld) + la).Attr(la));
 		}
 		else {
 			left_out.Add(la = lb);
 			li++;
-			right_out.Add(ra = (rb - ra) * (ld / rd) + ra);
+			right_out.Add(ra = Pt((rb - ra) * (ld / rd) + ra).Attr(ra));
 		}
 	}
 	
@@ -61,7 +61,7 @@ void MixAll(const Vector<Pt>& left, const Vector<Pt>& right,
 	int li = 0;
 	int ri = 0;
 	DLOG("----------------");
-	while(li < left.GetCount() && ri < right.GetCount()) {
+	while(li < left.GetCount() && left[li].segment == segment && ri < right.GetCount() && right[ri].segment == segment) {
 		int li0 = li;
 		while(li < left.GetCount() && left[li].segment == segment)
 			li++;
@@ -107,7 +107,7 @@ void CncPath(Vector<Pt>& left, Vector<Pt>& right, double width, double tower_dis
 
 		double xslope = (l.x - r.x) / width;
 		l.x += xslope * left_distance;
-		r.x += xslope * right_distance;
+		r.x -= xslope * right_distance;
 	}
 }
 

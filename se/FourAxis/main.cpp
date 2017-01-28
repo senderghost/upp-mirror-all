@@ -84,7 +84,7 @@ Shape& FourAxisDlg::CurrentShape(bool right)
 	int q = ~type;
 	if(q < 0 || q >= shape.GetCount()) return rod[0];
 	auto t = shape[~type];
-	return t.a->IsTapered() && tapered && right ? *t.b : *t.a;
+	return t.a->IsTaperable() && tapered && right ? *t.b : *t.a;
 }
 
 void FourAxisDlg::Type()
@@ -93,20 +93,22 @@ void FourAxisDlg::Type()
 		auto t = shape[i];
 		bool b = ~type == i;
 		t.a->Show(b);
-		if(t.a->IsTapered())
+		if(t.a->IsTaperable())
 			t.b->Show(b && tapered);
 	}
-	tapered.Show(CurrentShape().IsTapered());
+	tapered.Show(CurrentShape().IsTaperable());
 	
 	bool b = tapered;
-	
+
 	tower_distance_lbl.Show(b);
 	panel_width_lbl.Show(b);
 	left_gap_lbl.Show(b);
+	right_kerf_lbl.Show(b);
+
 	left_gap.Show(b);
 	panel_width.Show(b);
 	tower_distance.Show(b);
-	
+	right_kerf.Show(b);
 	
 	show_left.Show(b);
 	show_right.Show(b);

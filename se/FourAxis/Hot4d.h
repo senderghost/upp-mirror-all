@@ -68,11 +68,12 @@ struct Path : Vector<Pt> {
 };
 
 enum {
-	TAPERED = 1
+	TAPERABLE = 1, INVERTABLE = 2,
 };
 
 struct Shape : ParentCtrl {
-	virtual Path     Get() = 0;
+	virtual Path     Get()  { return Path(); }
+	virtual Path     Get(double invert_y) { return Get(); }
 	virtual Rectf    GetBounds() { return Null; }
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
@@ -80,7 +81,9 @@ struct Shape : ParentCtrl {
 	virtual String   GetName() const = 0;
 	virtual void     AddPoint(Pt& p) {}
 	virtual dword    GetInfo() const { return 0; }
-	virtual bool     IsTapered() const { return GetInfo() & TAPERED; }
+	
+	bool    IsTaperable() const { return GetInfo() & TAPERABLE; }
+	bool    IsInvertable() const { return GetInfo() & INVERTABLE; }
 	
 	void SyncView();
 };
@@ -90,7 +93,7 @@ struct Rod : WithRodLayout<Shape> {
 	virtual Rectf    GetBounds();
 	virtual String   GetId() const   { return "rod"; }
 	virtual String   GetName() const { return "Rod"; }
-	virtual dword    GetInfo() const { return TAPERED; }
+	virtual dword    GetInfo() const { return TAPERABLE; }
 
 	typedef Rod CLASSNAME;
 
@@ -132,11 +135,11 @@ struct Wing : WithWingLayout<Shape> {
 	
 	AirfoilCtrl airfoil;
 
-	virtual Path    Get();
+	virtual Path    Get(double inverted);
 	virtual Rectf   GetBounds();
 	virtual String  GetId() const   { return "wing"; }
 	virtual String  GetName() const { return "Wing panel"; }
-	virtual dword   GetInfo() const { return TAPERED; }
+	virtual dword   GetInfo() const { return TAPERABLE|INVERTABLE; }
 
 	Wing();
 };
@@ -222,12 +225,14 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	void   Home()                       { org = Pt(0, 0); Sync(); }
 	void   Type();
 	void   Sync();
+	void   PaintPath(Painter& p, const Vector<Pt>& path, double scale, Color color,
+	                 bool dashed = false, Color kerf_color = Null, double kerf = 0);
 	void   PaintArrows(Painter& p, const Vector<Pt>& path, double scale);
 	void   ViewPars(Font& fnt, int& w, Point& origin) const;
 	Point  ViewOrigin() const;
 	Pt GetViewPos(Point p);
 	
-	bool   IsTapered()                  { return CurrentShape().IsTapered() && tapered; }
+	bool   IsTapered()                  { return CurrentShape().IsTaperable() && tapered; }
 	
 	void   SetBar();
 	void   StoreRevision();
@@ -241,8 +246,9 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	bool   Save();
 	void   Exit();
 	
-	Vector<Pt> GetPath(double k, bool right);
-	void       MakePaths(Vector<Pt> *path, Vector<Pt> *cnc);
+	double     GetKerf(bool right);
+	Vector<Pt> GetShapePath(bool right, double inverted);
+	void       MakePaths(Vector<Pt> *shape, Vector<Pt> *path, Vector<Pt> *cnc, double inverted = Null);
 	
 	String MakeSave();
 

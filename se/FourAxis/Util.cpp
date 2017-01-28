@@ -108,7 +108,7 @@ Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1, int from)
 			Pt d1 = (path[i + 1] - path[i]) / d;
 			if(dir1)
 				*dir1 = d1;
-			return path[i] + h * d1;
+			return Pt(path[i] + h * d1).Attr(path[i]);
 		}
 		length += d;
 	}
