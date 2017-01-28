@@ -12,8 +12,9 @@ void Circle(Path& path, Pt c, double r, double a0)
 void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circle, Point dir)
 {
 	r.NewSegment();
+	DLOG("Spar");
 	Pt p = LineIntersection(foil[i - 1], foil[i],
-	                            Pt(Nvl(pos.x, 0.0), Nvl(pos.y, 0.0)), Pt(Nvl(pos.x, 1.0), Nvl(pos.y, 1.0)));
+	                        Pt(Nvl(pos.x, 0.0), Nvl(pos.y, 0.0)), Pt(Nvl(pos.x, 1.0), Nvl(pos.y, 1.0)));
 	if(circle) {
 		Pt u = Orthogonal(p - foil[i - 1]) / Distance(p, foil[i - 1]);
 		r.Kerf(p);
@@ -21,6 +22,7 @@ void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circl
 		Circle(r, p - u * (dim.x / 2 + dim.y), dim.x / 2, dir.x < 0 ? M_PI : 0);
 		r.To(p - u * dim.y);
 		r.To(p);
+		r.NewSegment();
 	}
 	else {
 		Pt p2 = Null;
@@ -52,11 +54,12 @@ void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circl
 			r.Kerf(p);
 			p -= Orthogonal(u) * dim.x;
 			r.Kerf(p);
+			r.NewSegment();
 			r.Kerf(p2);
 			r.Kerf(foil[i]);
 		}
 	}
-	r.NewSegment();
+	DLOG("End of spar");
 }
 
 Rectf Wing::GetBounds()
@@ -68,6 +71,7 @@ Rectf Wing::GetBounds()
 
 Path Wing::Get(double inverted)
 {
+	DLOG("=============== WING");
 	Path r;
 	
 	double t = Nvl((double)~te);

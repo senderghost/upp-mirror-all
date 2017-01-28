@@ -14,8 +14,8 @@ using namespace Upp;
 #include <Draw/iml_header.h>
 
 struct Pt : Moveable<Pt, Pointf> {
-	int    kerf = 0;
-	int    segment = 0;
+	bool   kerf = 0; // line is kerf compensated
+	int    segment = 0; // tapering segments
 	
 	Pt Attr(const Pt& b)     { Pt p = *this; p.kerf = b.kerf; p.segment = b.segment; return p; }
 	
