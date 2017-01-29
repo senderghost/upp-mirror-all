@@ -199,7 +199,7 @@ void FourAxisDlg::Sync()
 			Vector<Pt> path[2];
 			Vector<Pt> cnc[2];
 			
-			MakePaths(shape, path, cnc, show_inverted ? 15.0 : (double)Null);
+			MakePaths(shape, path, cnc, show_inverted ? GetInvertY() : (double)Null);
 
 			bool show[2];
 			
@@ -208,17 +208,43 @@ void FourAxisDlg::Sync()
 				show[1] = show_right;
 
 				if(show_planform) {
-					Rectf l = CurrentShape(false).GetBounds();
-					Rectf r = CurrentShape(true).GetBounds();
+					Rectf l = GetBounds(shape[0]);
+					Rectf r = GetBounds(shape[1]);
 					double width = Nvl((double)~panel_width);
 					
 					if(!IsNull(l) && !IsNull(r) && width > 0) {
-						double x = isz.cx - 30 - width;
-						p.Move(x, 20 + l.left)
-				         .Line(x + width, 20 + r.left)
-				         .Line(x + width, 20 + r.right)
-				         .Line(x, 20 + l.right)
+						Font fnt = Arial(13);
+						Size tsz = GetTextSize("99999 dm", fnt);
+						double x = isz.cx - tsz.cx - width;
+						double h = max(l.left, l.right, r.left, r.right);
+						double y = 3 * tsz.cy + h;
+						p.Move(x, y - l.left)
+				         .Line(x + width, y - r.left)
+				         .Line(x + width, y - r.right)
+				         .Line(x, y - l.right)
 				         .Close().Stroke(2, Gray());
+				        double yy = y - h / 2 - tsz.cy;
+				        p.Text(x - tsz.cx, yy, Format("%.1f", l.right - l.left), fnt)
+				         .Text(x + width + 10, yy, Format("%.1f", r.right - r.left), fnt)
+				         .Text(x, y, Format("%.1f degrees",
+				               atan2((l.right + l.left) / 2 - (r.right + r.left) / 2, width) * 360 / M_2PI),
+				                   fnt)
+				          .Fill(Blue());
+
+						h = max(l.top, l.bottom, r.top, r.bottom);
+						y += 3 * tsz.cy + h;
+						p.Move(x, y - l.top)
+				         .Line(x + width, y - r.top)
+				         .Line(x + width, y - r.bottom)
+				         .Line(x, y - l.bottom)
+				         .Close().Stroke(2, Gray());
+				        yy = y - h / 2 - tsz.cy;
+				        p.Text(x - tsz.cx, yy, Format("%.1f", l.bottom - l.top), fnt)
+				         .Text(x + width + 10, yy, Format("%.1f", r.bottom - r.top), fnt)
+				         .Text(x, y, Format("%.1f degrees",
+				               atan2((l.bottom + l.top) / 2 - (r.bottom + r.top) / 2, width) * 360 / M_2PI),
+				               fnt)
+				         .Fill(Blue());
 					}
 				}
 			}
@@ -255,6 +281,8 @@ void FourAxisDlg::Sync()
 		view.img = p;
 		view.Refresh();
 	}
+	
+	invert_y.NullText(AsString(GetFoamHeight() / 2));
 	
 	SetBar();
 }
@@ -301,14 +329,16 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 	
 	int n = int(len / 30 * scale);
 
+	DLOG("=========== path");
+	for(int i = 0; i < path.GetCount(); i++)
+		DLOG(path[i].x << ", " << path[i].y << ", segment: " << path[i].segment);
+
 	int segment = -1;
 	int sgi = 0;
 	static Color c[] = { Blue(), Green(), Magenta(), Gray() };
-	LOG("arrows");
 	for(int i = 0; i < n; i++) {
 		Pt dir;
 		Pt f = AtPath(path, i * len / n, &dir);
-		DLOG(f << " " << f.segment);
 		p.Begin();
 		p.Translate(f);
 		p.Rotate(Bearing(dir));

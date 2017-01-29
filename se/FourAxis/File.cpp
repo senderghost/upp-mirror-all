@@ -1,7 +1,7 @@
 #include "Hot4d.h"
 
 struct GCode {
-	FileOut& out;
+	Stream&  out;
 	Pt       lpos, rpos;
 	int      speed;
 	
@@ -10,7 +10,7 @@ struct GCode {
 	void To(Pt l, Pt r);
 	void To(Pt p)             { To(p, p); }
 	
-	GCode(FileOut& out, int speed) : out(out), lpos(0, 0), rpos(0, 0), speed(speed) {};
+	GCode(Stream& out, int speed) : out(out), lpos(0, 0), rpos(0, 0), speed(speed) {};
 };
 
 String GFormat(double x)
@@ -40,6 +40,21 @@ void GCode::To(Pt l, Pt r)
 const char *begin_source_tag = ";<<<source>>>";
 const char *end_source_tag = ";>>>source<<<";
 
+void FourAxisDlg::SaveGCode(Stream& out, double inverted)
+{
+	GCode gcode(out, ~speed);
+	
+	gcode.Put("G21");
+	gcode.Put("G17");
+	gcode.Put("G91");
+
+	Vector<Pt> shape[2];
+	Vector<Pt> path[2];
+	Vector<Pt> cnc[2];
+	MakePaths(shape, path, cnc, inverted);
+	for(int i = 0; i < cnc[0].GetCount(); i++)
+		gcode.To(cnc[0][i], cnc[1][i]);
+}
 
 bool FourAxisDlg::Save(const char *path)
 {
@@ -49,21 +64,7 @@ bool FourAxisDlg::Save(const char *path)
 	FileOut out(path);
 
 	if(out) {
-		GCode gcode(out, ~speed);
-		
-		gcode.Put("G21");
-		gcode.Put("G17");
-		gcode.Put("G91");
-
-		Vector<Pt> shape[2];
-		Vector<Pt> path[2];
-		Vector<Pt> cnc[2];
-		MakePaths(shape, path, cnc);
-		for(int i = 0; i < cnc[0].GetCount(); i++)
-			gcode.To(cnc[0][i], cnc[1][i]);
-		
-		gcode.To(Pt(0, 0));
-
+		SaveGCode(out, Null);
 		out.PutLine("");
 		String s = Base64Encode(MakeSave());
 		out.PutLine(begin_source_tag);
@@ -77,8 +78,21 @@ bool FourAxisDlg::Save(const char *path)
 
 		out.Close();
 		
-		if(!out.IsError())
-			return true;
+		if(!out.IsError()) {
+			if(save_inverted) {
+				String ipath = path;
+				String ext = GetFileExt(ipath);
+				ipath.Trim(ipath.GetCount() - ext.GetCount());
+				ipath << ".inverted" << ext;
+				FileOut iout(ipath);
+				SaveGCode(iout, GetInvertY());
+				iout.Close();
+				if(!iout.IsError())
+					return true;
+			}
+			else
+				return true;
+		}
 	}
 
 	Exclamation("Error while saving the file.");

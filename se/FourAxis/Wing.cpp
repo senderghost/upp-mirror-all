@@ -63,11 +63,49 @@ void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circl
 	DLOG("End of spar");
 }
 
-Rectf Wing::GetBounds()
+bool DoSpar(Path& r, const Vector<Pt>& foil, int& i, Spar& spar)
 {
-	Pointf start = MakePoint(x, y);
-	double w = Nvl((double)~width);
-	return Rectf(start, Sizef(w, 1));
+	if(i <= 0)
+		return false;
+	Pt p = foil[i];
+	Pt prev = foil[i - 1];
+	if(spar.kind == TOP_SPAR && p.x > spar.pos && p.x > foil[i - 1].x) {
+		CutSpar(r, foil, i, Pt(spar.pos, Null), spar.dimension, spar.circle, Point(1, 0));
+		spar.kind = Null;
+		return true;
+	}
+	if(spar.kind == BOTTOM_SPAR && p.x < spar.pos && p.x < foil[i - 1].x) {
+		CutSpar(r, foil, i, Pt(spar.pos, Null), spar.dimension, spar.circle, Point(-1, 0));
+		spar.kind = Null;
+		return true;
+	}
+	return false;
+}
+
+bool DoSpars(Path& r, const Vector<Pt>& foil, int& i, Vector<Spar>& spars)
+{
+	for(Spar& s : spars)
+		if(DoSpar(r, foil, i, s))
+			return true;
+	return false;
+}
+
+void ReadSpar(Vector<Spar>& spar, int kind, double le, Ctrl& pos, Ctrl& cx, Ctrl& cy, Ctrl& circle)
+{
+	Sizef dim = MakePoint(cx, cy);
+	if(!IsNull(pos) && dim.cx > 0 && dim.cy > 0) {
+		Spar& s = spar.Add();
+		s.kind = kind;
+		s.dimension = dim;
+		s.pos = le - (double)~pos;
+		s.circle = (bool)~circle;
+		if(!s.circle) {
+			if(kind == TOP_SPAR)
+				s.pos -= dim.cx / 2;
+			if(kind == BOTTOM_SPAR)
+				s.pos += dim.cx / 2;
+		}
+	}
 }
 
 Path Wing::Get(double inverted)
@@ -78,16 +116,17 @@ Path Wing::Get(double inverted)
 	double t = Nvl((double)~te);
 	double w = Nvl((double)~width);
 	
-	double ts = ~top_spar;
-	Pt tdim = MakePoint(top_spar_width, top_spar_height);
-
-	double bs = ~bottom_spar;
-	Pt bdim = MakePoint(bottom_spar_width, bottom_spar_height);
-
 	Pt ledim = MakePoint(le_spar_width, le_spar_height);
 	Pt tedim = MakePoint(te_spar_width, te_spar_height);
+	
+	Pt start = MakePoint(x, y);
+	
+	if(right)
+		start.x = Nvl((double)~other->width, 0.0) + Nvl((double)~other->x, 0.0) - start.x - w;
 
-	Pt start(Nvl((double)~x), Nvl((double)~y));
+	Vector<Spar> spars;
+	ReadSpar(spars, TOP_SPAR, w, top_spar, top_spar_width, top_spar_height, top_spar_circle);
+	ReadSpar(spars, BOTTOM_SPAR, w, bottom_spar, bottom_spar_width, bottom_spar_height, bottom_spar_circle);
 
 	Vector<Pt> foil = airfoil.Get();
 	for(int i = 0; i < foil.GetCount(); i++) {
@@ -120,38 +159,69 @@ Path Wing::Get(double inverted)
 	r.To(pp);
 	r.NewSegment();
 
-	DLOG("!!!");
 	r.Kerf(-(start.x > 5 ? 5 : start.x / 3), te); // this is lead-in to avoid long stay of wire
 	r.NewSegment();
-	DLOG("!!!");
 
 	bool top = true;
 	for(int i = 0; i < foil.GetCount(); i++) {
+		r.MainShape();
 		Pt p = foil[i];
 		if(top && i + 1 < foil.GetCount() && p.x > foil[i + 1].x) { // LE split to new segment
 			top = false;
 			r.NewSegment();
 		}
-		if(!IsNull(ts) && p.x > ts && i > 0) {
-			CutSpar(r, foil, i, Pt(ts, Null), tdim, top_spar_circle, Point(1, 0));
-			ts = Null;
+		if(DoSpars(r, foil, i, spars))
+			;
+		else
+		if(tedim.x > 0 && i > 0 && p.x < foil[i - 1].x && Distance(p, Pt(0, 0)) <= tedim.x) {
+			double t, t2;
+			Pt p0 = foil[i - 1];
+			LineCircleIntersections(Pt(0, 0), tedim.x, p0, p, t, t2);
+			if(t < 0 || t > 1)
+				t = t2;
+			if(t >= 0 && t <= 1) {
+				p = (p - p0) * t + p0;
+				Pt u = (p - p0) / Distance(p, foil[i - 1]);
+				r.Kerf(p);
+				r.NewSegment();
+				r.Kerf(p - Orthogonal(u) * tedim.y);
+				r.NewSegment();
+				r.Kerf(p - Orthogonal(u) * tedim.y + u * tedim.x);
+				break;
+			}
 		}
 		else
-		if(!IsNull(bs) && p.x < bs && i > 0 && p.x < foil[i - 1].x) {
-			CutSpar(r, foil, i, Pt(bs, Null), bdim, bottom_spar_circle, Point(-1, 0));
-			bs = Null;
+		if(ledim.x > 0 && p.y < ledim.x / 2 && i > 0 && p.y < foil[i - 1].y && !le_spar_circle) {
+			CutSpar(r, foil, i, Pt(Null, ledim.x / 2), ledim, le_spar_circle, Point(0, -1));
+			ledim.x = 0;
+		}
+		else
+		if(le_spar_circle && ledim.x > 0 && i > 0 && p.y < foil[i - 1].y && p.y < 0) {
+			r.NewSegment();
+			Pt p1(width, 0);
+			r.Kerf(p1);
+			r.To(width - ledim.y, 0);
+			Circle(r, Pt(width - ledim.y - ledim.x / 2, 0), ledim.x / 2, -M_PI / 2);
+			r.To(p1);
+			r.Kerf(p);
+			ledim.x = 0;
+			r.NewSegment();
 		}
 		else
 			r.Kerf(p);
+		if(i == 0)
+			r.NewSegment();
 	}
 	
 //	airfoil.Render(r, Nvl((double)~width), start, t, ~smooth);
 
 	DLOG("======== ENDING");
 
+	r.EndMainShape();
+
 	if(cutte) {
 		r.NewSegment();
-		r.Kerf(0, te);
+		r.Kerf(0 /*-kerf*/, te); // TODO
 	}
 
 	r.NewSegment();
@@ -175,4 +245,8 @@ Wing::Wing()
 	y <<= 15;
 	x <<= 10;
 	te <<= 0.3;
+	
+	other = NULL;
+	dlg = NULL;
+	right = false;
 }

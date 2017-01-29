@@ -1,13 +1,15 @@
-- washout
-- invert
-
-- planform area
-
+- negative kerf
+- sheeting
+- planform area / path
+- simplify sweep
+- default settings
+- spar compensation
 - save view options
 - tappered run in/out - avoid long stay of wire in bigger part
 - reorient spar position from LE
-- spar compensation
-- negative kerf
-- sheeting
 
 DONE:
+
+- washout
+- invert
+- correct reverse path algorithm

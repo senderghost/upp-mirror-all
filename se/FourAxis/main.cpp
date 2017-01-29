@@ -21,6 +21,13 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(rod, rod + 1);
 	AddShape(text);
 	AddShape(angle);
+	wing[0].other = &wing[1];
+	wing[0].right = false;
+	wing[1].other = &wing[0];
+	wing[1].right = true;
+	wing[0].dlg = wing[1].dlg = this;
+	wing[1].x_lbl = "Sweep";
+	wing[1].x <<= 0;
 	AddShape(wing, wing + 1);
 	AddShape(motor);
 	AddShape(textpath);
@@ -48,15 +55,15 @@ FourAxisDlg::FourAxisDlg()
 	home.NoWantFocus();
 	home.SetImage(HotImg::Home());
 	home << [=] { Home(); };
-
+	
 	show_shape <<= true;
-	show_arrows <<= true;
+	show_arrows <<= false;
 	show_wire <<= true;
 	show_kerf <<= false;
 	show_points <<= false;
 	show_left <<= true;
 	show_right <<= true;
-	show_cnc <<= true;
+	show_cnc <<= false;
 	show_planform <<= true;
 
 	for(Ctrl *q = GetFirstChild(); q; q = q->GetNext())
@@ -79,12 +86,22 @@ FourAxisDlg::FourAxisDlg()
 	StoreRevision();
 }
 
-Shape& FourAxisDlg::CurrentShape(bool right)
+Shape& FourAxisDlg::CurrentShape0(bool right) const
 {
 	int q = ~type;
-	if(q < 0 || q >= shape.GetCount()) return rod[0];
+	if(q < 0 || q >= shape.GetCount()) return const_cast<Rod&>(rod[0]);
 	auto t = shape[~type];
 	return t.a->IsTaperable() && tapered && right ? *t.b : *t.a;
+}
+
+Shape& FourAxisDlg::CurrentShape(bool right)
+{
+	return CurrentShape0(right);
+}
+
+const Shape& FourAxisDlg::CurrentShape(bool right) const
+{
+	return CurrentShape0(right);
 }
 
 void FourAxisDlg::Type()

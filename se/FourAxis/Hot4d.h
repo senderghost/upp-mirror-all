@@ -16,8 +16,11 @@ using namespace Upp;
 struct Pt : Moveable<Pt, Pointf> {
 	bool   kerf = 0; // line is kerf compensated
 	int    segment = 0; // tapering segments
-	
-	Pt Attr(const Pt& b)     { Pt p = *this; p.kerf = b.kerf; p.segment = b.segment; return p; }
+	bool   mainshape = false;
+
+	void SetAttr(const Pt& b){ kerf = b.kerf; segment = b.segment; mainshape = b.mainshape; }
+	Pt Attr(const Pt& b)     { Pt p = *this; p.SetAttr(b); return p; }
+	Pt Segment(int n)        { Pt p = *this; p.segment = n; return p; }
 	
 	Pt(double x_, double y_) { x = x_, y = y_; }
 	Pt(const Pointf& a)      { x = a.x; y = a.y; }
@@ -50,17 +53,31 @@ void MixAll(const Vector<Pt>& left, const Vector<Pt>& right,
 
 void CncPath(Vector<Pt>& left, Vector<Pt>& right, double width, double tower_distance, double left_distance);
 
+Rectf GetBounds(const Vector<Pt>& path);
+
+enum { BOTTOM_SPAR, TOP_SPAR, RIGHT_SPAR };
+
+struct Spar : Moveable<Spar> {
+	int    kind;
+	double pos;
+	Sizef  dimension;
+	bool   circle;
+};
+
 Vector<Pt> KerfCompensation(const Vector<Pt>& in0, double kerf);
 
 struct Path : Vector<Pt> {
 	Xform2D     transform;
 	int         segment = 0; // used to split path for tapering
+	bool        mainshape = false;
 	
 	void To(Pt p, bool kerf = false);
 	void To(double x, double y, bool kerf = false)   { To(Pt(x, y), kerf); }
 	void Kerf(Pt p)                                  { To(p, true); }
 	void Kerf(double x, double y)                    { To(x, y, true); }
 	void NewSegment()                                { segment++; }
+	void MainShape()                                 { mainshape = true; }
+	void EndMainShape()                              { mainshape = false; }
 	
 	void Rotate(double x, double y, double angle);
 	void Offset(double x, double y);
@@ -74,7 +91,6 @@ enum {
 struct Shape : ParentCtrl {
 	virtual Path     Get()  { return Path(); }
 	virtual Path     Get(double invert_y) { return Get(); }
-	virtual Rectf    GetBounds() { return Null; }
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
 	virtual String   GetId() const = 0;
@@ -90,7 +106,6 @@ struct Shape : ParentCtrl {
 
 struct Rod : WithRodLayout<Shape> {
 	virtual Path     Get();
-	virtual Rectf    GetBounds();
 	virtual String   GetId() const   { return "rod"; }
 	virtual String   GetName() const { return "Rod"; }
 	virtual dword    GetInfo() const { return TAPERABLE; }
@@ -130,16 +145,21 @@ struct AirfoilCtrl : public DataPusher {
 	AirfoilCtrl();
 };
 
+struct FourAxisDlg;
+
 struct Wing : WithWingLayout<Shape> {
 	typedef Wing CLASSNAME;
 	
 	AirfoilCtrl airfoil;
 
 	virtual Path    Get(double inverted);
-	virtual Rectf   GetBounds();
 	virtual String  GetId() const   { return "wing"; }
 	virtual String  GetName() const { return "Wing panel"; }
 	virtual dword   GetInfo() const { return TAPERABLE|INVERTABLE; }
+	
+	FourAxisDlg *dlg;
+	Wing        *other;
+	bool         right;
 
 	Wing();
 };
@@ -168,8 +188,6 @@ struct TextPath : WithTextPath<Shape> {
 #ifdef _DEBUG
 void TestKerf();
 #endif
-
-struct FourAxisDlg;
 
 struct View : Ctrl {
 	FourAxisDlg *fa = NULL;
@@ -210,7 +228,12 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 
 	VectorMap<String, Tuple<Shape *, Shape *>> shape;
 
+private:
+	Shape& CurrentShape0(bool right) const;
+
+public:
 	Shape& CurrentShape(bool right = false);
+	const Shape& CurrentShape(bool right = false) const;
 	
 	virtual void Layout();
 	virtual bool Key(dword key, int count);
@@ -232,10 +255,14 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Point  ViewOrigin() const;
 	Pt GetViewPos(Point p);
 	
-	bool   IsTapered()                  { return CurrentShape().IsTaperable() && tapered; }
+	bool   IsTapered() const             { return CurrentShape().IsTaperable() && tapered; }
+	
+	double GetFoamHeight() const         { return Nvl((double)~height, 30.0); }
+	double GetInvertY() const            { return Nvl((double)~invert_y, GetFoamHeight() / 2); }
 	
 	void   SetBar();
 	void   StoreRevision();
+	void   SaveGCode(Stream& out, double inverted);
 	bool   Save(const char *path);
 	bool   Load(const char *path);
 	bool   OpenS(const String& fp);
@@ -247,7 +274,6 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	void   Exit();
 	
 	double     GetKerf(bool right);
-	Vector<Pt> GetShapePath(bool right, double inverted);
 	void       MakePaths(Vector<Pt> *shape, Vector<Pt> *path, Vector<Pt> *cnc, double inverted = Null);
 	
 	String MakeSave();

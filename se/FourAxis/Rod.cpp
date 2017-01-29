@@ -25,23 +25,17 @@ Rod::Rod()
 
 void Qel(Path& path, double cx, double cy, double rx, double ry, double from = 0)
 {
-	path.NewSegment();
 	int n4 = int(sqrt(rx * rx + ry * ry) / 0.5);
 	if(n4)
 		for(int a = 0; a <= n4; a++) {
 			double angle = M_PI * a / n4 / 2 + from;
 			path.Kerf(rx * cos(angle) + cx, ry * sin(angle) + cy);
+			if(a == 0)
+				path.NewSegment();
 		}
 	else
 		path.Kerf(cx, cy);
 	path.NewSegment();
-}
-
-Rectf Rod::GetBounds()
-{
-	Sizef sz = MakePoint(rect_x, rect_y);
-	Pointf p = MakePoint(leadin, central);
-	return Rectf(p - Pointf(0, sz.cy / 2), sz);
 }
 
 Path Rod::Get()
@@ -66,6 +60,7 @@ Path Rod::Get()
 	Pt begin(center.x - rect.cx, center.y);
 
 	path.NewSegment();
+	path.MainShape();
 	path.Kerf(begin);
 	Qel(path, center.x - rect.cx + left.cx, center.y + rect.cy - left.cy, -left.cx, left.cy);
 //	path.Kerf(center.x + rect.cx, center.y + rect.cy + right.cy);
@@ -104,6 +99,7 @@ Path Rod::Get()
 	Qel(path, center.x - rect.cx + left.cx, center.y - rect.cy + left.cy, -left.cx, left.cy, 3 * M_PI / 2);
 	path.NewSegment();
 	path.Kerf(begin);
+	path.EndMainShape();
 
 	path.NewSegment();
 	path.To(0, center.y);
