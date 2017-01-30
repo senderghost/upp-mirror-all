@@ -4,8 +4,8 @@ Rod::Rod()
 {
 	CtrlLayout(*this);
 
-	central <<= 23;
-	leadin <<= 10;
+	y <<= 23;
+	x <<= 10;
 
 	left_x <<= 10;
 	left_y <<= 10;
@@ -45,15 +45,16 @@ Path Rod::Get()
 	int n4 = 50;
 
 	double depth = Nvl((double)~inner_depth);
-	Sizef rect(Nvl((double)~rect_x), Nvl((double)~rect_y));
-	Sizef left(Nvl((double)~left_x), Nvl((double)~left_y));
-	Sizef right(Nvl((double)~right_x), Nvl((double)~right_y));
+	Sizef rect = MakePoint(rect_x, rect_y);
+	Sizef left = MakePoint(left_x, left_y);
+	Sizef right = MakePoint(right_x, right_y);
 
 	rect /= 2;
 	left /= 2;
 	right /= 2;
 
-	Pt center((double)~leadin + rect.cx, ~central);
+	Pt center = MakePoint(x, y);
+	center.x += rect.cx;
 
 	path.To(0, center.y);
 
@@ -70,10 +71,11 @@ Path Rod::Get()
 		path.NewSegment();
 		Pt h(center.x + rect.cx, center.y);
 		path.To(h);
+		path.EndMainShape();
 
-		Sizef irect(~inner_rect_x, ~inner_rect_y);
-		Sizef ileft(~inner_left_x, ~inner_left_y);
-		Sizef iright(~inner_right_x, ~inner_right_y);
+		Sizef irect = MakePoint(inner_rect_x, inner_rect_y);
+		Sizef ileft = MakePoint(inner_left_x, inner_left_y);
+		Sizef iright = MakePoint(inner_right_x, inner_right_y);
 
 		irect /= 2;
 		ileft /= 2;
@@ -92,6 +94,7 @@ Path Rod::Get()
 
 		path.To(h);
 		path.NewSegment();
+		path.MainShape();
 	}
 
 //	path.Kerf(center.x + rect.cx + right.cx, center.y - rect.cy);
@@ -101,8 +104,19 @@ Path Rod::Get()
 	path.Kerf(begin);
 	path.EndMainShape();
 
-	path.NewSegment();
-	path.To(0, center.y);
+	Vector<Spar> spars;
+	double w = center.x;
+	ReadSpar(spars, TOP_SPAR, w, top_spar, top_spar_width, top_spar_height, top_spar_circle);
+	ReadSpar(spars, BOTTOM_SPAR, w, bottom_spar, bottom_spar_width, bottom_spar_height, bottom_spar_circle);
 
-	return path;
+	Path r;
+	r.segment = 1000;
+	for(int i = 0; i < path.GetCount(); i++)
+		if(!(path[i].mainshape && DoSpars(r, path, i, spars)))
+			r.Add(path[i]);
+
+	r.NewSegment();
+	r.To(0, center.y);
+
+	return r;
 }

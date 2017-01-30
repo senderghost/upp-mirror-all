@@ -69,7 +69,7 @@ void FourAxisDlg::MakePaths(Vector<Pt> *shape, Vector<Pt> *path, Vector<Pt> *cnc
 {
 	for(int r = 0; r < 1 + IsTapered(); r++) {
 		Vector<Pt>& p = shape[r];
-		shape[r] = CurrentShape(r).Get(Null);
+		shape[r] = CurrentShape(r).Get();
 		if(IsOk(p)) {
 			if(!IsNull(inverted) && p.GetCount()) {
 				for(int i = 0; i < p.GetCount(); i++) {

@@ -31,6 +31,7 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(wing, wing + 1);
 	AddShape(motor);
 	AddShape(textpath);
+	AddShape(fuseplan);
 	
 	WhenClose = [=] { Exit(); };
 
@@ -70,11 +71,14 @@ FourAxisDlg::FourAxisDlg()
 		*q << [=] { Sync(); };
 
 	for(int i = 0; i < shape.GetCount(); i++) {
+		shape[i].a->WhenAction << [=] { Sync(); };
 		for(Ctrl *q = shape[i].a->GetFirstChild(); q; q = q->GetNext())
 			*q << [=] { Sync(); };
-		if(shape[i].b)
+		if(shape[i].b) {
+			shape[i].b->WhenAction << [=] { Sync(); };
 			for(Ctrl *q = shape[i].b->GetFirstChild(); q; q = q->GetNext())
 				*q << [=] { Sync(); };
+		}
 	}
 
 	kerf.NullText("0");

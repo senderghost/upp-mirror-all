@@ -55,15 +55,6 @@ void CncPath(Vector<Pt>& left, Vector<Pt>& right, double width, double tower_dis
 
 Rectf GetBounds(const Vector<Pt>& path);
 
-enum { BOTTOM_SPAR, TOP_SPAR, RIGHT_SPAR };
-
-struct Spar : Moveable<Spar> {
-	int    kind;
-	double pos;
-	Sizef  dimension;
-	bool   circle;
-};
-
 Vector<Pt> KerfCompensation(const Vector<Pt>& in0, double kerf);
 
 struct Path : Vector<Pt> {
@@ -84,13 +75,26 @@ struct Path : Vector<Pt> {
 	void Identity()                                  { transform = Xform2D::Identity(); }
 };
 
+enum { BOTTOM_SPAR, TOP_SPAR, RIGHT_SPAR };
+
+struct Spar : Moveable<Spar> {
+	int    kind;
+	double pos;
+	Sizef  dimension;
+	bool   circle;
+};
+
+void Circle(Path& path, Pt c, double r, double a0);
+void CutSpar(Path& r, const Vector<Pt>& foil, int& i, Pt pos, Pt dim, bool circle, Point dir);
+bool DoSpars(Path& r, const Vector<Pt>& foil, int& i, Vector<Spar>& spars);
+void ReadSpar(Vector<Spar>& spar, int kind, double le, Ctrl& pos, Ctrl& cx, Ctrl& cy, Ctrl& circle);
+
 enum {
 	TAPERABLE = 1, INVERTABLE = 2,
 };
 
 struct Shape : ParentCtrl {
-	virtual Path     Get()  { return Path(); }
-	virtual Path     Get(double invert_y) { return Get(); }
+	virtual Path     Get() = 0;
 	virtual void     Load(const ValueMap& json);
 	virtual ValueMap Save();
 	virtual String   GetId() const = 0;
@@ -152,7 +156,7 @@ struct Wing : WithWingLayout<Shape> {
 	
 	AirfoilCtrl airfoil;
 
-	virtual Path    Get(double inverted);
+	virtual Path    Get();
 	virtual String  GetId() const   { return "wing"; }
 	virtual String  GetName() const { return "Wing panel"; }
 	virtual dword   GetInfo() const { return TAPERABLE|INVERTABLE; }
@@ -162,6 +166,29 @@ struct Wing : WithWingLayout<Shape> {
 	bool         right;
 
 	Wing();
+};
+
+struct FusePlan : WithFusePlanLayout<Shape> {
+	typedef FusePlan CLASSNAME;
+	
+	AirfoilCtrl airfoil;
+	
+	struct Sector {
+		EditDoubleSpin length, width;
+	};
+	
+	Array<Sector> sector;
+
+	virtual Path    Get();
+	virtual String  GetId() const   { return "fuseplan"; }
+	virtual String  GetName() const { return "Fuselage planform"; }
+
+	virtual void     Load(const ValueMap& json);
+	virtual ValueMap Save();
+
+	void MakeSector(int ii);
+	
+	FusePlan();
 };
 
 struct Motor : WithMotorLayout<Shape> {
@@ -216,6 +243,7 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Wing     wing[2];
 	Motor    motor[1];
 	TextPath textpath[1];
+	FusePlan fuseplan[1];
 	
 	View     view;
 	Button   home;

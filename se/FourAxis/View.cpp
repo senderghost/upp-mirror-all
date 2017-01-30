@@ -329,10 +329,6 @@ void FourAxisDlg::PaintArrows(Painter& p, const Vector<Pt>& path, double scale)
 	
 	int n = int(len / 30 * scale);
 
-	DLOG("=========== path");
-	for(int i = 0; i < path.GetCount(); i++)
-		DLOG(path[i].x << ", " << path[i].y << ", segment: " << path[i].segment);
-
 	int segment = -1;
 	int sgi = 0;
 	static Color c[] = { Blue(), Green(), Magenta(), Gray() };

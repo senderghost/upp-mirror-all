@@ -5,6 +5,7 @@ uses
 file
 	Hot4d.h,
 	Util.cpp,
+	Spar.cpp,
 	Airfoil.cpp,
 	Kerf.cpp,
 	Mix.cpp,
@@ -24,6 +25,7 @@ file
 	Angle.cpp,
 	Text.cpp,
 	Wing.cpp,
+	FusePlan.cpp,
 	Motor.cpp,
 	TextPath.cpp;
 
