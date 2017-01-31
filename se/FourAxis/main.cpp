@@ -32,6 +32,7 @@ FourAxisDlg::FourAxisDlg()
 	AddShape(motor);
 	AddShape(textpath);
 	AddShape(fuseplan);
+	AddShape(fuseprofile);
 	
 	WhenClose = [=] { Exit(); };
 

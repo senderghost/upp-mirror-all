@@ -7,7 +7,6 @@ void Path::To(Pt p, bool kerf)
 	h.kerf = kerf;
 	h.segment = segment;
 	h.mainshape = mainshape;
-	DLOG(h << ", segment " << segment << ", kerf " << kerf);
 }
 
 void Path::Rotate(double x, double y, double angle)

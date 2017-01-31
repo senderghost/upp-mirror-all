@@ -44,6 +44,22 @@ double PathLength(const Vector<Pt>& path);
 Pt AtPath(const Vector<Pt>& path, double at, Pt *dir1 = 0, int from = 0);
 bool IsOk(const Vector<Pt>& path);
 
+inline
+Pt SegmentIntersection(Pt a1, Pt a2, Pt b1, Pt b2)
+{
+	if(Rect(a1, a2).Intersects(Rect(b1, b2)) || 1) {
+		double t = LineIntersectionT(a1, a2, b1, b2);
+		if(t >= 0 && t <= 1) {
+			double t2 = LineIntersectionT(b1, b2, a1, a2);
+			if(t2 >= 0 && t2 <= 1)
+				return t * (a2 - a1) + a1;
+		}
+	}
+	return Null;
+}
+
+bool PathIntersection(Pointf a, Pointf b, const Vector<Pt>& path, int& i, Pt& pt);
+
 void Mix(const Vector<Pt>& left, int li, int lcount,
          const Vector<Pt>& right, int ri, int rcount,
          Vector<Pt>& left_out, Vector<Pt>& right_out);
@@ -149,6 +165,12 @@ struct AirfoilCtrl : public DataPusher {
 	AirfoilCtrl();
 };
 
+Vector<Pt> GetHalfFoil(const Vector<Pt>& foil, bool bottomhalf = false);
+void       InvertX(Vector<Pt>& foil);
+void       Mul(Vector<Pt>& foil, double ax, double ay);
+double     GetMaxY(const Vector<Pt>& foil, double sgny = 1);
+void       CutHalfFoil(Vector<Pt>& foil, double head, double tail);
+
 struct FourAxisDlg;
 
 struct Wing : WithWingLayout<Shape> {
@@ -189,6 +211,18 @@ struct FusePlan : WithFusePlanLayout<Shape> {
 	void MakeSector(int ii);
 	
 	FusePlan();
+};
+
+struct FuseProfile : WithFuseProfileLayout<Shape> {
+	typedef FuseProfile CLASSNAME;
+	
+	AirfoilCtrl airfoil, saddle_airfoil;
+	
+	virtual Path    Get();
+	virtual String  GetId() const   { return "fuseprofile"; }
+	virtual String  GetName() const { return "Fuselage profile"; }
+
+	FuseProfile();
 };
 
 struct Motor : WithMotorLayout<Shape> {
@@ -244,6 +278,7 @@ struct FourAxisDlg : WithFourAxisLayout<TopWindow> {
 	Motor    motor[1];
 	TextPath textpath[1];
 	FusePlan fuseplan[1];
+	FuseProfile fuseprofile[1];
 	
 	View     view;
 	Button   home;

@@ -85,6 +85,20 @@ int LineCircleIntersections(Pt c, double radius, Pt p1, Pt p2, double& t1, doubl
 	}
 }
 
+bool PathIntersection(Pointf a, Pointf b, const Vector<Pt>& path, int& ii, Pt& pt)
+{
+	for(int i = ii; i < path.GetCount(); i++)
+		if(i > 0) {
+			Pt p = SegmentIntersection(path[i - 1], path[i], a, b);
+			if(!IsNull(p)) {
+				ii = i;
+				pt = p;
+				return true;
+			}
+		}
+	return false;
+}
+
 double PathLength(const Vector<Pt>& path, int from, int count)
 {
 	double length = 0;

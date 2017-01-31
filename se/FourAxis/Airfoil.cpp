@@ -131,3 +131,74 @@ Vector<Pt> AirfoilCtrl::Get()
 	
 	return foil;
 }
+
+void  InvertX(Vector<Pt>& foil)
+{
+	for(Pt& p : foil)
+		p.x = 1 - p.x;
+}
+
+Vector<Pt> GetHalfFoil(const Vector<Pt>& foil, bool bottomhalf)
+{
+	Vector<Pt> r;
+	double x = DBL_MAX;
+	for(int i = 0; i < foil.GetCount(); i++) {
+		if(foil[i].x > x) { // Get the top half of airfoil only
+			if(bottomhalf) {
+				r.Append(foil, i, foil.GetCount() - i);
+				Reverse(r);
+			}
+			else
+				r.Append(foil, 0, i);
+			break;
+		}
+		x = foil[i].x;
+	}
+	InvertX(r);
+	return r;
+}
+
+double GetMaxY(const Vector<Pt>& foil, double sgny)
+{
+	double ay = 0;
+	for(const Pt& p : foil)
+		ay = max(ay, sgny * p.y);
+	return sgny * ay;
+}
+
+void  Mul(Vector<Pt>& foil, double ax, double ay)
+{
+	for(Pt& p : foil) {
+		p.x *= ax;
+		p.y *= ay;
+	}
+}
+
+void CutHalfFoil(Vector<Pt>& foil, double head, double tail)
+{
+	if(tail > 0) {
+		double tailx = 0;
+		for(int i = 0; i < foil.GetCount(); i++) {
+			Pt& a = foil[i];
+			if(i > 0 && a.y > tail) {
+				Pt& prev = foil[i - 1];
+				prev = LineIntersection(prev, a, Pt(0, tail), Pt(1, tail));
+				tailx = prev.x;
+				foil.Remove(0, i - 1);
+				break;
+			}
+		}
+		for(Pt& a : foil)
+			a.x -= tailx;
+	}
+	if(head > 0)
+		for(int i = foil.GetCount() - 1; i > 0; i--) {
+			Pt& a = foil[i];
+			Pt& prev = foil[i - 1];
+			if(prev.y > head) {
+				a = LineIntersection(prev, a, Pt(0, head), Pt(1, head));
+				foil.Trim(i + 1);
+				break;
+			}
+		}
+}

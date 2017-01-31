@@ -26,6 +26,7 @@ file
 	Text.cpp,
 	Wing.cpp,
 	FusePlan.cpp,
+	FuseProfile.cpp,
 	Motor.cpp,
 	TextPath.cpp;
 
