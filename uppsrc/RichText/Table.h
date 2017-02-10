@@ -103,7 +103,7 @@ private:
 		Buffer<PaintRow>  row;
 		int               frame;
 		int               grid;
-		PageY             pyy;
+		RichContext       rc;
 
 		PaintRow& operator[](int i)                 { return row[i]; }
 		const PaintRow& operator[](int i) const     { return row[i]; }
@@ -120,7 +120,7 @@ private:
 		TabLayout() {}
 	};
 
-	mutable TabLayout clayout; // TODO: MT?
+	mutable TabLayout clayout;
 	mutable Rect      cpage;
 	mutable PageY     cpy;
 

@@ -288,6 +288,25 @@ struct PaintInfo {
 int LineZoom(Zoom z, int a);
 
 class RichTable;
+class RichText;
+struct RichStyle;
+
+typedef ArrayMap<Uuid, RichStyle> RichStyles;
+
+struct RichContext {
+	const RichText   *text;
+	const RichStyles *styles;
+	RichText         *header, *footer;
+	int               header_cy, footer_cy;
+	Rect              page;
+	PageY             py;
+
+	void              NewHeaderFooter(RichText *header, RichText *footer_qtf);
+	void              Page() { py.page++; py.y = page.top; }
+
+	RichContext(const RichStyles& styles, const RichText *text) : text(text), styles(&styles) { header_cy = footer_cy = 0; }
+	RichContext() {}
+};
 
 #include "Para.h"
 
@@ -357,27 +376,10 @@ struct RichStyle {
 	RichStyle()          { next = GetDefaultId(); }
 };
 
-typedef ArrayMap<Uuid, RichStyle> RichStyles;
-
 const RichStyle& GetStyle(const RichStyles& s, const Uuid& id);
 int   FindStyleWithName(const RichStyles& style, const String& name);
 
 class RichText;
-
-struct RichContext {
-	const RichText   *text;
-	const RichStyles *styles;
-	RichText         *header, *footer;
-	int               header_cy, footer_cy;
-	Rect              page;
-	PageY             py;
-
-	void              NewHeaderFooter(RichText *header, RichText *footer_qtf);
-	void              Page() { py.page++; py.y = page.top; }
-
-	RichContext(const RichStyles& styles, const RichText *text) : text(text), styles(&styles) { header_cy = footer_cy = 0; }
-	RichContext() {}
-};
 
 struct RichCellPos;
 

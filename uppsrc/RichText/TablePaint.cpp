@@ -197,14 +197,12 @@ int RichTable::GetWidth(const RichStyles& st) const
 
 PageY RichTable::GetHeight(RichContext rc) const
 {
-	PageY pyy = Realize(rc).pyy;
-	pyy.y += format.frame;
-	pyy.y += format.after;
-	if(pyy.y > rc.page.bottom) {
-		pyy.y = rc.page.top;
-		pyy.page++;
-	}
-	return pyy;
+	rc = Realize(rc).rc;
+	rc.py.y += format.frame;
+	rc.py.y += format.after;
+	if(rc.py.y > rc.page.bottom)
+		rc.Page();
+	return rc.py;
 }
 
 PageY RichTable::GetTop(RichContext rc) const

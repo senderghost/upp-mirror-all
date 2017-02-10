@@ -195,7 +195,7 @@ void RichTxt::Paint(PageDraw& pw, RichContext& rc, const PaintInfo& _pi) const
 					pp.spellerrors.Clear();
 				}
 				if(IsPainting(pw, pi.zoom, rc.page, begin.py, next.py))
-					p.Paint(pw, rc.page, begin.py, pi, n, pp.spellerrors, rc.text == this);
+					p.Paint(pw, begin, pi, n, pp.spellerrors, rc.text == this);
 			}
 			rc = next;
 		}
@@ -221,7 +221,7 @@ RichCaret RichTxt::GetCaret(int pos, RichContext rc) const
 			if(IsTable(parti))
 				return GetTable(parti).GetCaret(pos, begin);
 			else {
-				RichCaret tp = Get(parti, *rc.styles, true).GetCaret(pos, begin.page, begin.py);
+				RichCaret tp = Get(parti, *rc.styles, true).GetCaret(pos, begin);
 				tp.textpage = begin.page;
 				return tp;
 			}
@@ -245,7 +245,7 @@ int   RichTxt::GetPos(int x, PageY y, RichContext rc) const
 				if(IsTable(parti))
 					return GetTable(parti).GetPos(x, y, begin) + pos;
 				else
-					return Get(parti, *rc.styles, true).GetPos(x, y, begin.page, begin.py) + pos;
+					return Get(parti, *rc.styles, true).GetPos(x, y, begin) + pos;
 			}
 			pos += GetPartLength(parti) + 1;
 			parti++;
@@ -329,9 +329,9 @@ void RichTxt::GatherValPos(Vector<RichValPos>& f, RichContext rc, int pos, int t
 			const Para& p = part[parti].Get<Para>();
 			if(p.haspos) {
 				if(type == LABELS)
-					Get(parti, *begin.styles, true).GatherLabels(f, begin.page, begin.py, pos);
+					Get(parti, *begin.styles, true).GatherLabels(f, begin, pos);
 				else
-					Get(parti, *begin.styles, true).GatherIndexes(f, begin.page, begin.py, pos);
+					Get(parti, *begin.styles, true).GatherIndexes(f, begin, pos);
 			}
 		}
 		pos += GetPartLength(parti) + 1;
