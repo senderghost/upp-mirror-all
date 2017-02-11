@@ -22,13 +22,12 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 		cpage = rc.page;
 		cpy = rc.py;
 		Reduce(rc);
-		clayout.first_page = rc.page;
-		RichContext nextpage_rc = rc;
-		nextpage_rc.Page();
-		clayout.next_page = nextpage_rc.page;
 		clayout.hasheader = false;
 		clayout.sz = GetSize();
 		if(format.header && cell.GetCount()) {
+			RichContext nextpage_rc = rc;
+			nextpage_rc.Page();
+			nextpage_rc.py.page = 0; // RowPaint will need zero here to add real page
 			int hy = min(format.header, cell.GetCount());
 			clayout.header = Realize(nextpage_rc, hy); // realize header as if first on next page
 			if(clayout.header[0].py.page == clayout.header[hy - 1].pyy.page) { // header fits single page
@@ -37,8 +36,7 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 					rc.Page();
 				clayout.hasheader = true; // if it fits, we repeat header on each new page
 				int header_height = clayout.header[hy - 1].pyy.y + format.grid - nextpage_rc.py.y;
-				clayout.next_page.top += header_height; // so have to reduce the page size for nonheader rows
-				rc.page.top += header_height;
+				rc.page.top += header_height;// so have to reduce the page size for nonheader rows
 			}
 		}
 		clayout.page0 = rc.py.page;
@@ -53,17 +51,25 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 	return clayout;
 }
 
-RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
+RichContext RichTable::PaintCell::MakeRichContext(RichContext rc, PageY py) const
+{
+	if(rc.py.page != py.page)
+		rc.Page();
+	rc.py = py;
+	return MakeRichContext(rc);
+}
+
+RichContext RichTable::PaintCell::MakeRichContext(RichContext rc) const
+{
+	rc.page.left = page_left;
+	rc.page.right = page_right;
+	return rc;
+}
+
+RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 { // create layout for first ny rows
 	Layout tab;
 	
-	PageY py = arc.py;
-	int page0 = arc.py.page;
-	Rect first_page = arc.page;
-	RichContext nrc = arc;
-	nrc.Page();
-	Rect next_page = nrc.page;
-
 	int nx = format.column.GetCount();
 	tab.row.Alloc(ny);
 	for(int i = 0; i < ny; i++)
@@ -78,34 +84,35 @@ RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
 	column_right.Alloc(nx);
 
 	int x = 0;
-	int xx = first_page.left;
-	int dcx = first_page.Width();
+	int xx = rc.page.left;
+	int dcx = rc.page.Width();
 	for(int i = 0; i < nx; i++) {
 		column_left[i] = xx;
 		x += format.column[i];
-		xx = column_right[i] = x * dcx / sum + first_page.left;
+		xx = column_right[i] = x * dcx / sum + rc.page.left;
 	}
 
 	int f2 = format.grid / 2;
 	int ff2 = format.grid - f2;
 
-	py.y += format.frame;
+	rc.py.y += format.frame;
 	for(int i = 0; i < ny; i++) {
-		bool is_next_page = py.page > page0;
-		Rect page = is_next_page ? next_page : first_page;
 		const Array<RichCell>& row = cell[i];
 		PaintRow& pr = tab[i];
 		pr.first = i == 0;
-		pr.gpy = py;
+		pr.gpy = rc.py;
 		if(i)
-			py.y += format.grid;
+			rc.py.y += format.grid;
 		for(int j = 0; j < nx;) {
 			PaintCell& pc = pr[j];
 			const RichCell& cell = row[j];
 			if(pc.top) {
-				pc.page = page;
-				pc.page.left = column_left[j];
-				pc.page.right = column_right[min(nx - 1, j + cell.hspan)];
+				pc.page_left = pc.left = column_left[j];
+				pc.page_right = pc.right = column_right[min(nx - 1, j + cell.hspan)];
+				if(j)
+					pc.page_left += f2;
+				if(j + cell.hspan < nx - 1)
+					pc.page_right -= ff2;
 				pc.bottom = false;
 				int ms = min(ny - 1, i + cell.vspan);
 				for(int k = i + 1; k <= ms; k++) {
@@ -113,12 +120,6 @@ RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
 					pc.top = pc.bottom = false;
 				}
 				tab[ms][j].bottom = true;
-				pc.left = pc.page.left;
-				pc.right = pc.page.right;
-				if(j)
-					pc.page.left += f2;
-				if(j + cell.hspan < nx - 1)
-					pc.page.right -= ff2;
 			}
 			j += cell.hspan + 1;
 		}
@@ -140,16 +141,16 @@ RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
 			}
 			j += cell.hspan + 1;
 		}
-		if(!span)
+		if(!span) // check whether we should break page before this row
 			for(int j = 0; j < nx;) {
 				const RichCell& cell = row[j];
 				PaintCell& pc = pr[j];
 				if(pc.top) {
-					RichContext rc = is_first_page ? arc : nrc;
-					PageY ty = cell.GetTop(rc);
+					RichContext trc = pc.MakeRichContext(rc);
+					PageY ty = cell.GetTop(trc);
 					PageY ky = rc.py;
 					if(keep)
-						ky = cell.GetHeight(rc);
+						ky = cell.GetHeight(trc);
 					if(ty.page != rc.py.page || ky.page != rc.py.page) {
 						rc.Page();
 						pr.gpy = rc.py;
@@ -163,20 +164,21 @@ RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
 		for(int j = 0; j < nx;) {
 			const RichCell& cell = row[j];
 			PaintCell& pc = pr[j];
-			if(pc.top) {
-				rc.page = pc.page;
-				tab[min(ny - 1, i + cell.vspan)][j].hy = cell.GetHeight(rc);
-			}
+			if(pc.top)
+				tab[min(ny - 1, i + cell.vspan)][j].hy = cell.GetHeight(pc.MakeRichContext(rc));
 			j += cell.hspan + 1;
 		}
+		pr.pyy = rc.py;
 		for(int j = 0; j < nx;) {
 			const RichCell& cell = row[j];
 			if(pr[j].bottom)
-				rc.py = max(pr[j].hy, rc.py);
+				pr.pyy = max(pr[j].hy, pr.pyy);
 			j += cell.hspan + 1;
 		}
+		if(pr.pyy.page != rc.py.page)
+			rc.Page();
+		rc.py = pr.pyy;
 		tab.rc = rc;
-		pr.pyy = rc.py;
 	}
 	return tab;
 }

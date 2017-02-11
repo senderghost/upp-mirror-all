@@ -29,7 +29,8 @@ private:
 	PageY       GetTop(RichContext rc) const;
 	PageY       GetHeight(RichContext rc) const;
 	void        Paint(PageDraw& pw, RichContext rc, PageY npy,
-	                  const Rect& xpg, int y, int ny, const PaintInfo& pi,
+	                  const Rect& xpg, const Rect& nxpg,
+	                  int y, int ny, const PaintInfo& pi,
 	                  bool select) const;
 	RichCaret   GetCaret(int pos, RichContext rc, PageY pyy) const;
 	int         GetPos(int x, PageY y, RichContext rc, PageY pyy) const;
@@ -78,21 +79,25 @@ private:
 	mutable One<RichText> header, footer;
 
 	struct PaintCell : Moveable<PaintCell> {
-		int   left;
-		int   right;
-	//	Rect  page;
-		PageY hy;
-		bool  top;
-		bool  bottom;
+		int   left; // left pos with grid
+		int   right; // right pos with grid
+		int   page_left; // left pos without grid (if any)
+		int   page_right; // right pos without grid (if any)
+		PageY hy; // end of cell
+		bool  top; // this is top cell of vspan (or single cell without vspan)
+		bool  bottom; // this is bottom cell of vspan (or single cell without vspan)
+		
+		RichContext MakeRichContext(RichContext rc, PageY py) const;
+		RichContext MakeRichContext(RichContext rc) const;
 
 		PaintCell()    { top = true; }
 	};
 
 	struct PaintRow : Moveable<PaintRow> {
-		PageY             gpy;
-		PageY             py, pyy;
+		PageY             gpy; // position of grid line (if not first)
+		PageY             py, pyy; //start, end of line
 		Buffer<PaintCell> cell;
-		bool              first;
+		bool              first; // first row on the page
 
 		PaintCell& operator[](int i)                { return cell[i]; }
 		const PaintCell& operator[](int i) const    { return cell[i]; }
@@ -111,12 +116,9 @@ private:
 	struct TabLayout : Layout {
 		bool              hasheader;
 		Layout            header;
-		Rect              first_page;
-		Rect              next_page;
 		int               page0;
 		Size              sz;
 		
-		rval_default(TabLayout);
 		TabLayout() {}
 	};
 
@@ -135,9 +137,11 @@ private:
 
 	bool             Reduce(RichContext& rc) const;
 	Layout           Realize(RichContext rc, int ny) const;
-	bool             RowPaint(PageDraw& pw, const RichStyles& st, const Layout& tab,
-	                          int i, int ny, const Rect& pg, VectorMap<int, Rect>& frr,
-	                          PaintInfo& pi, int pd, bool sel) const;
+	Rect             GetPageRect(RichContext rc, PageY py, const PaintInfo& pi, bool header) const;
+	bool             RowPaint(PageDraw& pw, RichContext rc, const Layout& tab,
+                              int i, int ny, Rect pg, Rect npg,
+                              VectorMap<int, Rect>& frr,
+                              PaintInfo& pi, int pd, bool sel) const;
 
 	const TabLayout& Realize(RichContext rc) const;
 
