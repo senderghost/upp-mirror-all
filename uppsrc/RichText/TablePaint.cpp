@@ -51,6 +51,11 @@ bool RichTable::RowPaint(PageDraw& pw, RichContext rc, const Layout& tab,
                           VectorMap<int, Rect>& frr,
                           PaintInfo& pi, int pd, bool sel) const
 {
+	DLOG("========");
+	DDUMP(i);
+	DDUMP(pd);
+	DDUMP(pg);
+	DDUMP(npg);
 	const Array<RichCell>& row = cell[i];
 	const PaintRow& pr = tab[i];
 	if(pw.tracer)
@@ -107,7 +112,7 @@ bool RichTable::RowPaint(PageDraw& pw, RichContext rc, const Layout& tab,
 					pw.tracer->EndTableCell(pyy);
 			}
 			if(pyy.page == pr.py.page)
-				ExpandFrr(frr, pyy.page, xpg.left, xpg.right, y, ny);
+				ExpandFrr(frr, pr.py.page, xpg.left, xpg.right, y, ny);
 			else {
 				ExpandFrr(frr, pr.py.page, xpg.left, xpg.right, y, xpg.bottom);
 				for(int i = pr.py.page + 1; i < pyy.page; i++)
@@ -154,6 +159,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 				hpg.bottom = pi.zoom * tab.header[hy - 1].pyy.y;
 				pgr.top = hpg.bottom + LineZoom(pi.zoom, format.grid);
 			}
+			hrc.Page();
 		}
 
 		bool allsel = false;
@@ -181,13 +187,14 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 				gc = pi.showcodes;
 			}
 		}
+		DLOG("=======");
 		for(int i = 0; i < frr.GetCount(); i++) { // add headers on subsequent pages and outer border
 			pi.tablesel = 0;
 			pi.sell = pi.selh = -1;
 			int pgi = frr.GetKey(i);
 			DLOG(pgi << " " << frr[i]);
 			Draw& w = pw.Page(pgi);
-			if(pgi > tab.page0 && tab.hasheader)
+			if(pgi > tab.page0 && tab.hasheader) // need to paint header here...
 				for(int i = 0; i < hy; i++) {
 					RowPaint(pw, rc, tab.header, i, hy, hpg, hpg, frr, pi, pgi, false);
 					w.DrawRect(hpg.left, hpg.bottom, hpg.Width(), gridln, format.gridcolor);
