@@ -80,7 +80,7 @@ private:
 	struct PaintCell : Moveable<PaintCell> {
 		int   left;
 		int   right;
-		Rect  page;
+	//	Rect  page;
 		PageY hy;
 		bool  top;
 		bool  bottom;
@@ -99,7 +99,6 @@ private:
 	};
 
 	struct Layout {
-		Buffer<Rect>      col;
 		Buffer<PaintRow>  row;
 		int               frame;
 		int               grid;
@@ -112,7 +111,8 @@ private:
 	struct TabLayout : Layout {
 		bool              hasheader;
 		Layout            header;
-		Rect              page;
+		Rect              first_page;
+		Rect              next_page;
 		int               page0;
 		Size              sz;
 		

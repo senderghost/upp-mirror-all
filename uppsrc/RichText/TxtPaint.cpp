@@ -72,8 +72,9 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 	if(part[parti].Is<RichTable>()) {
 		const RichTable& tab = GetTable(parti);
 		if(tab.format.newhdrftr && rc.text == this) {
-			rc.NewHeaderFooter(~tab.header, ~tab.footer);
-			rc.Page();
+			rc.HeaderFooter(~tab.header, ~tab.footer);
+			if(tab.format.newpage)
+				rc.Page();
 		}
 		else
 		if(tab.format.newpage)
@@ -99,8 +100,9 @@ void RichTxt::Advance(int parti, RichContext& rc, RichContext& begin) const
 				nline   = p.linecy[0];
 			}
 			if(pp.newhdrftr && rc.text == this) {
-				rc.NewHeaderFooter(~pp.header, ~pp.footer);
-				rc.Page();
+				rc.HeaderFooter(~pp.header, ~pp.footer);
+				if(pp.newpage)
+					rc.Page();
 			}
 			else
 			if(pp.newpage || rc.py.y + cy + nbefore + nline > rc.page.bottom && cy < rc.page.Height())

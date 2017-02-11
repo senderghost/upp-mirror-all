@@ -112,6 +112,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 		int frameln = LineZoom(pi.zoom, format.frame);
 		int gridln = LineZoom(pi.zoom, format.grid);
 		Rect pg = rc.page;
+		DDUMP(pg);
 		pg.left += format.lm;
 		pg.right -= format.rm;
 		pg.left = pi.zoom * pg.left;
@@ -132,7 +133,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 		}
 		bool sel = pi.tablesel == 0;
 		int ny = cell.GetCount();
-		VectorMap<int, Rect> frr;
+		VectorMap<int, Rect> frr; // page -> table rectangle
 		for(int i = 0; i < ny; i++)
 			if(RowPaint(pw, *rc.styles, tab, i, ny, pg, frr, pi, 0, sel))
 				break;
@@ -150,7 +151,7 @@ void RichTable::Paint(PageDraw& pw, RichContext rc, const PaintInfo& _pi) const
 				gc = pi.showcodes;
 			}
 		}
-		for(int i = 0; i < frr.GetCount(); i++) {
+		for(int i = 0; i < frr.GetCount(); i++) { // add headers on subsequent pages and outer border
 			pi.tablesel = 0;
 			pi.sell = pi.selh = -1;
 			int pgi = frr.GetKey(i);

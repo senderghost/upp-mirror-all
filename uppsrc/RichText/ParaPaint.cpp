@@ -141,11 +141,6 @@ String RichObjectImageMaker::Key() const
 Image RichObjectImageMaker::Make() const
 {
 	return object.ToImage(sz, context);
-/*	ImageDraw iw(sz);
-	iw.DrawRect(sz, SColorPaper());
-	object.Paint(iw, sz, context);
-	return iw;
-*/
 }
 
 void RichPara::DrawRuler(Draw& w, int x, int y, int cx, int cy, Color ink, int style)
@@ -385,13 +380,20 @@ void RichPara::Paint(PageDraw& pw, RichContext rc, const PaintInfo& pi,
 		pw.Page(rc.py.page).DrawImage(z * x, z * y0 - sz.cy,
 		                              RichTextImg::EndParaChar(),
 		                              format.indexentry.GetCount() ? pi.indexentry : pi.showcodes);
-	if((format.newpage || format.newhdrftr && baselevel) && !IsNull(pi.showcodes)) {
+	if(format.newpage && !IsNull(pi.showcodes)) {
 		Draw& w = pw.Page(opy.page);
 		int wd = z * rc.page.right - z * rc.page.left;
 		int step = w.Pixels() ? 8 : 50;
 		int y = z * opy.y;
 		for(int x = 0; x < wd; x += step)
 			w.DrawRect(z * rc.page.left + x, y, step >> 1, step >> 3, pi.showcodes);
+	}
+	if(format.newhdrftr && baselevel && !IsNull(pi.showcodes)) {
+		Draw& w = pw.Page(opy.page);
+		int wd = min(z * 50, z * rc.page.right - z * rc.page.left);
+		int x = z * rc.page.left;
+		w.DrawRect(x, z * opy.y, wd, DPI(1), pi.showcodes);
+		w.DrawRect(x, z * rc.py.y - DPI(1), wd, DPI(1), pi.showcodes);
 	}
 	if(pl.len >= pi.sell && pl.len < pi.selh && rc.py < pi.bottom) {
 		int top = z * rc.py.y;

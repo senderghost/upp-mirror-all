@@ -22,21 +22,23 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 		cpage = rc.page;
 		cpy = rc.py;
 		Reduce(rc);
-		clayout.page = rc.page;
+		clayout.first_page = rc.page;
+		RichContext nextpage_rc = rc;
+		nextpage_rc.Page();
+		clayout.next_page = nextpage_rc.page;
 		clayout.hasheader = false;
 		clayout.sz = GetSize();
 		if(format.header && cell.GetCount()) {
 			int hy = min(format.header, cell.GetCount());
-			RichContext nrc = rc;
-			nrc.py.page = 0;
-			nrc.py.y = clayout.page.top;
-			clayout.header = Realize(nrc, hy); // realize header as if first on page
+			clayout.header = Realize(nextpage_rc, hy); // realize header as if first on next page
 			if(clayout.header[0].py.page == clayout.header[hy - 1].pyy.page) { // header fits single page
 				Layout x = Realize(rc, cell.GetCount());
 				if(cell.GetCount() > hy && rc.py.page != x[hy].py.page) // first header would break the end of page
 					rc.Page();
 				clayout.hasheader = true; // if it fits, we repeat header on each new page
-				rc.page.top = clayout.page.top = clayout.header[hy - 1].pyy.y + format.grid; // so have to reduce the page size for nonheader rows
+				int header_height = clayout.header[hy - 1].pyy.y + format.grid - nextpage_rc.py.y;
+				clayout.next_page.top += header_height; // so have to reduce the page size for nonheader rows
+				rc.page.top += header_height;
 			}
 		}
 		clayout.page0 = rc.py.page;
@@ -51,48 +53,59 @@ const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 	return clayout;
 }
 
-RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
+RichTable::Layout RichTable::Realize(RichContext arc, int ny) const
 { // create layout for first ny rows
 	Layout tab;
+	
+	PageY py = arc.py;
+	int page0 = arc.py.page;
+	Rect first_page = arc.page;
+	RichContext nrc = arc;
+	nrc.Page();
+	Rect next_page = nrc.page;
 
 	int nx = format.column.GetCount();
 	tab.row.Alloc(ny);
 	for(int i = 0; i < ny; i++)
 		tab[i].cell.Alloc(nx);
-	tab.col.Alloc(nx);
-
+	
 	int sum = 0;
 	for(int i = 0; i < nx; i++)
 		sum += format.column[i];
 
+	Buffer<int> column_left, column_right;
+	column_left.Alloc(nx);
+	column_right.Alloc(nx);
+
 	int x = 0;
-	int xx = rc.page.left;
-	int dcx = rc.page.Width();
+	int xx = first_page.left;
+	int dcx = first_page.Width();
 	for(int i = 0; i < nx; i++) {
-		Rect& cp = tab.col[i];
-		cp = rc.page;
-		cp.left = xx;
+		column_left[i] = xx;
 		x += format.column[i];
-		xx = cp.right = x * dcx / sum + rc.page.left;
+		xx = column_right[i] = x * dcx / sum + first_page.left;
 	}
 
 	int f2 = format.grid / 2;
 	int ff2 = format.grid - f2;
 
-	rc.py.y += format.frame;
+	py.y += format.frame;
 	for(int i = 0; i < ny; i++) {
+		bool is_next_page = py.page > page0;
+		Rect page = is_next_page ? next_page : first_page;
 		const Array<RichCell>& row = cell[i];
 		PaintRow& pr = tab[i];
 		pr.first = i == 0;
-		pr.gpy = rc.py;
+		pr.gpy = py;
 		if(i)
-			rc.py.y += format.grid;
+			py.y += format.grid;
 		for(int j = 0; j < nx;) {
 			PaintCell& pc = pr[j];
 			const RichCell& cell = row[j];
 			if(pc.top) {
-				pc.page = tab.col[j];
-				pc.page.right = tab.col[min(nx - 1, j + cell.hspan)].right;
+				pc.page = page;
+				pc.page.left = column_left[j];
+				pc.page.right = column_right[min(nx - 1, j + cell.hspan)];
 				pc.bottom = false;
 				int ms = min(ny - 1, i + cell.vspan);
 				for(int k = i + 1; k <= ms; k++) {
@@ -132,7 +145,7 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 				const RichCell& cell = row[j];
 				PaintCell& pc = pr[j];
 				if(pc.top) {
-					rc.page = pc.page;
+					RichContext rc = is_first_page ? arc : nrc;
 					PageY ty = cell.GetTop(rc);
 					PageY ky = rc.py;
 					if(keep)
@@ -150,9 +163,10 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 		for(int j = 0; j < nx;) {
 			const RichCell& cell = row[j];
 			PaintCell& pc = pr[j];
-			rc.page = pc.page;
-			if(pc.top)
+			if(pc.top) {
+				rc.page = pc.page;
 				tab[min(ny - 1, i + cell.vspan)][j].hy = cell.GetHeight(rc);
+			}
 			j += cell.hspan + 1;
 		}
 		for(int j = 0; j < nx;) {

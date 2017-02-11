@@ -209,7 +209,7 @@ RichCaret RichCell::GetCaret(int pos, RichContext rc, PageY pyy) const
 	return text.GetCaret(pos, rc);
 }
 
-int      RichCell::GetPos(int x, PageY y, RichContext rc, PageY pyy) const
+int RichCell::GetPos(int x, PageY y, RichContext rc, PageY pyy) const
 {
 	if(!Reduce(rc))
 		return 0;
