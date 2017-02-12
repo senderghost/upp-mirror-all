@@ -26,6 +26,7 @@ struct App : TopWindow {
 		Sizeable().Zoomable();
 
 		a.AddColumn("Test");
+		a.Add("3D modelování je činnost, při které se navrhuje podoba určitého zařízeni v třídimenzionálním prostředí. Tuto činnost dnes architektům a designérům usnadňují specializované počítačové programy.");
 		for(int i = 0; i < 200; i++) {
 			a.Add((int)Random(10000));
 		}
