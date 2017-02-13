@@ -123,7 +123,7 @@ private:
 	};
 
 	mutable TabLayout clayout;
-	mutable Rect      cpage;
+	mutable Rect      cpage, cpage2;
 	mutable PageY     cpy;
 
 	Buffer< Buffer<CellInfo> > ci;

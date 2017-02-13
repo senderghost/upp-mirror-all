@@ -15,7 +15,9 @@ bool RichTable::Reduce(RichContext& rc) const
 
 const RichTable::TabLayout& RichTable::Realize(RichContext rc) const
 { // Create page layout with header
-	if(rc.py != cpy || rc.page != cpage) {
+	RichContext rc2 = rc;
+	rc2.Page();
+	if(rc.py != cpy || rc.page != cpage || rc2.page != cpage2) {
 		rc.py.y += format.before;
 		if(rc.py.y > rc.page.bottom)
 			rc.Page();
@@ -161,11 +163,15 @@ RichTable::Layout RichTable::Realize(RichContext rc, int ny) const
 				j += cell.hspan + 1;
 			}
 		pr.py = rc.py;
+		DLOG("====");
+		DDUMP(rc.py);
 		for(int j = 0; j < nx;) {
 			const RichCell& cell = row[j];
 			PaintCell& pc = pr[j];
-			if(pc.top)
+			if(pc.top) {
 				tab[min(ny - 1, i + cell.vspan)][j].hy = cell.GetHeight(pc.MakeRichContext(rc));
+				DDUMP(tab[min(ny - 1, i + cell.vspan)][j].hy);
+			}
 			j += cell.hspan + 1;
 		}
 		pr.pyy = rc.py;

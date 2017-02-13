@@ -305,6 +305,7 @@ struct RichContext {
 	void              HeaderFooter(RichText *header, RichText *footer_qtf);
 	void              AdjustPage();
 	void              Page();
+	void              AdvanceTo(PageY npy);
 
 	RichContext(const RichStyles& styles, const RichText *text);
 	RichContext() {}

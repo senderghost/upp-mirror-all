@@ -65,6 +65,13 @@ void RichContext::Page()
 	py.y = page.top;
 }
 
+void RichContext::AdvanceTo(PageY npy)
+{
+	if(npy.page != py.page)
+		Page();
+	py = npy;
+}
+
 RichContext RichText::Context(const Rect& page, PageY py, RichText *header, RichText *footer) const
 {
 	RichContext rc(style, this);
