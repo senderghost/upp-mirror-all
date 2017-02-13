@@ -87,7 +87,6 @@ private:
 		bool  top; // this is top cell of vspan (or single cell without vspan)
 		bool  bottom; // this is bottom cell of vspan (or single cell without vspan)
 		
-		RichContext MakeRichContext(RichContext rc, PageY py) const;
 		RichContext MakeRichContext(RichContext rc) const;
 
 		PaintCell()    { top = true; }
@@ -107,7 +106,7 @@ private:
 		Buffer<PaintRow>  row;
 		int               frame;
 		int               grid;
-		RichContext       rc;
+		PageY             pyy;
 
 		PaintRow& operator[](int i)                 { return row[i]; }
 		const PaintRow& operator[](int i) const     { return row[i]; }
@@ -116,31 +115,35 @@ private:
 	struct TabLayout : Layout {
 		bool              hasheader;
 		Layout            header;
-		int               page0;
 		Size              sz;
+		PageY             py;
+		Rect              first_page0;
+		Rect              next_page0;
+		Rect              first_page;
+		Rect              next_page;
+		Rect              header_page;
 		
 		TabLayout() {}
 	};
 
 	mutable TabLayout clayout;
-	mutable Rect      cpage, cpage2;
-	mutable PageY     cpy;
 
 	Buffer< Buffer<CellInfo> > ci;
 	int              r_row, r_column; // r_ - refresh info
-	Rect             r_page;
+	Rect             r_first_page, r_next_page, r_header_page;
 	PageY            r_py, r_pyy;
 
 	void             Invalidate();
 	void             InvalidateRefresh(int i, int j);
 	void             InvalidateRefresh(Point p)            { InvalidateRefresh(p.y, p.x); }
 
-	bool             Reduce(RichContext& rc) const;
-	Layout           Realize(RichContext rc, int ny) const;
-	Rect             GetPageRect(RichContext rc, PageY py, const PaintInfo& pi, bool header) const;
-	bool             RowPaint(PageDraw& pw, RichContext rc, const Layout& tab,
-                              int i, int ny, Rect pg, Rect npg,
-                              VectorMap<int, Rect>& frr,
+	bool             Reduce(Rect& r) const;
+	Rect             GetPageRect(PageY py) const;
+	void             NextPage(PageY& py, bool header = false) const;
+	RichContext      MakeRichContext(RichContext rc, PageY py, bool header = false) const;
+	Layout           Realize(PageY py, RichContext arc, int ny, bool header) const;
+	bool             RowPaint(PageDraw& pw, RichContext rc, const Layout& tab, bool header,
+                              int i, int ny, Rect pg, Rect npg, VectorMap<int, Rect>& frr,
                               PaintInfo& pi, int pd, bool sel) const;
 
 	const TabLayout& Realize(RichContext rc) const;

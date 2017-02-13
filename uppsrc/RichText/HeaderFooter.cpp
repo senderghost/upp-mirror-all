@@ -58,18 +58,26 @@ void RichContext::AdjustPage()
 	current_footer_cy = footer_cy;
 }
 
+void RichContext::Set(PageY p0, const Rect& first_page, const Rect& next_page, PageY p)
+{ // table layout helper, real hdr/ftr is irrelevant, need correct page.top / page.bottom
+	current_header_cy = current_footer_cy = 0;
+	if(p.page != p0.page) { // we are already on next page
+		page = next_page;
+		header_cy = footer_cy = 0;
+	}
+	else {
+		page = first_page;
+		header_cy = next_page.top - page.top;
+		footer_cy = page.bottom - next_page.bottom;
+	}
+	py = p;
+}
+
 void RichContext::Page()
 {
 	py.page++;
 	AdjustPage();
 	py.y = page.top;
-}
-
-void RichContext::AdvanceTo(PageY npy)
-{
-	if(npy.page != py.page)
-		Page();
-	py = npy;
 }
 
 RichContext RichText::Context(const Rect& page, PageY py, RichText *header, RichText *footer) const

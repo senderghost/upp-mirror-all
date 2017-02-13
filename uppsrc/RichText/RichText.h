@@ -297,15 +297,15 @@ struct RichContext {
 	const RichText   *text;
 	const RichStyles *styles;
 	RichText         *header, *footer;
-	int               header_cy, footer_cy;
-	int               current_header_cy, current_footer_cy;
+	int               header_cy, footer_cy; // next page header/footer size
+	int               current_header_cy, current_footer_cy; // current header/footer size
 	Rect              page;
 	PageY             py;
 
 	void              HeaderFooter(RichText *header, RichText *footer_qtf);
 	void              AdjustPage();
 	void              Page();
-	void              AdvanceTo(PageY npy);
+	void              Set(PageY p0, const Rect& first_page, const Rect& next_page, PageY p);
 
 	RichContext(const RichStyles& styles, const RichText *text);
 	RichContext() {}
