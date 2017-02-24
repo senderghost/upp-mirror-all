@@ -4,7 +4,11 @@
 #include <Draw/Draw.h>
 #include <plugin/png/png.h>
 
-NAMESPACE_UPP
+namespace Upp {
+
+#define IMAGECLASS RichTextImg
+#define IMAGEFILE <RichText/RichText.iml>
+#include <Draw/iml_header.h>
 
 class  PasteClip;
 struct RichPara;
@@ -286,6 +290,28 @@ struct PaintInfo {
 int LineZoom(Zoom z, int a);
 
 class RichTable;
+class RichText;
+struct RichStyle;
+
+typedef ArrayMap<Uuid, RichStyle> RichStyles;
+
+struct RichContext {
+	const RichText   *text;
+	const RichStyles *styles;
+	RichText         *header, *footer;
+	int               header_cy, footer_cy; // next page header/footer size
+	int               current_header_cy, current_footer_cy; // current header/footer size
+	Rect              page;
+	PageY             py;
+
+	void              HeaderFooter(RichText *header, RichText *footer_qtf);
+	void              AdjustPage();
+	void              Page();
+	void              Set(PageY p0, const Rect& first_page, const Rect& next_page, PageY p);
+
+	RichContext(const RichStyles& styles, const RichText *text);
+	RichContext() {}
+};
 
 #include "Para.h"
 
@@ -295,7 +321,7 @@ struct RichPos {
 	int              tabposintabtext;
 	int              tabtextlen;
 
-	int              table;
+	int              table; // current level table index (unique in text) or zero if not in table
 	Size             tabsize;
 	Point            cell;
 
@@ -355,27 +381,10 @@ struct RichStyle {
 	RichStyle()          { next = GetDefaultId(); }
 };
 
-typedef ArrayMap<Uuid, RichStyle> RichStyles;
-
 const RichStyle& GetStyle(const RichStyles& s, const Uuid& id);
 int   FindStyleWithName(const RichStyles& style, const String& name);
 
 class RichText;
-
-struct RichContext {
-	const RichText   *text;
-	const RichStyles *styles;
-	RichText         *header, *footer;
-	int               header_cy, footer_cy;
-	Rect              page;
-	PageY             py;
-
-	void              NewHeaderFooter(RichText *header, RichText *footer_qtf);
-	void              Page() { py.page++; py.y = page.top; }
-
-	RichContext(const RichStyles& styles, const RichText *text) : styles(&styles), text(text) { header_cy = footer_cy = 0; }
-	RichContext() {}
-};
 
 struct RichCellPos;
 
@@ -525,6 +534,6 @@ Array<Drawing> RenderPages(const RichText& txt, Size pagesize = Size(3968, 6074)
 String Pdf(const RichText& txt, Size pagesize = Size(3968, 6074), int margin = 200,
            bool pdfa = false, const PdfSignatureInfo *sign = NULL);
 
-END_UPP_NAMESPACE
+}
 
 #endif

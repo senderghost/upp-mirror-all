@@ -1,6 +1,6 @@
 #include "RichText.h"
 
-NAMESPACE_UPP
+namespace Upp {
 
 Draw& SimplePageDraw::Page(int)
 {
@@ -187,4 +187,4 @@ String Pdf(const RichText& txt, Size pagesize, int margin, bool pdfa, const PdfS
 	                                               : String();
 }
 
-END_UPP_NAMESPACE
+}

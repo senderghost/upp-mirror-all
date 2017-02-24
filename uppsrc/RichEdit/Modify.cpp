@@ -47,12 +47,12 @@ RichEdit::UndoRec * RichEdit::UndoBegSelUnFix::GetRedo(const RichText& txt)
 
 bool RichEdit::BegSelTabFix(int& count)
 {
-	if(begtabsel) {
+	if(begtabsel) { // If selection starts with first table which is the first element in the text
 		int c = cursor;
 		AddUndo(new UndoBegSelFix);
-		BegSelFixRaw(text);
+		BegSelFixRaw(text); // adds an empty paragraph at the start
 		Move(0);
-		Move(c + 1, true);
+		Move(c + 1, true); // and changes the selection
 		count++;
 		begtabsel = false;
 		return true;
@@ -61,7 +61,7 @@ bool RichEdit::BegSelTabFix(int& count)
 }
 
 void RichEdit::BegSelTabFixEnd(bool fix)
-{
+{ // removes empty paragraph added by BegSelTabFix
 	if(fix && GetLength() > 0) {
 		int c = cursor;
 		AddUndo(new UndoBegSelUnFix);
@@ -447,7 +447,7 @@ void RichEdit::InsertLine()
 			return;
 		}
 	}
-	ApplyFormat(0, RichText::NEWPAGE|RichText::LABEL);
+	ApplyFormat(0, RichText::NEWPAGE|RichText::LABEL|RichText::NEWHDRFTR);
 	objectpos = -1;
 }
 

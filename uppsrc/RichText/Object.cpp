@@ -2,7 +2,7 @@
 
 #define LLOG(x) DLOG(x)
 
-NAMESPACE_UPP
+namespace Upp {
 
 RichObjectType::RichObjectType() {}
 RichObjectType::~RichObjectType() {}
@@ -144,9 +144,11 @@ void RichObject::InitSize(int cx, int cy, void *context)
 	SetSize(sz);
 }
 
-typedef VectorMap<String, RichObjectType *> RichObjectHT;
-
-GLOBAL_VAR(RichObjectHT, RichObject::Map);
+VectorMap<String, RichObjectType *>& RichObject::Map()
+{
+	static VectorMap<String, RichObjectType *> h;
+	return h;
+}
 
 void RichObject::NewSerial()
 {
@@ -479,4 +481,4 @@ INITBLOCK {
 	RichObject::Register("PING", &Single<RichObjectTypePNGCls>());
 };
 
-END_UPP_NAMESPACE
+}

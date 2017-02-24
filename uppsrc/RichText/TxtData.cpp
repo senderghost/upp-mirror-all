@@ -1,6 +1,6 @@
 #include "RichText.h"
 
-NAMESPACE_UPP
+namespace Upp {
 
 void RichTxt::Para::Invalidate()
 {
@@ -163,11 +163,6 @@ void RichTxt::SetPick(int i, RichTable rval_ p)
 	part.At(i).Create<RichTable>() = pick(p);
 	Invalidate();
 	SetRefresh(i);
-}
-
-void RichTxt::CatPick(RichTable rval_ table)
-{
-	SetPick(GetPartCount(), pick(table));
 }
 
 RichPara RichTxt::Get(int parai, const RichStyle& style, bool usecache) const
@@ -502,4 +497,4 @@ String RichCellPos::ToString() const
 
 #endif
 
-END_UPP_NAMESPACE
+}
