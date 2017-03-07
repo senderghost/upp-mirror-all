@@ -5,6 +5,7 @@ using namespace Upp;
 GUI_APP_MAIN
 {
 	EditString es;
+	es.TrimLeft().NotNull();
 	TopWindow win;
 	es <<= "devout eeeev";
 	es.AlignRight();
