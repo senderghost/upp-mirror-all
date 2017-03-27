@@ -175,7 +175,7 @@ ReportDlg::ReportDlg()
 String Pdf(const DocReport& report, bool pdfa)
 {
 	return GetDrawingToPdfFn() ? (*GetDrawingToPdfFn())(report.GetPages(), report.GetPageSize(),
-	                                                    200, pdfa)
+	                                                    200, pdfa, NULL)
 	                           : String();
 }
 
