@@ -18,7 +18,7 @@ using namespace Upp;
 
 String FileName()
 {
-	return "C:\\Users\\cxl\\debugnos\\report.qtf";
+//	return "C:\\Users\\cxl\\debugnos\\report.qtf";
 	return GetExeDirFile("test.qtf");
 }
 
@@ -32,6 +32,8 @@ GUI_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
 	SetLanguage(LNGC_('C', 'S', 'C', 'Z', CHARSET_UTF8));
+	
+	Ctrl::SetUHDEnabled();
 
 	RichEditWithToolBar e;
 	e.Pick(ParseQTF(LoadFile(FileName())));

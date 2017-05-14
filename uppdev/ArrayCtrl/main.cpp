@@ -5,20 +5,6 @@ using namespace Upp;
 struct App : TopWindow {
 	ArrayCtrl a;
 	
-	bool Order(int i1, int i2) {
-		DDUMP(a.Get(i1, 0));
-		DDUMP(a.Get(i2, 0));
-		return a.Get(i1, 0) < a.Get(i2, 0);
-	}
-	
-	void DoTip(Point p)
-	{
-		if(p.y & 1)
-			a.Tip("Hello!");
-		else
-			a.Tip("");
-	}
-	
 	typedef App CLASSNAME;
 
 	App() {
@@ -26,14 +12,11 @@ struct App : TopWindow {
 		Sizeable().Zoomable();
 
 		a.AddColumn("Test");
-		a.Add("3D modelování je činnost, při které se navrhuje podoba určitého zařízeni v třídimenzionálním prostředí. Tuto činnost dnes architektům a designérům usnadňují specializované počítačové programy.");
+		a.AddColumn("Test 2");
 		for(int i = 0; i < 200; i++) {
-			a.Add((int)Random(10000));
+			a.Add(i, i);
 		}
-	//	a.Sort(THISBACK(Order));
-		a.Sort();
-		
-		a.WhenMouseMove = THISBACK(DoTip);
+		a.SetColumnDisplay(0, StdCenterDisplay());
 	}
 };
 
