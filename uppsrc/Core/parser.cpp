@@ -301,23 +301,51 @@ double CParser::ReadDouble() throw(Error)
 	return n;
 }
 
-int CParser::ReadUTF16()
+dword CParser::ReadHex()
 {
 	int hex = 0;
-	if(IsXDigit(*++term)) {
-		hex = ctoi(*term);
-		if(IsXDigit(*++term)) {
-			hex = 16 * hex + (*term >= 'A' ? ToUpper(*term) - 'A' + 10 : *term - '0');
-			if(IsXDigit(*++term)) {
-				hex = 16 * hex + (*term >= 'A' ? ToUpper(*term) - 'A' + 10 : *term - '0');
-				if(IsXDigit(*++term)) {
-					hex = 16 * hex + (*term >= 'A' ? ToUpper(*term) - 'A' + 10 : *term - '0');
-					term++;
-				}
-			}
-		}
-	}
+	while(IsXDigit(*++term))
+		hex = (hex << 4) + ctoi(*term);
 	return hex;
+}
+
+bool CParser::ReadHex(dword& hex, int n)
+{
+	hex = 0;
+	while(n--) {
+		if(!IsXDigit(*++term))
+			return false;
+		hex = (hex << 4) + ctoi(*term);
+	}
+	term++;
+	return true;
+}
+
+void CatUtf8(StringBuffer& result, dword codepoint)
+{
+	if(codepoint < 0x80)
+		result.Cat((char)codepoint);
+	else
+	if(codepoint < 0x800) {
+		result.Cat(0xc0 | byte(codepoint >> 6));
+		result.Cat(0x80 | byte(codepoint & 0x3f));
+	}
+	else
+	if((codepoint & 0xFFFFFF00) == 0xEE00) // ERROR ESCAPE
+		result.Cat((char) codepoint);
+	else
+	if(codepoint < 0x10000) {
+		result.Cat(0xe0 | byte(codepoint >> 12));
+		result.Cat(0x80 | byte((codepoint >> 6) & 0x3f));
+		result.Cat(0x80 | byte(codepoint & 0x3f));
+	}
+	else
+	if(codepoint < 0x110000) {
+		result.Cat(0xf0 | byte(codepoint >> 18));
+		result.Cat(0x80 | byte((codepoint >> 12) & 0x3f));
+		result.Cat(0x80 | byte((codepoint >> 6) & 0x3f));
+		result.Cat(0x80 | byte(codepoint & 0x3f));
+	}
 }
 
 String CParser::ReadOneString(int delim, bool chkend) throw(Error) {
@@ -342,32 +370,42 @@ String CParser::ReadOneString(int delim, bool chkend) throw(Error) {
 			case 'r': result.Cat('\r'); term++; break;
 			case 'f': result.Cat('\f'); term++; break;
 			case 'x': {
-				int hex = 0;
-				if(IsXDigit(*++term)) {
-					hex = ctoi(*term);
-					if(IsXDigit(*++term)) {
-						hex = 16 * hex + (*term >= 'A' ? ToUpper(*term) - 'A' + 10 : *term - '0');
-						term++;
-					}
-				}
+				int hex = ReadHex();
 				result.Cat(hex);
 				break;
 			}
 			case 'u':
 				if(uescape) {
-					int hex = ReadUTF16();
+					dword hex;
+					if(!ReadHex(hex, 4))
+						ThrowError("Incomplete universal character");
 					if(hex >= 0xD800 && hex < 0xDBFF) {
 						if(term[0] == '\\' && term[1] == 'u') {
 							term++;
-							int hex2 = ReadUTF16();
-							if(hex2 >= 0xDC00 && hex2 <= 0xDFFF)
-								result.Cat(ToUtf8(((hex & 0x3ff) << 10) | (hex2 & 0x3ff) + 0x10000));
-							break;
+							dword hex2;
+							if(!ReadHex(hex2, 4))
+								ThrowError("Incomplete universal character");
+							if(hex2 >= 0xDC00 && hex2 <= 0xDFFF) {
+								CatUtf8(result, ((hex & 0x3ff) << 10) | (hex2 & 0x3ff) + 0x10000);
+								break;
+							}
 						}
 						ThrowError("Invalid UTF-16 surrogate pair");
 					}
 					else
-						result.Cat(WString(hex, 1).ToString());
+						result.Cat(ToUtf8((wchar)hex));
+				}
+				else
+					result.Cat(*term++);
+				break;
+			case 'U':
+				if(uescape) {
+					dword hex;
+					if(!ReadHex(hex, 8))
+						ThrowError("Incomplete universal character");
+					if(hex > 0x10ffff)
+						ThrowError("Universal character is out of unicode range");
+					CatUtf8(result, hex);
 				}
 				else
 					result.Cat(*term++);
@@ -506,7 +544,7 @@ CParser::CParser(const char *ptr)
 {
 	line = 1;
 	skipspaces = skipcomments = true;
-	uescape = false;
+	uescape = true;
 	Spaces();
 }
 
@@ -514,7 +552,7 @@ CParser::CParser(const char *ptr, const char *fn, int line)
 : term(ptr), wspc(ptr), lineptr(ptr), line(line), fn(fn)
 {
 	skipspaces = skipcomments = true;
-	uescape = false;
+	uescape = true;
 	Spaces();
 }
 
@@ -523,7 +561,7 @@ CParser::CParser()
 	term = lineptr = wspc = NULL;
 	line = 0;
 	skipspaces = true;
-	uescape = false;
+	uescape = true;
 }
 
 void CParser::Set(const char *_ptr, const char *_fn, int _line)
