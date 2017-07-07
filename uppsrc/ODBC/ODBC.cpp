@@ -330,7 +330,7 @@ bool ODBCConnection::IsOk(SQLRETURN ret) const
 			error << "\r\n";
 		error << (char *)Msg;
 	}
-	session->SetError(error, statement);
+	session->SetError(error, statement, NativeError);
 	return false;
 }
 
