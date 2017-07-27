@@ -579,7 +579,7 @@ void CParser::Set(const char *_ptr)
 	Set(_ptr, "", 1);
 }
 
-inline void NextCStringLine(String& t, const char *linepfx, int& pl)
+inline void NextCStringLine(StringBuffer& t, const char *linepfx, int& pl)
 {
 	t << "\"\r\n" << (linepfx ? linepfx : "") << "\"";
 	pl = t.GetLength();
@@ -590,16 +590,69 @@ inline int HexDigit(int c)
 	return "0123456789ABCDEF"[c & 15];
 }
 
+static inline void sCatHex(StringBuffer& t, word q)
+{
+	char h[6];
+	h[0] = '\\';
+	h[1] = 'u';
+	h[2] = HexDigit(q >> 12);
+	h[3] = HexDigit(q >> 8);
+	h[4] = HexDigit(q >> 4);
+	h[5] = HexDigit(q);
+	t.Cat(h, 6);
+}
+
+force_inline dword FetchUtf8(const char *&_s, const char *_lim)
+{
+	const byte *s = (const byte *)_s;
+	const byte *lim = (const byte *)_lim;
+	dword code = *s;
+	if(code < 0x80) {
+		_s++;
+		return *s;
+	}
+	else
+	if(code >= 0xC2) {
+		dword c;
+		if(code < 0xE0 && s + 1 < lim &&
+		   s[1] >= 0x80 && s[1] < 0xc0 &&
+		   (c = ((code - 0xC0) << 6) + s[1] - 0x80) >= 0x80 && c < 0x800) {
+			_s += 2;
+			return c;
+		}
+		else
+		if(code < 0xF0 && s + 2 < lim &&
+		   s[1] >= 0x80 && s[1] < 0xc0 && s[2] >= 0x80 && s[2] < 0xc0 &&
+		   (c = ((code - 0xE0) << 12) + ((s[1] - 0x80) << 6) + s[2] - 0x80) >= 0x800 &&
+		   !(c >= 0xEE00 && c <= 0xEEFF)) {
+			_s += 3;
+			return c;
+		}
+		else
+		if(code < 0xF8 && s + 3 < lim &&
+		   s[1] >= 0x80 && s[1] < 0xc0 && s[2] >= 0x80 && s[2] < 0xc0 && s[3] >= 0x80 && s[3] < 0xc0 &&
+		   (c = ((code - 0xF0) << 18) + ((s[1] - 0x80) << 12) + ((s[2] - 0x80) << 6) + s[3] - 0x80) >= 0x10000 &&
+		   c < 0x110000) {
+			_s += 4;
+			return c;
+		}
+	}
+	_s++;
+	return 0xEE00 + code; // ERROR ESCAPE
+}
+
 String AsCString(const char *s, const char *lim, int linemax, const char *linepfx, dword flags)
 {
-	String t;
+	StringBuffer t;
 	t.Cat('\"');
 	int pl = 0;
 	bool wasspace = false;
+	byte cs = GetDefaultCharset();
+	bool toutf8 = GetDefaultCharset() != CHARSET_UTF8;
 	while(s < lim) {
 		if(t.GetLength() - pl > linemax && (!(flags & ASCSTRING_SMART) || wasspace))
 			NextCStringLine(t, linepfx, pl);
-		wasspace = false;
+		wasspace = *s == ' ';
 		switch(*s) {
 		case '\a': t.Cat("\\a"); break;
 		case '\b': t.Cat("\\b"); break;
@@ -611,19 +664,28 @@ String AsCString(const char *s, const char *lim, int linemax, const char *linepf
 		case '\\': t.Cat("\\\\"); break;
 		case '\n': t.Cat("\\n"); wasspace = true; break;
 		default:
-			if(byte(*s) < 32 || (byte)*s >= 0x7f && (flags & ASCSTRING_OCTALHI) || (byte)*s == 0xff || (byte)*s == 0x7f) {
-				if(flags & ASCSTRING_JSON) {
-					char h[6];
-					int q = (byte)*s;
-					h[0] = '\\';
-					h[1] = 'u';
-					h[2] = '0';
-					h[3] = '0';
-					h[4] = HexDigit(q >> 4);
-					h[5] = HexDigit(q);
-					t.Cat(h, 6);
+			if(flags & ASCSTRING_JSON) {
+				if((byte)*s < 32) {
+					sCatHex(t, (byte)*s++);
 				}
-				else {
+				else
+				if((byte)*s >= 0x7f) {
+					const char *s0 = s;
+					dword c = toutf8 ? ToUnicode((byte)*s++, cs) : FetchUtf8(s, lim);
+					if(c < 0x10000)
+						t.Cat(s0, s);
+					else {
+						c -= 0x10000;
+						sCatHex(t, wchar(0xD800 + (0x3ff & (c >> 10))));
+						sCatHex(t, wchar(0xDC00 + (0x3ff & c)));
+					}
+				}
+				else
+					t.Cat(*s++);
+				continue; // skip s++
+			}
+			else {
+				if(byte(*s) < 32 || (byte)*s >= 0x7f && (flags & ASCSTRING_OCTALHI) || (byte)*s == 0xff || (byte)*s == 0x7f) {
 					char h[4];
 					int q = (byte)*s;
 					h[0] = '\\';
@@ -632,11 +694,8 @@ String AsCString(const char *s, const char *lim, int linemax, const char *linepf
 					h[3] = (7 & q) + '0';
 					t.Cat(h, 4);
 				}
-			}
-			else {
-				t.Cat(*s);
-				if(*s == ' ')
-					wasspace = true;
+				else
+					t.Cat(*s);
 			}
 			break;
 		}
