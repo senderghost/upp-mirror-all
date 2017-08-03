@@ -23,5 +23,9 @@ CONSOLE_APP_MAIN
 	
 	ASSERT(text2 == text);
 	
+	String h127;
+	h127.Cat(127);
+	ASSERT(AsJSON(h127) == "\"\\u007F\"");
+	
 	LOG("=================== OK");
 }
