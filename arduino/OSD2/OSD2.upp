@@ -1,0 +1,11 @@
+file
+	ascii.h,
+	config.h,
+	gps.cpp,
+	gps.h,
+	OSD2.ino,
+	OSD2.upp,
+	output.cpp,
+	output.h,
+	variables.h;
+

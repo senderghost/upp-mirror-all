@@ -1,0 +1,16 @@
+file
+	OSD.h,
+	ascii.h,
+	config.h,
+	OSD.ino highlight cpp,
+	gps.cpp,
+	gps.h,
+	font.h,
+	output.cpp,
+	main.cpp,
+	output.h,
+	variables.h;
+
+mainconfig
+	"" = "";
+
