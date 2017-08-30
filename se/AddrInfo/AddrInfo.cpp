@@ -8,7 +8,7 @@ CONSOLE_APP_MAIN
 
 	struct gaicb req[1], *reqptr[1];
 	
-	String url = "www.ultimateppzxv2222.org";
+	String url = "www.ultimatepp.org";
 	
 	memset(req, 0, sizeof(req));
 	req->ar_name = ~url;
