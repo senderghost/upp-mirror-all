@@ -1,10 +1,10 @@
 file
 	OSD.h,
-	ascii.h,
 	config.h,
 	OSD.ino highlight cpp,
+	format.cpp,
 	gps.cpp,
-	gps.h,
+	display.cpp,
 	font.h,
 	output.cpp,
 	main.cpp,

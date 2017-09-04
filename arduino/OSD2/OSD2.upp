@@ -9,3 +9,6 @@ file
 	output.h,
 	variables.h;
 
+mainconfig
+	"" = "";
+

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "output.h"
-#include "gps.h"
 
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
@@ -40,7 +39,7 @@ void setup() {
 	pinMode(3,INPUT);
 	pinMode(4,INPUT);
 	pinMode(5,INPUT);
-	pinMode(6,INPUT);
+	pinMode(6,OUTPUT);
 	pinMode(7,OUTPUT);
 	pinMode(8,INPUT);
 	pinMode(9,INPUT);
@@ -86,16 +85,12 @@ void setup() {
 	attachInterrupt(1, detectframe, RISING);
 
 	digitalWrite(13, LOW);
-
-	for(int i = 0; i < LINES; i++)
-       for(int j = 0; j < COLUMNS; j++)
-            framebuffer[i][j] = 255; // 30;
-
-    int ch = 0;
-    
-    for(int i = 0; i < LINES; i++)
-        for(int j = 0; j < COLUMNS; j++)
-            framebuffer[i][j] = ch++;
+	
+	Cls();
+	
+	Put(0, LINES / 2, "OSD by Mirek Fidler");
+	
+	Beep(500);
 }
 
 void loop()

@@ -2,8 +2,6 @@ uses
 	CtrlLib;
 
 file
-	test.iml,
-	font.iml,
 	main.cpp;
 
 mainconfig
