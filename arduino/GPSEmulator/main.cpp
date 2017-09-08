@@ -37,7 +37,7 @@ struct GPSEmulator : TopWindow {
 	bool   active = false;
 	int    altitude = 100;
 	int    heading = 0;
-	int    speed = 0;
+	int    speed = 3;
 	
 	String rmc, gga;
 

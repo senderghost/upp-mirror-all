@@ -1,13 +1,13 @@
 file
-	ascii.h,
-	config.h,
-	gps.cpp,
-	gps.h,
+	OSD.h,
 	OSD2.ino,
-	OSD2.upp,
+	format.cpp,
+	gps.cpp,
+	display.cpp,
+	font.h,
 	output.cpp,
-	output.h,
-	variables.h;
+	beep.cpp,
+	main.cpp;
 
 mainconfig
 	"" = "";
