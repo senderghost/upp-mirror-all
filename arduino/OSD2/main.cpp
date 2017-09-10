@@ -59,21 +59,33 @@ void ShowSats()
 	FormatInt(gps.satellites, DisplayPos(10, LINES - 1), 2);
 }
 
+void ShowTime(long time)
+{
+	FormatTime(time, DisplayPos(0, LINES - 1));
+}
+
+void ShowVoltage()
+{
+	int voltage = analogRead(0);
+	FormatFloat1(0.02137 * voltage, DisplayPos(COLUMNS - 5, LINES - 1), 2);
+	*DisplayPos(COLUMNS - 1, LINES - 1) = 'V';
+}
+
 void Main()
 {
 	Cls();
 	
 	DimLine(0);
+
+	Beep(2); AddBeep(4, 2); LoopBeep(100);
 	
 	while(!gps.valid) {
-		Cls();
+		DimLine(0);
+		DimLine(LINES - 1);
+		ShowVoltage();
 		ShowSats();
-		Put(1, 0, "WAITING FOR GPS LOCK");
-		digitalWrite(6, HIGH);
-		GetGPS(1500);
-		Cls();
-		ShowSats();
-		digitalWrite(6, LOW);
+		ShowTime(gps.time);
+		Flash(1, 0, "WAITING FOR GPS LOCK");
 		GetGPS(1500);
 	}
 
@@ -81,8 +93,6 @@ void Main()
 	AddBeep(1000, 2000);
 	
 	Cls();
-	DimLine(0);
-	DimLine(LINES - 1);
 	
 	GPS home = gps;
 
@@ -91,24 +101,41 @@ void Main()
 	int n = 0;
 	
 	bool wait_home = true;
-	int  last_movement_time = gps.time;
+	long last_movement_time = gps.time;
+	long time0 = gps.time;
 
-	Put(5, 8, "LOCKING HOME");
+	Beep(1);LoopBeep(50);
 
 	for(;;) {
+		DimLine(0);
+		DimLine(LINES - 1);
+
+		if(wait_home) {
+			Flash(5, 8, "LOCKING HOME");
+			Beep(2);
+		}
+
 		GetGPS(1500);
 		
-		if(gps.speed > 0.02)
+		if(gps.speed > 1)
 			last_movement_time = gps.time;
+
+		int stop_time = int(gps.time - last_movement_time);
+
+		if(wait_home && (stop_time > 15 || gps.time - time0 > 20 && gps.speed > 5)) {
+			Cls();
+			wait_home = false;
+			Beep(50);
+		}
 
 		if(wait_home)
 			home = gps;
-
-		if(gps.time - last_movement_time > 15) {
-			if(wait_home) {
-				Cls();
-				wait_home = false;
-			}
+		
+		if((!wait_home && stop_time > 120 || !gps.valid) && !IsBeeping()) {
+			Beep(4); AddBeep(4, 4); AddBeep(4, 4);
+			AddBeep(4, 12); AddBeep(4, 12); AddBeep(4, 12);
+			AddBeep(4, 4); AddBeep(4, 4); AddBeep(4, 4);
+			LoopBeep(150);
 		}
 
 		FormatFloat1(gps.speed, DisplayPos(0, 0), 3);
@@ -146,9 +173,11 @@ void Main()
 		*DisplayPos(8, 0) = "NNWSSSEN"[a];
 		*DisplayPos(9, 0) = " W W E E"[a];
 
-		FormatTime(gps.time - home.time, DisplayPos(0, LINES - 1));
+		ShowTime(wait_home ? gps.time - time0 : gps.time - home.time);
 		
 		ShowSats();
+		
+		ShowVoltage();
 
 		#if 0
 			CursorGoTo(0, 3);
@@ -167,6 +196,6 @@ void Main()
 	//		Put(gps.rmc_valid ? "RMC VALID  " : "RMC INVALID");
 		#endif
 	
-		FormatInt(n++, DisplayPos(18, 15), 5);
+//		FormatInt(n++, DisplayPos(18, 15), 5);
 	}
 }

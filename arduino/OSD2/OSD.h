@@ -57,9 +57,13 @@ void Put(const char *s);
 void Put(int c, int count);
 void Put(int x, int y, const char *s);
 void Put(int x, int y, int c, int count);
+void Flash(int x, int y, const char *s);
 
 void Beep(byte duration);
 void AddBeep(byte wait, byte duration);
+bool IsBeeping();
+void LoopBeep(byte wait);
+void StopBeeping();
 
 typedef unsigned char byte;
 
@@ -78,6 +82,7 @@ struct GPS {
 	float direction;
 	float altitude;
 	int   satellites;
+
 	bool  rmc_valid;
 	bool  gga_valid;
 	bool  valid;

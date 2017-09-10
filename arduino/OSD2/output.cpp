@@ -30,7 +30,7 @@ void detectline()
 		byte li = ln >> 4;
 		const byte *s = framebuffer + COLUMNS * li;
 		const byte *l = letters + ((ln >> 1) & 7);
-
+		
 		DDRD = (byte)((byte)(DDRD & 0x7f) | (byte)(0x80 & dimming[li]));
 
 		byte current = pgm_read_byte_near(l + (*s << 3));
@@ -38,10 +38,11 @@ void detectline()
 		DO DO DO DO  DO DO DO DO
 		DO DO DO DO  DO DO DO DO
 		DO DO DO DO  DO DO DO
+
+		DDRD &= 0x7f;
 	}
 
 	current_line++;
 	
 	SPDR = 0; // Let's make sure SPI is not idling high.
-	DDRD = (DDRD & 0x7f) | 0x80; // end dimming
 }

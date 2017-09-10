@@ -45,7 +45,7 @@ void setup() {
 	// be pretty safe.
   
 // Analog read enable and set prescale. You can change prescale if you like.
-	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (0<<ADPS1) | (1<<ADPS0);
+//	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (0<<ADPS1) | (1<<ADPS0);
   
 // Disable standard Arduino interrupts used for timer etc. (you can clearly see the text flicker if they are not disabled)
 	TIMSK0=0;
@@ -58,7 +58,7 @@ void setup() {
 	attachInterrupt(0, detectline, FALLING);
 	attachInterrupt(1, detectframe, RISING);
 
-	digitalWrite(13, LOW);
+	digitalWrite(7, LOW);
 	
 	Cls();
 	

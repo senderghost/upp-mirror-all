@@ -16,13 +16,13 @@ void CursorGoTo(int x, int y)
 void Cls()
 {
 	memset(framebuffer, 0, LINES * COLUMNS);
-	memset(dimming, 0xff, LINES);
+	memset(dimming, 0, LINES);
 	cursor = framebuffer;
 }
 
 void DimLine(int i, bool dim)
 {
-	dimming[i] = dim ? 0 : 0xff;
+	dimming[i] = dim ? 0xff : 0;
 }
 
 void Put(int chr)
@@ -61,6 +61,15 @@ void Put(int x, int y, const char *s)
 {
 	CursorGoTo(x, y);
 	Put(s);
+}
+
+void Flash(int x, int y, const char *s)
+{
+	CursorGoTo(x, y);
+	if(frame_counter & 128)
+		Put(x, y, ' ', strlen(s));
+	else
+		Put(s);
 }
 
 void Put(int x, int y, int c, int count)
