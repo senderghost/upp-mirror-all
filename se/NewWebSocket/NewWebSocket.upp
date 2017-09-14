@@ -1,0 +1,11 @@
+uses
+	Core;
+
+file
+	NewWebSocket.h,
+	NewWebSocket.cpp,
+	Test.cpp;
+
+mainconfig
+	"" = "";
+
