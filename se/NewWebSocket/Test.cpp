@@ -4,9 +4,10 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	WebSocket h;
+	WebSocket2 h;
 	
-	h.Connect("174.129.224.73");
+//	h.Connect("ws://echo.websocket.org");
+	h.Connect("ws://echo.websocket.org");
 
 	h.NonBlocking();
 	

@@ -2,15 +2,13 @@
 
 using namespace Upp;
 
-#define WebSocket WebSocket2
-
-class WebSocket {
+class WebSocket2 {
 	String     error;
 
 	TcpSocket  socket;
 	
 	String     uri;
-	IpAddrInfo addr;
+	IpAddrInfo addrinfo;
 
 	String     data;
 	int        data_pos;
@@ -40,6 +38,8 @@ class WebSocket {
 		HTTP_REQUEST_HEADER = -100,
 		HTTP_RESPONSE_HEADER,
 		READING_FRAME_HEADER,
+		DNS,
+
 		FIN = 0x80,
 		TEXT = 0x1,
 		BINARY = 0x2,
@@ -48,11 +48,12 @@ class WebSocket {
 		PONG = 0xa,
 	};
 
-	void Reset();
+	void Clear();
 	void Error(const String& error);
 
 	void Output();
 
+	void Dns();
 	bool ReadHttpHeader();
 	void ResponseHeader();
 	void RequestHeader();
@@ -64,7 +65,7 @@ class WebSocket {
 	void   SendRaw(int hdr, const String& data);
 
 public:
-	WebSocket& NonBlocking(bool b = true)              { socket.Timeout(b ? 0 : Null); return *this; }
+	WebSocket2& NonBlocking(bool b = true)              { socket.Timeout(b ? 0 : Null); return *this; }
 	
 	bool   IsError()        { return socket.IsError() || error.GetCount(); }
 	String GetError() const { return Nvl(socket.GetErrorDesc(), error); }
@@ -96,5 +97,5 @@ public:
 	void   SendText(const String& data)            { SendRaw(FIN|TEXT, data); }
 	void   SendBinary(const String& data)          { SendRaw(FIN|BINARY, data); }
 
-	WebSocket()                                                     { Reset(); }
+	WebSocket2();
 };

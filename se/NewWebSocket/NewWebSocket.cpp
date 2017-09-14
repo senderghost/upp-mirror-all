@@ -4,7 +4,13 @@
 
 using namespace Upp;
 
-void WebSocket::Reset()
+WebSocket2::WebSocket2()
+{
+	max_chunk = 10 * 1024 * 1024;
+	Clear();
+}
+
+void WebSocket2::Clear()
 {
 	opcode = 0;
 	data.Clear();
@@ -12,9 +18,8 @@ void WebSocket::Reset()
 	in_queue.Clear();
 	out_queue.Clear();
 	out_at = 0;
-	max_chunk = 10 * 1024 * 1024;
-	socket.Clear();
 	error.Clear();
+	socket.Clear();
 }
 
 void WebSocket2::Error(const String& err)
@@ -23,17 +28,61 @@ void WebSocket2::Error(const String& err)
 	error = err;
 }
 
-void WebSocket::Accept(TcpSocket& listen_socket)
+void WebSocket2::Accept(TcpSocket& listen_socket)
 {
 	if(!socket.Accept(listen_socket)) {
 		Error("Accept has failed");
 		return;
 	}
-	Reset();
+	Clear();
 	opcode = HTTP_REQUEST_HEADER;
 }
 
-bool WebSocket::ReadHttpHeader()
+void WebSocket2::Connect(const String& url)
+{
+	Clear();
+
+	uri = url;
+	const char *u = url;
+	bool ssl = memcmp(u, "wss", 3) == 0;
+	const char *t = u;
+	while(*t && *t != '?')
+		if(*t++ == '/' && *t == '/') {
+			u = ++t;
+			break;
+		}
+	t = u;
+	while(*u && *u != ':' && *u != '/' && *u != '?')
+		u++;
+	String host = String(t, u);
+	int port = 80;
+	if(*u == ':')
+		port = ScanInt(u + 1, &u);
+	
+	addrinfo.Start(host, port);
+
+	String h;
+	for(int i = 0; i < 20; i++)
+		h.Cat(Random());
+
+	out_queue.AddTail( // needs to be the first thing to sent after the connection is established
+		"GET " + uri + " HTTP/1.1\r\n"
+		"Host: " + host + "\r\n"
+		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+		"Accept-Language: cs,en-US;q=0.7,en;q=0.3\r\n"
+		"Sec-WebSocket-Version: 13\r\n"
+		"Sec-WebSocket-Extensions: permessage-deflate\r\n"
+		"Sec-WebSocket-Key: " + Base64Encode(h) + "\r\n"
+		"Connection: keep-alive, Upgrade\r\n"
+		"Pragma: no-cache\r\n"
+		"Cache-Control: no-cache\r\n"
+		"Upgrade: websocket\r\n\r\n"
+	);
+	
+	opcode = DNS;
+}
+
+bool WebSocket2::ReadHttpHeader()
 {
 	for(;;) {
 		int c = socket.Get();
@@ -48,6 +97,8 @@ bool WebSocket::ReadHttpHeader()
 		if(data.GetCount() >= 3) {
 			const char *h = data.Last();
 			if(h[0] == '\n' && h[-1] == '\r' && h[-2] == '\n') { // empty ending line after non-empty header
+				LLOG("HTTP header received");
+				LLOG(data);
 				return true;
 			}
 		}
@@ -58,7 +109,24 @@ bool WebSocket::ReadHttpHeader()
 	}
 }
 
-void WebSocket::RequestHeader()
+void WebSocket2::Dns()
+{
+	if(addrinfo.InProgress())
+		return;
+	
+	LLOG("DNS resolved");
+	
+	if(!socket.Connect(addrinfo)) {
+		Error("Connect has failed");
+		return;
+	}
+	
+	LLOG("Connect issued");
+
+	opcode = HTTP_RESPONSE_HEADER;
+}
+
+void WebSocket2::RequestHeader()
 {
 	if(ReadHttpHeader()) {
 		LLOG(data);
@@ -82,7 +150,7 @@ void WebSocket::RequestHeader()
 			"HTTP/1.1 101 Switching Protocols\r\n"
 			"Upgrade: websocket\r\n"
 			"Connection: Upgrade\r\n"
-			"Sec-WebSocket-Accept: " + Base64Encode((char *)sha1, 20) + "\r\n\r\n"
+			"Sec-WebSocket2-Accept: " + Base64Encode((char *)sha1, 20) + "\r\n\r\n"
 		);
 		
 		LLOG("HTTP request header received, sending response");
@@ -91,7 +159,7 @@ void WebSocket::RequestHeader()
 	}
 }
 
-void WebSocket::ResponseHeader()
+void WebSocket2::ResponseHeader()
 {
 	if(ReadHttpHeader()) {
 		LLOG(data);
@@ -105,7 +173,7 @@ void WebSocket::ResponseHeader()
 	}
 }
 
-void WebSocket::FrameHeader()
+void WebSocket2::FrameHeader()
 {
 	for(;;) {
 		int c = socket.Get();
@@ -154,7 +222,7 @@ void WebSocket::FrameHeader()
 	}
 }
 
-void WebSocket::FrameData()
+void WebSocket2::FrameData()
 {
 	Buffer<char> buffer(32768);
 	for(;;) {
@@ -194,30 +262,35 @@ void WebSocket::FrameData()
 	}
 }
 
-void WebSocket::Output()
+void WebSocket2::Output()
 {
-	while(out_queue.GetCount()) {
-		const String& s = out_queue.Head();
-		int n = socket.Put(~s + out_at, s.GetCount() - out_at);
-		if(n == 0)
-			break;
-		LLOG("Sent " << n << " bytes");
-		out_at += n;
-		if(out_at >= s.GetCount()) {
-			out_at = 0;
-			out_queue.DropHead();
-			LLOG("Block sent complete, " << out_queue.GetCount() << " remaining blocks in queue");
+	if(socket.IsOpen())
+		while(out_queue.GetCount()) {
+			const String& s = out_queue.Head();
+			int n = socket.Put(~s + out_at, s.GetCount() - out_at);
+			if(n == 0)
+				break;
+			LLOG("Sent " << n << " bytes");
+			out_at += n;
+			if(out_at >= s.GetCount()) {
+				LLOG("Block sent complete, " << out_queue.GetCount() << " remaining blocks in queue");
+				LOG(s);
+				out_at = 0;
+				out_queue.DropHead();
+			}
 		}
-	}
 }
 
-void WebSocket::Do()
+void WebSocket2::Do()
 {
 	if(IsError())
 		return;
 	Output();
 	int prev_opcode = opcode;
 	switch(opcode) {
+	case DNS:
+		Dns();
+		break;
 	case HTTP_REQUEST_HEADER:
 		RequestHeader();
 		break;
@@ -280,10 +353,12 @@ String WebSocket2::GetFullMessage()
 	return data;
 }
 
-void WebSocket::SendRaw(int hdr, const String& data)
+void WebSocket2::SendRaw(int hdr, const String& data)
 {
 	if(IsError())
 		return;
+	
+	LLOG("Send " << data.GetCount() << " bytes, hdr: " << hdr);
 	
 	String header;
 	header.Cat(hdr);
@@ -310,32 +385,4 @@ void WebSocket::SendRaw(int hdr, const String& data)
 
 	out_queue.AddTail(header);
 	out_queue.AddTail(data);
-}
-
-void WebSocket::Connect(const String& url)
-{ // TODO: make async!
-	if(!socket.Connect(url, 80)) {
-		Error("Connect has failed");
-		return;
-	}
-
-	String h;
-	for(int i = 0; i < 20; i++)
-		h.Cat(Random());
-
-	out_queue.AddTail(
-		"GET ws://echo.websocket.org HTTP/1.1\r\n" // TODO
-		"Host: echo.websocket.org\r\n" // TODO
-		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-		"Accept-Language: cs,en-US;q=0.7,en;q=0.3\r\n"
-		"Sec-WebSocket-Version: 13\r\n"
-		"Sec-WebSocket-Extensions: permessage-deflate\r\n"
-		"Sec-WebSocket-Key: " + Base64Encode(h) + "\r\n"
-		"Connection: keep-alive, Upgrade\r\n"
-		"Pragma: no-cache\r\n"
-		"Cache-Control: no-cache\r\n"
-		"Upgrade: websocket\r\n\r\n"
-	);
-	
-	opcode = HTTP_RESPONSE_HEADER;
 }
