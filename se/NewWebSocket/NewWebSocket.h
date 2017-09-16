@@ -5,10 +5,12 @@ using namespace Upp;
 class WebSocket2 {
 	String     error;
 
-	TcpSocket  socket;
+	TcpSocket  std_socket;
+	TcpSocket *socket;
 	
 	String     uri;
 	IpAddrInfo addrinfo;
+	bool       ssl;
 
 	String     data;
 	int        data_pos;
@@ -32,13 +34,14 @@ class WebSocket2 {
 	int              out_at;
 	
 	bool             close_sent;
-	bool             close_replied;
+	bool             close_received;
 
 	enum {
 		HTTP_REQUEST_HEADER = -100,
-		HTTP_RESPONSE_HEADER,
-		READING_FRAME_HEADER,
-		DNS,
+		HTTP_RESPONSE_HEADER = -101,
+		READING_FRAME_HEADER = -102,
+		DNS = -103,
+		SSL_HANDSHAKE = -104,
 
 		FIN = 0x80,
 		TEXT = 0x1,
@@ -53,6 +56,7 @@ class WebSocket2 {
 
 	void Output();
 
+	void StartConnect();
 	void Dns();
 	bool ReadHttpHeader();
 	void ResponseHeader();
@@ -65,10 +69,10 @@ class WebSocket2 {
 	void   SendRaw(int hdr, const String& data);
 
 public:
-	WebSocket2& NonBlocking(bool b = true)              { socket.Timeout(b ? 0 : Null); return *this; }
+	WebSocket2& NonBlocking(bool b = true)              { socket->Timeout(b ? 0 : Null); return *this; }
 	
-	bool   IsError()        { return socket.IsError() || error.GetCount(); }
-	String GetError() const { return Nvl(socket.GetErrorDesc(), error); }
+	bool   IsError()        { return socket->IsError() || error.GetCount(); }
+	String GetError() const { return Nvl(socket->GetErrorDesc(), error); }
 	
 	void   Do();
 	
@@ -83,11 +87,11 @@ public:
 	bool   IsBinary() const    { return IsMessage() && !in_queue.Head().text; }
 	bool   IsFullMessage() const;
 
-	String PeekMessage();
-	String GetMessage();
+	String Peek();
+	String Fetch();
 	
-	String PeekFullMessage();
-	String GetFullMessage();
+	String PeekFull();
+	String FetchFull();
 	
 //	bool   IsClosed() const  { return GetOpCode() == CLOSE; }
 //	String GetData() const   { return data; }
@@ -96,6 +100,9 @@ public:
 
 	void   SendText(const String& data)            { SendRaw(FIN|TEXT, data); }
 	void   SendBinary(const String& data)          { SendRaw(FIN|BINARY, data); }
+
+	void   SendClose(const String& msg = Null);
+	bool   IsClosed()                              { return close_sent && close_received && out_queue.GetCount() == 0; }
 
 	WebSocket2();
 };

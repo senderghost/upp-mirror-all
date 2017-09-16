@@ -12,15 +12,15 @@ CONSOLE_APP_MAIN
 	h.NonBlocking();
 	
 	h.SendText("Test");
-	for(;;) {
+	while(!h.IsClosed()) {
 		if(h.IsError()) {
 			DDUMP(h.GetError());
 			break;
 		}
 		h.Do();
 		if(h.IsText()) {
-			DDUMP(h.GetMessage());
-			break;
+			Cout() << h.Fetch() << "\n";
+			h.SendClose();
 		}
 	}
 }
