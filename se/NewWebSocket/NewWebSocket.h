@@ -92,13 +92,15 @@ public:
 	String PeekFull();
 	String FetchFull();
 	
-//	bool   IsClosed() const  { return GetOpCode() == CLOSE; }
-//	String GetData() const   { return data; }
-
 	bool   IsOutputEmpty() const                   { return out_queue.GetCount() == 0; }
 
 	void   SendText(const String& data)            { SendRaw(FIN|TEXT, data); }
 	void   SendBinary(const String& data)          { SendRaw(FIN|BINARY, data); }
+
+	void   BeginText(const String& data)           { SendRaw(TEXT, data); }
+	void   BeginBinary(const String& data)         { SendRaw(BINARY, data); }
+	void   Continue(const String& data)            { SendRaw(0, data); }
+	void   Fin(const String& data)                 { SendRaw(FIN, data); }
 
 	void   SendClose(const String& msg = Null);
 	bool   IsClosed()                              { return close_sent && close_received && out_queue.GetCount() == 0; }

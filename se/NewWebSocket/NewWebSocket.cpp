@@ -56,7 +56,7 @@ void WebSocket2::Connect(const String& url)
 	while(*u && *u != ':' && *u != '/' && *u != '?')
 		u++;
 	String host = String(t, u);
-	int port = 80;
+	int port = ssl ? 443 : 80;
 	if(*u == ':')
 		port = ScanInt(u + 1, &u);
 	
