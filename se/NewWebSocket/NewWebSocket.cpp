@@ -19,8 +19,7 @@ void WebSocket2::Clear()
 	out_queue.Clear();
 	out_at = 0;
 	error.Clear();
-	socket = &std_socket;
-	socket->Clear();
+	socket.Clear();
 	close_sent = close_received = false;
 }
 
@@ -32,7 +31,7 @@ void WebSocket2::Error(const String& err)
 
 void WebSocket2::Accept(TcpSocket& listen_socket)
 {
-	if(!socket->Accept(listen_socket)) {
+	if(!socket.Accept(listen_socket)) {
 		Error("Accept has failed");
 		return;
 	}
@@ -79,7 +78,7 @@ void WebSocket2::Connect(const String& url)
 		"Upgrade: websocket\r\n\r\n"
 	);
 	
-	if(socket->IsBlocking()) {
+	if(socket.IsBlocking()) {
 		if(!addrinfo.Execute(host, port)) {
 			Error("Not found");
 			return;
@@ -93,7 +92,7 @@ void WebSocket2::Connect(const String& url)
 
 void WebSocket2::StartConnect()
 {
-	if(!socket->Connect(addrinfo)) {
+	if(!socket.Connect(addrinfo)) {
 		Error("Connect has failed");
 		return;
 	}
@@ -101,7 +100,7 @@ void WebSocket2::StartConnect()
 	LLOG("Connect issued");
 	
 	if(ssl) {
-		if(!socket->StartSSL()) {
+		if(!socket.StartSSL()) {
 			Error("Unable to start SSL handshake");
 			return;
 		}
@@ -123,7 +122,7 @@ void WebSocket2::Dns()
 bool WebSocket2::ReadHttpHeader()
 {
 	for(;;) {
-		int c = socket->Get();
+		int c = socket.Get();
 		if(c < 0)
 			return false;
 		else
@@ -197,7 +196,7 @@ void WebSocket2::ResponseHeader()
 void WebSocket2::FrameHeader()
 {
 	for(;;) {
-		int c = socket->Get();
+		int c = socket.Get();
 		if(c < 0)
 			return;
 		data.Cat(c);
@@ -254,7 +253,7 @@ void WebSocket2::FrameData()
 {
 	Buffer<char> buffer(32768);
 	for(;;) {
-		int n = socket->Get(~buffer, (int)min(length - data_pos, (int64)32768));
+		int n = socket.Get(~buffer, (int)min(length - data_pos, (int64)32768));
 		if(n == 0)
 			return;
 		if(mask)
@@ -294,15 +293,10 @@ void WebSocket2::FrameData()
 
 void WebSocket2::Output()
 {
-	if(socket->IsOpen()) {
-		if(close_sent) {
-			DLOG("Output");
-		}
-		
+	if(socket.IsOpen()) {
 		while(out_queue.GetCount()) {
 			const String& s = out_queue.Head();
-			if(close_sent) DDUMP(s.GetCount());
-			int n = socket->Put(~s + out_at, s.GetCount() - out_at);
+			int n = socket.Put(~s + out_at, s.GetCount() - out_at);
 			if(n == 0)
 				break;
 			LLOG("Sent " << n << " bytes");
@@ -314,20 +308,12 @@ void WebSocket2::Output()
 			}
 		}
 		if(out_queue.GetCount() == 0 && IsClosed())
-			socket->Close();
+			socket.Close();
 	}
 }
 
 void WebSocket2::Do()
 {
-	if(close_sent) {
-		DDUMP(close_sent);
-		DDUMP(close_received);
-		DDUMP(out_queue.GetCount());
-		DDUMP(socket->IsOpen());
-		DDUMP(out_at);
-	}
-	socket = &std_socket;
 	if(IsError())
 		return;
 	if(findarg(opcode, DNS, SSL_HANDSHAKE) < 0)
@@ -338,7 +324,7 @@ void WebSocket2::Do()
 		Dns();
 		break;
 	case SSL_HANDSHAKE:
-		if(socket->SSLHandshake())
+		if(socket.SSLHandshake())
 			break;
 		LLOG("SSL handshake finished");
 		opcode = HTTP_RESPONSE_HEADER;

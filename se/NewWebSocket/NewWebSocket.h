@@ -5,8 +5,7 @@ using namespace Upp;
 class WebSocket2 {
 	String     error;
 
-	TcpSocket  std_socket;
-	TcpSocket *socket;
+	TcpSocket  socket;
 	
 	String     uri;
 	IpAddrInfo addrinfo;
@@ -69,10 +68,10 @@ class WebSocket2 {
 	void   SendRaw(int hdr, const String& data);
 
 public:
-	WebSocket2& NonBlocking(bool b = true)              { socket->Timeout(b ? 0 : Null); return *this; }
+	WebSocket2& NonBlocking(bool b = true)              { socket.Timeout(b ? 0 : Null); return *this; }
 	
-	bool   IsError()        { return socket->IsError() || error.GetCount(); }
-	String GetError() const { return Nvl(socket->GetErrorDesc(), error); }
+	bool   IsError()        { return socket.IsError() || error.GetCount(); }
+	String GetError() const { return Nvl(socket.GetErrorDesc(), error); }
 	
 	void   Do();
 	

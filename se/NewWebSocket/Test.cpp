@@ -6,8 +6,7 @@ CONSOLE_APP_MAIN
 {
 	WebSocket2 h;
 	
-//	h.Connect("ws://echo.websocket.org");
-	h.Connect("ws://echo.websocket.org");
+	h.Connect("wss://echo.websocket.org");
 
 	h.NonBlocking();
 	
