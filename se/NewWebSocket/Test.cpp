@@ -8,7 +8,7 @@ CONSOLE_APP_MAIN
 	
 	h.Connect("wss://echo.websocket.org");
 
-//	h.NonBlocking();
+	h.NonBlocking();
 	
 //	h.SendText("Test");
 
@@ -16,14 +16,16 @@ CONSOLE_APP_MAIN
 	h.Continue(" ");
 	h.Fin("world!");
 	
-	while(!h.IsClosed()) {
+	while(h.IsOpen()) {
 		if(h.IsError()) {
 			DDUMP(h.GetError());
 			break;
 		}
-		h.Do();
-		if(h.IsMessage()) {
-			Cout() << h.Fetch() << "\n";
+		String s = h.Receive();
+		if(s.GetCount()) {
+			Cout() << s << "\n";
+			if(*s.Last() == '!')
+				h.Close();
 		}
 	}
 }

@@ -12,14 +12,16 @@ WebSocket2::WebSocket2()
 
 void WebSocket2::Clear()
 {
+	socket = &std_socket;
 	opcode = 0;
+	current_opcode = 0;
 	data.Clear();
 	data_pos = 0;
 	in_queue.Clear();
 	out_queue.Clear();
 	out_at = 0;
 	error.Clear();
-	socket.Clear();
+	socket->Clear();
 	close_sent = close_received = false;
 }
 
@@ -31,7 +33,7 @@ void WebSocket2::Error(const String& err)
 
 void WebSocket2::Accept(TcpSocket& listen_socket)
 {
-	if(!socket.Accept(listen_socket)) {
+	if(!socket->Accept(listen_socket)) {
 		Error("Accept has failed");
 		return;
 	}
@@ -55,16 +57,30 @@ void WebSocket2::Connect(const String& url)
 	t = u;
 	while(*u && *u != ':' && *u != '/' && *u != '?')
 		u++;
-	String host = String(t, u);
+	host = String(t, u);
 	int port = ssl ? 443 : 80;
 	if(*u == ':')
 		port = ScanInt(u + 1, &u);
 	
+	if(socket->IsBlocking()) {
+		if(!addrinfo.Execute(host, port)) {
+			Error("Not found");
+			return;
+		}
+		LLOG("DNS resolved");
+		StartConnect();
+	}
+	else
+		opcode = DNS;
+}
+
+void WebSocket2::SendRequest()
+{
+	LLOG("Sending connection request");
 	String h;
 	for(int i = 0; i < 20; i++)
 		h.Cat(Random());
-
-	out_queue.AddTail( // needs to be the first thing to sent after the connection is established
+	Out( // needs to be the first thing to sent after the connection is established
 		"GET " + uri + " HTTP/1.1\r\n"
 		"Host: " + host + "\r\n"
 		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
@@ -77,30 +93,28 @@ void WebSocket2::Connect(const String& url)
 		"Cache-Control: no-cache\r\n"
 		"Upgrade: websocket\r\n\r\n"
 	);
-	
-	if(socket.IsBlocking()) {
-		if(!addrinfo.Execute(host, port)) {
-			Error("Not found");
-			return;
-		}
-		LLOG("DNS resolved");
-		StartConnect();
-	}
-	else
-		opcode = DNS;
+	opcode = HTTP_RESPONSE_HEADER;
 }
 
 void WebSocket2::StartConnect()
 {
-	if(!socket.Connect(addrinfo)) {
+	if(!socket->Connect(addrinfo)) {
 		Error("Connect has failed");
 		return;
 	}
 	
 	LLOG("Connect issued");
 	
+	if(IsBlocking()) {
+		socket->StartSSL();
+		socket->SSLHandshake();
+		LLOG("Blocking SSL handshake finished");
+		SendRequest();
+		return;
+	}
+	
 	if(ssl) {
-		if(!socket.StartSSL()) {
+		if(!socket->StartSSL()) {
 			Error("Unable to start SSL handshake");
 			return;
 		}
@@ -108,7 +122,7 @@ void WebSocket2::StartConnect()
 		opcode = SSL_HANDSHAKE;
 	}
 	else
-		opcode = HTTP_RESPONSE_HEADER;
+		SendRequest();
 }
 
 void WebSocket2::Dns()
@@ -119,10 +133,18 @@ void WebSocket2::Dns()
 	StartConnect();
 }
 
+void WebSocket2::SSLHandshake()
+{
+	if(socket->SSLHandshake())
+		return;
+	LLOG("SSL handshake finished");
+	SendRequest();
+}
+
 bool WebSocket2::ReadHttpHeader()
 {
 	for(;;) {
-		int c = socket.Get();
+		int c = socket->Get();
 		if(c < 0)
 			return false;
 		else
@@ -166,7 +188,7 @@ void WebSocket2::RequestHeader()
 		byte sha1[20];
 		SHA1(sha1, key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
 		
-		out_queue.AddTail(
+		Out(
 			"HTTP/1.1 101 Switching Protocols\r\n"
 			"Upgrade: websocket\r\n"
 			"Connection: Upgrade\r\n"
@@ -196,7 +218,7 @@ void WebSocket2::ResponseHeader()
 void WebSocket2::FrameHeader()
 {
 	for(;;) {
-		int c = socket.Get();
+		int c = socket->Get();
 		if(c < 0)
 			return;
 		data.Cat(c);
@@ -233,27 +255,30 @@ void WebSocket2::FrameHeader()
 		}
 
 		if(ok) {
+			LLOG("Frame header received, len: " << length << ", code " << opcode);
 			opcode = new_opcode;
 			data.Clear();
 			data_pos = 0;
-			LLOG("Frame header received, len: " << length << ", code " << opcode);
 			return;
 		}
 	}
 }
 
-void WebSocket2::SendClose(const String& msg)
+void WebSocket2::Close(const String& msg)
 {
 	LLOG("Sending CLOSE");
 	SendRaw(CLOSE, msg);
 	close_sent = true;
+	if(IsBlocking())
+		while(!IsClosed() && !IsError() && socket->IsOpen())
+			Do0();
 }
 
 void WebSocket2::FrameData()
 {
 	Buffer<char> buffer(32768);
 	for(;;) {
-		int n = socket.Get(~buffer, (int)min(length - data_pos, (int64)32768));
+		int n = socket->Get(~buffer, (int)min(length - data_pos, (int64)32768));
 		if(n == 0)
 			return;
 		if(mask)
@@ -274,14 +299,15 @@ void WebSocket2::FrameData()
 				LLOG("CLOSE received");
 				close_received = true;
 				if(!close_sent)
-					SendClose(data);
+					Close(data);
+				socket->Close();
 				break;
 			default:
 				Input& m = in_queue.AddTail();
-				m.fin = opcode & FIN;
-				m.text = op == TEXT;
+				m.opcode = opcode;
 				m.data = data;
-				LLOG((m.text ? "TEXT" : "BINARY") << ", input queue count is now " << in_queue.GetCount());
+				LLOG((m.opcode & TEXT ? "TEXT" : "BINARY") << ", input queue count is now " << in_queue.GetCount());
+				LOGHEXDUMP(data, min(data.GetCount(), 64));
 				break;
 			}
 			data.Clear();
@@ -291,29 +317,10 @@ void WebSocket2::FrameData()
 	}
 }
 
-void WebSocket2::Output()
+void WebSocket2::Do0()
 {
-	if(socket.IsOpen()) {
-		while(out_queue.GetCount()) {
-			const String& s = out_queue.Head();
-			int n = socket.Put(~s + out_at, s.GetCount() - out_at);
-			if(n == 0)
-				break;
-			LLOG("Sent " << n << " bytes");
-			out_at += n;
-			if(out_at >= s.GetCount()) {
-				out_at = 0;
-				out_queue.DropHead();
-				LLOG("Block sent complete, " << out_queue.GetCount() << " remaining blocks in queue");
-			}
-		}
-		if(out_queue.GetCount() == 0 && IsClosed())
-			socket.Close();
-	}
-}
-
-void WebSocket2::Do()
-{
+	if(socket->IsEof() && !(close_sent || close_received))
+		Error("Socket has been closed unexpectedly");
 	if(IsError())
 		return;
 	if(findarg(opcode, DNS, SSL_HANDSHAKE) < 0)
@@ -324,10 +331,8 @@ void WebSocket2::Do()
 		Dns();
 		break;
 	case SSL_HANDSHAKE:
-		if(socket.SSLHandshake())
-			break;
-		LLOG("SSL handshake finished");
-		opcode = HTTP_RESPONSE_HEADER;
+		SSLHandshake();
+		break;
 	case HTTP_RESPONSE_HEADER:
 		ResponseHeader();
 		break;
@@ -343,51 +348,52 @@ void WebSocket2::Do()
 	}
 }
 
-String WebSocket2::Peek()
+void WebSocket2::Do()
 {
-	return in_queue.GetCount() ? in_queue.Head().data : String::GetVoid();
+	ASSERT(!IsBlocking());
+	Do0();
 }
 
-String WebSocket2::Fetch()
+String WebSocket2::Receive()
 {
-	if(in_queue.GetCount()) {
-		String data = in_queue.Head().data;
-		in_queue.DropHead();
-		return data;
+	current_opcode = 0;
+	do {
+		Do0();
+		if(in_queue.GetCount()) {
+			String s = in_queue.Head().data;
+			current_opcode = in_queue.Head().opcode;
+			in_queue.DropHead();
+			return s;
+		}
 	}
+	while(IsBlocking() && socket->IsOpen() && !IsError());
 	return String::GetVoid();
 }
 
-int WebSocket2::GetFinIndex() const
+void WebSocket2::Out(const String& s)
 {
-	for(int i = 0; i < in_queue.GetCount(); i++)
-		if(in_queue[i].fin)
-			return i;
-	return -1;
+	out_queue.AddTail(s);
+	while(IsBlocking()  && socket->IsOpen() && !IsError() && out_queue.GetCount())
+		Output();
 }
 
-String WebSocket2::PeekFull()
+void WebSocket2::Output()
 {
-	int fi = GetFinIndex();
-	if(fi < 0)
-		return String::GetVoid();
-	String data;
-	for(int i = 0; i <= fi; i++)
-		data.Cat(in_queue[i].data);
-	return data;
-}
-
-String WebSocket2::FetchFull()
-{
-	int fi = GetFinIndex();
-	if(fi < 0)
-		return String::GetVoid();
-	String data;
-	for(int i = 0; i <= fi; i++) {
-		data.Cat(in_queue.Head().data);
-		in_queue.DropHead();
+	if(socket->IsOpen()) {
+		while(out_queue.GetCount()) {
+			const String& s = out_queue.Head();
+			int n = socket->Put(~s + out_at, s.GetCount() - out_at);
+			if(n == 0)
+				break;
+			LLOG("Sent " << n << " bytes");
+			out_at += n;
+			if(out_at >= s.GetCount()) {
+				out_at = 0;
+				out_queue.DropHead();
+				LLOG("Block sent complete, " << out_queue.GetCount() << " remaining blocks in queue");
+			}
+		}
 	}
-	return data;
 }
 
 void WebSocket2::SendRaw(int hdr, const String& data)
@@ -397,6 +403,7 @@ void WebSocket2::SendRaw(int hdr, const String& data)
 	
 	ASSERT(!close_sent);
 	LLOG("Send " << data.GetCount() << " bytes, hdr: " << hdr);
+	LOGHEXDUMP(data, min(data.GetCount(), 64));
 	
 	String header;
 	header.Cat(hdr);
@@ -421,9 +428,39 @@ void WebSocket2::SendRaw(int hdr, const String& data)
 	else
 		header.Cat((int)len);
 
-	out_queue.AddTail(header);
+	Out(header);
 
 	if(data.GetCount() == 0)
 		return;
-	out_queue.AddTail(data);
+	Out(data);
+}
+
+bool WebSocket2::WebAccept(TcpSocket& socket_, HttpHeader& hdr)
+{
+	socket = &socket_;
+	String key = hdr["sec-websocket-key"];
+	if(IsNull(key))
+		return false;
+	
+	byte sha1[20];
+	SHA1(sha1, key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+	
+	Out(
+		"HTTP/1.1 101 Switching Protocols\r\n"
+		"Upgrade: websocket\r\n"
+		"Connection: Upgrade\r\n"
+		"Sec-WebSocket-Accept: " + Base64Encode((char *)sha1, 20) + "\r\n\r\n"
+	);
+
+	data.Clear();
+	opcode = READING_FRAME_HEADER;
+	return true;
+}
+
+bool WebSocket2::WebAccept(TcpSocket& socket)
+{
+	HttpHeader hdr;
+	if(!hdr.Read(socket))
+		return false;
+	return WebAccept(socket, hdr);
 }
