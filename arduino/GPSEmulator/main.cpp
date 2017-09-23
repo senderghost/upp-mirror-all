@@ -37,7 +37,7 @@ struct GPSEmulator : TopWindow {
 	bool   active = false;
 	int    altitude = 100;
 	int    heading = 0;
-	int    speed = 3;
+	int    speed = 0;
 	
 	String rmc, gga;
 
@@ -76,7 +76,7 @@ void GPSEmulator::Do()
 {
 	String coord;
 
-	double gps_y = 50.07 + pos.y / 1000.0 / 111.3;
+	double gps_y = 50.07 - pos.y / 1000.0 / 111.3;
 	double gps_x = 14.42 + pos.x / 1000.0 / 71.6;
 
 	auto do1 = [](double gps, char *pn)->String {
@@ -155,7 +155,7 @@ void GPSEmulator::Paint(Draw& w)
 	
 	w.DrawRect(home.x - 1, home.y - 1, 3, 3, Blue());
 	
-	w.DrawText(pos.x, pos.y, 10 * heading, "A", Arial(30));
+	w.DrawText(pos.x, pos.y, -10 * heading, "A", Arial(30));
 }
 
 GUI_APP_MAIN

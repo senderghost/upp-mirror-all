@@ -55,8 +55,8 @@ bool GetGPS(int timeout)
 
 void ShowSats()
 {
-	*DisplayPos(9, LINES - 1) = 'S';
-	FormatInt(gps.satellites, DisplayPos(10, LINES - 1), 2);
+	*DisplayPos(0, LINES - 2) = 'S';
+	FormatInt(gps.satellites, DisplayPos(1, LINES - 2), 2);
 }
 
 void ShowTime(long time)
@@ -85,7 +85,7 @@ void Main()
 		ShowVoltage();
 		ShowSats();
 		ShowTime(gps.time);
-		Flash(1, 0, "WAITING FOR GPS LOCK");
+		Flash(0, "WAITING FOR GPS LOCK");
 		GetGPS(1500);
 	}
 
@@ -100,44 +100,67 @@ void Main()
 	
 	int n = 0;
 	
+	bool wait_zero = true;
 	bool wait_home = true;
+	bool inflight = false;
 	long last_movement_time = gps.time;
 	long time0 = gps.time;
 
 	Beep(1);LoopBeep(50);
+	
+	float px = 0, py = 0;
+	
+	float traveled = 0;
 
 	for(;;) {
-		DimLine(0);
-		DimLine(LINES - 1);
-
-		if(wait_home) {
-			Flash(5, 8, "LOCKING HOME");
-			Beep(2);
-		}
-
-		GetGPS(1500);
-		
-		if(gps.speed > 1)
+		if(gps.speed > 2) {
 			last_movement_time = gps.time;
+			inflight = true;
+			StopBeeping();
+		}
 
 		int stop_time = int(gps.time - last_movement_time);
 
-		if(wait_home && (stop_time > 15 || gps.time - time0 > 20 && gps.speed > 5)) {
-			Cls();
-			wait_home = false;
+		DimLine(0);
+		DimLine(LINES - 1);
+
+		Put(0, 8, ' ', COLUMNS);
+		if(wait_zero) {
+			Flash(8, "WAITING FOR ZERO");
+			Beep(2);
+		}
+		else
+		if(wait_home) {
+			Flash(8, "READY TO LAUNCH");
+		}
+		else
+		if(stop_time > 5)
+			Flash(8, "LANDED");
+
+		GetGPS(1500);
+		
+		if(wait_zero && stop_time > 5) {
+			wait_zero = false;
 			Beep(50);
+		}
+
+		if(wait_home && !wait_zero && gps.speed > 3) {
+			wait_home = false;
+			wait_zero = false;
+			Beep(10);
 		}
 
 		if(wait_home)
 			home = gps;
 		
-		if((!wait_home && stop_time > 120 || !gps.valid) && !IsBeeping()) {
+		if((!wait_home && stop_time > 240 || !gps.valid) && !IsBeeping()) { // SOS
 			Beep(4); AddBeep(4, 4); AddBeep(4, 4);
 			AddBeep(4, 12); AddBeep(4, 12); AddBeep(4, 12);
 			AddBeep(4, 4); AddBeep(4, 4); AddBeep(4, 4);
 			LoopBeep(150);
+			inflight = false;
 		}
-
+		
 		FormatFloat1(gps.speed, DisplayPos(0, 0), 3);
 		*DisplayPos(5, 0) = 1;
 		*DisplayPos(6, 0) = 2;
@@ -152,15 +175,28 @@ void Main()
 
 		FormatFloat(gps.altitude - home.altitude, DisplayPos(COLUMNS - 5, 0), 4);
 		*DisplayPos(COLUMNS - 1, 0) = 4;
+
+		if(inflight)
+			traveled += hypot(dx - px, dy - py);
 		
-		float home_angle = atan2(dx, dy) * (180 / M_PI);
+		px = dx;
+		py = dy;
+
+		float home_angle = 90 - atan2(dy, dx) * (180 / M_PI);
 		
-		int angle = (int(gps.direction - home_angle) + 360) % 360;
+		int angle = (int(home_angle - gps.direction + 180) + 360) % 360;
 		int a = ((8 * angle + 180) / 360) & 7;
 		
 		*DisplayPos(COLUMNS / 2, 0) = a + 20;
 		Put(0, 1, ' ', COLUMNS);
 		Put(0, LINES - 2, ' ', COLUMNS);
+
+		ShowSats();
+
+		FormatFloat1(traveled / 1000, DisplayPos(COLUMNS - 7, LINES - 2), 3);
+		*DisplayPos(COLUMNS - 2, LINES - 2) = 'K';
+		*DisplayPos(COLUMNS - 1, LINES - 2) = 'm';
+
 		if(angle < 90)
 			*DisplayPos(COLUMNS / 2 + COLUMNS * (angle) / 180, 1) = 19;
 		else
@@ -169,13 +205,11 @@ void Main()
 		else
 			*DisplayPos(COLUMNS / 2 + COLUMNS * (180 - angle) / 180, LINES - 2) = 19;
 
-		a = ((8 * (int(home_angle + 180 + 360) % 360) + 180) / 360) & 7;
-		*DisplayPos(8, 0) = "NNWSSSEN"[a];
-		*DisplayPos(9, 0) = " W W E E"[a];
+		a = ((8 * (int(home_angle + 360) % 360) + 180) / 360) & 7;
+		*DisplayPos(8, 0) = "NNESSSWN"[a];
+		*DisplayPos(9, 0) = " E E W W"[a];
 
 		ShowTime(wait_home ? gps.time - time0 : gps.time - home.time);
-		
-		ShowSats();
 		
 		ShowVoltage();
 
@@ -186,9 +220,9 @@ void Main()
 			DUMP(gps.y);
 			DUMP(gps.altitude);
 			DUMP(gps.speed);
-			DUMP(gps.direction);
+			DUMP(gps.direction);*/
 			DUMP(dx);
-			DUMP(dy);*/
+			DUMP(dy);
 			DUMP(home_angle);
 			DUMP(angle);
 			DUMP(a);

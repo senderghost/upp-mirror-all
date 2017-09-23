@@ -66,10 +66,15 @@ void Put(int x, int y, const char *s)
 void Flash(int x, int y, const char *s)
 {
 	CursorGoTo(x, y);
-	if(frame_counter & 128)
+	if(frame_counter & 32)
 		Put(x, y, ' ', strlen(s));
 	else
 		Put(s);
+}
+
+void Flash(int y, const char *s)
+{
+	Flash((COLUMNS - strlen(s)) / 2, y, s);
 }
 
 void Put(int x, int y, int c, int count)

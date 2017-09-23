@@ -13,7 +13,7 @@ extern volatile int  frame_counter;
 extern volatile int  max_line;
 
 #define LINES   16
-#define COLUMNS 23
+#define COLUMNS 22
 
 #define delay1  __asm__("nop\n\t");
 #define delay2  delay1  delay1
@@ -58,6 +58,7 @@ void Put(int c, int count);
 void Put(int x, int y, const char *s);
 void Put(int x, int y, int c, int count);
 void Flash(int x, int y, const char *s);
+void Flash(int y, const char *s);
 
 void Beep(byte duration);
 void AddBeep(byte wait, byte duration);

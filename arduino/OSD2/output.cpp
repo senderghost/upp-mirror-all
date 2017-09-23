@@ -37,7 +37,7 @@ void detectline()
 		#define DO SPDR = current; current = pgm_read_byte_near(l + (*++s << 3)); delay17;
 		DO DO DO DO  DO DO DO DO
 		DO DO DO DO  DO DO DO DO
-		DO DO DO DO  DO DO DO
+		DO DO DO DO  DO DO
 
 		DDRD &= 0x7f;
 	}

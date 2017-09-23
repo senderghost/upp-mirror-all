@@ -31,7 +31,7 @@ void Put(const char *s)
 }
 
 enum {
-	ITEM_ENDMENU, ITEM_MENU, ITEM_INT, ITEM_BOOL, ITEM_FLOAT
+	ITEM_ENDMENU, ITEM_MENU, ITEM_INT, ITEM_FLOAT, ITEM_ENUM
 };
 
 struct MiniMenuItem {
@@ -40,6 +40,7 @@ struct MiniMenuItem {
 	void       *data;
 	int         min;
 	int         max;
+	void       *param;
 };
 
 struct MiniGui {
@@ -49,6 +50,7 @@ struct MiniGui {
 	int           last_dir;
 	int           same_dir_count;
 	bool          edit;
+	int           subcursor;
 	
 	void Set(MiniMenuItem *m);
 	
@@ -59,6 +61,32 @@ struct MiniGui {
 };
 
 MiniGui minigui;
+
+const char *GetEnum(const char *l, int ii)
+{
+	int i = 0;
+	for(;;) {
+		if(*l == '\0')
+			return NULL;
+		if(ii == i)
+			return l;
+		while(*l) l++;
+		l++;
+		i++;
+	}
+}
+
+int GetEnumCount(const char *l)
+{
+	int i = 0;
+	for(;;) {
+		if(*l == '\0')
+			return i;
+		while(*l) l++;
+		l++;
+		i++;
+	}
+}
 
 void MiniGui::Set(MiniMenuItem *m)
 {
@@ -79,21 +107,21 @@ void MiniGui::Sync()
 		MiniMenuItem& m = menu[i];
 		Put(m.text);
 		int h;
+		Put(i == cursor && edit ? ":[" : ": ");
 		switch(m.kind) {
 		case ITEM_INT:
 		case ITEM_FLOAT:
 			h = *(int *)m.data;
-			Put(i == cursor && edit ? ":[" : ": ");
 			if(m.kind == ITEM_FLOAT)
 				Put(Format("%3d.%c", h / 10, abs(h) % 10 + '0'));
 			else
 				Put(Format("%4d", h));
-			Put(i == cursor && edit ? "]" : " ");
 			break;
-		case ITEM_BOOL:
-			Put(*(bool *)m.data ? ": On " : ": Off");
+		case ITEM_ENUM:
+			Put(GetEnum((const char *)m.param, *(int *)m.data));
 			break;
 		}
+		Put(i == cursor && edit ? "]" : " ");
 	}
 }
 
@@ -108,8 +136,18 @@ void MiniGui::Delta(int d)
 			same_dir_count++;
 		MiniMenuItem& m = menu[cursor];
 		switch(m.kind) {
+		case ITEM_ENUM: {
+			int& h = *(int *)m.data;
+			int n = GetEnumCount((const char *)m.param);
+			h += d;
+			if(h < 0)
+				h = n - 1;
+			if(h >= n)
+				h = 0;
+			break;
+		}
 		case ITEM_INT:
-		case ITEM_FLOAT:
+		case ITEM_FLOAT: {
 			int& h = *(int *)m.data;
 			if(same_dir_count > 5 && h % 10 == 0)
 				d *= 10;
@@ -120,6 +158,7 @@ void MiniGui::Delta(int d)
 			if(m.max > m.min && h > m.max)
 				h = m.max;
 			break;
+		}
 		}
 	}
 	else {
@@ -140,10 +179,7 @@ void MiniGui::Select()
 	if(m.kind == ITEM_MENU)
 		Set((MiniMenuItem *)m.data);
 	else {
-		if(m.kind == ITEM_BOOL)
-			*(bool *)m.data = !*(bool *)m.data;
-		else
-			edit = !edit;
+		edit = !edit;
 		Sync();
 	}
 }
@@ -176,7 +212,9 @@ void MyApp::Paint(Draw& w)
 }
 
 int n = 1234, f;
-bool b;
+int  b;
+int  en;
+char h[20];
 
 extern MiniMenuItem test[];
 
@@ -193,13 +231,28 @@ MiniMenuItem test[] = {
 	{ ITEM_MENU, "Submenu", &test2 },
 	{ ITEM_MENU, "Submenu", &test2 },
 	{ ITEM_MENU, "Submenu", &test2 },
-	{ ITEM_BOOL, "Bool edit", &b },
+	{ ITEM_ENUM, "Bool", &b, 0, 0, "On\0Off\0" },
+	{ ITEM_ENUM, "Enum", &en, 0, 0, "One\0Two\0Three\0" },
+//	{ ITEM_TEXT, "Text", h, 20, 0 },
 	{ ITEM_ENDMENU },
+};
+
+#define MENU(x)                     MiniMenuItem x[] =
+#define INT(text, var, min, max)    { ITEM_INT, text, &var, min, max },
+#define FLOAT(text, var, min, max)  { ITEM_FLOAT, text, &var, min, max },
+#define SUBMENU(text, menu)         { ITEM_MENU, text, &menu },
+#define ENUM(text, var, list)       { ITEM_ENUM, text, &var, 0, 0, list },
+
+MENU(First) {
+	INT("Integer", n, 1, 10)
+	INT("Float", f, 1, 10)
+	ENUM("Enum", en, "ON\0OFF\0NOTHING")
+	SUBMENU("Test", test)
 };
 
 GUI_APP_MAIN
 {
-	minigui.Set(test);
+	minigui.Set(First);
 	
 	MyApp().Run();
 }
