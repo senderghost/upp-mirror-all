@@ -4,15 +4,14 @@
 
 using namespace Upp;
 
+int test(int x) { return 123 * x; }
+
 CONSOLE_APP_MAIN
 {
-	Event<> a;
-	Event<> b;
-	a << b;
-	a << pick(b);
-	a << [] {};
+	Function<int (int)> fn = test;
+	fn = test;
 	
-	a = Null;
+	DDUMP(fn(2));
 }
 
 

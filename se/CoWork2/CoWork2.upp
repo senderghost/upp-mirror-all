@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	CoWork2.cpp;
+
+mainconfig
+	"" = "";
+
