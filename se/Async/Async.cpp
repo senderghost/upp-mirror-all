@@ -18,38 +18,20 @@ void set_future_value(void *dummy, P&& p, F&& f, Args&&... args)
 
 template< class Function, class... Args>
 std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
-Async2(Function&& f, Args&&... args )
+Async(Function&& f, Args&&... args )
 {
 	std::promise<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>> p;
 	auto ftr = p.get_future();
 	CoWork::Schedule([=, p = pick(p)]() mutable {
 		std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)> *dummy = NULL;
-		set_future_value(dummy, pick(p), pick(f));
+		set_future_value(dummy, pick(p), pick(f), args...);
 	});
 	return ftr;
 }
 
 CONSOLE_APP_MAIN
 {
-	String h;
-	auto f = Async2([&h] { h = "Hello world"; });
-	f.get();
-	DDUMP(h);
-	DDUMP(Async2([] { return "Hello world"; }).get());
-	
-	auto eh = Async2([] { throw "error"; });
-	try {
-		eh.get();
-	}
-	catch(...) {
-		DLOG("Exception!");
-	}
-	
-	
-	auto p = Async(
-	
-	p.Cancel();
-	
-	
+	DDUMP(Async([] { return "Hello world"; }).get());
+	DDUMP(Async([](int n) { return n * n; }, 9).get());
 }
 
