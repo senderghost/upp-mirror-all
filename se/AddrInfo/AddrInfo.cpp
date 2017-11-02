@@ -6,7 +6,7 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 
-	// conflict abcd
+	// conflict cccc
 
 	struct gaicb req[1], *reqptr[1];
 	
@@ -43,4 +43,7 @@ CONSOLE_APP_MAIN
 	}
 
     freeaddrinfo (rp);
+    
+    // conflict
+    
 }
