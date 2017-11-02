@@ -6,6 +6,8 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 
+	// conflict
+
 	struct gaicb req[1], *reqptr[1];
 	
 	String url = "www.ultimatepp.org";
