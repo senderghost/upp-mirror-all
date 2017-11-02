@@ -6,7 +6,7 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 
-	// conflict
+	// conflict abcd
 
 	struct gaicb req[1], *reqptr[1];
 	
