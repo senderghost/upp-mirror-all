@@ -86,8 +86,6 @@ CONSOLE_APP_MAIN
 
 .ide Added "Go to line.." dialog as an alternative to navigator approche. It is also integrated with editor mode - that previously hasn't got that feature due to lack of navigator.
 
-ArrayCtrl: AcceptRow now public and documented
-ArrayCtrl: Cleanup of lambda overloads in ArrayCtrl::Column
 
 BRC now support LZ4, LZMA and Zstd compression
 
@@ -155,7 +153,8 @@ CpuHypervisor
 
 Create doc and licence directories only if installdoc=true
 
-CtrlLib: ArrayCtrl fixed to compile
+ArrayCtrl: AcceptRow now public and documented
+ArrayCtrl: Cleanup of lambda overloads in ArrayCtrl::Column
 CtrlLib: ArrayCtrl: ConvertBy
 CtrlLib: ArrayCtrl: Fixed multiselect when ArrayCtrl contains embedded Ctrls
 CtrlLib: ArrayCtrl::GetCellRect[M] now public
@@ -181,8 +180,6 @@ CtrlLib: ProgressInfo optimized (added time granularity to avoid too frequent up
 CtrlLib: TabCtrl::Item::GetText, GetPicture
 CtrlLib: TextCtrl now splits long lines
 CtrlLib: TextCtrl now splits long lines on Load (improvements)
-
-Eigen: Updated to version 3.3.4
 
 Functions4U: GetSeason
 Functions4U: Stronger DirectoryExistsX connects network folder if exists but is not connected
@@ -280,6 +277,7 @@ plugin/pcre: updated to 8.41
 plugin/png: updated to 1.2.57
 plugin/sqlite3: updated to 3.17.9
 plugin/z: Updated to 1.2.11
+plugin/Eigen: Updated to version 3.3.4
 
 theide now supports Visual Studio 2017 C++ compiler auto setup (MSC15)
 
