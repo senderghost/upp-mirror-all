@@ -1,0 +1,11 @@
+description "Cross-platform serial port handling\377";
+
+uses
+	Core;
+
+file
+	Serial.h,
+	Serial.cpp,
+	SerialPosix.cpp,
+	SerialWindows.cpp;
+

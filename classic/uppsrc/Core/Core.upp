@@ -1,0 +1,186 @@
+description "Non-GUI code. Streams, NTL containers, concrete types, Value, XML, C parsing etc...\377B128,0,0";
+
+acceptflags
+	USEMALLOC;
+
+uses(WIN32) plugin\z;
+
+library(MSC !MSC8ARM) "kernel32 user32 ws2_32";
+
+library(WIN32 !GUI !GNU !GCC) "ole32 oleaut32 oldnames";
+
+library(LINUX) "pthread dl rt";
+
+library(BSD) "pthread rt execinfo";
+
+library(WIN32 !MSC8ARM) "advapi32 shell32 winmm mpr";
+
+library(SOLARIS) "posix4 dl";
+
+library(WIN32 GCC) "ole32 oleaut32 uuid ws2_32";
+
+library(MSC8ARM WIN32) "coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib ccrtrtti.lib";
+
+library(!WIN32) z;
+
+options(XGNU) -O0;
+
+options(XGNU) -ffunction-sections;
+
+link(SOLARIS) "-Wl,-R -Wl,/usr/local/lib";
+
+link(GCC POSIX STACKTRACE) -rdynamic;
+
+file
+	Core.h options(BUILDER_OPTION) PCH,
+	config.h,
+	Defs.h,
+	Cpu.cpp,
+	Mt.h,
+	Mt.cpp,
+	OL_Set.cpp,
+	Global.h,
+	HeapImp.h,
+	heaputil.cpp,
+	sheap.cpp,
+	lheap.cpp,
+	heap.cpp,
+	heapdbg.cpp,
+	String.h,
+	AString.hpp,
+	StringFind.cpp,
+	String.cpp,
+	WString.cpp,
+	StrUtil.cpp,
+	SplitMerge.h,
+	SplitMerge.cpp,
+	CharSet.i,
+	CharSet.h,
+	CharSet.cpp,
+	Bom.cpp,
+	Kernel32W.dli,
+	Mpr32W.dli,
+	Path.h,
+	Path.cpp,
+	NetNode.cpp,
+	App.h,
+	App.cpp,
+	Stream.h,
+	Stream.cpp,
+	BlockStream.cpp,
+	FileMapping.cpp,
+	FilterStream.h,
+	FilterStream.cpp,
+	Profile.h,
+	Diag.h,
+	Log.cpp,
+	Debug.cpp,
+	Util.h,
+	Ini.cpp,
+	Util.cpp,
+	mathutil.cpp,
+	Random.cpp,
+	LocalProcess.h,
+	LocalProcess.cpp,
+	Containers readonly separator,
+	Algo.h,
+	Topt.h,
+	Vcont.h,
+	BiCont.h,
+	Vcont.hpp,
+	Vcont.cpp,
+	Index.h,
+	Map.h,
+	FixedMap.h,
+	Map.hpp,
+	Hash.cpp,
+	InVector.h,
+	InVector.hpp,
+	InMap.hpp,
+	Tuple.h,
+	Other.h,
+	Cbgen.h,
+	Callbacks readonly separator,
+	Callback0.h,
+	Callback1.h,
+	Callback2.h,
+	Callback3.h,
+	Callback4.h,
+	Callback5.h,
+	Callback.h,
+	Callback.cpp,
+	Concretes readonly separator,
+	TimeDate.h,
+	TimeDate.cpp,
+	Value.h,
+	Value.hpp,
+	Value.cpp,
+	ValueUtil.h,
+	ValueUtil.cpp,
+	Complex.h,
+	Format.h,
+	Format.cpp,
+	Convert.h,
+	Convert.cpp,
+	Color.h,
+	Color.cpp,
+	Gtypes.h,
+	Gtypes.cpp,
+	Language readonly separator,
+	i18n.h,
+	t.cpp,
+	Core.t charset "UTF-8",
+	t.h,
+	Lang.h,
+	Lang.cpp,
+	LangInfo.cpp,
+	lcid.txt,
+	"Other files" readonly separator,
+	Parser.h,
+	parser.cpp,
+	XML.h,
+	XML.cpp,
+	Xmlize.h,
+	Xmlize.cpp,
+	JSON.h,
+	JSON.cpp,
+	Uuid.h,
+	Uuid.cpp,
+	Ptr.h,
+	Ptr.cpp,
+	z.h,
+	z.cpp,
+	Topic.h,
+	topic_group.h,
+	Topic.cpp,
+	CoWork.h,
+	CoWork.cpp,
+	Hash.h,
+	MD5.cpp,
+	SHA1.cpp,
+	Web readonly separator,
+	Inet.h,
+	InetUtil.cpp,
+	MIME.cpp,
+	Socket.cpp,
+	Http.cpp,
+	WebSocket.cpp,
+	"Runtime linking" readonly separator,
+	dli.h,
+	dli_header.h,
+	dli_source.h,
+	Dli.cpp,
+	"Win32 support" readonly separator,
+	Win32Util.h,
+	Win32Util.cpp,
+	Meta readonly separator,
+	sub.upt,
+	core.upt,
+	ignorelist,
+	core.defs,
+	Info readonly separator,
+	src.tpp,
+	srcdoc.tpp,
+	srcimp.tpp,
+	Copying;
+
