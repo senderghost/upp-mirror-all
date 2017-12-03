@@ -4,10 +4,19 @@ using namespace Upp;
 
 
 struct SLock {
+#ifdef PLATFORM_WIN32
 	volatile LONG locked;
 
 	bool TryEnter() { return InterlockedCompareExchange(&locked, 1, 0) == 0; }
 	void Leave()    { _ReadWriteBarrier(); locked = 0; }
+#endif
+#ifdef PLATFORM_POSIX
+	volatile int locked;
+	
+	bool TryEnter() { return  __sync_bool_compare_and_swap (&locked, 0, 1); }
+	void Leave()    { __sync_lock_release(&locked); }
+#endif
+
 	void Enter()    { while(!TryEnter()) Wait(); }
 	
 	void Wait();
@@ -109,3 +118,4 @@ CONSOLE_APP_MAIN
 			mutex.Leave();
 		}
 }
+.sese
