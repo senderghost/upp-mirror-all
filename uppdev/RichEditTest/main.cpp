@@ -1,32 +1,6 @@
 #include <RichEdit/RichEdit.h>
 
-#define Time    XTime
-#define Font    XFont
-#define Display XDisplay
-#define Picture XPicture
-
-#include <limits.h>
-//#include <gtk/gtk.h>
-//#include <gdk/gdkx.h>
-
-#undef Picture
-#undef Time
-#undef Font
-#undef Display
-
 using namespace Upp;
-
-String FileName()
-{
-//	return "C:\\Users\\cxl\\debugnos\\report.qtf";
-	return GetExeDirFile("test.qtf");
-}
-
-struct MyApp : TopWindow {
-	virtual void Activate() { Title("Active"); TopWindow::Activate(); }
-	virtual void Deactivate() { Title("Deactivated"); TopWindow::Deactivate(); }
-};
-
 
 GUI_APP_MAIN
 {
@@ -36,9 +10,9 @@ GUI_APP_MAIN
 	Ctrl::SetUHDEnabled();
 
 	RichEditWithToolBar e;
-	e.Pick(ParseQTF(LoadFile(FileName())));
+//	e.Pick(ParseQTF(LoadFile(FileName())));
 //	e.SetPage(Size(4000, 1600));
-	MyApp w;
+	TopWindow w;
 	w.SetRect(0, 0, 700, 500);
 	w.Sizeable().Zoomable();
 	StaticRect r;
@@ -46,7 +20,7 @@ GUI_APP_MAIN
 
 	w.Run();
 	String x = e.GetQTF();
-	SaveFile(FileName(), x);
+//	SaveFile(FileName(), x);
 	
 	LOG("Exit");
 }

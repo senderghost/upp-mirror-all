@@ -1,0 +1,29 @@
+LOAD 3.937
+edit.GetLineCount() = 7394563
+edit.GetLength() = 1403238089
+MemoryUsedKb() = 1840924
+
+LOAD 2.953
+edit.GetLineCount() = 7394563
+edit.GetLength() = 1403238089
+MemoryUsedKb() = 1666968
+
+sizeof(Ln) = 24
+LOAD 3.281
+edit.GetLineCount() = 7394563
+edit.GetLength() = 1403238089
+MemoryUsedKb() = 1840924
+
+
+===
+sizeof(Ln) = 16
+LOAD 2.969
+edit.GetLineCount() = 7394563
+edit.GetLength() = 1403238089
+MemoryUsedKb() = 1666968
+
+sizeof(Ln) = 12
+LOAD 2.922
+edit.GetLineCount() = 7394563
+edit.GetLength() = 1403238089
+MemoryUsedKb() = 1666968

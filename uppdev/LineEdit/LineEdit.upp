@@ -2,7 +2,8 @@ uses
 	CtrlLib;
 
 file
-	main.cpp;
+	main.cpp,
+	bench.txt;
 
 mainconfig
 	"" = "GUI X11",

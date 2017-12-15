@@ -6,11 +6,7 @@ using namespace Upp;
 
 GUI_APP_MAIN
 {
-	String qtf;
-	qtf << "{{1 " << String('&', 100) << "}}";
-	
 	Report r;
-//	r.ChooseDefaultPrinter();
-	r << qtf;
+	r << "Hello world";
 	Perform(r);
 }

@@ -11,8 +11,34 @@ GUI_APP_MAIN
 {
 	LineEdit edit;
 	edit.ShowSpaces();
-	auto fn = ConfigFile("data.txt");
-	edit <<= LoadFile(fn);
+
+#ifdef _DEBUG
+	FileIn in("C:\\xxx\\log\\nos.log");
+#else
+	FileIn in("C:\\xxx\\log\\local1.info");
+#endif
+	{
+		RTIMESTOP("LOAD");
+		edit.Load(in);
+//		edit.View(in);
+	}
+	
+	RDUMP(edit.GetLineCount());
+	RDUMP(edit.GetLength());
+	RDUMP(MemoryUsedKb());
+	
+	
+	String txt;
+	{ RTIMESTOP("GET");
+		txt = ~edit;
+	}
+	RDUMP(txt.GetCount());
+	{
+		RTIMESTOP("Compress");
+		txt = FastCompress(txt);
+	};
+	RDUMP(txt.GetCount());
+	
 	TopWindow win;
 //	win.SetRect(100, 100, 100, 100);
 	win.Sizeable();
@@ -22,7 +48,6 @@ GUI_APP_MAIN
 	edit.ShowCurrentLine(LtCyan());
 	edit <<= callback2(ShowLen, &edit, &win);
 	Ctrl::EventLoop();
-	SaveFile(fn, ~edit);
 }
 
 // 156 0x9c ""

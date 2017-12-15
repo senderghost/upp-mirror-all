@@ -16,5 +16,7 @@ colorpopup::colorpopup()
 GUI_APP_MAIN
 {
 	DUMP(VoidColor());
+	SetStdFont(Arial(25));
+	SyncUHDMode();
 	colorpopup().Run();
 }
