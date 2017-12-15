@@ -53,18 +53,86 @@ protected:
 	virtual int     PasteRectSelection(const WString& s);
 	virtual String  GetPasteText();
 
+#define SHORTLN
+
+#ifdef SHORTLN
+	struct Ln : Moveable<Ln> {
+		unsigned    len:31;
+		unsigned    alloc:1;
+
+		byte        d[8]; // make sizeof(Ln) == 12
+	
+		char *&          data() const                       { return *(char **)d; }
+
+		int&             Sz() const                         { return *(int *)data(); }
+		char            *Txt() const                        { return data() + sizeof(int); }
+		void             Set(const char *s, int sz)         { Free(); alloc = true; data() = new char[sz + sizeof(int)]; Sz() = sz; memcpy(Txt(), s, sz); }
+		void             Set(StringBuffer& s, byte charset) { if(charset == CHARSET_UTF8) Set(~s, s.GetCount());
+		                                                      else { // TODO: optimize
+		                                                          String h = ToCharset(CHARSET_UTF8, s, charset);
+		                                                          Set(~h, h.GetCount());
+		                                                    }}
+
+		void             Set(const WString& txt) { String h = ToUtf8(txt); Set(~h, h.GetCount()); len = txt.GetLength(); }
+
+		int              GetLength() const       { return len; }
+
+		const char      *Get() const             { return data() ? Txt() : 0; }
+		int              GetSize() const         { return data() ? Sz() : 0; }
+		String           GetString() const       { return String(Get(), GetSize()); }
+		WString          GetWString() const      { return FromUtf8(Get(), GetSize()); }
+		
+		void             SetPos(int64 pos, int slen) {
+			*(dword *)d = (dword)pos;
+			d[4] = byte(pos >> 32);
+			d[5] = slen >> 16;
+			*(word *)(d + 6) = (word)slen;
+		}
+		int64            GetPos() const          { return *(dword *)d | ((int64)d[4] << 32); }
+		int              GetSLen() const         { return *(word *)(d + 6) | (int)d[4] << 16; }
+		
+		void             Free()                  { if(alloc) delete[] data(); }
+
+		Ln()                                     { alloc = false; data() = NULL; len = 0; }
+		~Ln()                                    { Free(); }
+	private:
+		Ln(const Ln&);
+		void operator=(const Ln&);
+	};
+#else
 	struct Ln : Moveable<Ln> {
 		int    len;
-		String text;
+		String txt;
 
-		int      GetLength() const       { return len; }
-		operator WString() const         { return FromUtf8(text); }
+		int              GetLength() const       { return len; }
+		const StreamPos& operator~() const       { return SP(txt); }
+		StreamPos&       operator~()             { return SP(txt); }
 
-		Ln(const WString& wtext)         { text = ToUtf8(wtext); len = wtext.GetLength(); }
+		void             Set(const char *s, int sz)         { txt.Set(s, sz); }
+		void             Set(StringBuffer& s, byte charset) { if(charset == CHARSET_UTF8) txt = s; else txt = ToCharset(CHARSET_UTF8, s, charset); }
+		void             Set(const WString& s)              { txt = ToUtf8(s); len = txt.GetLength(); }
+
+		const char      *Get() const             { return txt; }
+		int              GetSize() const         { return txt.GetCount(); }
+		String           GetString() const       { return txt; }
+		WString          GetWString() const      { return FromUtf8(Get(), GetSize()); }
+
+		Ln(const WString& wtext)         { txt = ToUtf8(wtext); len = wtext.GetLength(); }
 		Ln()                             { len = 0; }
 	};
+#endif
 
-	Vector<Ln>       line;
+	struct LnText {
+		String      h;
+		const char *text;
+		int         size;
+		
+		const char *begin() { return text; }
+		const char *end()   { return text + size; }
+	};
+
+	Vector<Ln>       lin;
+
 	int              total;
 	int              cline, cpos;
 	int              cursor, anchor;
@@ -89,6 +157,8 @@ protected:
 	bool             nobg;
 	int              max_total;
 	int              max_line_len;
+	
+	Stream          *view;
 
 	void   IncDirty();
 	void   DecDirty();
@@ -103,6 +173,14 @@ protected:
 	void   RefreshLines(int l1, int l2);
 	static bool   IsUnicodeCharset(byte charset);
 
+	int    Load0(Stream& in, byte charset, bool view);
+	int    Load2(Stream& in, byte charset, bool view);
+	String GetUtf8ViewLine(int i) const;
+	LnText GetLnText(int i) const;
+	void   SetLine(int i, const WString& w) { lin[i].Set(w); }
+	void   LineRemove(int i, int n)         { lin.Remove(i, n); }
+	void   LineInsert(int i, int n)         { lin.InsertN(i, n); }
+
 public:
 	virtual void   RefreshLine(int i);
 
@@ -116,7 +194,8 @@ public:
 	enum CS { CHARSET_UTF8_BOM = 250, CHARSET_UTF16_LE, CHARSET_UTF16_BE, CHARSET_UTF16_LE_BOM, CHARSET_UTF16_BE_BOM };
 	enum LE { LE_DEFAULT, LE_CRLF, LE_LF };
 
-	int    Load(Stream& s, byte charset = CHARSET_DEFAULT);
+	int    View(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, true); }
+	int    Load(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, false); }
 	bool   IsTruncated() const                                { return truncated; }
 	void   Save(Stream& s, byte charset = CHARSET_DEFAULT, int line_endings = LE_DEFAULT) const;
 
@@ -140,12 +219,12 @@ public:
 	int    GetPos(int line) const             { return GetPos(line, 0); }
 	int    GetLine(int pos) const             { return GetLinePos(pos); }
 
-	const String& GetUtf8Line(int i) const    { return line[i].text; }
-	WString       GetWLine(int i) const       { return FromUtf8(line[i].text); }
+	String        GetUtf8Line(int i) const    { return view ? GetUtf8ViewLine(i) : lin[i].GetString(); }
+	WString       GetWLine(int i) const       { return FromUtf8(GetUtf8Line(i)); }
 	String        GetEncodedLine(int i, byte charset = CHARSET_DEFAULT) const;
-	int           GetLineLength(int i) const  { return line[i].GetLength(); }
+	int           GetLineLength(int i) const  { return lin[i].GetLength(); }
 
-	int    GetLineCount() const               { return line.GetCount(); }
+	int    GetLineCount() const               { return lin.GetCount(); }
 	int    GetChar(int pos) const;
 	int    GetChar() const                    { return cursor < total ? GetChar(cursor) : 0; }
 	int    operator[](int pos) const          { return GetChar(pos); }

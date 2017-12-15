@@ -10,19 +10,19 @@ void DocEdit::MouseWheel(Point p, int zdelta, dword keyflags)
 void DocEdit::ClearLines()
 {
 	para.Clear();
-	ASSERT(this->line.GetCount() == para.GetCount());
+	ASSERT(GetLineCount() == para.GetCount());
 }
 
 void DocEdit::InsertLines(int line, int count)
 {
 	para.Insert(line, Para(), count);
-	ASSERT(this->line.GetCount() == para.GetCount());
+	ASSERT(GetLineCount() == para.GetCount());
 }
 
 void DocEdit::RemoveLines(int line, int count)
 {
 	para.Remove(line, count);
-	ASSERT(this->line.GetCount() == para.GetCount());
+	ASSERT(GetLineCount() == para.GetCount());
 }
 
 DocEdit::Fmt DocEdit::Format(const WString& text) const
@@ -72,7 +72,7 @@ DocEdit::Fmt DocEdit::Format(const WString& text) const
 int  DocEdit::GetHeight(int i) {
 	Para& p = para[i];
 	if(p.cx == cx) return p.cy;
-	Fmt fmt = Format(line[i]);
+	Fmt fmt = Format(GetWLine(i));
 	p.cx = cx;
 	p.cy = fmt.line.GetCount() * (fmt.fi.GetHeight()) + after;
 	return p.cy;
@@ -117,7 +117,7 @@ void DocEdit::Paint(Draw& w) {
 	for(int i = 0; i < para.GetCount() && y < sz.cy; i++) {
 		int h = GetHeight(i);
 		if(y + h >= 0) {
-			WString text = line[i];
+			WString text = GetWLine(i);
 			Fmt fmt = Format(text);
 			int p = pos;
 			for(int i = 0; i < fmt.line.GetCount(); i++) {
@@ -148,7 +148,7 @@ void DocEdit::Paint(Draw& w) {
 		}
 		else
 			y += h;
-		pos += line[i].GetLength() + 1;
+		pos += GetLineLength(i) + 1;
 	}
 	w.DrawRect(0, -sb, sz.cx, 1, bg);
 	w.DrawRect(0, 0, 1, sz.cy, bg);
@@ -177,7 +177,7 @@ void DocEdit::Layout()
 
 Point DocEdit::GetCaret(int pos) {
 	int i = GetLinePos(pos);
-	Fmt fmt = Format(line[i]);
+	Fmt fmt = Format(GetWLine(i));
 	int l;
 	for(l = 0; l < fmt.line.GetCount(); l++)
 		if(pos < fmt.line[l])
@@ -196,7 +196,7 @@ int  DocEdit::GetCursorPos(Point p) {
 	for(int i = 0; i < para.GetCount(); i++) {
 		int h = GetHeight(i);
 		if(p.y < h) {
-			WString text = line[i];
+			WString text = GetWLine(i);
 			Fmt fmt = Format(text);
 			int x = 0;
 			int l = p.y / fmt.fi.GetHeight();
@@ -217,7 +217,7 @@ int  DocEdit::GetCursorPos(Point p) {
 			return p + pos;
 		}
 		p.y -= h;
-		pos += line[i].GetLength() + 1;
+		pos += GetLineLength(i) + 1;
 	}
 	return GetLength();
 }
