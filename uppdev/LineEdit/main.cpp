@@ -11,12 +11,17 @@ GUI_APP_MAIN
 {
 	LineEdit edit;
 	edit.ShowSpaces();
-
+/*
 #ifdef _DEBUG
-	FileIn in("C:\\xxx\\log\\nos.log");
+	FileIn in("C:\\xxx\\belogs\\local2 (2).info");
 #else
 	FileIn in("C:\\xxx\\log\\local1.info");
 #endif
+*/
+	FileIn in("C:\\xxx\\belogs\\local2 (2).info");
+//	FileIn in("C:\\xxx\\log\\local1.info");
+
+
 	{
 		RTIMESTOP("LOAD");
 //		edit.Load(in);
