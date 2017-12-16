@@ -53,90 +53,16 @@ protected:
 	virtual int     PasteRectSelection(const WString& s);
 	virtual String  GetPasteText();
 
-#define SHORTLN
-
-#ifdef SHORTLN
-	struct Ln : Moveable<Ln> {
-		unsigned    len:31;
-		unsigned    alloc:1;
-
-		byte        d[8]; // make sizeof(Ln) == 12
-	
-		char *&          data() const                       { return *(char **)d; }
-
-		int&             Sz() const                         { return *(int *)data(); }
-		char            *Txt() const                        { return data() + sizeof(int); }
-		void             Set(const char *s, int sz)         { Free(); alloc = true; data() = new char[sz + sizeof(int)]; Sz() = sz; memcpy(Txt(), s, sz); }
-		void             Set(StringBuffer& s, byte charset) { if(charset == CHARSET_UTF8) Set(~s, s.GetCount());
-		                                                      else { // TODO: optimize
-		                                                          String h = ToCharset(CHARSET_UTF8, s, charset);
-		                                                          Set(~h, h.GetCount());
-		                                                    }}
-
-		void             Set(const WString& txt) { String h = ToUtf8(txt); Set(~h, h.GetCount()); len = txt.GetLength(); }
-
-		int              GetLength() const       { return len; }
-
-		const char      *Get() const             { return data() ? Txt() : 0; }
-		int              GetSize() const         { return data() ? Sz() : 0; }
-		String           GetString() const       { return String(Get(), GetSize()); }
-		WString          GetWString() const      { return FromUtf8(Get(), GetSize()); }
-		
-		void             SetPos(int64 pos, int slen) {
-			*(dword *)d = (dword)pos;
-			d[4] = byte(pos >> 32);
-			d[5] = slen >> 16;
-			*(word *)(d + 6) = (word)slen;
-		}
-		int64            GetPos() const          { return *(dword *)d | ((int64)d[4] << 32); }
-		int              GetSLen() const         { return *(word *)(d + 6) | (int)d[4] << 16; }
-		
-		void             Free()                  { if(alloc) delete[] data(); }
-
-		Ln()                                     { alloc = false; data() = NULL; len = 0; }
-		~Ln()                                    { Free(); }
-	private:
-		Ln(const Ln&);
-		void operator=(const Ln&);
-	};
-#else
 	struct Ln : Moveable<Ln> {
 		int    len;
-		String txt;
+		String text;
 
-		int              GetLength() const       { return len; }
-		const StreamPos& operator~() const       { return SP(txt); }
-		StreamPos&       operator~()             { return SP(txt); }
-
-		void             Set(const char *s, int sz)         { txt.Set(s, sz); }
-		void             Set(StringBuffer& s, byte charset) { if(charset == CHARSET_UTF8) txt = s; else txt = ToCharset(CHARSET_UTF8, s, charset); }
-		void             Set(const WString& s)              { txt = ToUtf8(s); len = txt.GetLength(); }
-
-		const char      *Get() const             { return txt; }
-		int              GetSize() const         { return txt.GetCount(); }
-		String           GetString() const       { return txt; }
-		WString          GetWString() const      { return FromUtf8(Get(), GetSize()); }
-
-		Ln(const WString& wtext)         { txt = ToUtf8(wtext); len = wtext.GetLength(); }
 		Ln()                             { len = 0; }
-	};
-#endif
-
-	struct LnText {
-		String      h;
-		const char *text;
-		int         size;
-		
-		const char *begin() { return text; }
-		const char *end()   { return text + size; }
 	};
 
 	Vector<Ln>       lin;
-
-private:
 	int              total;
 
-protected:
 	int              cline, cpos;
 	int              cursor, anchor;
 	int              undoserial;
@@ -161,7 +87,15 @@ protected:
 	int              max_total;
 	int              max_line_len;
 	
-	Stream          *view;
+	mutable Stream  *view;
+	struct ViewCache {
+		int        blk;
+		Vector<Ln> line;
+	};
+	mutable ViewCache view_cache[2];
+	mutable int viewlines;
+	
+	Vector<int64>     offset256;
 
 	void   IncDirty();
 	void   DecDirty();
@@ -177,11 +111,13 @@ protected:
 	static bool   IsUnicodeCharset(byte charset);
 
 	int    Load0(Stream& in, byte charset, bool view);
-	int    Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool view);
-	LnText GetLnText(int i) const;
-	void   SetLine(int i, const WString& w) { lin[i].Set(w); }
-	void   LineRemove(int i, int n)         { lin.Remove(i, n); }
-	void   LineInsert(int i, int n)         { lin.InsertN(i, n); }
+	int    LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, bool& truncated) const;
+
+	void   SetLine(int i, const String& txt, int len) { lin[i].text = txt; lin[i].len = len; }
+	void   SetLine(int i, const WString& w)           { SetLine(i, ToUtf8(w), w.GetCount()); }
+	void   LineRemove(int i, int n)                   { lin.Remove(i, n); }
+	void   LineInsert(int i, int n)                   { lin.InsertN(i, n); }
+	const Ln& GetLn(int i) const;
 
 public:
 	virtual void   RefreshLine(int i);
@@ -221,16 +157,16 @@ public:
 	int    GetPos(int line) const             { return GetPos(line, 0); }
 	int    GetLine(int pos) const             { return GetLinePos(pos); }
 
-	String        GetUtf8Line(int i) const;
+	const String& GetUtf8Line(int i) const;
 	WString       GetWLine(int i) const       { return FromUtf8(GetUtf8Line(i)); }
 	String        GetEncodedLine(int i, byte charset = CHARSET_DEFAULT) const;
-	int           GetLineLength(int i) const  { return lin[i].GetLength(); }
+	int           GetLineLength(int i) const;
 
-	int    GetLineCount() const               { return lin.GetCount(); }
-	int    GetChar(int pos) const;
-	int    GetChar() const                    { return cursor < GetLength() ? GetChar(cursor) : 0; }
-	int    operator[](int pos) const          { return GetChar(pos); }
-	int    GetLength() const                  { return total; }
+	int     GetLineCount() const              { return view ? viewlines : lin.GetCount(); }
+	int     GetChar(int pos) const;
+	int     GetChar() const                   { return cursor < GetLength() ? GetChar(cursor) : 0; }
+	int     operator[](int pos) const         { return GetChar(pos); }
+	int     GetLength() const                 { return total; }
 
 	int     GetCursor() const                 { return cursor; }
 	int     GetCursorLine()                   { return GetLine(GetCursor()); }

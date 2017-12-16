@@ -64,6 +64,7 @@ void TextCtrl::CancelMode()
 void TextCtrl::Clear()
 {
 	view = NULL;
+	viewlines = 0;
 	cline = cpos = 0;
 	total = 0;
 	truncated = false;
@@ -130,7 +131,10 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	SetCharset(charset);
 	charset = ResolveCharset(charset);
 	truncated = false;
+	viewlines = 0;
 	this->view = NULL;
+	offset256.Clear();
+	view_cache[0].blk = view_cache[1].blk = -1;
 	if(view) {
 		this->view = &in;
 		SetReadOnly();
@@ -150,7 +154,27 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 			in.Seek(pos);
 		charset = be16 ? CHARSET_UTF16_BE : CHARSET_UTF16_LE;
 	}
-	int m = Load2(lin, total, in, charset, view);
+	
+	int m;
+	if(view) {
+		if(!in.IsEof()) {
+			for(;;) {
+				offset256.Add(in.GetPos());
+				int t;
+				Vector<Ln> l;
+				bool b;
+				m = LoadLines(l, 256, t, in, charset, 5000, b);
+				viewlines += l.GetCount();
+				total += t;
+				if(in.IsEof())
+					break;
+				total++;
+			}
+		}
+	}
+	else
+		m = LoadLines(lin, INT_MAX, total, in, charset, max_line_len, truncated);
+
 	InsertLines(0, lin.GetCount());
 	Update();
 	SetSb();
@@ -158,24 +182,17 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	return m;
 }
 
-int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool view)
+int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, bool& truncated) const
 {
 	StringBuffer ln;
 	bool cr = false;
 	byte b8 = 0;
-	int64 linepos = in.GetPos();
-	auto add_pos = [&](int len, int slen) {
-		Ln& ln = ls.Add();
-		ln.len = len;
-		ln.SetPos(linepos, slen);
-	};
 	if(charset == CHARSET_UTF16_LE || charset == CHARSET_UTF16_BE) {
 		WStringBuffer wln;
 		auto put_wln = [&]() {
-			if(view)
-				add_pos(wln.GetCount(), wln.GetCount() * 2);
-			else
-				ls.Add().Set(wln);
+			Ln& ln = ls.Add();
+			ln.len = wln.GetCount();
+			ln.text = ToUtf8(~wln, ln.len);
 		};
 		for(;;) {
 			int c = charset == CHARSET_UTF16_LE ? in.Get16le() : in.Get16be();
@@ -191,8 +208,9 @@ int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool
 			truncate_line:
 				total += wln.GetCount() + 1;
 				put_wln();
+				if(ls.GetCount() >= n)
+					goto finish;
 				wln.Clear();
-				linepos = in.GetPos();
 			}
 			else {
 				wln.Cat(c);
@@ -201,11 +219,11 @@ int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool
 			}
 		}
 	}
-	else
+	else {
 		for(;;) {
 			byte h[200];
 			int size;
-			int64  pos = in.GetPos();
+			int64 pos = in.GetPos();
 			const byte *s = in.GetSzPtr(size);
 			if(size == 0)  {
 				size = in.Get(h, 200);
@@ -234,19 +252,21 @@ int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool
 						ln.Cat((const char *)b, (const char *)s);
 				}
 				auto put_ln = [&]() -> bool {
-					int len = charset == CHARSET_UTF8 && (b8 & 0x80) ? utf8len(~ln, ln.GetCount()) : ln.GetCount();
-					if(total + len + 1 > max_total) {
+					Ln& l = ls.Add();
+					if(charset == CHARSET_UTF8) {
+						l.len = CHARSET_UTF8 && (b8 & 0x80) ? utf8len(~ln, ln.GetCount()) : ln.GetCount();
+						l.text = ln;
+					}
+					else {
+						l.len = ln.GetCount();
+						l.text = ToCharset(CHARSET_UTF8, ln, charset);
+					}
+					if(total + l.len + 1 > max_total) {
+						ls.Drop();
 						truncated = true;
 						return false;
 					}
-					total += len + 1;
-					if(view)
-						add_pos(len, ln.GetCount());
-					else {
-						Ln& l = ls.Add();
-						l.len = len;
-						l.Set(ln, charset);
-					}
+					total += l.len + 1;
 					return true;
 				};
 				while(ln.GetCount() >= max_line_len) {
@@ -259,6 +279,10 @@ int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool
 					truncated = true;
 					if(!put_ln())
 						goto out_of_limit;
+					if(ls.GetCount() >= n) {
+						in.Seek(s - posptr + pos);
+						goto finish;
+					}
 					ln = nln;
 				}
 				if(s < e && *s == '\r') {
@@ -268,48 +292,63 @@ int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool
 				if(s < e && *s == '\n') {
 					if(!put_ln())
 						goto out_of_limit;
+					s++;
+					if(ls.GetCount() >= n) {
+						in.Seek(s - posptr + pos);
+						goto finish;
+					}
 					ln.Clear();
 					b8 = 0;
-					s++;
-					linepos = s - posptr + pos;
 				}
 			}
 		}
+	}
 
 out_of_limit:
 	{
 		WString w = ToUnicode(~ln, ln.GetCount(), charset);
 		if(total + w.GetLength() <= max_total) {
-			ls.Add().Set(w);
-			total += w.GetLength();
+			Ln& ln = ls.Add();
+			ln.len = w.GetCount();
+			ln.text = ToUtf8(~w, ln.len);
+			total += ln.len;
 		}
 	}
 finish:
 	return ls.GetCount() > 1 ? cr ? LE_CRLF : LE_LF : LE_DEFAULT;
 }
 
-String TextCtrl::GetUtf8Line(int i) const
+const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 {
 	if(view) {
-		view->Seek(lin[i].GetPos()); // TODO: Conversion!
-		return view->Get(lin[i].GetSLen()); // TODO: What if error?
+		GuiLock __;
+		int blk = i >> 8;
+		if(view_cache[0].blk != blk)
+			Swap(view_cache[0], view_cache[1]); // trivial LRU
+			if(view_cache[0].blk != blk) {
+				RTIMING("LoadBlock");
+				Swap(view_cache[0], view_cache[1]); // trivial LRU
+				view->Seek(offset256[blk]);
+				int dummy;
+				bool b;
+				view_cache[0].line.Clear();
+				view_cache[0].blk = blk;
+				LoadLines(view_cache[0].line, 256, dummy, *view, charset, 5000, b);
+			}
+		return view_cache[0].line[i & 255];
 	}
-	return lin[i].GetString();
+	else
+		return lin[i];
 }
 
-TextCtrl::LnText TextCtrl::GetLnText(int i) const
+const String& TextCtrl::GetUtf8Line(int i) const
 {
-	LnText h;
-	if(view) {
-		h.h = GetUtf8Line(i);
-		h.text = ~h.h;
-		h.size = h.h.GetCount();
-	}
-	else {
-		h.text = lin[i].Get();
-		h.size = lin[i].GetSize();
-	}
-	return h;
+	return GetLn(i).text;
+}
+
+int TextCtrl::GetLineLength(int i) const
+{
+	return GetLn(i).len;
 }
 
 void   TextCtrl::Save(Stream& s, byte charset, int line_endings) const {
@@ -344,7 +383,7 @@ void   TextCtrl::Save(Stream& s, byte charset, int line_endings) const {
 			if(!be16)
 				wle.Cat(0);
 		}
-		for(int i = 0; i < lin.GetCount(); i++) {
+		for(int i = 0; i < GetLineCount(); i++) {
 			if(i)
 				s.Put(wle);
 			WString txt = GetWLine(i);
@@ -358,11 +397,11 @@ void   TextCtrl::Save(Stream& s, byte charset, int line_endings) const {
 		}
 		return;
 	}
-	for(int i = 0; i < lin.GetCount(); i++) {
+	for(int i = 0; i < GetLineCount(); i++) {
 		if(i)
 			s.Put(le);
 		if(charset == CHARSET_UTF8)
-			s.Put(lin[i].Get(), lin[i].GetSize());
+			s.Put(GetUtf8Line(i));
 		else {
 			String txt = FromUnicode(GetWLine(i), charset);
 			const char *e = txt.End();
@@ -442,10 +481,8 @@ Value TextCtrl::GetData() const
 String TextCtrl::GetEncodedLine(int i, byte charset) const
 {
 	charset = ResolveCharset(charset);
-	if(charset == CHARSET_UTF8)
-		return GetUtf8Line(i);
-	LnText h = GetLnText(i);
-	return FromUnicode(FromUtf8(h.text, h.size), charset);
+	String h = GetUtf8Line(i);
+	return charset == CHARSET_UTF8 ? h : FromUnicode(FromUtf8(h), charset);
 }
 
 int   TextCtrl::GetLinePos(int& pos) const {
@@ -536,9 +573,9 @@ String TextCtrl::Get(int pos, int size, byte charset) const
 		for(;;) {
 			if(i >= GetLineCount()) break;
 			int sz = min(GetLineLength(i) - pos, size);
-			LnText h = GetLnText(i);
-			const char *s = h.text;
-			int n = h.size;
+			const String& h = GetUtf8Line(i);
+			const char *s = h;
+			int n = h.GetCount();
 			i++;
 			if(pos == 0 && sz == n)
 				r.Cat(s, n);

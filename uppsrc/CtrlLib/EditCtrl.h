@@ -1,6 +1,6 @@
 struct TextArrayOps {
-	virtual int GetLength() const = 0;
-	virtual int GetChar(int i) const = 0;
+	virtual int   GetLength() const = 0;
+	virtual int   GetChar(int i) const = 0;
 
 	bool GetWordSelection(int c, int& sell, int& selh);
 	int  GetNextWord(int c);
@@ -169,7 +169,7 @@ protected:
 
 public:
 	Event<Bar&>               WhenBar;
-	Event<>                       WhenEnter;
+	Event<>                   WhenEnter;
 	Event<WString&>           WhenPasteFilter;
 	Event<Vector<Highlight>&> WhenHighlight;
 
