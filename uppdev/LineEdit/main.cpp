@@ -19,25 +19,13 @@ GUI_APP_MAIN
 #endif
 	{
 		RTIMESTOP("LOAD");
-		edit.Load(in);
-//		edit.View(in);
+//		edit.Load(in);
+		edit.View(in);
 	}
 	
 	RDUMP(edit.GetLineCount());
 	RDUMP(edit.GetLength());
 	RDUMP(MemoryUsedKb());
-	
-	
-	String txt;
-	{ RTIMESTOP("GET");
-		txt = ~edit;
-	}
-	RDUMP(txt.GetCount());
-	{
-		RTIMESTOP("Compress");
-		txt = FastCompress(txt);
-	};
-	RDUMP(txt.GetCount());
 	
 	TopWindow win;
 //	win.SetRect(100, 100, 100, 100);
