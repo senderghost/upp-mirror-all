@@ -133,7 +133,10 @@ protected:
 
 	Vector<Ln>       lin;
 
+private:
 	int              total;
+
+protected:
 	int              cline, cpos;
 	int              cursor, anchor;
 	int              undoserial;
@@ -174,8 +177,7 @@ protected:
 	static bool   IsUnicodeCharset(byte charset);
 
 	int    Load0(Stream& in, byte charset, bool view);
-	int    Load2(Stream& in, byte charset, bool view);
-	String GetUtf8ViewLine(int i) const;
+	int    Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool view);
 	LnText GetLnText(int i) const;
 	void   SetLine(int i, const WString& w) { lin[i].Set(w); }
 	void   LineRemove(int i, int n)         { lin.Remove(i, n); }
@@ -219,14 +221,14 @@ public:
 	int    GetPos(int line) const             { return GetPos(line, 0); }
 	int    GetLine(int pos) const             { return GetLinePos(pos); }
 
-	String        GetUtf8Line(int i) const    { return view ? GetUtf8ViewLine(i) : lin[i].GetString(); }
+	String        GetUtf8Line(int i) const;
 	WString       GetWLine(int i) const       { return FromUtf8(GetUtf8Line(i)); }
 	String        GetEncodedLine(int i, byte charset = CHARSET_DEFAULT) const;
 	int           GetLineLength(int i) const  { return lin[i].GetLength(); }
 
 	int    GetLineCount() const               { return lin.GetCount(); }
 	int    GetChar(int pos) const;
-	int    GetChar() const                    { return cursor < total ? GetChar(cursor) : 0; }
+	int    GetChar() const                    { return cursor < GetLength() ? GetChar(cursor) : 0; }
 	int    operator[](int pos) const          { return GetChar(pos); }
 	int    GetLength() const                  { return total; }
 

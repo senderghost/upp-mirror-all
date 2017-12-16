@@ -226,7 +226,7 @@ void DocEdit::PlaceCaret(bool scroll) {
 	Point cr = GetCaret(cursor);
 	int fy = font.Info().GetLineHeight();
 	if(scroll) {
-		if(cursor == total)
+		if(cursor == GetLength())
 			sb.End();
 		else
 			sb.ScrollInto(cr.y, fy + 2);
@@ -331,7 +331,7 @@ void DocEdit::VertMove(int delta, bool select, bool scs) {
 			break;
 		}
 		if(p.y == 0 || p.y >= hy - 1) {
-			PlaceCaret(delta > 0 ? total : 0, select);
+			PlaceCaret(delta > 0 ? GetLength() : 0, select);
 			break;
 		}
 		delta = sgn(delta) * 4;
@@ -373,7 +373,7 @@ bool DocEdit::Key(dword key, int cnt)
 		break;
 	case K_CTRL_END:
 	case K_CTRL_PAGEDOWN:
-		PlaceCaret(total, select);
+		PlaceCaret(GetLength(), select);
 		break;
 	case K_UP:
 		if(GetCursor() == 0)
@@ -396,7 +396,7 @@ bool DocEdit::Key(dword key, int cnt)
 			PlaceCaret(cursor - 1, select);
 		break;
 	case K_RIGHT:
-		if(cursor < total)
+		if(cursor < GetLength())
 			PlaceCaret(cursor + 1, select);
 		break;
 	default:
@@ -420,16 +420,16 @@ bool DocEdit::Key(dword key, int cnt)
 			break;
 		case K_DELETE:
 			if(RemoveSelection()) break;
-			if(cursor >= total) return true;
-			if(cursor < total)
+			if(cursor >= GetLength()) return true;
+			if(cursor < GetLength())
 				Remove(cursor, 1);
 			break;
 		case K_CTRL_DELETE:
 			if(RemoveSelection()) break;
-			if(cursor >= total) return true;
+			if(cursor >= GetLength()) return true;
 			q = cursor;
 			h = IsLetter(GetChar(q));
-			while(IsLetter(GetChar(q)) == h && q < total) q++;
+			while(IsLetter(GetChar(q)) == h && q < GetLength()) q++;
 			Remove(cursor, q - cursor);
 			break;
 		case K_ENTER:

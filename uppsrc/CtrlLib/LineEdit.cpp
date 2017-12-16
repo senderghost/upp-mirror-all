@@ -689,7 +689,7 @@ int   LineEdit::GetGPos(int ln, int cl) const {
 
 Point LineEdit::GetColumnLine(int pos) const {
 	Point p;
-	if(pos > total) pos = total;
+	if(pos > GetLength()) pos = GetLength();
 	p.y = GetLinePos(pos);
 	p.x = 0;
 	WString txt = GetWLine(p.y);
@@ -707,7 +707,7 @@ Point LineEdit::GetColumnLine(int pos) const {
 Point LineEdit::GetIndexLine(int pos) const
 {
 	Point p;
-	if(pos > total) pos = total;
+	if(pos > GetLength()) pos = GetLength();
 	p.y = GetLinePos(pos);
 	p.x = minmax(pos, 0, GetLineLength(p.y));
 	return p;
@@ -718,7 +718,7 @@ int LineEdit::GetIndexLinePos(Point pos) const
 	if(pos.y < 0)
 		return 0;
 	if(pos.y >= GetLineCount())
-		return total;
+		return GetLength();
 	return GetPos(pos.y, minmax(pos.x, 0, GetLineLength(pos.y)));
 }
 
@@ -788,7 +788,7 @@ void LineEdit::PlaceCaret0(Point p) {
 }
 
 int LineEdit::PlaceCaretNoG(int newcursor, bool sel) {
-	if(newcursor > total) newcursor = total;
+	if(newcursor > GetLength()) newcursor = GetLength();
 	Point p = GetColumnLine(newcursor);
 	if(sel) {
 		if(anchor < 0) {
@@ -938,7 +938,7 @@ void LineEdit::MoveLeft(bool sel) {
 }
 
 void LineEdit::MoveRight(bool sel) {
-	if(cursor < total)
+	if(cursor < GetLength())
 		PlaceCaret(cursor + 1, sel);
 }
 
@@ -986,7 +986,7 @@ void LineEdit::MoveTextBegin(bool sel) {
 }
 
 void LineEdit::MoveTextEnd(bool sel) {
-	PlaceCaret(total, sel);
+	PlaceCaret(GetLength(), sel);
 }
 
 bool LineEdit::InsertChar(dword key, int count, bool canow) {
@@ -1019,7 +1019,7 @@ void LineEdit::DeleteChar() {
 		Action();
 		return;
 	}
-	if(cursor < total) {
+	if(cursor < GetLength()) {
 		Remove(cursor, 1);
 		Action();
 	}

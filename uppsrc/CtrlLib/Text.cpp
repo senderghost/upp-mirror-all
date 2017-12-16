@@ -123,8 +123,6 @@ bool   TextCtrl::IsUnicodeCharset(byte charset)
 }
 
 int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
-	RDUMP(sizeof(Ln));
-	
 	Clear();
 	lin.Clear();
 	ClearLines();
@@ -152,17 +150,22 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 			in.Seek(pos);
 		charset = be16 ? CHARSET_UTF16_BE : CHARSET_UTF16_LE;
 	}
-	return Load2(in, charset, view);
+	int m = Load2(lin, total, in, charset, view);
+	InsertLines(0, lin.GetCount());
+	Update();
+	SetSb();
+	PlaceCaret(0);
+	return m;
 }
 
-int   TextCtrl::Load2(Stream& in, byte charset, bool view)
+int   TextCtrl::Load2(Vector<Ln>& ls, int& total, Stream& in, byte charset, bool view)
 {
 	StringBuffer ln;
 	bool cr = false;
 	byte b8 = 0;
 	int64 linepos = in.GetPos();
 	auto add_pos = [&](int len, int slen) {
-		Ln& ln = lin.Add();
+		Ln& ln = ls.Add();
 		ln.len = len;
 		ln.SetPos(linepos, slen);
 	};
@@ -172,7 +175,7 @@ int   TextCtrl::Load2(Stream& in, byte charset, bool view)
 			if(view)
 				add_pos(wln.GetCount(), wln.GetCount() * 2);
 			else
-				lin.Add().Set(wln);
+				ls.Add().Set(wln);
 		};
 		for(;;) {
 			int c = charset == CHARSET_UTF16_LE ? in.Get16le() : in.Get16be();
@@ -240,7 +243,7 @@ int   TextCtrl::Load2(Stream& in, byte charset, bool view)
 					if(view)
 						add_pos(len, ln.GetCount());
 					else {
-						Ln& l = lin.Add();
+						Ln& l = ls.Add();
 						l.len = len;
 						l.Set(ln, charset);
 					}
@@ -249,7 +252,7 @@ int   TextCtrl::Load2(Stream& in, byte charset, bool view)
 				while(ln.GetCount() >= max_line_len) {
 					int ei = max_line_len;
 					if(charset == CHARSET_UTF8)
-						while(ei > 0 && ei > max_line_len - 6 && !((byte)ln[ei] < 128 || IsUtf8Lead((byte)ln[ei]))) // break line at whole utf8 codepoint if possible
+						while(ei > 0 && ei > max_line_len - 6 && !((byte)ln[ei] < 128 || IsUtf8Lead((byte)ln[ei]))) // break lse at whole utf8 codepoint if possible
 							ei--;
 					String nln(~ln + ei, ln.GetCount() - ei);
 					ln.SetCount(ei);
@@ -277,29 +280,28 @@ out_of_limit:
 	{
 		WString w = ToUnicode(~ln, ln.GetCount(), charset);
 		if(total + w.GetLength() <= max_total) {
-			lin.Add().Set(w);
+			ls.Add().Set(w);
 			total += w.GetLength();
 		}
 	}
 finish:
-	InsertLines(0, lin.GetCount());
-	Update();
-	SetSb();
-	PlaceCaret(0);
-	return lin.GetCount() > 1 ? cr ? LE_CRLF : LE_LF : LE_DEFAULT;
+	return ls.GetCount() > 1 ? cr ? LE_CRLF : LE_LF : LE_DEFAULT;
 }
 
-String TextCtrl::GetUtf8ViewLine(int i) const
+String TextCtrl::GetUtf8Line(int i) const
 {
-	view->Seek(lin[i].GetPos()); // TODO: Conversion!
-	return view->Get(lin[i].GetSLen()); // TODO: What if error?
+	if(view) {
+		view->Seek(lin[i].GetPos()); // TODO: Conversion!
+		return view->Get(lin[i].GetSLen()); // TODO: What if error?
+	}
+	return lin[i].GetString();
 }
 
 TextCtrl::LnText TextCtrl::GetLnText(int i) const
 {
 	LnText h;
 	if(view) {
-		h.h = GetUtf8ViewLine(i);
+		h.h = GetUtf8Line(i);
 		h.text = ~h.h;
 		h.size = h.h.GetCount();
 	}
