@@ -134,6 +134,7 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	viewlines = 0;
 	this->view = NULL;
 	offset256.Clear();
+	total256.Clear();
 	view_cache[0].blk = view_cache[1].blk = -1;
 	if(view) {
 		this->view = &in;
@@ -159,22 +160,31 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	if(view) {
 		if(!in.IsEof()) {
 			for(;;) {
+				DDUMP(offset256.GetCount());
+				DDUMP(in.GetPos());
 				offset256.Add(in.GetPos());
 				int t;
 				Vector<Ln> l;
 				bool b;
-				m = LoadLines(l, 256, t, in, charset, 5000, b);
+				t = 0;
+				m = LoadLines(l, 256, t, in, charset, 10000, INT_MAX, b);
 				viewlines += l.GetCount();
 				total += t;
+				DDUMP(t);
+				DDUMP(total);
+				total256.Add(t);
 				if(in.IsEof())
 					break;
+				ASSERT(l.GetCount() == 256);
+				total256.Top()++;
 				total++;
 			}
 		}
 	}
 	else
-		m = LoadLines(lin, INT_MAX, total, in, charset, max_line_len, truncated);
+		m = LoadLines(lin, INT_MAX, total, in, charset, max_line_len, max_total, truncated);
 
+	DDUMPC(offset256);
 	InsertLines(0, lin.GetCount());
 	Update();
 	SetSb();
@@ -182,7 +192,7 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	return m;
 }
 
-int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, bool& truncated) const
+int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const
 {
 	StringBuffer ln;
 	bool cr = false;
@@ -323,6 +333,7 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 	if(view) {
 		GuiLock __;
 		int blk = i >> 8;
+		DDUMP(i & 255);
 		if(view_cache[0].blk != blk)
 			Swap(view_cache[0], view_cache[1]); // trivial LRU
 			if(view_cache[0].blk != blk) {
@@ -333,7 +344,9 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 				bool b;
 				view_cache[0].line.Clear();
 				view_cache[0].blk = blk;
-				LoadLines(view_cache[0].line, 256, dummy, *view, charset, 5000, b);
+				LoadLines(view_cache[0].line, 256, dummy, *view, charset, 5000, INT_MAX, b);
+				DDUMP(blk);
+				DDUMP(view_cache[0].line.GetCount());
 			}
 		return view_cache[0].line[i & 255];
 	}
@@ -486,7 +499,7 @@ String TextCtrl::GetEncodedLine(int i, byte charset) const
 }
 
 int   TextCtrl::GetLinePos(int& pos) const {
-	if(pos < cpos && cpos - pos < pos) {
+	if(pos < cpos && cpos - pos < pos && !view) {
 		int i = cline;
 		int ps = cpos;
 		for(;;) {
@@ -499,6 +512,23 @@ int   TextCtrl::GetLinePos(int& pos) const {
 	}
 	else {
 		int i = 0;
+		if(view) {
+			GuiLock __;
+			int blk = 0;
+			for(;;) {
+				int n = total256[blk];
+				if(pos < n)
+					break;
+				pos -= n;
+				blk++;
+				if(blk >= total256.GetCount()) {
+					pos = GetLineLength(GetLineCount() - 1);
+					return GetLineCount() - 1;
+				}
+			}
+			i = blk << 8;
+		}
+		else
 		if(pos >= cpos) {
 			pos -= cpos;
 			i = cline;
@@ -519,20 +549,25 @@ int   TextCtrl::GetLinePos(int& pos) const {
 int   TextCtrl::GetPos(int ln, int lpos) const {
 	ln = minmax(ln, 0, GetLineCount() - 1);
 	int i, pos;
-	if(ln < cline && cline - ln < ln) {
+	if(ln < cline && cline - ln < ln && !view) {
 		pos = cpos;
 		i = cline;
 		while(i > ln)
 			pos -= GetLineLength(--i) + 1;
 	}
 	else {
+		pos = 0;
+		i = 0;
+		if(view) {
+			for(int j = 0; j < ln >> 8; j++) {
+				pos += total256[j];
+				i += 256;
+			}
+		}
+		else
 		if(ln >= cline) {
 			pos = cpos;
 			i = cline;
-		}
-		else {
-			pos = 0;
-			i = 0;
 		}
 		while(i < ln)
 			pos += GetLineLength(i++) + 1;

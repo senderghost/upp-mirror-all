@@ -96,6 +96,7 @@ protected:
 	mutable int viewlines;
 	
 	Vector<int64>     offset256;
+	Vector<int>       total256;
 
 	void   IncDirty();
 	void   DecDirty();
@@ -111,7 +112,7 @@ protected:
 	static bool   IsUnicodeCharset(byte charset);
 
 	int    Load0(Stream& in, byte charset, bool view);
-	int    LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, bool& truncated) const;
+	int    LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const;
 
 	void   SetLine(int i, const String& txt, int len) { lin[i].text = txt; lin[i].len = len; }
 	void   SetLine(int i, const WString& w)           { SetLine(i, ToUtf8(w), w.GetCount()); }
