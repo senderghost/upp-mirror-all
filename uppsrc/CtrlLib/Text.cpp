@@ -123,6 +123,8 @@ bool   TextCtrl::IsUnicodeCharset(byte charset)
 	                        CHARSET_UTF16_LE_BOM, CHARSET_UTF16_BE_BOM) >= 0;
 }
 
+int sTime0;
+
 int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	Clear();
 	lin.Clear();
@@ -133,6 +135,7 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	truncated = false;
 	viewlines = 0;
 	this->view = NULL;
+	view_all = false;
 	offset256.Clear();
 	total256.Clear();
 	view_cache[0].blk = view_cache[1].blk = -1;
@@ -156,40 +159,57 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 		charset = be16 ? CHARSET_UTF16_BE : CHARSET_UTF16_LE;
 	}
 	
-	int m;
 	if(view) {
-		if(!in.IsEof()) {
-			for(;;) {
-				DDUMP(offset256.GetCount());
-				DDUMP(in.GetPos());
-				offset256.Add(in.GetPos());
-				int t;
-				Vector<Ln> l;
-				bool b;
-				t = 0;
-				m = LoadLines(l, 256, t, in, charset, 10000, INT_MAX, b);
-				viewlines += l.GetCount();
-				total += t;
-				DDUMP(t);
-				DDUMP(total);
-				total256.Add(t);
-				if(in.IsEof())
-					break;
-				ASSERT(l.GetCount() == 256);
-				total256.Top()++;
-				total++;
-			}
-		}
+		view_loading_pos = in.GetPos();
+		sTime0 = msecs();
+		ViewLoading();
+		PlaceCaret(0);
+		return 0;
 	}
-	else
-		m = LoadLines(lin, INT_MAX, total, in, charset, max_line_len, max_total, truncated);
 
-	DDUMPC(offset256);
+	int m = LoadLines(lin, INT_MAX, total, in, charset, max_line_len, max_total, truncated);
+
 	InsertLines(0, lin.GetCount());
 	Update();
 	SetSb();
 	PlaceCaret(0);
 	return m;
+}
+
+void TextCtrl::ViewLoading()
+{
+	GuiLock __;
+	if(view_all)
+		return;
+	int start = msecs();
+	view->Seek(view_loading_pos);
+	for(;;) {
+		offset256.Add(view->GetPos());
+		int t;
+		Vector<Ln> l;
+		bool b;
+		t = 0;
+		LoadLines(l, 256, t, *view, charset, 10000, INT_MAX, b);
+		viewlines += l.GetCount();
+		total += t;
+		total256.Add(t);
+		if(view->IsEof()) {
+			RDUMP(msecs(sTime0));
+			WhenViewLoading(view->GetPos());
+			view_all = true;
+			break;
+		}
+		if(msecs(start) > 40) {
+			view_loading_pos = view->GetPos();
+			PostCallback([=] { ViewLoading(); });
+			WhenViewLoading(view_loading_pos);
+			break;
+		}
+		total256.Top()++;
+		total++;
+	}
+	SetSb();
+	Update();
 }
 
 int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const
@@ -333,7 +353,6 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 	if(view) {
 		GuiLock __;
 		int blk = i >> 8;
-		DDUMP(i & 255);
 		if(view_cache[0].blk != blk)
 			Swap(view_cache[0], view_cache[1]); // trivial LRU
 			if(view_cache[0].blk != blk) {
@@ -345,8 +364,6 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 				view_cache[0].line.Clear();
 				view_cache[0].blk = blk;
 				LoadLines(view_cache[0].line, 256, dummy, *view, charset, 5000, INT_MAX, b);
-				DDUMP(blk);
-				DDUMP(view_cache[0].line.GetCount());
 			}
 		return view_cache[0].line[i & 255];
 	}

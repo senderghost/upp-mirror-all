@@ -97,6 +97,8 @@ protected:
 	
 	Vector<int64>     offset256;
 	Vector<int>       total256;
+	int64             view_loading_pos;
+	bool              view_all;
 
 	void   IncDirty();
 	void   DecDirty();
@@ -113,6 +115,7 @@ protected:
 
 	int    Load0(Stream& in, byte charset, bool view);
 	int    LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const;
+	void   ViewLoading();
 
 	void   SetLine(int i, const String& txt, int len) { lin[i].text = txt; lin[i].len = len; }
 	void   SetLine(int i, const WString& w)           { SetLine(i, ToUtf8(w), w.GetCount()); }
@@ -123,9 +126,10 @@ protected:
 public:
 	virtual void   RefreshLine(int i);
 
-	Event<Bar&> WhenBar;
-	Event<>     WhenState;
-	Event<>     WhenSel;
+	Event<Bar&>  WhenBar;
+	Event<>      WhenState;
+	Event<>      WhenSel;
+	Event<int64> WhenViewLoading;
 
 	void   CachePos(int pos);
 	void   CacheLinePos(int linei);
