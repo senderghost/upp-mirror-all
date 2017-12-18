@@ -111,7 +111,7 @@ void Ide::ContextGoto0(int pos)
 			}
 		}
 		AddHistory();
-		editor.SetCursor(editor.GetPos(li));
+		editor.SetCursor(editor.GetPos64(li));
 		return;
 	}
 	if(IsPendif(l)) {
@@ -126,7 +126,7 @@ void Ide::ContextGoto0(int pos)
 				lvl++;
 		}
 		AddHistory();
-		editor.SetCursor(editor.GetPos(li));
+		editor.SetCursor(editor.GetPos64(li));
 		return;
 	}
 	int cr = editor.Ch(pos);
@@ -300,7 +300,7 @@ void Ide::ContextGoto0(int pos)
 			q = parser.local.Find(id);
 			if(q >= 0) { // Try locals
 				AddHistory();
-				editor.SetCursor(editor.GetPos(parser.local[q].line - 1));
+				editor.SetCursor(editor.GetPos64(parser.local[q].line - 1));
 				FindId(id);
 				return;
 			}
@@ -383,7 +383,7 @@ bool Ide::GotoDesignerFile(const String& path, const String& scope, const String
 				l->FindLayout(name.Mid(10), Null);
 		}
 		else {
-			editor.SetCursor(editor.GetPos(line - 1));
+			editor.SetCursor(editor.GetPos64(line - 1));
 			editor.TopCursor(4);
 			editor.SetFocus();
 		}
@@ -445,13 +445,13 @@ void Ide::GotoFileAndId(const String& path, const String& id)
 	AddHistory();
 	EditFile(path);
 	WString wid = id.ToWString();
-	if(editor.GetLength() < 100000) {
+	if(editor.GetLength64() < 100000) {
 		for(int i = 0; i < editor.GetLineCount(); i++) {
 			WString ln = editor.GetWLine(i);
 			int q = ln.Find(wid);
 			while(q >= 0) {
 				if(q == 0 || !iscid(ln[q - 1]) && !iscid(ln[q + wid.GetCount()])) {
-					editor.SetCursor(editor.GetPos(i, q));
+					editor.SetCursor(editor.GetPos64(i, q));
 					editor.CenterCursor();
 					return;
 				}

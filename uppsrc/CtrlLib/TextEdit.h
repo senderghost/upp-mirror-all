@@ -150,6 +150,11 @@ public:
 	void   SerializeViewMap(Stream& s);
 	bool   IsView() const                                     { return view; }
 
+	int    GetLinePos64(int64& pos) const;
+	int64  GetPos64(int line, int column = 0) const;
+	int64  GetLength64() const                                { return total; }
+	int64  GetCursor64() const                                { return cursor; }
+
 	int    Load(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, false); }
 	bool   IsTruncated() const                                { return truncated; }
 	void   Save(Stream& s, byte charset = CHARSET_DEFAULT, int line_endings = LE_DEFAULT) const;
@@ -157,36 +162,40 @@ public:
 	int    GetInvalidCharPos(byte charset = CHARSET_DEFAULT) const;
 	bool   CheckCharset(byte charset = CHARSET_DEFAULT) const { return GetInvalidCharPos(charset) < 0; }
 
+	int       LimitSize(int64 size) const        { return (int)min((int64)max_total, size); }
+	int       GetLinePos32(int& pos);
+	bool      GetSelection32(int& l, int& h);
+	int       GetPos32(int line, int column = 0) { return (int)GetPos64(line, column); }
+	int       GetLength32();
+	int       GetCursor32();
+
 	void    Set(const WString& s);
 	void    Set(const String& s, byte charset = CHARSET_DEFAULT);
 	String  Get(byte charset = CHARSET_DEFAULT) const;
 	String  Get(int64 pos, int size, byte charset = CHARSET_DEFAULT) const;
 	WString GetW(int64 pos, int size) const;
-	WString GetW() const                      { return GetW(0, LimitSize(GetLength())); }
+	WString GetW() const                      { return GetW(0, LimitSize(GetLength64())); }
 
 	void   ClearDirty();
 	bool   IsDirty() const                    { return dirty; }
 
 	void   Clear();
 
-	int    GetLinePos(int64& pos) const;
-	int64  GetPos(int line, int column) const;
-	int64  GetPos(int line) const             { return GetPos(line, 0); }
-	int    GetLine(int64 pos) const           { return GetLinePos(pos); }
+	int    GetLine(int64 pos) const           { return GetLinePos64(pos); }
 
 	const String& GetUtf8Line(int i) const;
 	WString       GetWLine(int i) const       { return FromUtf8(GetUtf8Line(i)); }
 	String        GetEncodedLine(int i, byte charset = CHARSET_DEFAULT) const;
 	int           GetLineLength(int i) const;
 
+	int     GetLength() const                 { return GetLength32(); }
 	int     GetLineCount() const              { return view ? viewlines : lin.GetCount(); }
 	int     GetChar(int64 pos) const;
-	int     GetChar() const                   { return cursor < GetLength() ? GetChar(cursor) : 0; }
+	int     GetChar() const                   { return cursor < GetLength64() ? GetChar(cursor) : 0; }
 	int     operator[](int64 pos) const       { return GetChar(pos); }
-	int64   GetLength() const                 { return total; }
 
-	int64   GetCursor() const                 { return cursor; }
-	int     GetCursorLine()                   { return GetLine(GetCursor()); }
+	int     GetCursor() const                 { return GetCursor32(); }
+	int     GetCursorLine() const             { return GetLine(GetCursor64()); }
 
 	void    SetSelection(int64 anchor = 0, int64 cursor = INT_MAX);
 	bool    IsSelection() const               { return IsAnySelection() && !rectsel; }
@@ -228,13 +237,6 @@ public:
 
 	void      SetColor(int i, Color c)         { color[i] = c; Refresh(); }
 	Color     GetColor(int i) const            { return color[i]; }
-
-	int       LimitSize(int64 size) const      { return (int)min((int64)max_total, size); }
-	int       GetLinePos32(int& pos);
-	bool      GetSelection32(int& l, int& h);
-	int       GetPos32(int line, int column = 0) { return (int)GetPos(line, column); }
-	int       GetLength32();
-	int       GetCursor32();
 
 	TextCtrl& UndoSteps(int n)                 { undosteps = n; Undodo(); return *this; }
 	int       GetUndoSteps() const             { return undosteps; }

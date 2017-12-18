@@ -67,7 +67,7 @@ EscValue Ide::MacroEditor()
 
 void Ide::MacroGetLength(EscEscape& e)
 {
-	e = editor.GetLength();
+	e = editor.GetLength32();
 }
 
 void Ide::MacroGetLineCount(EscEscape& e)
@@ -77,7 +77,7 @@ void Ide::MacroGetLineCount(EscEscape& e)
 
 void Ide::MacroGetLinePos(EscEscape& e)
 {
-	e = editor.GetPos(e.Int(0));
+	e = editor.GetPos32(e.Int(0));
 }
 
 void Ide::MacroGetLineLength(EscEscape& e)
@@ -87,7 +87,7 @@ void Ide::MacroGetLineLength(EscEscape& e)
 
 void Ide::MacroGetCursor(EscEscape& e)
 {
-	e = editor.GetCursor();
+	e = editor.GetCursor32();
 }
 
 void Ide::MacroGetLine(EscEscape& e)
@@ -108,7 +108,7 @@ void Ide::MacroGetSelBegin(EscEscape& e)
 	if(editor.GetSelection32(l, h))
 		e = l;
 	else
-		e = editor.GetCursor();
+		e = editor.GetCursor32();
 }
 
 void Ide::MacroGetSelEnd(EscEscape& e)
@@ -117,7 +117,7 @@ void Ide::MacroGetSelEnd(EscEscape& e)
 	if(editor.GetSelection32(l, h))
 		e = h;
 	else
-		e = editor.GetCursor();
+		e = editor.GetCursor32();
 }
 
 void Ide::MacroGetSelCount(EscEscape& e)
@@ -137,9 +137,9 @@ void Ide::MacroSetCursor(EscEscape& e)
 void Ide::MacroSetSelection(EscEscape& e)
 {
 	int b = e.Int(0), c = e.Int(1);
-	if(b < 0 || b > editor.GetLength() || c < 0 || c > editor.GetLength() || b + c > editor.GetLength())
+	if(b < 0 || b > editor.GetLength32() || c < 0 || c > editor.GetLength32() || b + c > editor.GetLength32())
 		e.ThrowError(NFormat("invalid selection: begin = %d, count = %d (text length = %d)",
-			b, c, editor.GetLength()));
+			b, c, editor.GetLength32()));
 	editor.SetSelection(b, b + c);
 }
 
@@ -154,8 +154,8 @@ void Ide::MacroGet(EscEscape& e)
 		e.ThrowError("wrong number of arguments in call to Get (1 or 2 expected)");
 	int pos = e.Int(0);
 	int count = e.GetCount() > 1 ? e.Int(1) : 1;
-	if(pos < 0 || pos > editor.GetLength() || count <= 0 || pos + count > editor.GetLength())
-		e.ThrowError(NFormat("error in Get(%d, %d), text length = %d", pos, count, editor.GetLength()));
+	if(pos < 0 || pos > editor.GetLength32() || count <= 0 || pos + count > editor.GetLength32())
+		e.ThrowError(NFormat("error in Get(%d, %d), text length = %d", pos, count, editor.GetLength32()));
 	e = editor.GetW(pos, count);
 }
 

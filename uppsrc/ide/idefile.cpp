@@ -547,11 +547,11 @@ void Ide::EditFile0(const String& path, byte charset, int spellcheck_comments, c
 			s << "\r\n";
 			s << "#endif\r\n";
 			editor <<= s;
-			editor.SetCursor(editor.GetPos(2));
+			editor.SetCursor(editor.GetPos64(2));
 		}
 		if(IsCSourceFile(editfile) && !IsNull(headername)) {
 			editor <<= "#include \"" + headername + "\"\r\n";
-			editor.SetCursor(editor.GetPos(1));
+			editor.SetCursor(editor.GetPos64(1));
 		}
 		editor.SetCharset(tfile ? CHARSET_UTF8 : charset);
 	}
@@ -592,7 +592,7 @@ void Ide::EditFileAssistSync()
 
 void Ide::TriggerAssistSync()
 {
-	if(auto_rescan && editor.GetLength() < 500000) // Sanity
+	if(auto_rescan && editor.GetLength64() < 500000) // Sanity
 		text_updated.KillSet(1000, THISBACK(EditFileAssistSync));
 }
 
@@ -808,7 +808,7 @@ void Ide::ReloadFile()
 	EditFile0(fn, editor.GetCharset(), editor.GetSpellcheckComments());
 	filelist.SetSbPos(sc);
 	int l = LocateLine(data, ln, ~editor);
-	editor.SetCursor(editor.GetPos(l));
+	editor.SetCursor(editor.GetPos64(l));
 }
 
 void Ide::EditAnyFile() {

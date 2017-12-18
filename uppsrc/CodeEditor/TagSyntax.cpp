@@ -254,7 +254,7 @@ void TagSyntax::CheckSyntaxRefresh(CodeEditor& e, int64 pos, const WString& text
 			return;
 		}
 	int64 l = max(pos - 6, (int64)0);
-	int64 h = min(pos + text.GetLength() + 6, e.GetLength());
+	int64 h = min(pos + text.GetLength() + 6, e.GetLength64());
 	if(h - l > 200) {
 		e.Refresh();
 		return;

@@ -162,7 +162,7 @@ void CSyntax::ReformatComment(CodeEditor& e)
 {
 	if(!e.IsWordwrapComments())
 		return;
-	int first_line = e.GetLine(e.GetCursor());
+	int first_line = e.GetLine(e.GetCursor64());
 	WString ch;
 	if(GetCommentPos(e, first_line, ch) < 0)
 		return;
@@ -248,10 +248,10 @@ bool CSyntax::CheckBracket(CodeEditor& e, int li, int64 pos, int64 ppos, int64 p
 
 bool CSyntax::CheckLeftBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& bpos)
 {
-	if(pos < 0 || pos >= e.GetLength())
+	if(pos < 0 || pos >= e.GetLength64())
 		return false;
 	int64 ppos = pos;
-	int li = e.GetLinePos(pos);
+	int li = e.GetLinePos64(pos);
 	WString ln = e.GetWLine(li);
 	return islbrkt(ln[(int)pos]) &&
 	       CheckBracket(e, li, pos, ppos, ppos, ln, 1, min(li + 3000, e.GetLineCount()), bpos0, bpos);
@@ -259,10 +259,10 @@ bool CSyntax::CheckLeftBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& bp
 
 bool CSyntax::CheckRightBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& bpos)
 {
-	if(pos < 0 || pos >= e.GetLength())
+	if(pos < 0 || pos >= e.GetLength64())
 		return false;
 	int64 ppos = pos;
-	int li = e.GetLinePos(pos);
+	int li = e.GetLinePos64(pos);
 	WString ln = e.GetWLine(li);
 	return isrbrkt(ln[(int)pos]) &&
 	       CheckBracket(e, li, pos, ppos, ppos, ln, -1, max(li - 3000, 0), bpos0, bpos);
@@ -270,7 +270,7 @@ bool CSyntax::CheckRightBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& b
 
 bool CSyntax::CheckBrackets(CodeEditor& e, int64& bpos0, int64& bpos)
 {
-	int64 c = e.GetCursor();
+	int64 c = e.GetCursor64();
 	return CheckLeftBracket(e, c, bpos0, bpos) ||
 	       CheckRightBracket(e, c, bpos0, bpos) ||
 	       CheckLeftBracket(e, c - 1, bpos0, bpos) ||
@@ -300,7 +300,7 @@ void CSyntax::CheckSyntaxRefresh(CodeEditor& e, int64 pos, const WString& text)
 	if(s.StartsWith("#if") || s.StartsWith("#e"))
 		e.Refresh();
 
-	WString h = e.GetWLine(e.GetLinePos(pos)); // block highlighting changes if start of line is changed
+	WString h = e.GetWLine(e.GetLinePos64(pos)); // block highlighting changes if start of line is changed
 	for(int i = 0; i < pos; i++)
 		if(findarg(h[i], ' ', '\t') < 0)
 			return;

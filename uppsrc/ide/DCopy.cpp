@@ -16,10 +16,10 @@ void AssistEditor::DCopy()
 	int l, h;
 	bool decla = false;
 	if(!GetSelection32(l, h)) {
-		int i = GetLine(GetCursor());
+		int i = GetLine(GetCursor32());
 		l = GetPos32(i);
 		h = l;
-		while(h < GetLength() && h - l < 1000) {
+		while(h < GetLength32() && h - l < 1000) {
 			int c = GetChar(h);
 			if(c == ';') {
 				decla = true;
@@ -29,12 +29,12 @@ void AssistEditor::DCopy()
 				break;
 			h++;
 			if(c == '\"') {
-				while(h < GetLength()) {
+				while(h < GetLength32()) {
 					int c = GetChar(h);
 					if(c == '\"' || c == '\n')
 						break;
 					h++;
-					if(c == '\\' && h < GetLength())
+					if(c == '\\' && h < GetLength32())
 						h++;
 				}
 			}

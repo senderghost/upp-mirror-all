@@ -200,9 +200,9 @@ void CodeEditor::CheckBrackets()
 }
 
 void CodeEditor::CopyWord() {
-	int64 p = GetCursor();
+	int64 p = GetCursor64();
 	if(iscidl(GetChar(p)) || (p > 0 && iscidl(GetChar(--p)))) {
-		int64 e = GetLength();
+		int64 e = GetLength64();
 		int64 f = p;
 		while(--p >= 0 && iscidl(GetChar(p))) {}
 		++p;
@@ -329,7 +329,7 @@ void CodeEditor::IndentInsert(int chr, int count) {
 void CodeEditor::Make(Event<String&> op)
 {
 	if(IsReadOnly()) return;
-	Point cursor = GetColumnLine(GetCursor());
+	Point cursor = GetColumnLine(GetCursor32());
 	Point scroll = GetScrollPos();
 	int l, h;
 	bool is_sel = GetSelection32(l, h);
@@ -433,8 +433,8 @@ void CodeEditor::MakeLineEnds()
 }
 
 void CodeEditor::MoveNextWord(bool sel) {
-	int64 p = GetCursor();
-	int64 e = GetLength();
+	int64 p = GetCursor64();
+	int64 e = GetLength64();
 	if(iscidl(GetChar(p)))
 		while(p < e && iscidl(GetChar(p))) p++;
 	else
@@ -443,7 +443,7 @@ void CodeEditor::MoveNextWord(bool sel) {
 }
 
 void CodeEditor::MovePrevWord(bool sel) {
-	int64 p = GetCursor();
+	int64 p = GetCursor64();
 	if(p == 0) return;
 	if(iscidl(GetChar(p - 1)))
 		while(p > 0 && iscidl(GetChar(p - 1))) p--;
@@ -453,8 +453,8 @@ void CodeEditor::MovePrevWord(bool sel) {
 }
 
 void CodeEditor::MoveNextBrk(bool sel) {
-	int64 p = GetCursor();
-	int64 e = GetLength();
+	int64 p = GetCursor64();
+	int64 e = GetLength64();
 	if(!islbrkt(GetChar(p)))
 		while(p < e && !islbrkt(GetChar(p))) p++;
 	else {
@@ -471,10 +471,10 @@ void CodeEditor::MoveNextBrk(bool sel) {
 }
 
 void CodeEditor::MovePrevBrk(bool sel) {
-	int64 p = GetCursor();
+	int64 p = GetCursor64();
 	if(p < 2) return;
 	if(!isrbrkt(GetChar(p - 1))) {
-		if(p < GetLength() - 1 && isrbrkt(GetChar(p)))
+		if(p < GetLength64() - 1 && isrbrkt(GetChar(p)))
 			p++;
 		else {
 			while(p > 0 && !isrbrkt(GetChar(p - 1))) p--;
@@ -534,14 +534,14 @@ void CodeEditor::DeleteWordBack() {
 }
 
 void CodeEditor::SetLineSelection(int l, int h) {
-	SetSelection(GetPos(l), GetPos(h));
+	SetSelection(GetPos64(l), GetPos64(h));
 }
 
 bool CodeEditor::GetLineSelection(int& l, int& h) {
 	int64 ll, hh;
 	if(!GetSelection(ll, hh)) return false;
 	l = GetLine(ll);
-	h = GetLinePos(hh);
+	h = GetLinePos64(hh);
 	if(hh && h < GetLineCount()) h++;
 	SetLineSelection(l, h);
 	return true;
@@ -664,9 +664,9 @@ bool CodeEditor::MouseSelSpecial(Point p, dword flags) {
 		
 		if(selkind == SEL_LINES) {
 			l = c;
-			int i = GetLinePos(l);
+			int i = GetLinePos64(l);
 			l = c - l;
-			h = min(l + GetLineLength(i) + 1, GetLength() - 1);
+			h = min(l + GetLineLength(i) + 1, GetLength64() - 1);
 			c = c < anchor ? l : h;
 		}
 		else
@@ -711,7 +711,7 @@ WString CodeEditor::GetI()
 {
 	int64 l, h;
 	WString ft;
-	if((GetSelection(l, h) || GetWordPos(GetCursor(), l, h)) && h - l < 60)
+	if((GetSelection(l, h) || GetWordPos(GetCursor64(), l, h)) && h - l < 60)
 		while(l < h) {
 			int c = GetChar(l++);
 			if(c == '\n')
@@ -736,7 +736,7 @@ void CodeEditor::SetI(Ctrl *edit)
 void CodeEditor::Goto() {
 	String line = AsString(GetCursorLine());
 	if(EditText(line, t_("Go to"), t_("Line:")))
-		SetCursor(GetPos(atoi(line) - 1));
+		SetCursor(GetPos64(atoi(line) - 1));
 }
 
 bool CodeEditor::ToggleSimpleComment(int &start_line, int &end_line, bool usestars)
@@ -775,16 +775,16 @@ void CodeEditor::ToggleLineComments(bool usestars)
 	bool is_commented = true;
 
 	if(usestars) {
-		is_commented &= GetChar(GetPos(start_line) + 0) == '/' &&
-						GetChar(GetPos(start_line) + 1) == '*';
+		is_commented &= GetChar(GetPos64(start_line) + 0) == '/' &&
+						GetChar(GetPos64(start_line) + 1) == '*';
 
-		is_commented &= GetChar(GetPos(end_line - 1) + 1) == '*' &&
-						GetChar(GetPos(end_line - 1) + 2) == '/';
+		is_commented &= GetChar(GetPos64(end_line - 1) + 1) == '*' &&
+						GetChar(GetPos64(end_line - 1) + 2) == '/';
 	}
 
 	for(int line = start_line + us; is_commented && (line < end_line - us * 2); ++line)
-		is_commented &= GetChar(GetPos(line)) == (usestars ? ' ' : '/') &&
-						GetChar(GetPos(line)+1) == (usestars ? '*' : '/');
+		is_commented &= GetChar(GetPos64(line)) == (usestars ? ' ' : '/') &&
+						GetChar(GetPos64(line)+1) == (usestars ? '*' : '/');
 
 	if(!is_commented) {
 
@@ -822,12 +822,12 @@ void CodeEditor::ToggleStarComments()
 		return;
 
 	bool is_commented =
-		GetChar(GetPos(start_line)) == '/' &&
-		GetChar(GetPos(start_line)+1) == '*' &&
-		GetChar(GetPos(start_line)+2) == '\n' &&
-		GetChar(GetPos(end_line-1)) == '*' &&
-		GetChar(GetPos(end_line-1)+1) == '/' &&
-		GetChar(GetPos(end_line-1)+2) == '\n';
+		GetChar(GetPos64(start_line)) == '/' &&
+		GetChar(GetPos64(start_line)+1) == '*' &&
+		GetChar(GetPos64(start_line)+2) == '\n' &&
+		GetChar(GetPos64(end_line-1)) == '*' &&
+		GetChar(GetPos64(end_line-1)+1) == '/' &&
+		GetChar(GetPos64(end_line-1)+2) == '\n';
 
 	if(!is_commented) {
 		// Backwards because inserting changes the end line #
@@ -952,7 +952,7 @@ bool CodeEditor::Key(dword code, int count) {
 				return true;
 			}
 			if(!sel && indent_spaces) {
-				int x = GetColumnLine(GetCursor()).x;
+				int x = GetColumnLine(GetCursor64()).x;
 				int add = GetTabSize() - x % GetTabSize();
 				InsertChar(' ', add, false);
 				return true;
@@ -1041,7 +1041,7 @@ void CodeEditor::ForwardWhenBreakpoint(int i) {
 
 void CodeEditor::GotoLine(int line)
 {
-	SetCursor(GetPos(GetLineNo(line)));
+	SetCursor(GetPos64(GetLineNo(line)));
 }
 
 void CodeEditor::Serialize(Stream& s) {

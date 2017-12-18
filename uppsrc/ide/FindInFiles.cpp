@@ -311,7 +311,7 @@ void Ide::FindFileAll(const Vector<Tuple<int64, int>>& f)
 	ffound.Clear();
 	for(auto pos : f) {
 		editor.CachePos(pos.a);
-		int linei = editor.GetLinePos(pos.a);
+		int linei = editor.GetLinePos64(pos.a);
 		WString ln = editor.GetWLine(linei);
 		AddFoundFile(editfile, linei + 1, ln.ToString(), lenAsUtf8(~ln, (int)pos.a), lenAsUtf8(~ln + pos.a, pos.b));
 	}

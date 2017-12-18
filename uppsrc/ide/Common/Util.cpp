@@ -144,7 +144,7 @@ prompt:
 			TopWindow win;
 			LineEdit edit;
 			edit.Set(LoadFile(path));
-			edit.SetCursor(edit.GetPos(line));
+			edit.SetCursor(edit.GetPos32(line));
 			win.Title(path);
 			win.Add(edit.SizePos());
 			win.Run();

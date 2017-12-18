@@ -367,7 +367,7 @@ void Ide::CycleFiles()
 
 void Ide::DeactivateBy(Ctrl *new_focus)
 {
-	if(deactivate_save && issaving == 0 && !new_focus && editor.GetLength() < 1000000) {
+	if(deactivate_save && issaving == 0 && !new_focus && editor.GetLength64() < 1000000) {
 		DeactivationSave(true);
 		SaveFile();
 		DeactivationSave(false);
@@ -463,7 +463,7 @@ bool Ide::IsHistDiff(int i)
 	if(i < 0 || i >= history.GetCount())
 		return false;
 	Bookmark& b = history[i];
-	return b.file != editfile || abs(editor.GetCursor() - b.pos.cursor) > 20;
+	return b.file != editfile || abs(editor.GetCursor64() - b.pos.cursor) > 20;
 }
 
 void Ide::IdePaste(String& data)
@@ -530,7 +530,7 @@ void Ide::BookKey(int key)
 
 void Ide::DoDisplay()
 {
-	Point p = editor.GetColumnLine(editor.GetCursor());
+	Point p = editor.GetColumnLine(editor.GetCursor64());
 	String s;
 	s << "Ln " << p.y + 1 << ", Col " << p.x + 1;
 	int64 l, h;
@@ -643,14 +643,14 @@ int Ide::GetPackageIndex()
 void Ide::GotoDiffLeft(int line, DiffDlg *df)
 {
 	EditFile(df->editfile);
-	editor.SetCursor(editor.GetPos(line));
+	editor.SetCursor(editor.GetPos64(line));
 	editor.SetFocus();
 }
 
 void Ide::GotoDiffRight(int line, FileDiff *df)
 {
 	EditFile(df->GetExtPath());
-	editor.SetCursor(editor.GetPos(line));
+	editor.SetCursor(editor.GetPos64(line));
 	editor.SetFocus();
 }
 

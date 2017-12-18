@@ -108,7 +108,7 @@ void   TextCtrl::CachePos(int64 pos)
 {
 	GuiLock __;
 	int64 p = pos;
-	cline = GetLinePos(p);
+	cline = GetLinePos64(p);
 	cpos = pos - p;
 }
 
@@ -116,7 +116,7 @@ void   TextCtrl::CacheLinePos(int linei)
 {
 	GuiLock __;
 	if(linei >= 0 && linei < GetLineCount()) {
-		cpos = GetPos(linei);
+		cpos = GetPos64(linei);
 		cline = linei;
 	}
 }
@@ -572,7 +572,7 @@ String TextCtrl::GetEncodedLine(int i, byte charset) const
 	return charset == CHARSET_UTF8 ? h : FromUnicode(FromUtf8(h), charset);
 }
 
-int   TextCtrl::GetLinePos(int64& pos) const {
+int   TextCtrl::GetLinePos64(int64& pos) const {
 	GuiLock __;
 	if(pos < cpos && cpos - pos < pos && !view) {
 		int i = cline;
@@ -621,7 +621,7 @@ int   TextCtrl::GetLinePos(int64& pos) const {
 	}
 }
 
-int64  TextCtrl::GetPos(int ln, int lpos) const {
+int64  TextCtrl::GetPos64(int ln, int lpos) const {
 	GuiLock __;
 	ln = minmax(ln, 0, GetLineCount() - 1);
 	int i;
@@ -654,7 +654,7 @@ int64  TextCtrl::GetPos(int ln, int lpos) const {
 
 WString TextCtrl::GetW(int64 pos, int size) const
 {
-	int i = GetLinePos(pos);
+	int i = GetLinePos64(pos);
 	WStringBuffer r;
 	for(;;) {
 		if(i >= GetLineCount()) break;
@@ -680,7 +680,7 @@ WString TextCtrl::GetW(int64 pos, int size) const
 String TextCtrl::Get(int64 pos, int size, byte charset) const
 {
 	if(charset == CHARSET_UTF8) {
-		int i = GetLinePos(pos);
+		int i = GetLinePos64(pos);
 		StringBuffer r;
 		for(;;) {
 			if(i >= GetLineCount()) break;
@@ -709,9 +709,9 @@ String TextCtrl::Get(int64 pos, int size, byte charset) const
 }
 
 int  TextCtrl::GetChar(int64 pos) const {
-	if(pos < 0 || pos >= GetLength())
+	if(pos < 0 || pos >= GetLength64())
 		return 0;
-	int i = GetLinePos(pos);
+	int i = GetLinePos64(pos);
 	WString ln = GetWLine(i);
 	int c = ln.GetLength() == pos ? '\n' : ln[(int)pos];
 	return c;
@@ -720,7 +720,7 @@ int  TextCtrl::GetChar(int64 pos) const {
 int TextCtrl::GetLinePos32(int& pos)
 {
 	int64 p = pos;
-	int l = GetLinePos(p);
+	int l = GetLinePos64(p);
 	pos = (int)p;
 	return l;
 }
@@ -738,13 +738,13 @@ bool TextCtrl::GetSelection32(int& l, int& h)
 
 int TextCtrl::GetCursor32()
 {
-	int64 h = GetCursor();
+	int64 h = GetCursor64();
 	return h < INT_MAX ? (int)h : 0;
 }
 
 int TextCtrl::GetLength32()
 {
-	int64 h = GetLength();
+	int64 h = GetLength64();
 	return h < INT_MAX ? (int)h : 0;
 }
 
@@ -1080,7 +1080,7 @@ void TextCtrl::Copy() {
 	int64 l, h;
 	if(!GetSelection(l, h) && !IsAnySelection()) {
 		int i = GetLine(cursor);
-		l = GetPos(i);
+		l = GetPos64(i);
 		h = l + GetLineLength(i) + 1;
 	}
 	WString txt;
@@ -1162,7 +1162,7 @@ void TextCtrl::StdBar(Bar& menu) {
 			t_("Erase"), CtrlImg::remove(), THISBACK(DoRemoveSelection))
 		.Key(K_DELETE);
 	menu.Separator();
-	menu.Add(GetLength(),
+	menu.Add(GetLength64(),
 			t_("Select all"), CtrlImg::select_all(), THISBACK(SelectAll))
 		.Key(K_CTRL_A);
 }

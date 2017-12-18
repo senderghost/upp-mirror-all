@@ -382,7 +382,7 @@ public:
 	void   FindNext();
 	void   FindPrev();
 	bool   GetStringRange(int64 cursor, int64& b, int64& e) const;
-	bool   GetStringRange(int64& b, int64& e) const { return GetStringRange(GetCursor(), b, e); }
+	bool   GetStringRange(int64& b, int64& e) const { return GetStringRange(GetCursor64(), b, e); }
 	bool   FindString(bool back);
 	bool   FindLangString(bool back);
 	void   Replace();

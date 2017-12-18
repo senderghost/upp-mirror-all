@@ -226,7 +226,7 @@ void DocEdit::PlaceCaret(bool scroll) {
 	Point cr = GetCaret((int)cursor);
 	int fy = font.Info().GetLineHeight();
 	if(scroll) {
-		if(cursor == GetLength())
+		if(cursor == GetLength32())
 			sb.End();
 		else
 			sb.ScrollInto(cr.y, fy + 2);
@@ -236,8 +236,8 @@ void DocEdit::PlaceCaret(bool scroll) {
 }
 
 void DocEdit::PlaceCaret(int64 newpos, bool select) {
-	if(newpos > GetLength())
-		newpos = GetLength();
+	if(newpos > GetLength32())
+		newpos = GetLength32();
 	int z = GetLine(newpos);
 	if(select) {
 		if(anchor < 0) {
@@ -331,7 +331,7 @@ void DocEdit::VertMove(int delta, bool select, bool scs) {
 			break;
 		}
 		if(p.y == 0 || p.y >= hy - 1) {
-			PlaceCaret(delta > 0 ? GetLength() : 0, select);
+			PlaceCaret(delta > 0 ? GetLength32() : 0, select);
 			break;
 		}
 		delta = sgn(delta) * 4;
@@ -373,7 +373,7 @@ bool DocEdit::Key(dword key, int cnt)
 		break;
 	case K_CTRL_END:
 	case K_CTRL_PAGEDOWN:
-		PlaceCaret(GetLength(), select);
+		PlaceCaret(GetLength32(), select);
 		break;
 	case K_UP:
 		if(GetCursor() == 0)
@@ -381,7 +381,7 @@ bool DocEdit::Key(dword key, int cnt)
 		VertMove(-8, select, false);
 		return true;
 	case K_DOWN:
-		if(GetCursor() == GetLength())
+		if(GetCursor32() == GetLength32())
 			return !updownleave;
 		VertMove(8, select, false);
 		return true;
@@ -396,7 +396,7 @@ bool DocEdit::Key(dword key, int cnt)
 			PlaceCaret(cursor - 1, select);
 		break;
 	case K_RIGHT:
-		if(cursor < GetLength())
+		if(cursor < GetLength32())
 			PlaceCaret(cursor + 1, select);
 		break;
 	default:
@@ -420,16 +420,16 @@ bool DocEdit::Key(dword key, int cnt)
 			break;
 		case K_DELETE:
 			if(RemoveSelection()) break;
-			if(cursor >= GetLength()) return true;
-			if(cursor < GetLength())
+			if(cursor >= GetLength32()) return true;
+			if(cursor < GetLength32())
 				Remove((int)cursor, 1);
 			break;
 		case K_CTRL_DELETE:
 			if(RemoveSelection()) break;
-			if(cursor >= GetLength()) return true;
+			if(cursor >= GetLength32()) return true;
 			q = (int)cursor;
 			h = IsLetter(GetChar(q));
-			while(IsLetter(GetChar(q)) == h && q < GetLength()) q++;
+			while(IsLetter(GetChar(q)) == h && q < GetLength32()) q++;
 			Remove((int)cursor, q - (int)cursor);
 			break;
 		case K_ENTER:

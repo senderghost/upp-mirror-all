@@ -211,7 +211,7 @@ bool CodeEditor::RegExpFind(int64 pos, bool block)
 {
 	RegExp regex((String)~findreplace.find);
 	
-	int line = GetLinePos(pos);
+	int line = GetLinePos64(pos);
 	String ln = ToUtf8(GetWLine(line).Mid(LimitSize(pos)));
 	for(;;) {
 		if(regex.Match(ln)) {
@@ -219,7 +219,7 @@ bool CodeEditor::RegExpFind(int64 pos, bool block)
 				SetFound(i, WILDANY, regex.GetString(i).ToWString());
 			int off = regex.GetOffset();
 			int len = utf8len(~ln + off, regex.GetLength());
-			pos = GetPos(line, utf8len(~ln, off) + (int)pos);
+			pos = GetPos64(line, utf8len(~ln, off) + (int)pos);
 			foundtext = GetW(pos, len);
 			if(!block) {
 				foundsel = true;
@@ -304,7 +304,7 @@ bool CodeEditor::FindFrom(int64 pos, bool back, bool block)
 	bool we = findreplace.wholeword ? iscidl(*ft.Last()) : false;
 	if(ft.IsEmpty()) return false;
 	foundwild.Clear();
-	int line = GetLinePos(pos);
+	int line = GetLinePos64(pos);
 	WString ln = GetWLine(line);
 	const wchar *l = ln;
 	s = l + pos;
@@ -314,7 +314,7 @@ bool CodeEditor::FindFrom(int64 pos, bool back, bool block)
 			if(!wb || (s == l || !iscidl(s[-1]))) {
 				int n = Match(ft, s, line, we, ignorecase);
 				if(n >= 0) {
-					int64 pos = GetPos(line, int(s - l));
+					int64 pos = GetPos64(line, int(s - l));
 					foundtext = GetW(pos, n);
 					if(!back || pos + n < cursor) {
 						if(!block) {
@@ -569,7 +569,7 @@ int CodeEditor::BlockReplace()
 		ClearSelection();
 		int ll = GetLine(l);
 		int lh = GetLine(h);
-		if(GetPos(lh) == h)
+		if(GetPos64(lh) == h)
 			lh--;
 		bool mm = ~findreplace.mode == 1;
 		String replace;
@@ -594,7 +594,7 @@ int CodeEditor::BlockReplace()
 
 void CodeEditor::OpenNormalFindReplace0(bool replace)
 {
-	findreplace.incremental.Enable(GetLength() < 2000000);
+	findreplace.incremental.Enable(GetLength64() < 2000000);
 	findreplace.Setup(replace);
 	findreplace.find_all.Show(!replace && WhenFindAll);
 	findreplace.itext = GetI();
@@ -647,7 +647,7 @@ void CodeEditor::FindReplace(bool pick_selection, bool pick_text, bool replace)
 			l = h = GetCursor32();
 			while(l > 0 && CharFilterCIdent(GetChar(l - 1)))
 				l--;
-			while(h < GetLength() && CharFilterCIdent(GetChar(h)))
+			while(h < GetLength64() && CharFilterCIdent(GetChar(h)))
 				h++;
 			find_text = Get(l, h - l).ToWString();
 			find_pos = h;
@@ -692,7 +692,7 @@ void CodeEditor::ReplaceAll(bool rest)
 	GetSelection32(l, h);
 	int c = min(l, h);
 	findreplace.mode <<= 0;
-	SetSelection(rest * c, GetLength());
+	SetSelection(rest * c, GetLength64());
 	BlockReplace();
 	SetCursor(c);
 }
@@ -799,7 +799,7 @@ void CodeEditor::CloseFindReplace()
 void CodeEditor::EscapeFindReplace()
 {
 	CloseFindReplace();
-	if(ff_start_pos >= 0 && ff_start_pos < GetLength() && findreplace.IsIncremental() && do_ff_restore_pos) {
+	if(ff_start_pos >= 0 && ff_start_pos < GetLength64() && findreplace.IsIncremental() && do_ff_restore_pos) {
 		SetCursor(ff_start_pos);
 		ff_start_pos = -1;
 	}
@@ -811,8 +811,8 @@ void CodeEditor::IncrementalFind()
 	findreplace.Sync();
 	if(!findreplace.IsIncremental() || findreplace.GetTopCtrl() == &findreplace) // || we are block replace
 		return;
-	bool b = FindFrom(ff_start_pos >= 0 && ff_start_pos < GetLength()
-	             && findreplace.incremental_from_cursor ? ff_start_pos : 0, false, false);
+	bool b = FindFrom(ff_start_pos >= 0 && ff_start_pos < GetLength64()
+	                  && findreplace.incremental_from_cursor ? ff_start_pos : 0, false, false);
 	findreplace.amend.Enable(b);
 	if(!b)
 		NotFound();

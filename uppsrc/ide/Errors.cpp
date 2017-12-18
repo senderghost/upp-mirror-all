@@ -163,7 +163,7 @@ bool Ide::FindLineError(const String& ln, FindLineErrorCache& cache, ErrorInfo& 
 
 void Ide::FindError()
 {
-	FindLineError(console.GetLine(console.GetCursor()));
+	FindLineError(console.GetLine(console.GetCursor32()));
 }
 
 bool Ide::Next(int tab, ArrayCtrl& a, int d)
@@ -195,7 +195,7 @@ void Ide::FindNextError()
 {
 	if(Next(BERRORS, error, 1) || Next(BFINDINFILES, ffound, 1))
 		return;
-	int ln = console.GetLine(console.GetCursor());
+	int ln = console.GetLine(console.GetCursor32());
 	int l = ln;
 	for(l = ln; l < console.GetLineCount(); l++)
 		if(FindLineError(l)) return;
@@ -206,7 +206,7 @@ void Ide::FindNextError()
 void Ide::FindPrevError() {
 	if(Next(BERRORS, error, -1) || Next(BFINDINFILES, ffound, -1))
 		return;
-	int ln = console.GetLine(console.GetCursor());
+	int ln = console.GetLine(console.GetCursor32());
 	int l = ln;
 	One<Host> host = CreateHost(false);
 	for(l = ln - 2; l >= 0; l--)
@@ -320,7 +320,7 @@ bool Ide::FindLineError(int l) {
 	FindLineErrorCache cache;
 	if(FindLineError(console.GetUtf8Line(l), cache, f)) {
 		GoToError(f);
-		console.SetSelection(console.GetPos(l), console.GetPos(l + 1));
+		console.SetSelection(console.GetPos64(l), console.GetPos64(l + 1));
 		if(btabs.GetCursor() != BCONSOLE && btabs.GetCursor() != BFINDINFILES)
 			ShowConsole();
 		return true;

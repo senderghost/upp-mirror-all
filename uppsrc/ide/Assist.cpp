@@ -129,7 +129,7 @@ String AssistEditor::ReadIdBackPos(int& pos, bool include)
 	while(pos > 0 && (*test)(GetChar(pos - 1)))
 		pos--;
 	int q = pos;
-	while(q < GetLength() && (*test)(GetChar(q)))
+	while(q < GetLength64() && (*test)(GetChar(q)))
 		id << (char)GetChar(q++);
 	return id;
 }
@@ -160,7 +160,7 @@ void AssistEditor::DirtyFrom(int line)
 
 int AssistEditor::Ch(int i)
 {
-	if(i >= 0 && i < GetLength()) {
+	if(i >= 0 && i < GetLength64()) {
 		if(i < cachedpos || i - cachedpos > cachedline.GetCount()) {
 			cachedln = GetLine(i);
 			cachedline = GetWLine(cachedln);
@@ -207,7 +207,7 @@ String AssistEditor::IdBack(int& qq)
 			q--;
 		if(iscib(Ch(q))) {
 			qq = q;
-			while(q < GetLength() && iscid(Ch(q)))
+			while(q < GetLength64() && iscid(Ch(q)))
 				r.Cat(Ch(q++));
 		}
 	}
@@ -708,7 +708,7 @@ void AssistEditor::AssistInsert()
 		}
 		const CppItemInfo& f = assist_item[ii];
 		if(include_assist) {
-			int ln = GetLine(GetCursor());
+			int ln = GetLine(GetCursor32());
 			int pos = GetPos32(ln);
 			Remove(pos, GetLineLength(ln));
 			SetCursor(pos);
@@ -769,16 +769,16 @@ void AssistEditor::AssistInsert()
 				txt << "()";
 			int n = Paste(ToUnicode(txt, CHARSET_WIN1250));
 			if(!thisback && f.kind >= FUNCTION && f.kind <= INLINEFRIEND) {
-				SetCursor(GetCursor() - 1);
+				SetCursor(GetCursor32() - 1);
 				StartParamInfo(f, cl);
 				int x = f.natural.ReverseFind('(');
 				if(x >= 0 && f.natural[x + 1] == ')')
-					SetCursor(GetCursor() + 1);
+					SetCursor(GetCursor32() + 1);
 			}
 			else
 			if(thisback) {
 				if(thisbackn)
-					SetCursor(GetCursor() - 1);
+					SetCursor(GetCursor32() - 1);
 			}
 			else
 			if(!inbody)

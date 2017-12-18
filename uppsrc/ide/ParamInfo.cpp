@@ -97,5 +97,5 @@ void AssistEditor::State(int reason)
 
 int AssistEditor::GetCurrentLine()
 {
-	return GetLine(GetCursor());
+	return GetLine(GetCursor64());
 }

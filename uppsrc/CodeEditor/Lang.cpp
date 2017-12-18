@@ -80,7 +80,7 @@ Vector<Point> GetLineString(const wchar *wline, bool& is_begin, bool& is_end)
 bool CodeEditor::GetStringRange(int64 cursor, int64& b, int64& e) const
 {
 	int cl = GetLine(cursor);
-	cursor -= GetPos(cl);
+	cursor -= GetPos64(cl);
 	bool is_begin, is_end; //@@@@@@
 	Vector<Point> list = GetLineString(GetWLine(cl), is_begin, is_end);
 	int i = list.GetCount();
@@ -106,8 +106,8 @@ bool CodeEditor::GetStringRange(int64 cursor, int64& b, int64& e) const
 		el++;
 		ep = list[0].y;
 	}
-	b = GetPos(bl, bp);
-	e = GetPos(el, ep);
+	b = GetPos64(bl, bp);
+	e = GetPos64(el, ep);
 	return b < e;
 }
 
@@ -115,9 +115,9 @@ bool CodeEditor::FindString(bool back)
 {
 	int64 ll, hh;
 	hh = GetSelection(ll, hh) ? back ? ll : hh
-	                          : GetCursor();
+	                          : GetCursor64();
 	int l = GetLine(hh);
-	int h = LimitSize(hh - GetPos(l));
+	int h = LimitSize(hh - GetPos64(l));
 
 	while(l >= 0 && l < GetLineCount())
 	{
@@ -151,7 +151,7 @@ bool CodeEditor::FindString(bool back)
 		}
 	}
 	int64 b, e;
-	if(l < 0 || l >= GetLineCount() || !GetStringRange(GetPos(l, h), b, e))
+	if(l < 0 || l >= GetLineCount() || !GetStringRange(GetPos64(l, h), b, e))
 		return false;
 	SetSelection(b, e);
 	return true;
@@ -161,9 +161,9 @@ bool CodeEditor::FindLangString(bool back)
 {
 	int64 ll, hh;
 	hh = GetSelection(ll, hh) ? back ? ll : hh
-	                          : GetCursor();
+	                          : GetCursor64();
 	int l = GetLine(hh);
-	int h = LimitSize(hh - GetPos(l));
+	int h = LimitSize(hh - GetPos64(l));
 
 	for(;;)
 	{
@@ -181,8 +181,8 @@ bool CodeEditor::FindLangString(bool back)
 					break;
 				continue;
 			}
-			b = GetPos(l, list[i].begin);
-			e = GetPos(l, list[i].end);
+			b = GetPos64(l, list[i].begin);
+			e = GetPos64(l, list[i].end);
 		}
 		else
 		{
@@ -196,8 +196,8 @@ bool CodeEditor::FindLangString(bool back)
 					break;
 				continue;
 			}
-			b = GetPos(l, list[i].begin);
-			e = GetPos(l, list[i].end);
+			b = GetPos64(l, list[i].begin);
+			e = GetPos64(l, list[i].end);
 		}
 		SetSelection(b, e);
 		return true;
