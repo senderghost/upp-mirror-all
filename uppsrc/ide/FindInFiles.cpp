@@ -305,8 +305,7 @@ void Ide::FindInFiles(bool replace) {
 	}
 }
 
-
-void Ide::FindFileAll(const Vector<Tuple<int, int>>& f)
+void Ide::FindFileAll(const Vector<Tuple<int64, int>>& f)
 {
 	ShowConsole2();
 	ffound.Clear();
@@ -314,7 +313,7 @@ void Ide::FindFileAll(const Vector<Tuple<int, int>>& f)
 		editor.CachePos(pos.a);
 		int linei = editor.GetLinePos(pos.a);
 		WString ln = editor.GetWLine(linei);
-		AddFoundFile(editfile, linei + 1, ln.ToString(), lenAsUtf8(~ln, pos.a), lenAsUtf8(~ln + pos.a, pos.b));
+		AddFoundFile(editfile, linei + 1, ln.ToString(), lenAsUtf8(~ln, (int)pos.a), lenAsUtf8(~ln + pos.a, pos.b));
 	}
 	ffound.HeaderTab(2).SetText(Format("Source line (%d)", ffound.GetCount()));
 	ffound.Add(Null, Null, AsString(f.GetCount()) + " occurrence(s) have been found.");
@@ -330,7 +329,7 @@ void Ide::TranslateString()
 {
 	if(editor.IsReadOnly()) return;
 	int l, h;
-	if(editor.GetSelection(l, h)) {
+	if(editor.GetSelection32(l, h)) {
 		editor.Insert(l, "t_(");
 		editor.Insert(h + 3, ")");
 		editor.SetCursor(h + 4);

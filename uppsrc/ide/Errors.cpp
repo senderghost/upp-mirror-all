@@ -296,7 +296,7 @@ void Ide::GoToError(const ErrorInfo& f)
 	DoEditAsText(file);
 	EditFile(file);
 	int lp = max(f.linepos - 1, 0);
-	int pos = editor.GetPos(editor.GetLineNo(f.lineno - 1), lp);
+	int pos = editor.GetPos32(editor.GetLineNo(f.lineno - 1), lp);
 	editor.SetCursor(pos);
 	if(*f.message == '\1') {
 		Vector<String> h = Split(~f.message + 1, '\1', false);

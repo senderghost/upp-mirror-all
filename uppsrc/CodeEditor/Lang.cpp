@@ -77,7 +77,7 @@ Vector<Point> GetLineString(const wchar *wline, bool& is_begin, bool& is_end)
 	return out;
 }
 
-bool CodeEditor::GetStringRange(int cursor, int& b, int &e) const
+bool CodeEditor::GetStringRange(int64 cursor, int64& b, int64& e) const
 {
 	int cl = GetLine(cursor);
 	cursor -= GetPos(cl);
@@ -113,10 +113,12 @@ bool CodeEditor::GetStringRange(int cursor, int& b, int &e) const
 
 bool CodeEditor::FindString(bool back)
 {
-	int l, h;
-	if(!GetSelection(l, h)) h = GetCursor();
-	else h = (back ? l : h);
-	h -= GetPos(l = GetLine(h));
+	int64 ll, hh;
+	hh = GetSelection(ll, hh) ? back ? ll : hh
+	                          : GetCursor();
+	int l = GetLine(hh);
+	int h = LimitSize(hh - GetPos(l));
+
 	while(l >= 0 && l < GetLineCount())
 	{
 		bool is_begin, is_end;
@@ -148,7 +150,7 @@ bool CodeEditor::FindString(bool back)
 			++l;
 		}
 	}
-	int b, e;
+	int64 b, e;
 	if(l < 0 || l >= GetLineCount() || !GetStringRange(GetPos(l, h), b, e))
 		return false;
 	SetSelection(b, e);
@@ -157,14 +159,16 @@ bool CodeEditor::FindString(bool back)
 
 bool CodeEditor::FindLangString(bool back)
 {
-	int l, h;
-	if(!GetSelection(l, h)) h = GetCursor();
-	else h = (back ? l : h);
-	h -= GetPos(l = GetLine(h));
+	int64 ll, hh;
+	hh = GetSelection(ll, hh) ? back ? ll : hh
+	                          : GetCursor();
+	int l = GetLine(hh);
+	int h = LimitSize(hh - GetPos(l));
+
 	for(;;)
 	{
 		Array<IdentPos> list = GetLineIdent(GetUtf8Line(l));
-		int b, e;
+		int64 b, e;
 		if(back)
 		{
 			int i = list.GetCount();

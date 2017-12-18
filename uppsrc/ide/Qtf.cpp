@@ -124,7 +124,7 @@ void Ide::Qtf()
 	QtfDlg dlg;
 	LoadFromGlobal(dlg, "QTF-designer");
 	int l,h;
-	bool sel=editor.GetSelection(l,h);
+	bool sel=editor.GetSelection32(l,h);
 	if(qtfsel && sel){
 		dlg.qtfText.text<<=(~editor).ToString().Mid(l,h-l);
 		dlg.qtfText.copy.SetLabel("Apply and close");

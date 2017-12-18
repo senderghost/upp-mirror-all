@@ -199,8 +199,8 @@ void LineEdit::PasteColumn(const WString& text)
 				pos = l + Insert(l, cl[i]);
 			}
 			else {
-				Insert((int)GetLength(), cl[i] + "\n");
-				pos = (int)GetLength();
+				Insert(GetLength32(), cl[i] + "\n");
+				pos = GetLength32();
 			}
 		}
 	}
@@ -236,7 +236,7 @@ void LineEdit::Sort()
 		ln.Add(GetWLine(i));
 	}
 	int sell = (int)GetPos(rect.top);
-	int selh = rect.bottom + 1 < GetLineCount() ? (int)GetPos(rect.bottom + 1) : (int)GetLength();
+	int selh = rect.bottom + 1 < GetLineCount() ? (int)GetPos(rect.bottom + 1) : GetLength32();
 	IndexSort(key, ln, sSortLineOrder);
 	Remove(sell, selh - sell);
 	Insert(sell, Join(ln, "\n"));
@@ -385,6 +385,7 @@ void sOptimizedTextRenderer::DrawChar(int _x, int _y, int chr, int width, Font _
 
 void   LineEdit::Paint0(Draw& w) {
 	LTIMING("LineEdit::Paint0");
+	GuiLock __;
 	int64 sell, selh;
 	GetSelection(sell, selh);
 	if(!IsEnabled())
@@ -744,7 +745,7 @@ void LineEdit::NewScrollPos() {}
 void LineEdit::HighlightLine(int line, Vector<Highlight>& h, int64 pos) {}
 
 void LineEdit::AlignChar() {
-	int c = (int)GetCursor();
+	int c = GetCursor32();
 	if(c == 0)
 		return;
 	Point pos = GetColumnLine(c);
@@ -929,7 +930,7 @@ void LineEdit::MoveUpDown(int n, bool sel) {
 	int64 cl = cursor;
 	int ln = GetLinePos(cl);
 	if(ln + n >= GetLineCount())
-		WaitView();
+		WaitView(ln + n);
 	ln = minmax(ln + n, 0, GetLineCount() - 1);
 	PlaceCaretNoG(GetGPos(ln, gcolumn), sel);
 }
@@ -988,7 +989,7 @@ void LineEdit::MoveTextBegin(bool sel) {
 }
 
 void LineEdit::MoveTextEnd(bool sel) {
-	WaitView();
+	WaitView(INT_MAX, true);
 	PlaceCaret(GetLength(), sel);
 }
 

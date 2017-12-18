@@ -98,14 +98,14 @@ void Ide::MacroGetLine(EscEscape& e)
 void Ide::MacroGetColumn(EscEscape& e)
 {
 	int pos = e.Int(0);
-	editor.GetLinePos(pos);
+	editor.GetLinePos32(pos);
 	e = pos;
 }
 
 void Ide::MacroGetSelBegin(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection(l, h))
+	if(editor.GetSelection32(l, h))
 		e = l;
 	else
 		e = editor.GetCursor();
@@ -114,7 +114,7 @@ void Ide::MacroGetSelBegin(EscEscape& e)
 void Ide::MacroGetSelEnd(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection(l, h))
+	if(editor.GetSelection32(l, h))
 		e = h;
 	else
 		e = editor.GetCursor();
@@ -123,7 +123,7 @@ void Ide::MacroGetSelEnd(EscEscape& e)
 void Ide::MacroGetSelCount(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection(l, h))
+	if(editor.GetSelection32(l, h))
 		e = h - l;
 	else
 		e = 0.0;
@@ -164,11 +164,11 @@ void Ide::MacroRemove(EscEscape& e)
 	int c = e.GetCount();
 	if(c > 2)
 		e.ThrowError("wrong number of arguments in call to Remove (0 to 2 expected)");
-	int len = editor.GetLength();
-	int cur = editor.GetCursor();
+	int len = editor.GetLength32();
+	int cur = editor.GetCursor32();
 	if(c == 0) {
 		int l, h;
-		if(editor.GetSelection(l, h))
+		if(editor.GetSelection32(l, h))
 			editor.Remove(l, h - l);
 		else if(cur < len)
 			editor.Remove(cur, 1);
@@ -189,7 +189,7 @@ void Ide::MacroInsert(EscEscape& e)
 	if(c < 1 || c > 2)
 		e.ThrowError("wrong number of arguments in call to Insert (1 or 2 expected)");
 	WString text = e[c - 1];
-	editor.Insert(c > 1 ? e.Int(0) : editor.GetCursor(), text);
+	editor.Insert(c > 1 ? e.Int(0) : editor.GetCursor32(), text);
 }
 
 void Ide::MacroFind(EscEscape& e)
@@ -301,9 +301,9 @@ void Ide::MacroMoveTextEnd(EscEscape& e)
 void Ide::MacroMoveWordRight(EscEscape& e)
 {
 	if(e.GetCount() > 1) e.ThrowError("MoveWordRight(sel = false) takes at most 1 parameter");
-	int p = editor.GetCursor();
+	int p = editor.GetCursor32();
 	int b = p;
-	int l = editor.GetLength();
+	int l = editor.GetLength32();
 	if(iscid(editor.GetChar(p)))
 		while(p < l && iscid(editor.GetChar(p))) p++;
 	else
@@ -317,7 +317,7 @@ void Ide::MacroMoveWordRight(EscEscape& e)
 void Ide::MacroMoveWordLeft(EscEscape& e)
 {
 	if(e.GetCount() > 1) e.ThrowError("MoveWordLeft(sel = false) takes at most 1 parameter");
-	int p = editor.GetCursor();
+	int p = editor.GetCursor32();
 	if(p == 0) return;
 	int b = p;
 	if(iscid(editor.GetChar(p - 1)))

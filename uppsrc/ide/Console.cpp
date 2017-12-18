@@ -51,7 +51,7 @@ void Console::Append(const String& s) {
 		return;
 	}
 	int l, h;
-	GetSelection(l, h);
+	GetSelection32(l, h);
 	if(GetCursor() == GetLength()) l = -1;
 	EditPos p = GetEditPos();
 	SetEditable();

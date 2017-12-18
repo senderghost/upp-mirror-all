@@ -294,7 +294,7 @@ void Ide::AlterText(WString (*op)(const WString& in))
 	editor.NextUndo();
 	WString w = editor.GetSelectionW();
 	editor.RemoveSelection();
-	int l = editor.GetCursor();
+	int l = editor.GetCursor32();
 	editor.Paste((*op)(w));
 	editor.SetSelection(l, editor.GetCursor());
 }

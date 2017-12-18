@@ -113,7 +113,7 @@ void Ide::Print()
 	if(!job.Execute())
 		return;
 	int l, h;
-	if(editor.GetSelection(l, h)) {
+	if(editor.GetSelection32(l, h)) {
 		l = editor.GetLine(l);
 		h = editor.GetLine(h);
 	}

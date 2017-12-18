@@ -63,6 +63,7 @@ void TextCtrl::CancelMode()
 
 void TextCtrl::Clear()
 {
+	GuiLock __;
 	view = NULL;
 	viewlines = 0;
 	cline = 0;
@@ -105,6 +106,7 @@ int TextCtrl::PasteRectSelection(const WString& s) { return 0; }
 
 void   TextCtrl::CachePos(int64 pos)
 {
+	GuiLock __;
 	int64 p = pos;
 	cline = GetLinePos(p);
 	cpos = pos - p;
@@ -112,6 +114,7 @@ void   TextCtrl::CachePos(int64 pos)
 
 void   TextCtrl::CacheLinePos(int linei)
 {
+	GuiLock __;
 	if(linei >= 0 && linei < GetLineCount()) {
 		cpos = GetPos(linei);
 		cline = linei;
@@ -127,6 +130,7 @@ bool   TextCtrl::IsUnicodeCharset(byte charset)
 int sTime0;
 
 int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
+	GuiLock __;
 	Clear();
 	lin.Clear();
 	ClearLines();
@@ -162,6 +166,7 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	
 	if(view) {
 		view_loading_pos = in.GetPos();
+		view_loading_lock = 0;
 		sTime0 = msecs();
 		ViewLoading();
 		PlaceCaret(0);
@@ -175,47 +180,6 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	SetSb();
 	PlaceCaret(0);
 	return m;
-}
-
-void TextCtrl::ViewLoading()
-{
-	GuiLock __;
-	if(view_all)
-		return;
-	int start = msecs();
-	view->Seek(view_loading_pos);
-	for(;;) {
-		offset256.Add(view->GetPos());
-		Vector<Ln> l;
-		bool b;
-		int64 t = 0;
-		LoadLines(l, 256, t, *view, charset, 10000, INT_MAX, b);
-		viewlines += l.GetCount();
-		total += t;
-		total256.Add((int)t);
-		if(view->IsEof()) {
-			RDUMP(msecs(sTime0));
-			WhenViewLoading(view->GetPos());
-			view_all = true;
-			break;
-		}
-		if(msecs(start) > 40) {
-			view_loading_pos = view->GetPos();
-			PostCallback([=] { ViewLoading(); });
-			WhenViewLoading(view_loading_pos);
-			break;
-		}
-		total256.Top()++;
-		total++;
-	}
-	SetSb();
-	Update();
-}
-
-void TextCtrl::WaitView()
-{
-	while(view && !view_all)
-		ViewLoading();
 }
 
 int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int64& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const
@@ -354,6 +318,94 @@ finish:
 	return ls.GetCount() > 1 ? cr ? LE_CRLF : LE_LF : LE_DEFAULT;
 }
 
+void TextCtrl::ViewLoading()
+{
+	GuiLock __;
+	if(view_all)
+		return;
+	int start = msecs();
+	view->Seek(view_loading_pos);
+	int lines0 = viewlines;
+	for(;;) {
+		offset256.Add(view->GetPos());
+		Vector<Ln> l;
+		bool b;
+		int64 t = 0;
+
+		LoadLines(l, 256, t, *view, charset, 10000, INT_MAX, b);
+		viewlines += l.GetCount();
+		total += t;
+		total256.Add((int)t);
+
+		if(view->IsEof() || viewlines > INT_MAX - 512) {
+			RDUMP(msecs(sTime0));
+			WhenViewLoading(view->GetPos());
+			view_all = true;
+			break;
+		}
+		
+		if(view_loading_lock) {
+			view_loading_pos = view->GetPos();
+			WhenViewLoading(view_loading_pos);
+			break;
+		}
+		
+		if(msecs(start) > 20) {
+			view_loading_pos = view->GetPos();
+			PostCallback([=] { ViewLoading(); });
+			WhenViewLoading(view_loading_pos);
+			break;
+		}
+	}
+	InsertLines(lines0, viewlines - lines0);
+	SetSb();
+	Update();
+}
+
+void TextCtrl::UnlockViewLoading()
+{
+	view_loading_lock--;
+	ViewLoading();
+}
+
+void TextCtrl::WaitView(int line, bool progress)
+{
+	if(progress) {
+		LockViewLoading();
+		Progress pi("Scanning the file");
+		pi.Delay(1000);
+		while(view && !view_all && viewlines < line) {
+			if(pi.SetCanceled(int(view_loading_pos >> 10), int(view->GetSize()) >> 10))
+				break;
+			ViewLoading();
+		}
+		UnlockViewLoading();
+	}
+	else
+		while(view && !view_all && viewlines <= line)
+			ViewLoading();
+}
+
+void TextCtrl::SerializeViewMap(Stream& s)
+{
+	GuiLock __;
+	int version = 0;
+	s / version;
+	s.Magic(327845692);
+	s % view_loading_pos
+	  % total
+	  % viewlines
+	  % view_all
+	  % total256
+	  % offset256
+	;
+	if(s.IsLoading()) {
+		SetSb();
+		Update();
+		Refresh();
+	}
+}
+
 const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 {
 	if(view) {
@@ -362,7 +414,6 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 		if(view_cache[0].blk != blk)
 			Swap(view_cache[0], view_cache[1]); // trivial LRU
 			if(view_cache[0].blk != blk) {
-				RTIMING("LoadBlock");
 				Swap(view_cache[0], view_cache[1]); // trivial LRU
 				view->Seek(offset256[blk]);
 				int64 t = 0;
@@ -522,6 +573,7 @@ String TextCtrl::GetEncodedLine(int i, byte charset) const
 }
 
 int   TextCtrl::GetLinePos(int64& pos) const {
+	GuiLock __;
 	if(pos < cpos && cpos - pos < pos && !view) {
 		int i = cline;
 		int64 ps = cpos;
@@ -570,6 +622,7 @@ int   TextCtrl::GetLinePos(int64& pos) const {
 }
 
 int64  TextCtrl::GetPos(int ln, int lpos) const {
+	GuiLock __;
 	ln = minmax(ln, 0, GetLineCount() - 1);
 	int i;
 	int64 pos;
@@ -664,7 +717,7 @@ int  TextCtrl::GetChar(int64 pos) const {
 	return c;
 }
 
-int TextCtrl::GetLinePos32(int& pos) const
+int TextCtrl::GetLinePos32(int& pos)
 {
 	int64 p = pos;
 	int l = GetLinePos(p);
@@ -672,16 +725,31 @@ int TextCtrl::GetLinePos32(int& pos) const
 	return l;
 }
 
-bool TextCtrl::GetSelection32(int& l, int& h) const
+bool TextCtrl::GetSelection32(int& l, int& h)
 {
 	int64 ll, hh;
 	bool b = GetSelection(ll, hh);
+	if(hh >= INT_MAX)
+		return false;
 	l = (int)ll;
 	h = (int)hh;
 	return b;
 }
 
+int TextCtrl::GetCursor32()
+{
+	int64 h = GetCursor();
+	return h < INT_MAX ? (int)h : 0;
+}
+
+int TextCtrl::GetLength32()
+{
+	int64 h = GetLength();
+	return h < INT_MAX ? (int)h : 0;
+}
+
 int TextCtrl::Insert0(int pos, const WString& txt) { // TODO: Do this with utf8
+	GuiLock __;
 	int inspos = pos;
 	PreInsert(inspos, txt);
 	if(pos < cpos)
@@ -743,6 +811,7 @@ int TextCtrl::Insert0(int pos, const WString& txt) { // TODO: Do this with utf8
 }
 
 void TextCtrl::Remove0(int pos, int size) {
+	GuiLock __;
 	int rmpos = pos, rmsize = size;
 	PreRemove(rmpos, rmsize);
 	total -= size;

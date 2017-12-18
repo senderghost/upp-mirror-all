@@ -196,7 +196,7 @@ bool CodeEditor::Find(bool back, bool block)
 	if(notfoundfw) MoveTextBegin();
 	if(notfoundbk) MoveTextEnd();
 	foundsel = false;
-	int cursor, pos;
+	int64 cursor, pos;
 	if(found)
 		GetSelection(pos, cursor);
 	else
@@ -207,20 +207,19 @@ bool CodeEditor::Find(bool back, bool block)
 	return b;
 }
 
-bool CodeEditor::RegExpFind(int pos, bool block)
+bool CodeEditor::RegExpFind(int64 pos, bool block)
 {
 	RegExp regex((String)~findreplace.find);
 	
 	int line = GetLinePos(pos);
-	int linecount = GetLineCount();
-	String ln = ToUtf8(GetWLine(line).Mid(pos));
+	String ln = ToUtf8(GetWLine(line).Mid(LimitSize(pos)));
 	for(;;) {
 		if(regex.Match(ln)) {
 			for(int i = 0; i < regex.GetCount(); i++)
 				SetFound(i, WILDANY, regex.GetString(i).ToWString());
 			int off = regex.GetOffset();
 			int len = utf8len(~ln + off, regex.GetLength());
-			pos = GetPos(line, utf8len(~ln, off) + pos);
+			pos = GetPos(line, utf8len(~ln, off) + (int)pos);
 			foundtext = GetW(pos, len);
 			if(!block) {
 				foundsel = true;
@@ -233,8 +232,11 @@ bool CodeEditor::RegExpFind(int pos, bool block)
 			found = true;
 			return true;
 		}
-		if(++line >= linecount)
-			return false;
+		if(++line >= GetLineCount()) {
+			WaitView(line);
+			if(line >= GetLineCount())
+				return false;
+		}
 		ln = GetUtf8Line(line);
 		pos = 0;
 	}
@@ -242,7 +244,7 @@ bool CodeEditor::RegExpFind(int pos, bool block)
 
 void CodeEditor::FindAll()
 {
-	Vector<Tuple<int, int>> found;
+	Vector<Tuple<int64, int>> found;
 	foundpos = 0;
 	while(FindFrom(foundpos, false, true)) {
 		found.Add(MakeTuple(foundpos, foundsize));
@@ -255,7 +257,7 @@ void CodeEditor::FindAll()
 	WhenFindAll(found);
 }
 
-bool CodeEditor::FindFrom(int pos, bool back, bool block)
+bool CodeEditor::FindFrom(int64 pos, bool back, bool block)
 {
 	notfoundbk = notfoundfw = false;
 	if(findreplace.regexp) {
@@ -303,7 +305,6 @@ bool CodeEditor::FindFrom(int pos, bool back, bool block)
 	if(ft.IsEmpty()) return false;
 	foundwild.Clear();
 	int line = GetLinePos(pos);
-	int linecount = GetLineCount();
 	WString ln = GetWLine(line);
 	const wchar *l = ln;
 	s = l + pos;
@@ -313,7 +314,7 @@ bool CodeEditor::FindFrom(int pos, bool back, bool block)
 			if(!wb || (s == l || !iscidl(s[-1]))) {
 				int n = Match(ft, s, line, we, ignorecase);
 				if(n >= 0) {
-					int pos = GetPos(line, int(s - l));
+					int64 pos = GetPos(line, int(s - l));
 					foundtext = GetW(pos, n);
 					if(!back || pos + n < cursor) {
 						if(!block) {
@@ -342,7 +343,11 @@ bool CodeEditor::FindFrom(int pos, bool back, bool block)
 			s = ln.End();
 		}
 		else {
-			if(++line >= linecount) break;
+			if(++line >= GetLineCount()) {
+				WaitView(line);
+				if(line >= GetLineCount())
+					return false;
+			}
 			ln = GetWLine(line);
 			l = s = ln;
 		}
@@ -535,21 +540,21 @@ int CodeEditor::BlockReplace()
 	NextUndo();
 	Refresh(); // Setting full-refresh here avoids Pre/Post Remove/Insert costs
 	int l, h;
-	if(!GetSelection(l, h)) return 0;
+	if(!GetSelection32(l, h)) return 0;
 	PlaceCaret(l);
 	int count = 0;
 	foundpos = l;
 	Index<int> ln;
 	Progress pi("Searching...");
 	while(FindFrom(foundpos, false, true) && foundpos + foundsize <= h) {
-		pi.Set(foundpos - l, h - l);
+		pi.Set(int(foundpos - l), h - l);
 		if(pi.Canceled())
 			return count;
 		CachePos(foundpos);
 		if(~findreplace.mode == 0) {
-			Remove(foundpos, foundsize);
+			Remove((int)foundpos, foundsize);
 			WString rt = GetReplaceText();
-			Insert(foundpos, rt);
+			Insert((int)foundpos, rt);
 			foundpos += rt.GetCount();
 			h = h - foundsize + rt.GetCount();
 			count++;
@@ -578,8 +583,8 @@ int CodeEditor::BlockReplace()
 				count++;
 			}
 		}
-		int pos = GetPos(ll);
-		Remove(pos, GetPos(GetLine(h)) - pos);
+		int pos = GetPos32(ll);
+		Remove(pos, GetPos32(GetLine(h)) - pos);
 		SetSelection(pos, pos + Insert(pos, replace));
 	}
 	else
@@ -617,7 +622,7 @@ void CodeEditor::FindReplace(bool pick_selection, bool pick_text, bool replace)
 	if(findreplace.IsOpen())
 		CloseFindReplace();
 
-	ff_start_pos = GetCursor();
+	ff_start_pos = GetCursor32();
 
 	replacei = 0;
 	WString find_text;
@@ -629,7 +634,7 @@ void CodeEditor::FindReplace(bool pick_selection, bool pick_text, bool replace)
 	{
 		if(IsSelection()) {
 			int l, h;
-			GetSelection(l, h);
+			GetSelection32(l, h);
 			if(h - l < 100) {
 				find_text = GetSelectionW();
 				if(find_text.Find('\n') >= 0)
@@ -639,7 +644,7 @@ void CodeEditor::FindReplace(bool pick_selection, bool pick_text, bool replace)
 		else
 		if(pick_text) {
 			int l, h;
-			l = h = GetCursor();
+			l = h = GetCursor32();
 			while(l > 0 && CharFilterCIdent(GetChar(l - 1)))
 				l--;
 			while(h < GetLength() && CharFilterCIdent(GetChar(h)))
@@ -684,7 +689,7 @@ void CodeEditor::FindReplace(bool pick_selection, bool pick_text, bool replace)
 void CodeEditor::ReplaceAll(bool rest)
 {
 	int l, h;
-	GetSelection(l, h);
+	GetSelection32(l, h);
 	int c = min(l, h);
 	findreplace.mode <<= 0;
 	SetSelection(rest * c, GetLength());
@@ -888,7 +893,7 @@ void CodeEditor::FindPrevNext(bool prev)
 		WString find_text;
 		if(IsSelection()) {
 			int l, h;
-			GetSelection(l, h);
+			GetSelection32(l, h);
 			if(h - l < 100) {
 				find_text = GetSelectionW();
 				if(find_text.Find('\n') >= 0)

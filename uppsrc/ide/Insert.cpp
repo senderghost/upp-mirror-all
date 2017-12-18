@@ -158,7 +158,7 @@ void Ide::InsertMenu(Bar& bar)
 	}
 	if(editfile.GetCount()) {
 		Parser ctx;
-		editor.Context(ctx, editor.GetCursor());
+		editor.Context(ctx, editor.GetCursor32());
 		if(!IsNull(ctx.current_scope) && ctx.current_scope != "::" && !ctx.IsInBody()) {
 			String s = "typedef " + ctx.current_scope + " CLASSNAME;";
 			bar.Add(s, THISBACK1(InsertText, s));

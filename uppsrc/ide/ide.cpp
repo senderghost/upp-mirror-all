@@ -533,7 +533,7 @@ void Ide::DoDisplay()
 	Point p = editor.GetColumnLine(editor.GetCursor());
 	String s;
 	s << "Ln " << p.y + 1 << ", Col " << p.x + 1;
-	int l, h;
+	int64 l, h;
 	editor.GetSelection(l, h);
 	if(h > l)
 		s << ", Sel " << h - l;

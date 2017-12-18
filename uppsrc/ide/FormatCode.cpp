@@ -120,7 +120,7 @@ void Ide::FormatCode()
 	// Gets editor contents from editor
 	WString Src;
 	int l, h;
-	bool sel = editor.GetSelection(l, h);
+	bool sel = editor.GetSelection32(l, h);
 	if(sel)
 		Src = editor.GetSelectionW();
 	else
@@ -187,7 +187,7 @@ void Ide::FormatCode()
 		editor.SetSelection(l, l + editor.Insert(l, Dest));
 	}
 	else {
-		editor.Remove(0, editor.GetLength());
+		editor.Remove(0, editor.GetLength32());
 		editor.Insert(0, Dest);
 	}
 }

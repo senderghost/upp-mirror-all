@@ -37,12 +37,12 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 {
 	if(chr == '\n') {
 		while(count--) {
-			int pp = e.GetCursor();
-			int cl = e.GetLinePos(pp);
+			int pp = e.GetCursor32();
+			int cl = e.GetLinePos32(pp);
 			WString pl = e.GetWLine(cl);
 			e.InsertChar('\n', 1);
-			int p = e.GetCursor();
-			int l = e.GetLinePos(p);
+			int p = e.GetCursor32();
+			int l = e.GetLinePos32(p);
 			One<EditorSyntax> esyntax;
 			CSyntax *syntax = NULL;
 			if(e.GetLineLength(l) == p) { // At the last char of line
@@ -88,16 +88,16 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 
 	if(e.IsWordwrapComments()) {
 		int limit = e.GetBorderColumn();
-		int pos = e.GetCursor();
+		int pos = e.GetCursor32();
 		int lp = pos;
-		int l = e.GetLinePos(lp);
+		int l = e.GetLinePos32(lp);
 		if(limit > 10 && e.GetColumnLine(pos).x >= limit && lp == e.GetLineLength(l)) {
-			int lp0 = e.GetPos(l);
+			int lp0 = e.GetPos32(l);
 			WString ln = e.GetWLine(l);
 			WString dummy;
 			int cp = GetCommentPos(e, l, dummy);
 			if(cp >= 0) {
-				int wl = e.GetGPos(l, limit) - lp0;
+				int wl = (int)e.GetGPos(l, limit) - lp0;
 				while(wl > cp && ln[wl - 1] != '\n' && ln[wl - 1] != ' ')
 					wl--;
 				int sl = wl - 1;
@@ -140,7 +140,7 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 		}
 	int len = l.GetLength();
 	WString tl;
-	int pos = e.GetPos(cl);
+	int pos = e.GetPos32(cl);
 	if(chr == '{' && cl > 0 && stmtline == cl - 1)
 		tl = e.GetWLine(cl - 1);
 	else
@@ -180,21 +180,21 @@ void CSyntax::ReformatComment(CodeEditor& e)
 	WString ln = e.GetWLine(first_line);
 	int q = GetCommentPos(e, first_line, ch);
 	p = ln.Mid(0, q) + p;
-	int p0 = e.GetPos(first_line);
+	int p0 = e.GetPos32(first_line);
 	e.SetCursor(p0);
-	e.Remove(p0, e.GetPos(last_line + 1) - 1 - p0);
+	e.Remove(p0, e.GetPos32(last_line + 1) - 1 - p0);
 	for(wchar chr : p)
 		IndentInsert0(e, chr, 1, true);
 	e.FinishPut();
 }
 
-bool NotEscape(int pos, const WString& s)
+bool NotEscape(int64 pos, const WString& s)
 {
-	return pos == 0 || s[pos - 1] != '\\' ? true : !NotEscape(pos - 1, s);
+	return pos == 0 || s[(int)pos - 1] != '\\' ? true : !NotEscape(pos - 1, s);
 }
 
-bool CSyntax::CheckBracket(CodeEditor& e, int li, int pos, int ppos, int pos0, WString ln, int d, int limit,
-                               int& bpos0, int& bpos)
+bool CSyntax::CheckBracket(CodeEditor& e, int li, int64 pos, int64 ppos, int64 pos0, WString ln,
+                           int d, int limit, int64& bpos0, int64& bpos)
 {
 	int lvl = 1;
 	pos += d;
@@ -213,13 +213,13 @@ bool CSyntax::CheckBracket(CodeEditor& e, int li, int pos, int ppos, int pos0, W
 				pos = d < 0 ? ln.GetLength() - 1 : 0;
 				ppos += d;
 			}
-			c = ln[pos];
-			if((c == '\"' || c == '\'') && (pos > 0 && NotEscape(pos, ln) && ln[pos - 1] != '\'')) {
+			c = ln[(int)pos];
+			if((c == '\"' || c == '\'') && (pos > 0 && NotEscape(pos, ln) && ln[(int)pos - 1] != '\'')) {
 				pos += d;
 				ppos += d;
 				int lc = c;
 				while(pos < ln.GetLength() && pos > 0) {
-					if(ln[pos] == lc && NotEscape(pos, ln)) {
+					if(ln[(int)pos] == lc && NotEscape(pos, ln)) {
 						pos += d;
 						ppos += d;
 						break;
@@ -246,31 +246,31 @@ bool CSyntax::CheckBracket(CodeEditor& e, int li, int pos, int ppos, int pos0, W
 	return false;
 }
 
-bool CSyntax::CheckLeftBracket(CodeEditor& e, int pos, int& bpos0, int& bpos)
+bool CSyntax::CheckLeftBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& bpos)
 {
 	if(pos < 0 || pos >= e.GetLength())
 		return false;
-	int ppos = pos;
+	int64 ppos = pos;
 	int li = e.GetLinePos(pos);
 	WString ln = e.GetWLine(li);
-	return islbrkt(ln[pos]) &&
+	return islbrkt(ln[(int)pos]) &&
 	       CheckBracket(e, li, pos, ppos, ppos, ln, 1, min(li + 3000, e.GetLineCount()), bpos0, bpos);
 }
 
-bool CSyntax::CheckRightBracket(CodeEditor& e, int pos, int& bpos0, int& bpos)
+bool CSyntax::CheckRightBracket(CodeEditor& e, int64 pos, int64& bpos0, int64& bpos)
 {
 	if(pos < 0 || pos >= e.GetLength())
 		return false;
-	int ppos = pos;
+	int64 ppos = pos;
 	int li = e.GetLinePos(pos);
 	WString ln = e.GetWLine(li);
-	return isrbrkt(ln[pos]) &&
+	return isrbrkt(ln[(int)pos]) &&
 	       CheckBracket(e, li, pos, ppos, ppos, ln, -1, max(li - 3000, 0), bpos0, bpos);
 }
 
-bool CSyntax::CheckBrackets(CodeEditor& e, int& bpos0, int& bpos)
+bool CSyntax::CheckBrackets(CodeEditor& e, int64& bpos0, int64& bpos)
 {
-	int c = e.GetCursor();
+	int64 c = e.GetCursor();
 	return CheckLeftBracket(e, c, bpos0, bpos) ||
 	       CheckRightBracket(e, c, bpos0, bpos) ||
 	       CheckLeftBracket(e, c - 1, bpos0, bpos) ||
@@ -287,7 +287,7 @@ Vector<IfState> CSyntax::PickIfStack()
 	return pick(ifstack);
 }
 
-void CSyntax::CheckSyntaxRefresh(CodeEditor& e, int pos, const WString& text)
+void CSyntax::CheckSyntaxRefresh(CodeEditor& e, int64 pos, const WString& text)
 {
 	for(const wchar *s = text; *s; s++) {
 		if(*s == '{' || *s == '(' || *s == '[' || *s == '/' || *s == '*' ||

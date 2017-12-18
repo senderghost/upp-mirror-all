@@ -219,7 +219,7 @@ int  DocEdit::GetCursorPos(Point p) {
 		p.y -= h;
 		pos += GetLineLength(i) + 1;
 	}
-	return (int)GetLength();
+	return GetLength32();
 }
 
 void DocEdit::PlaceCaret(bool scroll) {

@@ -101,6 +101,7 @@ protected:
 	
 	Vector<int64>     offset256;
 	Vector<int>       total256;
+	int               view_loading_lock;
 	int64             view_loading_pos;
 	bool              view_all;
 
@@ -128,11 +129,6 @@ protected:
 	void   LineInsert(int i, int n)                   { lin.InsertN(i, n); }
 	const Ln& GetLn(int i) const;
 
-	int    LimitSize(int64 size) const                { return (int)max((int64)max_total, size); }
-	int    GetLinePos32(int& pos) const;
-	bool   GetSelection32(int& l, int& h) const;
-	int    GetPos32(int line)                         { return (int)GetPos(line); }
-
 public:
 	virtual void   RefreshLine(int i);
 
@@ -148,7 +144,11 @@ public:
 	enum LE { LE_DEFAULT, LE_CRLF, LE_LF };
 
 	int    View(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, true); }
-	void   WaitView();
+	void   WaitView(int line = INT_MAX, bool progress = false);
+	void   LockViewLoading()                                  { view_loading_lock++; }
+	void   UnlockViewLoading();
+	void   SerializeViewMap(Stream& s);
+	bool   IsView() const                                     { return view; }
 
 	int    Load(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, false); }
 	bool   IsTruncated() const                                { return truncated; }
@@ -228,6 +228,13 @@ public:
 
 	void      SetColor(int i, Color c)         { color[i] = c; Refresh(); }
 	Color     GetColor(int i) const            { return color[i]; }
+
+	int       LimitSize(int64 size) const      { return (int)min((int64)max_total, size); }
+	int       GetLinePos32(int& pos);
+	bool      GetSelection32(int& l, int& h);
+	int       GetPos32(int line, int column = 0) { return (int)GetPos(line, column); }
+	int       GetLength32();
+	int       GetCursor32();
 
 	TextCtrl& UndoSteps(int n)                 { undosteps = n; Undodo(); return *this; }
 	int       GetUndoSteps() const             { return undosteps; }
