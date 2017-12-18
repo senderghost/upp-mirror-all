@@ -18,14 +18,16 @@ GUI_APP_MAIN
 	FileIn in("C:\\xxx\\log\\local1.info");
 #endif
 */
-	FileIn in("C:\\xxx\\belogs\\local2 (2).info");
-//	FileIn in("C:\\xxx\\log\\local1.info");
+//	FileIn in("C:\\xxx\\belogs\\local2 (2).info");
+	FileIn in("C:\\xxx\\log\\local1.info");
 
 
+	if(1)
+		edit.View(in);
+	else
 	{
 		RTIMESTOP("LOAD");
-//		edit.Load(in);
-		edit.View(in);
+		edit.Load(in);
 	}
 	
 	RDUMP(edit.GetLineCount());
