@@ -65,7 +65,8 @@ void TextCtrl::Clear()
 {
 	view = NULL;
 	viewlines = 0;
-	cline = cpos = 0;
+	cline = 0;
+	cpos = 0;
 	total = 0;
 	truncated = false;
 	lin.Clear();
@@ -96,15 +97,15 @@ void TextCtrl::PostRemove(int pos, int size) {}
 void TextCtrl::RefreshLine(int i) {}
 void TextCtrl::InvalidateLine(int i) {}
 void TextCtrl::SetSb() {}
-void TextCtrl::PlaceCaret(int newcursor, bool sel) {}
+void TextCtrl::PlaceCaret(int64 newcursor, bool sel) {}
 
 int TextCtrl::RemoveRectSelection() { return 0; }
 WString TextCtrl::CopyRectSelection() { return Null; }
 int TextCtrl::PasteRectSelection(const WString& s) { return 0; }
 
-void   TextCtrl::CachePos(int pos)
+void   TextCtrl::CachePos(int64 pos)
 {
-	int p = pos;
+	int64 p = pos;
 	cline = GetLinePos(p);
 	cpos = pos - p;
 }
@@ -185,14 +186,13 @@ void TextCtrl::ViewLoading()
 	view->Seek(view_loading_pos);
 	for(;;) {
 		offset256.Add(view->GetPos());
-		int t;
 		Vector<Ln> l;
 		bool b;
-		t = 0;
+		int64 t = 0;
 		LoadLines(l, 256, t, *view, charset, 10000, INT_MAX, b);
 		viewlines += l.GetCount();
 		total += t;
-		total256.Add(t);
+		total256.Add((int)t);
 		if(view->IsEof()) {
 			RDUMP(msecs(sTime0));
 			WhenViewLoading(view->GetPos());
@@ -212,7 +212,13 @@ void TextCtrl::ViewLoading()
 	Update();
 }
 
-int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const
+void TextCtrl::WaitView()
+{
+	while(view && !view_all)
+		ViewLoading();
+}
+
+int TextCtrl::LoadLines(Vector<Ln>& ls, int n, int64& total, Stream& in, byte charset, int max_line_len, int max_total, bool& truncated) const
 {
 	StringBuffer ln;
 	bool cr = false;
@@ -359,11 +365,11 @@ const TextCtrl::Ln& TextCtrl::GetLn(int i) const
 				RTIMING("LoadBlock");
 				Swap(view_cache[0], view_cache[1]); // trivial LRU
 				view->Seek(offset256[blk]);
-				int dummy;
+				int64 t = 0;
 				bool b;
 				view_cache[0].line.Clear();
 				view_cache[0].blk = blk;
-				LoadLines(view_cache[0].line, 256, dummy, *view, charset, 5000, INT_MAX, b);
+				LoadLines(view_cache[0].line, 256, t, *view, charset, 5000, INT_MAX, b);
 			}
 		return view_cache[0].line[i & 255];
 	}
@@ -515,10 +521,10 @@ String TextCtrl::GetEncodedLine(int i, byte charset) const
 	return charset == CHARSET_UTF8 ? h : FromUnicode(FromUtf8(h), charset);
 }
 
-int   TextCtrl::GetLinePos(int& pos) const {
+int   TextCtrl::GetLinePos(int64& pos) const {
 	if(pos < cpos && cpos - pos < pos && !view) {
 		int i = cline;
-		int ps = cpos;
+		int64 ps = cpos;
 		for(;;) {
 			ps -= GetLineLength(--i) + 1;
 			if(ps <= pos) {
@@ -563,9 +569,10 @@ int   TextCtrl::GetLinePos(int& pos) const {
 	}
 }
 
-int   TextCtrl::GetPos(int ln, int lpos) const {
+int64  TextCtrl::GetPos(int ln, int lpos) const {
 	ln = minmax(ln, 0, GetLineCount() - 1);
-	int i, pos;
+	int i;
+	int64 pos;
 	if(ln < cline && cline - ln < ln && !view) {
 		pos = cpos;
 		i = cline;
@@ -592,18 +599,18 @@ int   TextCtrl::GetPos(int ln, int lpos) const {
 	return pos + min(GetLineLength(ln), lpos);
 }
 
-WString TextCtrl::GetW(int pos, int size) const
+WString TextCtrl::GetW(int64 pos, int size) const
 {
 	int i = GetLinePos(pos);
 	WStringBuffer r;
 	for(;;) {
 		if(i >= GetLineCount()) break;
 		WString ln = GetWLine(i++);
-		int sz = min(ln.GetLength() - pos, size);
+		int sz = min(LimitSize(ln.GetLength() - pos), size);
 		if(pos == 0 && sz == ln.GetLength())
 			r.Cat(ln);
 		else
-			r.Cat(ln.Mid(pos, sz));
+			r.Cat(ln.Mid((int)pos, sz));
 		size -= sz;
 		if(size == 0) break;
 #ifdef PLATFORM_WIN32
@@ -617,14 +624,14 @@ WString TextCtrl::GetW(int pos, int size) const
 	return r;
 }
 
-String TextCtrl::Get(int pos, int size, byte charset) const
+String TextCtrl::Get(int64 pos, int size, byte charset) const
 {
 	if(charset == CHARSET_UTF8) {
 		int i = GetLinePos(pos);
 		StringBuffer r;
 		for(;;) {
 			if(i >= GetLineCount()) break;
-			int sz = min(GetLineLength(i) - pos, size);
+			int sz = min(LimitSize(GetLineLength(i) - pos), size);
 			const String& h = GetUtf8Line(i);
 			const char *s = h;
 			int n = h.GetCount();
@@ -632,7 +639,7 @@ String TextCtrl::Get(int pos, int size, byte charset) const
 			if(pos == 0 && sz == n)
 				r.Cat(s, n);
 			else
-				r.Cat(FromUtf8(s, n).Mid(pos, sz).ToString());
+				r.Cat(FromUtf8(s, n).Mid((int)pos, sz).ToString());
 			size -= sz;
 			if(size == 0) break;
 	#ifdef PLATFORM_WIN32
@@ -648,13 +655,30 @@ String TextCtrl::Get(int pos, int size, byte charset) const
 	return FromUnicode(GetW(pos, size), charset);
 }
 
-int  TextCtrl::GetChar(int pos) const {
+int  TextCtrl::GetChar(int64 pos) const {
 	if(pos < 0 || pos >= GetLength())
 		return 0;
 	int i = GetLinePos(pos);
 	WString ln = GetWLine(i);
-	int c = ln.GetLength() == pos ? '\n' : ln[pos];
+	int c = ln.GetLength() == pos ? '\n' : ln[(int)pos];
 	return c;
+}
+
+int TextCtrl::GetLinePos32(int& pos) const
+{
+	int64 p = pos;
+	int l = GetLinePos(p);
+	pos = (int)p;
+	return l;
+}
+
+bool TextCtrl::GetSelection32(int& l, int& h) const
+{
+	int64 ll, hh;
+	bool b = GetSelection(ll, hh);
+	l = (int)ll;
+	h = (int)hh;
+	return b;
 }
 
 int TextCtrl::Insert0(int pos, const WString& txt) { // TODO: Do this with utf8
@@ -662,7 +686,7 @@ int TextCtrl::Insert0(int pos, const WString& txt) { // TODO: Do this with utf8
 	PreInsert(inspos, txt);
 	if(pos < cpos)
 		cpos = cline = 0;
-	int i = GetLinePos(pos);
+	int i = GetLinePos32(pos);
 	DirtyFrom(i);
 	int size = 0;
 
@@ -724,10 +748,10 @@ void TextCtrl::Remove0(int pos, int size) {
 	total -= size;
 	if(pos < cpos)
 		cpos = cline = 0;
-	int i = GetLinePos(pos);
+	int i = GetLinePos32(pos);
 	DirtyFrom(i);
 	WString ln = GetWLine(i);
-	int sz = min(ln.GetLength() - pos, size);
+	int sz = min(LimitSize(ln.GetLength() - pos), size);
 	ln.Remove(pos, sz);
 	size -= sz;
 	SetLine(i, ln);
@@ -919,16 +943,16 @@ void  TextCtrl::ClearSelection() {
 	WhenSel();
 }
 
-void   TextCtrl::SetSelection(int l, int h) {
+void   TextCtrl::SetSelection(int64 l, int64 h) {
 	if(l != h) {
-		PlaceCaret(minmax(l, 0, total), false);
-		PlaceCaret(minmax(h, 0, total), true);
+		PlaceCaret(minmax(l, (int64)0, total), false);
+		PlaceCaret(minmax(h, (int64)0, total), true);
 	}
 	else
 		SetCursor(l);
 }
 
-bool   TextCtrl::GetSelection(int& l, int& h) const {
+bool   TextCtrl::GetSelection(int64& l, int64& h) const {
 	if(anchor < 0) {
 		l = h = cursor;
 		return false;
@@ -941,27 +965,27 @@ bool   TextCtrl::GetSelection(int& l, int& h) const {
 }
 
 String TextCtrl::GetSelection(byte charset) const {
-	int l, h;
+	int64 l, h;
 	if(GetSelection(l, h))
-		return Get(l, h - l, charset);
+		return Get(l, LimitSize(h - l), charset);
 	return String();
 }
 
 WString TextCtrl::GetSelectionW() const {
-	int l, h;
+	int64 l, h;
 	if(GetSelection(l, h))
-		return GetW(l, h - l);
+		return GetW(l, LimitSize(h - l));
 	return WString();
 }
 
 bool   TextCtrl::RemoveSelection() {
-	int l, h;
+	int64 l, h;
 	if(anchor < 0) return false;
 	if(IsRectSelection())
 		l = RemoveRectSelection();
 	else {
 		GetSelection(l, h);
-		Remove(l, h - l);
+		Remove((int)l, int(h - l));
 	}
 	anchor = -1;
 	Refresh();
@@ -984,7 +1008,7 @@ void TextCtrl::Cut() {
 }
 
 void TextCtrl::Copy() {
-	int l, h;
+	int64 l, h;
 	if(!GetSelection(l, h) && !IsAnySelection()) {
 		int i = GetLine(cursor);
 		l = GetPos(i);
@@ -994,7 +1018,7 @@ void TextCtrl::Copy() {
 	if(IsRectSelection())
 		txt = CopyRectSelection();
 	else
-		txt = GetW(l, h - l);
+		txt = GetW(l, LimitSize(h - l));
 	ClearClipboard();
 	AppendClipboardUnicodeText(txt);
 	AppendClipboardText(txt.ToString());
@@ -1011,7 +1035,7 @@ int  TextCtrl::Paste(const WString& text) {
 		n = PasteRectSelection(text);
 	else {
 		RemoveSelection();
-		n = Insert(cursor, text);
+		n = Insert((int)cursor, text);
 		PlaceCaret(cursor + n);
 	}
 	Refresh();

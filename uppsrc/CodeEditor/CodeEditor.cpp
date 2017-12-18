@@ -222,7 +222,7 @@ void CodeEditor::SwapChars() {
 	if(IsReadOnly()) return;
 	int i = GetLine(cursor);
 	int j = GetPos(i);
-	if (j < cursor && (cursor-j) < line[i].GetLength()) {
+	if (j < cursor && cursor - j < GetLineLength(i)) {
 		int p = cursor;
 		WString txt(GetChar(p-1),1);
 		Remove(p-1,1);
