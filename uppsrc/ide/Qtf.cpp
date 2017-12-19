@@ -44,7 +44,7 @@ void QtfDlg::Copy()
 struct QtfDlgEditor : TopWindow {
 	RichEditWithToolBar editor;
 
-	void Serialize(Stream& s);	
+	void Serialize(Stream& s);
 	
 	QtfDlgEditor();
 };

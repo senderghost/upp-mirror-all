@@ -127,8 +127,6 @@ bool   TextCtrl::IsUnicodeCharset(byte charset)
 	                        CHARSET_UTF16_LE_BOM, CHARSET_UTF16_BE_BOM) >= 0;
 }
 
-int sTime0;
-
 int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	GuiLock __;
 	Clear();
@@ -167,7 +165,6 @@ int   TextCtrl::Load0(Stream& in, byte charset, bool view) {
 	if(view) {
 		view_loading_pos = in.GetPos();
 		view_loading_lock = 0;
-		sTime0 = msecs();
 		ViewLoading();
 		PlaceCaret(0);
 		return 0;
@@ -321,7 +318,7 @@ finish:
 void TextCtrl::ViewLoading()
 {
 	GuiLock __;
-	if(view_all)
+	if(view_all || !view)
 		return;
 	int start = msecs();
 	view->Seek(view_loading_pos);
@@ -336,24 +333,29 @@ void TextCtrl::ViewLoading()
 		viewlines += l.GetCount();
 		total += t;
 		total256.Add((int)t);
+		
+	#ifdef CPU_32
+		enum { MAX_LINES = 128000000 };
+	#else
+		enum { MAX_LINES = INT_MAX - 512 };
+	#endif
 
 		if(view->IsEof() || viewlines > INT_MAX - 512) {
-			RDUMP(msecs(sTime0));
-			WhenViewLoading(view->GetPos());
+			WhenViewMapping(view->GetPos());
 			view_all = true;
 			break;
 		}
 		
 		if(view_loading_lock) {
 			view_loading_pos = view->GetPos();
-			WhenViewLoading(view_loading_pos);
+			WhenViewMapping(view_loading_pos);
 			break;
 		}
 		
 		if(msecs(start) > 20) {
 			view_loading_pos = view->GetPos();
 			PostCallback([=] { ViewLoading(); });
-			WhenViewLoading(view_loading_pos);
+			WhenViewMapping(view_loading_pos);
 			break;
 		}
 	}
@@ -362,7 +364,7 @@ void TextCtrl::ViewLoading()
 	Update();
 }
 
-void TextCtrl::UnlockViewLoading()
+void TextCtrl::UnlockViewMapping()
 {
 	view_loading_lock--;
 	ViewLoading();
@@ -370,20 +372,21 @@ void TextCtrl::UnlockViewLoading()
 
 void TextCtrl::WaitView(int line, bool progress)
 {
-	if(progress) {
-		LockViewLoading();
-		Progress pi("Scanning the file");
-		pi.Delay(1000);
-		while(view && !view_all && viewlines < line) {
-			if(pi.SetCanceled(int(view_loading_pos >> 10), int(view->GetSize()) >> 10))
-				break;
-			ViewLoading();
+	if(view)
+		if(progress) {
+			LockViewMapping();
+			Progress pi("Scanning the file");
+			pi.Delay(1000);
+			while(view && !view_all && viewlines < line) {
+				if(pi.SetCanceled(int(view_loading_pos >> 10), int(view->GetSize()) >> 10))
+					break;
+				ViewLoading();
+			}
+			UnlockViewMapping();
 		}
-		UnlockViewLoading();
-	}
-	else
-		while(view && !view_all && viewlines <= line)
-			ViewLoading();
+		else
+			while(view && !view_all && viewlines <= line)
+				ViewLoading();
 }
 
 void TextCtrl::SerializeViewMap(Stream& s)

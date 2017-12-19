@@ -141,7 +141,7 @@ public:
 	Event<Bar&>  WhenBar;
 	Event<>      WhenState;
 	Event<>      WhenSel;
-	Event<int64> WhenViewLoading;
+	Event<int64> WhenViewMapping;
 
 	void   CachePos(int64 pos);
 	void   CacheLinePos(int linei);
@@ -151,8 +151,8 @@ public:
 
 	int    View(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, true); }
 	void   WaitView(int line = INT_MAX, bool progress = false);
-	void   LockViewLoading()                                  { view_loading_lock++; }
-	void   UnlockViewLoading();
+	void   LockViewMapping()                                  { view_loading_lock++; }
+	void   UnlockViewMapping();
 	void   SerializeViewMap(Stream& s);
 	bool   IsView() const                                     { return view; }
 
@@ -169,11 +169,9 @@ public:
 	bool   CheckCharset(byte charset = CHARSET_DEFAULT) const { return GetInvalidCharPos(charset) < 0; }
 
 	int    LimitSize(int64 size) const                        { return int(view ? min((int64)max_total, size) : size); }
-	int    GetLinePos(int& pos)                               { return GetLinePos32(pos); }
-	bool   GetSelection(int& l, int& h)                       { return GetSelection32(l, h); }
-	int    GetPos(int line, int column = 0)                   { return GetPos32(line, column); }
-	int    GetLength()                                        { return GetLength32(); }
-	int    GetCursor()                                        { return GetCursor32(); }
+
+	int    GetLinePos(int& pos) const                         { return GetLinePos32(pos); }
+	int    GetPos(int line, int column = 0) const             { return GetPos32(line, column); }
 
 	void    Set(const WString& s);
 	void    Set(const String& s, byte charset = CHARSET_DEFAULT);
@@ -207,6 +205,7 @@ public:
 	bool    IsSelection() const               { return IsAnySelection() && !rectsel; }
 	bool    IsRectSelection() const           { return IsAnySelection() && rectsel; }
 	bool    IsAnySelection() const            { return anchor >= 0 && anchor != cursor; }
+	bool    GetSelection(int& l, int& h) const{ return GetSelection32(l, h); }
 	bool    GetSelection(int64& l, int64& h) const;
 	String  GetSelection(byte charset = CHARSET_DEFAULT) const;
 	WString GetSelectionW() const;

@@ -434,7 +434,9 @@ public:
 
 	One<IdeDesigner> designer;
 	AssistEditor     editor;
+	FileIn           view_file;
 	AssistEditor     editor2; // no edits happen in editor2, just view
+	FileIn           view_file2;
 	EditorTabBar     tabs;
 	EscValue         macro_api;
 #ifdef PLATFORM_POSIX
