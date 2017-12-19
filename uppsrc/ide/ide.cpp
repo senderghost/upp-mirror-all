@@ -16,25 +16,26 @@ void Ide::MakeTitle()
 		title << " - ";
 	title << "TheIDE";
 	if(designer) {
-		title << " - [" << designer->GetFileName();
+		title << " - " << designer->GetFileName();
 		int cs = designer->GetCharset();
 		if(cs >= 0)
 			title << " " << CharsetName(cs);
-		title << "]";
 	}
 	else
 	if(!editfile.IsEmpty()) {
-		title << " - [" << editfile;
+		title << " - " << editfile;
 		int chrset = editor.GetCharset();
 		title << " " << IdeCharsetName(chrset)
 		      << " " << (findarg(Nvl(editfile_line_endings, line_endings), LF, DETECT_LF) >= 0 ? "LF" : "CRLF");
 		if(editor.IsTruncated())
-			title << " (Truncated)";
+			title << " [Truncated]";
+		if(editor.IsView())
+			title << " [View]";
+		else
 		if(editor.IsReadOnly())
-			title << " (Read Only)";
+			title << " [Read Only]";
 		if(editor.IsDirty())
 			title << " *";
-		title << "]";
 	}
 	if(!IsNull(editfile))
 		for(int i = 0; i < 10; i++)
@@ -75,7 +76,7 @@ void Ide::MakeIcon() {
 
 bool Ide::CanToggleReadOnly()
 {
-	return NormalizePath(GetActiveFilePath()) == NormalizePath(editfile);
+	return NormalizePath(GetActiveFilePath()) == NormalizePath(editfile) && !editor.IsView();
 }
 
 void Ide::ToggleReadOnly()

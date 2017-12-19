@@ -11,8 +11,11 @@ public:
 		int    serial;
 		int    pos;
 		int    size;
-		String text;
+		String data;
 		bool   typing;
+		
+		void   SetText(const String& text) { data = FastCompress(text); }
+		String GetText() const             { return FastDecompress(data); }
 	};
 
 	struct UndoData {

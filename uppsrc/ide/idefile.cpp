@@ -426,6 +426,7 @@ void Ide::FlushFile() {
 	repo_dirs = RepoDirs(true).GetCount(); // Perhaps not the best place, but should be ok
 	editor.Clear();
 	editor.Disable();
+	editor.SetEditable();
 	editorsplit.Ctrl::Remove();
 	designer.Clear();
 	view_file.Close();
@@ -558,7 +559,16 @@ void Ide::EditFile0(const String& path, byte charset, int spellcheck_comments, c
 					charset = CHARSET_UTF8_BOM;
 				view_file.Seek(0);
 				int le = Null;
-				if(view_file.GetSize() < 256*1024*1024 || editastext.Find(editfile) >= 0) {
+			#ifdef CPU_64
+				const int64 max_size = (int64)4096*1024*1024;
+			#else
+				const int64 max_size = 768*1024*1024;
+			#endif
+				const int view_limit = 256*1024*1024;
+				DDUMP(view_file.GetSize());
+				DDUMP(editastext.Find(editfile));
+				DDUMP(editor.IsReadOnly());
+				if(view_file.GetSize() < 256*1024*1024 || editastext.Find(editfile) >= 0 && view_file.GetSize() < max_size) {
 					le = editor.Load(view_file, charset);
 					view_file.Close();
 				}
@@ -578,12 +588,17 @@ void Ide::EditFile0(const String& path, byte charset, int spellcheck_comments, c
 			editor.SetLineInfo(fd.lineinfo);
 			editor.SetLineInfoRem(pick(fd.lineinforem));
 		}
+		DDUMP(ff.IsReadOnly());
+		DDUMP(IsNestReadOnly(editfile));
+		DDUMP(editor.IsTruncated());
+		DDUMP(editor.IsView());
 		if(ff.IsReadOnly() || IsNestReadOnly(editfile) || editor.IsTruncated() || editor.IsView()) {
 			editor.SetReadOnly();
 			editor.NoShowReadOnly();
 		}
 		fd.ClearP();
 		PosSync();
+		editor.ClearDirty();
 	}
 	else {
 		RealizePath(editfile);

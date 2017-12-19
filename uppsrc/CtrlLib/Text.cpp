@@ -923,7 +923,7 @@ void TextCtrl::RemoveU(int pos, int size) {
 		u.serial = undoserial;
 		u.pos = pos;
 		u.size = 0;
-		u.text = Get(pos, size, CHARSET_UTF8);
+		u.SetText(Get(pos, size, CHARSET_UTF8));
 		u.typing = false;
 	}
 	Remove0(pos, size);
@@ -968,11 +968,11 @@ void TextCtrl::Undo() {
 		CachePos(r.pos);
 		if(u.size) {
 			r.size = 0;
-			r.text = Get(u.pos, u.size, CHARSET_UTF8);
+			r.SetText(Get(u.pos, u.size, CHARSET_UTF8));
 			Remove0(u.pos, u.size);
 		}
 		else {
-			WString text = FromUtf8(u.text);
+			WString text = FromUtf8(u.GetText());
 			r.size = Insert0(u.pos, text);
 			nc += r.size;
 		}
@@ -999,7 +999,7 @@ void TextCtrl::Redo() {
 		if(r.size)
 			RemoveU(r.pos, r.size);
 		else
-			nc += InsertU(r.pos, FromUtf8(r.text));
+			nc += InsertU(r.pos, FromUtf8(r.GetText()));
 		redo.DropTail();
 		IncDirty();
 	}
