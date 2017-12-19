@@ -558,12 +558,13 @@ void Ide::EditFile0(const String& path, byte charset, int spellcheck_comments, c
 					charset = CHARSET_UTF8_BOM;
 				view_file.Seek(0);
 				int le = Null;
-				if(view_file.GetSize() < 256 * 1024 * 1024) {
+				if(view_file.GetSize() < 256*1024*1024 || editastext.Find(editfile) >= 0) {
 					le = editor.Load(view_file, charset);
 					view_file.Close();
 				}
 				else
 					ViewFile(editor, view_file, editfile);
+				
 				editfile_line_endings = le == TextCtrl::LE_CRLF ? CRLF : le == TextCtrl::LE_LF ? LF : (int)Null;
 			}
 		}
