@@ -329,7 +329,7 @@ void Ide::TranslateString()
 {
 	if(editor.IsReadOnly()) return;
 	int l, h;
-	if(editor.GetSelection32(l, h)) {
+	if(editor.GetSelection(l, h)) {
 		editor.Insert(l, "t_(");
 		editor.Insert(h + 3, ")");
 		editor.SetCursor(h + 4);

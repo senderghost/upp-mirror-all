@@ -37,12 +37,12 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 {
 	if(chr == '\n') {
 		while(count--) {
-			int pp = e.GetCursor32();
-			int cl = e.GetLinePos32(pp);
+			int pp = e.GetCursor();
+			int cl = e.GetLinePos(pp);
 			WString pl = e.GetWLine(cl);
 			e.InsertChar('\n', 1);
-			int p = e.GetCursor32();
-			int l = e.GetLinePos32(p);
+			int p = e.GetCursor();
+			int l = e.GetLinePos(p);
 			One<EditorSyntax> esyntax;
 			CSyntax *syntax = NULL;
 			if(e.GetLineLength(l) == p) { // At the last char of line
@@ -88,11 +88,11 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 
 	if(e.IsWordwrapComments()) {
 		int limit = e.GetBorderColumn();
-		int pos = e.GetCursor32();
+		int pos = e.GetCursor();
 		int lp = pos;
-		int l = e.GetLinePos32(lp);
+		int l = e.GetLinePos(lp);
 		if(limit > 10 && e.GetColumnLine(pos).x >= limit && lp == e.GetLineLength(l)) {
-			int lp0 = e.GetPos32(l);
+			int lp0 = e.GetPos(l);
 			WString ln = e.GetWLine(l);
 			WString dummy;
 			int cp = GetCommentPos(e, l, dummy);
@@ -140,7 +140,7 @@ void CSyntax::IndentInsert0(CodeEditor& e, int chr, int count, bool reformat)
 		}
 	int len = l.GetLength();
 	WString tl;
-	int pos = e.GetPos32(cl);
+	int pos = e.GetPos(cl);
 	if(chr == '{' && cl > 0 && stmtline == cl - 1)
 		tl = e.GetWLine(cl - 1);
 	else
@@ -180,9 +180,9 @@ void CSyntax::ReformatComment(CodeEditor& e)
 	WString ln = e.GetWLine(first_line);
 	int q = GetCommentPos(e, first_line, ch);
 	p = ln.Mid(0, q) + p;
-	int p0 = e.GetPos32(first_line);
+	int p0 = e.GetPos(first_line);
 	e.SetCursor(p0);
-	e.Remove(p0, e.GetPos32(last_line + 1) - 1 - p0);
+	e.Remove(p0, e.GetPos(last_line + 1) - 1 - p0);
 	for(wchar chr : p)
 		IndentInsert0(e, chr, 1, true);
 	e.FinishPut();

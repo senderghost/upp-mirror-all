@@ -84,7 +84,7 @@ void Ide::ConsolePaste()
 	String s = ReadClipboardText();
 	if(!IsNull(s)) {
 		s.Insert(0, '\n');
-		int len = console.GetLength32();
+		int len = console.GetLength();
 		console.Insert(len, s.ToWString());
 		console.SetCursor(len + 1);
 	}

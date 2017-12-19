@@ -129,6 +129,12 @@ protected:
 	void   LineInsert(int i, int n)                   { lin.InsertN(i, n); }
 	const Ln& GetLn(int i) const;
 
+	int    GetLinePos32(int& pos) const;
+	bool   GetSelection32(int& l, int& h) const;
+	int    GetPos32(int line, int column = 0) const   { return (int)GetPos64(line, column); }
+	int    GetLength32() const;
+	int    GetCursor32() const;
+
 public:
 	virtual void   RefreshLine(int i);
 
@@ -162,12 +168,12 @@ public:
 	int    GetInvalidCharPos(byte charset = CHARSET_DEFAULT) const;
 	bool   CheckCharset(byte charset = CHARSET_DEFAULT) const { return GetInvalidCharPos(charset) < 0; }
 
-	int       LimitSize(int64 size) const        { return (int)min((int64)max_total, size); }
-	int       GetLinePos32(int& pos);
-	bool      GetSelection32(int& l, int& h);
-	int       GetPos32(int line, int column = 0) { return (int)GetPos64(line, column); }
-	int       GetLength32();
-	int       GetCursor32();
+	int    LimitSize(int64 size) const                        { return int(view ? min((int64)max_total, size) : size); }
+	int    GetLinePos(int& pos)                               { return GetLinePos32(pos); }
+	bool   GetSelection(int& l, int& h)                       { return GetSelection32(l, h); }
+	int    GetPos(int line, int column = 0)                   { return GetPos32(line, column); }
+	int    GetLength()                                        { return GetLength32(); }
+	int    GetCursor()                                        { return GetCursor32(); }
 
 	void    Set(const WString& s);
 	void    Set(const String& s, byte charset = CHARSET_DEFAULT);

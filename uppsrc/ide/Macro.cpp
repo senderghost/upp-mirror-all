@@ -67,7 +67,7 @@ EscValue Ide::MacroEditor()
 
 void Ide::MacroGetLength(EscEscape& e)
 {
-	e = editor.GetLength32();
+	e = editor.GetLength();
 }
 
 void Ide::MacroGetLineCount(EscEscape& e)
@@ -77,7 +77,7 @@ void Ide::MacroGetLineCount(EscEscape& e)
 
 void Ide::MacroGetLinePos(EscEscape& e)
 {
-	e = editor.GetPos32(e.Int(0));
+	e = editor.GetPos(e.Int(0));
 }
 
 void Ide::MacroGetLineLength(EscEscape& e)
@@ -87,7 +87,7 @@ void Ide::MacroGetLineLength(EscEscape& e)
 
 void Ide::MacroGetCursor(EscEscape& e)
 {
-	e = editor.GetCursor32();
+	e = editor.GetCursor();
 }
 
 void Ide::MacroGetLine(EscEscape& e)
@@ -98,32 +98,32 @@ void Ide::MacroGetLine(EscEscape& e)
 void Ide::MacroGetColumn(EscEscape& e)
 {
 	int pos = e.Int(0);
-	editor.GetLinePos32(pos);
+	editor.GetLinePos(pos);
 	e = pos;
 }
 
 void Ide::MacroGetSelBegin(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection32(l, h))
+	if(editor.GetSelection(l, h))
 		e = l;
 	else
-		e = editor.GetCursor32();
+		e = editor.GetCursor();
 }
 
 void Ide::MacroGetSelEnd(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection32(l, h))
+	if(editor.GetSelection(l, h))
 		e = h;
 	else
-		e = editor.GetCursor32();
+		e = editor.GetCursor();
 }
 
 void Ide::MacroGetSelCount(EscEscape& e)
 {
 	int l, h;
-	if(editor.GetSelection32(l, h))
+	if(editor.GetSelection(l, h))
 		e = h - l;
 	else
 		e = 0.0;
@@ -137,9 +137,9 @@ void Ide::MacroSetCursor(EscEscape& e)
 void Ide::MacroSetSelection(EscEscape& e)
 {
 	int b = e.Int(0), c = e.Int(1);
-	if(b < 0 || b > editor.GetLength32() || c < 0 || c > editor.GetLength32() || b + c > editor.GetLength32())
+	if(b < 0 || b > editor.GetLength() || c < 0 || c > editor.GetLength() || b + c > editor.GetLength())
 		e.ThrowError(NFormat("invalid selection: begin = %d, count = %d (text length = %d)",
-			b, c, editor.GetLength32()));
+			b, c, editor.GetLength()));
 	editor.SetSelection(b, b + c);
 }
 
@@ -154,8 +154,8 @@ void Ide::MacroGet(EscEscape& e)
 		e.ThrowError("wrong number of arguments in call to Get (1 or 2 expected)");
 	int pos = e.Int(0);
 	int count = e.GetCount() > 1 ? e.Int(1) : 1;
-	if(pos < 0 || pos > editor.GetLength32() || count <= 0 || pos + count > editor.GetLength32())
-		e.ThrowError(NFormat("error in Get(%d, %d), text length = %d", pos, count, editor.GetLength32()));
+	if(pos < 0 || pos > editor.GetLength() || count <= 0 || pos + count > editor.GetLength())
+		e.ThrowError(NFormat("error in Get(%d, %d), text length = %d", pos, count, editor.GetLength()));
 	e = editor.GetW(pos, count);
 }
 
@@ -164,11 +164,11 @@ void Ide::MacroRemove(EscEscape& e)
 	int c = e.GetCount();
 	if(c > 2)
 		e.ThrowError("wrong number of arguments in call to Remove (0 to 2 expected)");
-	int len = editor.GetLength32();
-	int cur = editor.GetCursor32();
+	int len = editor.GetLength();
+	int cur = editor.GetCursor();
 	if(c == 0) {
 		int l, h;
-		if(editor.GetSelection32(l, h))
+		if(editor.GetSelection(l, h))
 			editor.Remove(l, h - l);
 		else if(cur < len)
 			editor.Remove(cur, 1);
@@ -189,7 +189,7 @@ void Ide::MacroInsert(EscEscape& e)
 	if(c < 1 || c > 2)
 		e.ThrowError("wrong number of arguments in call to Insert (1 or 2 expected)");
 	WString text = e[c - 1];
-	editor.Insert(c > 1 ? e.Int(0) : editor.GetCursor32(), text);
+	editor.Insert(c > 1 ? e.Int(0) : editor.GetCursor(), text);
 }
 
 void Ide::MacroFind(EscEscape& e)
@@ -301,9 +301,9 @@ void Ide::MacroMoveTextEnd(EscEscape& e)
 void Ide::MacroMoveWordRight(EscEscape& e)
 {
 	if(e.GetCount() > 1) e.ThrowError("MoveWordRight(sel = false) takes at most 1 parameter");
-	int p = editor.GetCursor32();
+	int p = editor.GetCursor();
 	int b = p;
-	int l = editor.GetLength32();
+	int l = editor.GetLength();
 	if(iscid(editor.GetChar(p)))
 		while(p < l && iscid(editor.GetChar(p))) p++;
 	else
@@ -317,7 +317,7 @@ void Ide::MacroMoveWordRight(EscEscape& e)
 void Ide::MacroMoveWordLeft(EscEscape& e)
 {
 	if(e.GetCount() > 1) e.ThrowError("MoveWordLeft(sel = false) takes at most 1 parameter");
-	int p = editor.GetCursor32();
+	int p = editor.GetCursor();
 	if(p == 0) return;
 	int b = p;
 	if(iscid(editor.GetChar(p - 1)))

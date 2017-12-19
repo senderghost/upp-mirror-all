@@ -63,8 +63,8 @@ bool IsPendif(const String& l)
 
 void Ide::FindId(const String& id)
 {
-	int pos = editor.GetCursor32();
-	int h = min(editor.GetLength32(), pos + 4000);
+	int pos = editor.GetCursor();
+	int h = min(editor.GetLength(), pos + 4000);
 	for(;;) {
 		if(pos >= h || editor[pos] == ';')
 			break;
@@ -360,7 +360,7 @@ void Ide::ContextGoto0(int pos)
 
 void Ide::ContextGoto()
 {
-	ContextGoto0(editor.GetCursor32());
+	ContextGoto0(editor.GetCursor());
 }
 
 void Ide::CtrlClick(int64 pos)

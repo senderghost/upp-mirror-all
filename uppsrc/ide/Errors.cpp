@@ -163,7 +163,7 @@ bool Ide::FindLineError(const String& ln, FindLineErrorCache& cache, ErrorInfo& 
 
 void Ide::FindError()
 {
-	FindLineError(console.GetLine(console.GetCursor32()));
+	FindLineError(console.GetLine(console.GetCursor()));
 }
 
 bool Ide::Next(int tab, ArrayCtrl& a, int d)
@@ -195,7 +195,7 @@ void Ide::FindNextError()
 {
 	if(Next(BERRORS, error, 1) || Next(BFINDINFILES, ffound, 1))
 		return;
-	int ln = console.GetLine(console.GetCursor32());
+	int ln = console.GetLine(console.GetCursor());
 	int l = ln;
 	for(l = ln; l < console.GetLineCount(); l++)
 		if(FindLineError(l)) return;
@@ -206,7 +206,7 @@ void Ide::FindNextError()
 void Ide::FindPrevError() {
 	if(Next(BERRORS, error, -1) || Next(BFINDINFILES, ffound, -1))
 		return;
-	int ln = console.GetLine(console.GetCursor32());
+	int ln = console.GetLine(console.GetCursor());
 	int l = ln;
 	One<Host> host = CreateHost(false);
 	for(l = ln - 2; l >= 0; l--)
@@ -296,7 +296,7 @@ void Ide::GoToError(const ErrorInfo& f)
 	DoEditAsText(file);
 	EditFile(file);
 	int lp = max(f.linepos - 1, 0);
-	int pos = editor.GetPos32(editor.GetLineNo(f.lineno - 1), lp);
+	int pos = editor.GetPos(editor.GetLineNo(f.lineno - 1), lp);
 	editor.SetCursor(pos);
 	if(*f.message == '\1') {
 		Vector<String> h = Split(~f.message + 1, '\1', false);

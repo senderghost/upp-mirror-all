@@ -1649,7 +1649,7 @@ void Gdb_MI2::QuickWatch()
 	if(typeid(*c) == typeid(AssistEditor))
 	{
 		AssistEditor *a = dynamic_cast<AssistEditor *>(c);
-		String s = a->ReadIdBack(a->GetCursor32());
+		String s = a->ReadIdBack(a->GetCursor());
 		quickwatch.expression <<= s;
 	}
 	else if(c == &autos)

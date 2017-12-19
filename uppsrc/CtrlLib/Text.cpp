@@ -717,7 +717,7 @@ int  TextCtrl::GetChar(int64 pos) const {
 	return c;
 }
 
-int TextCtrl::GetLinePos32(int& pos)
+int TextCtrl::GetLinePos32(int& pos) const
 {
 	int64 p = pos;
 	int l = GetLinePos64(p);
@@ -725,7 +725,7 @@ int TextCtrl::GetLinePos32(int& pos)
 	return l;
 }
 
-bool TextCtrl::GetSelection32(int& l, int& h)
+bool TextCtrl::GetSelection32(int& l, int& h) const
 {
 	int64 ll, hh;
 	bool b = GetSelection(ll, hh);
@@ -736,13 +736,13 @@ bool TextCtrl::GetSelection32(int& l, int& h)
 	return b;
 }
 
-int TextCtrl::GetCursor32()
+int TextCtrl::GetCursor32() const
 {
 	int64 h = GetCursor64();
 	return h < INT_MAX ? (int)h : 0;
 }
 
-int TextCtrl::GetLength32()
+int TextCtrl::GetLength32() const
 {
 	int64 h = GetLength64();
 	return h < INT_MAX ? (int)h : 0;
