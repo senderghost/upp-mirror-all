@@ -158,6 +158,7 @@ public:
 	void   UnlockViewMapping();
 	void   SerializeViewMap(Stream& s);
 	bool   IsView() const                                     { return view; }
+	int64  GetViewSize() const                                { return view ? view->GetSize() : 0; }
 
 	int    GetLinePos64(int64& pos) const;
 	int64  GetPos64(int line, int column = 0) const;

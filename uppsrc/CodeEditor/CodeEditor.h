@@ -292,6 +292,10 @@ protected:
 	int   tippos;
 	
 	int   replacei;
+	
+	bool          search_canceled;
+	int           search_time0;
+	One<Progress> search_progress;
 
 	struct HlSt;
 	
@@ -337,6 +341,11 @@ protected:
 	};
 
 	void   Periodic();
+
+	void   StartSearchProgress(int64 l, int64 h);
+	bool   SearchProgress(int line);
+	bool   SearchCanceled();
+	void   EndSearchProgress();
 
 public:
 	struct MouseTip {
@@ -388,11 +397,6 @@ public:
 	void   Replace();
 	void   ReplaceAll(bool rest);
 	int    BlockReplace();
-
-	void   StartSearchProgress(int64 l, int64 h);
-	bool   SearchProgress(int line);
-	bool   SearchCanceled();
-	void   EndSearchProgress();
 
 	void   MakeTabsOrSpaces(bool tabs);
 	void   MakeLineEnds();

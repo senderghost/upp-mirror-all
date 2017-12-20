@@ -893,7 +893,7 @@ void CodeEditor::SetFindReplaceData(const FindReplaceData& r)
 
 void CodeEditor::FindPrevNext(bool prev)
 {
-	StartSearchProgress(0, GetLength64());
+	StartSearchProgress(-1, -1);
 	if(!findreplace.IsOpen()) {
 		WString find_text;
 		if(IsSelection()) {
@@ -916,8 +916,6 @@ void CodeEditor::FindPrevNext(bool prev)
 	EndSearchProgress();
 }
 
-
-
 void CodeEditor::FindNext()
 {
 	FindPrevNext(false);
@@ -928,22 +926,35 @@ void CodeEditor::FindPrev()
 	FindPrevNext(true);
 }
 
-void CodeEditor::StartSearchProgress(int64 l, int64 h)
+void CodeEditor::StartSearchProgress(int64, int64)
 {
+	search_canceled = false;
+	search_time0 = msecs();
 }
 
 bool CodeEditor::SearchProgress(int line)
 {
-	return true;
+	if(!search_canceled && msecs(search_time0) > 20) {
+		search_time0 = msecs();
+		if(!search_progress) {
+			search_progress.Create().Create();
+			search_progress->SetText("Scanning the file");
+		}
+		search_canceled = IsView() ? search_progress->SetCanceled(GetPos64(line), GetViewSize())
+		                           : search_progress->SetCanceled(line, GetLineCount());
+	}
+	return !search_canceled;
 }
 
 bool CodeEditor::SearchCanceled()
 {
-	return false;
+	return search_canceled;
 }
 
 void CodeEditor::EndSearchProgress()
 {
+	search_progress.Clear();
+	search_canceled = false;
 }
 
 }
