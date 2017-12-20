@@ -940,7 +940,7 @@ bool CodeEditor::SearchProgress(int line)
 			search_progress.Create().Create();
 			search_progress->SetText("Scanning the file");
 		}
-		search_canceled = IsView() ? search_progress->SetCanceled(GetPos64(line), GetViewSize())
+		search_canceled = IsView() ? search_progress->SetCanceled(int(GetPos64(line) >> 8), int(GetViewSize() >> 8))
 		                           : search_progress->SetCanceled(line, GetLineCount());
 	}
 	return !search_canceled;

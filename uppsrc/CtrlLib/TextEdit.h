@@ -152,19 +152,6 @@ public:
 	enum CS { CHARSET_UTF8_BOM = 250, CHARSET_UTF16_LE, CHARSET_UTF16_BE, CHARSET_UTF16_LE_BOM, CHARSET_UTF16_BE_BOM };
 	enum LE { LE_DEFAULT, LE_CRLF, LE_LF };
 
-	int    View(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, true); }
-	void   WaitView(int line = INT_MAX, bool progress = false);
-	void   LockViewMapping()                                  { view_loading_lock++; }
-	void   UnlockViewMapping();
-	void   SerializeViewMap(Stream& s);
-	bool   IsView() const                                     { return view; }
-	int64  GetViewSize() const                                { return view ? view->GetSize() : 0; }
-
-	int    GetLinePos64(int64& pos) const;
-	int64  GetPos64(int line, int column = 0) const;
-	int64  GetLength64() const                                { return total; }
-	int64  GetCursor64() const                                { return cursor; }
-
 	int    Load(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, false); }
 	bool   IsTruncated() const                                { return truncated; }
 	void   Save(Stream& s, byte charset = CHARSET_DEFAULT, int line_endings = LE_DEFAULT) const;
@@ -246,6 +233,19 @@ public:
 
 	void      SetColor(int i, Color c)         { color[i] = c; Refresh(); }
 	Color     GetColor(int i) const            { return color[i]; }
+
+	int       View(Stream& s, byte charset = CHARSET_DEFAULT)    { return Load0(s, charset, true); }
+	void      WaitView(int line = INT_MAX, bool progress = false);
+	void      LockViewMapping()                                  { view_loading_lock++; }
+	void      UnlockViewMapping();
+	void      SerializeViewMap(Stream& s);
+	bool      IsView() const                                     { return view; }
+	int64     GetViewSize() const                                { return view ? view->GetSize() : 0; }
+
+	int       GetLinePos64(int64& pos) const;
+	int64     GetPos64(int line, int column = 0) const;
+	int64     GetLength64() const                                { return total; }
+	int64     GetCursor64() const                                { return cursor; }
 
 	TextCtrl& UndoSteps(int n)                 { undosteps = n; Undodo(); return *this; }
 	int       GetUndoSteps() const             { return undosteps; }

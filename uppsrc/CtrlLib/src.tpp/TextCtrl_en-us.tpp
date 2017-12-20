@@ -468,6 +468,61 @@ _[@(0.0.255) const]&]
 [s2;%% Gets the color used to display the text.&]
 [s3;%% &]
 [s4; &]
+[s5;:Upp`:`:TextCtrl`:`:View`(Upp`:`:Stream`&`,Upp`:`:byte`): [@(0.0.255) int]_[* View]([_^Upp`:`:Stream^ S
+tream][@(0.0.255) `&]_[*@3 s], [_^Upp`:`:byte^ byte]_[*@3 charset]_`=_CHARSET`_DEFAULT)&]
+[s2;%% Initiates the view mode. In view mode, file is not loaded, 
+but displayed while loading it from the stream as necessary. 
+TextCtrl retains a reference to [%-*@3 s] so it must exist for 
+the whole time it is displayed in TextCtrl. TextCtrl is in read`-only 
+mode for view operations. View allows viewing of files >2GB, 
+therefore some functions have 64`-bit counterparts working in 
+view mode only. View actually needs to scan the file to create 
+a map of file; this operation is performed in background (via 
+PostCallbacks), application can use SerializeViewMap to store 
+cache this map for particular file.&]
+[s3;%% &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:WaitView`(int`,bool`): [@(0.0.255) void]_[* WaitView]([@(0.0.255) i
+nt]_[*@3 line], [@(0.0.255) bool]_[*@3 progress])&]
+[s2;%% While mapping of file for view is in progress, makes sure 
+that the file is mapped up to [%-*@3 line] or EOF. If [%-*@3 progress] 
+is true, progress is displayed.&]
+[s3;%% &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:LockViewMapping`(`): [@(0.0.255) void]_[* LockViewMapping]()&]
+[s2;%% Stops background mapping of file for view.&]
+[s3; &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:UnlockViewMapping`(`): [@(0.0.255) void]_[* UnlockViewMapping]()&]
+[s2; Continues mapping of file for view.&]
+[s3; &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:SerializeViewMap`(Upp`:`:Stream`&`): [@(0.0.255) void]_[* Seriali
+zeViewMap]([_^Upp`:`:Stream^ Stream][@(0.0.255) `&]_[*@3 s])&]
+[s2;%% Serializes the file view map.&]
+[s3;%% &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:IsView`(`)const: [@(0.0.255) bool]_[* IsView]()_[@(0.0.255) const]&]
+[s2;%% Returns true if TextCtrl is in view mode.&]
+[s3; &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:GetViewSize`(`)const: [_^Upp`:`:int64^ int64]_[* GetViewSize]()_[@(0.0.255) c
+onst]&]
+[s2;%% Returns GetSize of view stream.&]
+[s3; &]
+[s4; &]
+[s5;:Upp`:`:TextCtrl`:`:GetLinePos64`(Upp`:`:int64`&`)const: [@(0.0.255) int]_[* GetLineP
+os64]([_^Upp`:`:int64^ int64][@(0.0.255) `&]_[*@3 pos])_[@(0.0.255) const]&]
+[s5;:Upp`:`:TextCtrl`:`:GetPos64`(int`,int`)const: [_^Upp`:`:int64^ int64]_[* GetPos64]([@(0.0.255) i
+nt]_[*@3 ln], [@(0.0.255) int]_[*@3 lpos])_[@(0.0.255) const]&]
+[s5;:Upp`:`:TextCtrl`:`:GetLength64`(`)const: [_^Upp`:`:int64^ int64]_[* GetLength64]()_[@(0.0.255) c
+onst]&]
+[s5;:Upp`:`:TextCtrl`:`:GetCursor64`(`)const: [_^Upp`:`:int64^ int64]_[* GetCursor64]()_[@(0.0.255) c
+onst]&]
+[s2;%% These are variants of GetLinePos, GetPos, GetLength and GetCursor64 
+for view mode (where values > INT`_MAX are possible).&]
+[s3; &]
+[s4; &]
 [s5;:TextCtrl`:`:UndoSteps`(int`): [_^TextCtrl^ TextCtrl][@(0.0.255) `&]_[* UndoSteps]([@(0.0.255) i
 nt]_[*@3 n])&]
 [s2;%% Sets the maximum number of undo steps.&]
