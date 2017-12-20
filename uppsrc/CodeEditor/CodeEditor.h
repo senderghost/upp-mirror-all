@@ -389,6 +389,11 @@ public:
 	void   ReplaceAll(bool rest);
 	int    BlockReplace();
 
+	void   StartSearchProgress(int64 l, int64 h);
+	bool   SearchProgress(int line);
+	bool   SearchCanceled();
+	void   EndSearchProgress();
+
 	void   MakeTabsOrSpaces(bool tabs);
 	void   MakeLineEnds();
 

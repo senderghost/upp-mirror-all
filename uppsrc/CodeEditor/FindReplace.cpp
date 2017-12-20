@@ -239,6 +239,8 @@ bool CodeEditor::RegExpFind(int64 pos, bool block)
 		}
 		ln = GetUtf8Line(line);
 		pos = 0;
+		if(!SearchProgress(line))
+			return false;
 	}
 }
 
@@ -346,11 +348,13 @@ bool CodeEditor::FindFrom(int64 pos, bool back, bool block)
 			if(++line >= GetLineCount()) {
 				WaitView(line);
 				if(line >= GetLineCount())
-					return false;
+					break;
 			}
 			ln = GetWLine(line);
 			l = s = ln;
 		}
+		if(!SearchProgress(back ? GetLineCount() - line : line))
+			break;
 	}
 	if(back)
 		notfoundbk = true;
@@ -545,11 +549,8 @@ int CodeEditor::BlockReplace()
 	int count = 0;
 	foundpos = l;
 	Index<int> ln;
-	Progress pi("Searching...");
+	StartSearchProgress(l, h);
 	while(FindFrom(foundpos, false, true) && foundpos + foundsize <= h) {
-		pi.Set(int(foundpos - l), h - l);
-		if(pi.Canceled())
-			return count;
 		CachePos(foundpos);
 		if(~findreplace.mode == 0) {
 			Remove((int)foundpos, foundsize);
@@ -564,8 +565,11 @@ int CodeEditor::BlockReplace()
 			foundpos += foundsize;
 		}
 	}
+	if(SearchCanceled())
+		return count;
+	EndSearchProgress();
+	Progress pi("Removing lines");
 	if(~findreplace.mode != 0) {
-		pi.SetText("Removing lines");
 		ClearSelection();
 		int ll = GetLine(l);
 		int lh = GetLine(h);
@@ -889,6 +893,7 @@ void CodeEditor::SetFindReplaceData(const FindReplaceData& r)
 
 void CodeEditor::FindPrevNext(bool prev)
 {
+	StartSearchProgress(0, GetLength64());
 	if(!findreplace.IsOpen()) {
 		WString find_text;
 		if(IsSelection()) {
@@ -908,7 +913,10 @@ void CodeEditor::FindPrevNext(bool prev)
 		NoFindError();
 	else
 		NotFound();
+	EndSearchProgress();
 }
+
+
 
 void CodeEditor::FindNext()
 {
@@ -918,6 +926,24 @@ void CodeEditor::FindNext()
 void CodeEditor::FindPrev()
 {
 	FindPrevNext(true);
+}
+
+void CodeEditor::StartSearchProgress(int64 l, int64 h)
+{
+}
+
+bool CodeEditor::SearchProgress(int line)
+{
+	return true;
+}
+
+bool CodeEditor::SearchCanceled()
+{
+	return false;
+}
+
+void CodeEditor::EndSearchProgress()
+{
 }
 
 }
