@@ -47,15 +47,20 @@ void Rasterizer::SetClip(const Rectf& rect)
 	cliprect = rect & Sizef(sz);
 }
 
-Rasterizer::Rasterizer(int cx, int cy, bool subpixel)
+void Rasterizer::Create(int cx, int cy, bool subpixel)
 {
 	mx = subpixel ? 3 * 256 : 256;
-	sz.cx = /*subpixel ? 3 * cx : */cx;
+	sz.cx = cx;
 	sz.cy = cy;
 	cell.Alloc(sz.cy + 1);
 	cliprect = Sizef(sz);
 	Init();
 	Reset();
+}
+
+Rasterizer::Rasterizer(int cx, int cy, bool subpixel)
+{
+	Create(cx, cy, subpixel);
 }
 
 inline Rasterizer::Cell *Rasterizer::AddCells(int y, int n)

@@ -39,6 +39,28 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 		current = Null;
 		return newclip;
 	}
+
+	if(co && width != CLIP && width != ONPATH && !ss && cojob.GetCount() < 16 && !alt) {
+		if(width < 0)
+			Close();
+		CoJob& job = cojob.Add();
+		job.path.data = clone(path.data);
+		job.path.type = clone(path.type);
+		job.attr = pathattr;
+		job.width = width;
+		job.color = color;
+		job.ischar = ischar;
+		job.path_min = path_min;
+		job.path_max = path_max;
+		job.rasterizer.Create(ib.GetWidth(), ib.GetHeight(), mode == MODE_SUBPIXEL);
+		current = Null;
+		if(cojob.GetCount() > 16)
+			Finish();
+		return newclip;
+	}
+	
+	Finish();
+	
 	Transformer trans(pathattr.mtx);
 	Stroker stroker;
 	Dasher dasher;
@@ -65,7 +87,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 		preclip = Rectf(tl, br);
 		
 		if(!preclip.Intersects(
-				Rectf(path_min, path_max).Inflated(max(width, 0.0) * (1 + attr.miter_limit)))) {
+				Rectf(path_min, path_max).Inflated(max(width, 0.0) * (1 + pathattr.miter_limit)))) {
 			LLOG("Preclipped " << preclip << ", min " << path_min << ", max " << path_max);
 			current = Null;
 			return newclip;
@@ -79,7 +101,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 	else {
 		trans.target = g;
 		g = &trans;
-		tolerance = 0.3 / attr.mtx.GetScale();
+		tolerance = 0.3 / pathattr.mtx.GetScale();
 	}
 	if(width == ONPATH) {
 		g = &onpathtarget;
@@ -152,95 +174,37 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, con
 		rg = &noaa_filler;
 	}
 	PAINTER_TIMING("RenderPath2");
-	for(;;) {
-		if(i >= path.type.GetCount() || path.type[i] == DIV) {
-			g->End();
-			if(width != ONPATH) {
-				if(alt)
-					alt->Fill(width, ss, color);
-				else {
-					PAINTER_TIMING("Fill");
-					for(int y = rasterizer.MinY(); y <= rasterizer.MaxY(); y++) {
-						solid_filler.t = subpixel_filler.t = span_filler.t = ib[y];
-						subpixel_filler.end = subpixel_filler.t + ib.GetWidth();
-						span_filler.y = subpixel_filler.y = y;
-						Rasterizer::Filler *rf = rg;
-						if(clip.GetCount()) {
-							const ClippingLine& s = clip.Top()[y];
-							if(s.IsEmpty()) goto empty;
-							if(!s.IsFull()) {
-								mf.Set(rg, s);
-								rf = &mf;
-							}
+	while(i < path.type.GetCount()) {
+		RenderPathSegments(g, pos, path, data, i, attr, regular, tolerance);
+		g->End();
+		if(width != ONPATH) {
+			if(alt)
+				alt->Fill(width, ss, color);
+			else {
+				PAINTER_TIMING("Fill");
+				for(int y = rasterizer.MinY(); y <= rasterizer.MaxY(); y++) {
+					solid_filler.t = subpixel_filler.t = span_filler.t = ib[y];
+					subpixel_filler.end = subpixel_filler.t + ib.GetWidth();
+					span_filler.y = subpixel_filler.y = y;
+					Rasterizer::Filler *rf = rg;
+					if(clip.GetCount()) {
+						const ClippingLine& s = clip.Top()[y];
+						if(s.IsEmpty()) goto empty;
+						if(!s.IsFull()) {
+							mf.Set(rg, s);
+							rf = &mf;
 						}
-						if(doclip)
-							clip_filler.Clear();
-						rasterizer.Render(y, *rf, evenodd);
-						if(doclip)
-							clip_filler.Finish(newclip[y]);
-					empty:;
 					}
-					rasterizer.Reset();
+					if(doclip)
+						clip_filler.Clear();
+					rasterizer.Render(y, *rf, evenodd);
+					if(doclip)
+						clip_filler.Finish(newclip[y]);
+				empty:;
 				}
+				rasterizer.Reset();
 			}
-			if(i >= path.type.GetCount())
-				break;
 		}
-		else
-		switch(path.type[i]) {
-		case MOVE: {
-			const LinearData *d = (LinearData *)data;
-			data += sizeof(LinearData);
-			g->Move(pos = regular ? pathattr.mtx.Transform(d->p) : d->p);
-			break;
-		}
-		case LINE: {
-			PAINTER_TIMING("LINE");
-			const LinearData *d = (LinearData *)data;
-			data += sizeof(LinearData);
-			g->Line(pos = regular ? pathattr.mtx.Transform(d->p) : d->p);
-			break;
-		}
-		case QUADRATIC: {
-			PAINTER_TIMING("QUADRATIC");
-			const QuadraticData *d = (QuadraticData *)data;
-			data += sizeof(QuadraticData);
-			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d->p);
-				ApproximateQuadratic(*g, pos, pathattr.mtx.Transform(d->p1), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateQuadratic(*g, pos, d->p1, d->p, tolerance);
-				pos = d->p;
-			}
-			break;
-		}
-		case CUBIC: {
-			PAINTER_TIMING("CUBIC");
-			const CubicData *d = (CubicData *)data;
-			data += sizeof(CubicData);
-			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d->p);
-				ApproximateCubic(*g, pos, pathattr.mtx.Transform(d->p1),
-				                 pathattr.mtx.Transform(d->p2), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateCubic(*g, pos, d->p1, d->p2, d->p, tolerance);
-				pos = d->p;
-			}
-			break;
-		}
-		case CHAR:
-			ApproximateChar(*g, *(CharData *)data, tolerance);
-			data += sizeof(CharData);
-			break;
-		default:
-			NEVER();
-			return newclip;
-		}
-		i++;
 	}
 	current = Null;
 	if(width == ONPATH) {

@@ -162,8 +162,11 @@ public:
 	void Render(int y, Filler& g, bool evenodd);
 
 	void Reset();
+
+	void Create(int cx, int cy, bool subpixel);
 	
 	Rasterizer(int cx, int cy, bool subpixel);
+	Rasterizer() {}
 };
 
 struct SpanSource {
@@ -333,7 +336,6 @@ private:
 	bool                       dopreclip;
 
 	Attr                       attr;
-	Attr                       pathattr;
 	Array<Attr>                attrstack;
 	Vector< Buffer<ClippingLine> > clip;
 	Array< ImageBuffer >       mask;
@@ -344,10 +346,16 @@ private:
 	RGBA                       gradient1, gradient2;
 	int                        gradientn;
 
-	Path         path;
+//	struct PathInfo {
+		Path         path;
+		bool         ischar;
+		Pointf       path_min, path_max;
+		Attr         pathattr;
+//	};
+	
+//	PathInfo     pi;
+
 	Pointf       current, ccontrol, qcontrol, move;
-	bool         ischar;
-	Pointf       path_min, path_max;
 	
 	Rasterizer   rasterizer;
 	Buffer<RGBA> span;
@@ -358,6 +366,26 @@ private:
 	struct OnPathTarget;
 	friend struct OnPathTarget;
 	
+	bool co = false;
+	
+	struct CoJob {
+		Attr        attr;
+		Path        path;
+		double      width;
+		RGBA        color;
+		bool        ischar;
+		Rasterizer  rasterizer;
+		Pointf      path_min, path_max;
+		
+		void DoPath(const BufferPainter& sw);
+		
+		CoJob() {}
+	};
+	
+	friend struct CoJob;
+	
+	Array<CoJob> cojob;
+	
 	void        *PathAddRaw(int type, int size);
 	template <class T> T& PathAdd(int type) { return *(T *)PathAddRaw(type, sizeof(T)); }
 
@@ -365,7 +393,7 @@ private:
 	Pointf           EndPoint(const Pointf& p, bool rel);
 	void             DoMove0();
 	void             ClearPath();
-	void             ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
+	static void      ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
 	Buffer<ClippingLine> RenderPath(double width, SpanSource *ss, const RGBA& color);
 	void             RenderImage(double width, const Image& image, const Xform2D& transsrc,
 	                             dword flags);
@@ -378,17 +406,24 @@ private:
 	void             Gradient(const RGBA& color1, const RGBA& color2, const Pointf& p1, const Pointf& p2);
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
-	
+
+	static const byte *RenderPathSegments(LinearPathConsumer *g, Pointf& pos, const Path& path, const byte *data, int& i, const Attr& attr, bool regular, double tolerance);
+
 	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 
 public:
 	ImageBuffer&       GetBuffer()                             { return ib; }
 	const ImageBuffer& GetBuffer() const                       { return ib; }
+
+	void               Finish();
 	
 	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; return *this; }
+	BufferPainter&     Co(bool b = true)                       { co = b; return *this; }
 
 	BufferPainter(ImageBuffer& ib, int mode = MODE_ANTIALIASED);
 	BufferPainter(PainterTarget& t, double tolerance = Null);
+	
+	~BufferPainter()                                           { Finish(); }
 };
 
 #include "Interpolator.hpp"
