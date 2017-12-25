@@ -110,11 +110,6 @@ inline void AlphaBlendCover8(RGBA& t, const RGBA& c, int cover)
 	t.a = a + (alpha * t.a >> 8);
 }
 
-// #define RLEGACY
-// #define RMAP
-// #define RINDEX
-#define RPTR
-
 class Rasterizer : public LinearPathConsumer {
 public:
 	virtual void Move(const Pointf& p);
@@ -128,31 +123,21 @@ private:
 
 		bool operator<(const Cell& b) const { return x < b.x; }
     };
-
-	Rectf                   cliprect;
-	Pointf                  p0;
-#ifdef RPTR
 	struct CellArray {
 		int  count;
 		int  alloc;
 	};
+
+	Rectf                   cliprect;
+	Pointf                  p0;
 	Buffer<CellArray *>     cell;
-	static CellArray       *AllocArray(int n);
-#endif
-#ifdef RINDEX
-	Buffer<int>             cell;
-	Vector<Vector<Cell>>    celldata;
-#endif
-#ifdef RMAP
-	VectorMap<int, Vector<Cell>> cell;
-#endif
-#ifdef RLEGACY
-	Buffer< Vector<Cell> >  cell;
-#endif
+
 	int                     min_y;
 	int                     max_y;
 	Size                    sz;
 	int                     mx;
+
+	static CellArray       *AllocArray(int n);
 
 	void  Init();
 	Cell *AddCells(int y, int n);
@@ -162,6 +147,7 @@ private:
 	int   CvY(double y);
 	void  CvLine(double x1, double y1, double x2, double y2);
 	bool  BeginRender(int y, const Cell *&c, const Cell *&e);
+	void  Free();
 
 	static int Q8Y(double y) { return int(y * 256 + 0.5); }
 	int Q8X(double x)        { return int(x * mx + 0.5); }
@@ -188,14 +174,13 @@ public:
 	void Create(int cx, int cy, bool subpixel);
 	
 	Rasterizer(int cx, int cy, bool subpixel);
-	Rasterizer() {}
-#ifdef RPTR
+	Rasterizer() { sz = Size(0, 0); }
 	~Rasterizer();
-#endif
 };
 
 struct SpanSource {
 	virtual void Get(RGBA *span, int x, int y, unsigned len) = 0;
+	virtual ~SpanSource() {}
 };
 
 class ClippingLine : NoCopy {

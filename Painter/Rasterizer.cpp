@@ -34,14 +34,20 @@ Rasterizer::Rasterizer(int cx, int cy, bool subpixel)
 
 Rasterizer::~Rasterizer()
 {
-	for(int i = 0; i <= sz.cy; i++)
-		if(cell[i])
-			MemoryFree(cell[i]);
+	Free();
+}
+
+void Rasterizer::Free()
+{
+	if(cell)
+		for(int i = 0; i <= sz.cy; i++)
+			if(cell[i])
+				MemoryFree(cell[i]);
 }
 
 void Rasterizer::Create(int cx, int cy, bool subpixel)
 {
-	RTIMING("Create");
+	Free();
 
 	mx = subpixel ? 3 * 256 : 256;
 	sz.cx = cx;
@@ -64,7 +70,7 @@ void Rasterizer::Init()
 
 void Rasterizer::Reset()
 {
-	PAINTER_TIMING("Rasterizer::Reset");
+	RTIMING("Rasterizer::Reset");
 	for(int i = min_y; i <= max_y; i++)
 		if(cell[i])
 			if(cell[i]->alloc > 11) {
@@ -91,7 +97,6 @@ force_inline Rasterizer::CellArray *Rasterizer::AllocArray(int n)
 
 force_inline Rasterizer::Cell *Rasterizer::AddCells(int y, int n)
 {
-#ifdef RPTR
 	CellArray *a = cell[y];
 	if(a) {
 		if(n + a->count <= a->alloc) {
@@ -112,29 +117,6 @@ force_inline Rasterizer::Cell *Rasterizer::AddCells(int y, int n)
 	a = cell[y] = AllocArray(n);
 	a->count = n;
 	return (Cell *)(a + 1);
-#else
-#ifdef RMAP
-	Vector<Cell>& v = cell.GetAdd(y);
-#endif
-#ifdef RLEGACY
-	Vector<Cell>& v = cell[y];
-#endif
-#ifdef RINDEX
-	if(cell[y] < 0) {
-		cell[y] = celldata.GetCount();
-		celldata.Add();
-	}
-	Vector<Cell>& v = celldata[cell[y]];
-#endif
-	if(v.GetAlloc() == 0) {
-		v.Reserve(16);
-		v.SetCount(n);
-		return &v[0];
-	}
-	y = v.GetCount();
-	v.SetCount(y + n);
-	return &v[y];
-#endif
 }
 
 inline void Rasterizer::RenderHLine(int ey, int x1, int y1, int x2, int y2)
@@ -372,41 +354,15 @@ void Rasterizer::LineRaw(int x1, int y1, int x2, int y2)
 
 void Rasterizer::Filler::End() {}
 
-Vector<int> stats;
-
 void Rasterizer::Render(int y, Rasterizer::Filler& g, bool evenodd)
 {
 	PAINTER_TIMING("Render");
-#ifdef RMAP
-	int q = cell.Find(y);
-	if(q < 0)
-		return;
-	Vector<Cell>& cl = cell[q];
-#endif
-#ifdef RLEGACY
-	if(y < min_y || y > max_y) return;
-	Vector<Cell>& cl = cell[y];
-#endif
-#ifdef RINDEX
-	int q = cell[y];
-	if(q < 0)
-		return;
-	Vector<Cell>& cl = celldata[q];
-#endif
-#ifdef RPTR
 	CellArray *a = cell[y];
 	if(!a || a->count == 0)
 		return;
 	Cell *c = (Cell *)(a + 1);
 	Cell *e = c + a->count;
 	Sort(SubRange(c, e));
-#else
-	constCell *c, *e;
-	if(cl.GetCount() == 0) return;
-	Sort(cl);
-	c = cl;
-	e = cl.End();
-#endif
 	g.Start(c->x, (e - 1)->x);
 	int cover = 0;
 	while(c < e) {
