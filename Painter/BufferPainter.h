@@ -110,6 +110,11 @@ inline void AlphaBlendCover8(RGBA& t, const RGBA& c, int cover)
 	t.a = a + (alpha * t.a >> 8);
 }
 
+// #define RLEGACY
+// #define RMAP
+// #define RINDEX
+#define RPTR
+
 class Rasterizer : public LinearPathConsumer {
 public:
 	virtual void Move(const Pointf& p);
@@ -126,7 +131,24 @@ private:
 
 	Rectf                   cliprect;
 	Pointf                  p0;
+#ifdef RPTR
+	struct CellArray {
+		int  count;
+		int  alloc;
+	};
+	Buffer<CellArray *>     cell;
+	static CellArray       *AllocArray(int n);
+#endif
+#ifdef RINDEX
+	Buffer<int>             cell;
+	Vector<Vector<Cell>>    celldata;
+#endif
+#ifdef RMAP
+	VectorMap<int, Vector<Cell>> cell;
+#endif
+#ifdef RLEGACY
 	Buffer< Vector<Cell> >  cell;
+#endif
 	int                     min_y;
 	int                     max_y;
 	Size                    sz;
@@ -167,6 +189,9 @@ public:
 	
 	Rasterizer(int cx, int cy, bool subpixel);
 	Rasterizer() {}
+#ifdef RPTR
+	~Rasterizer();
+#endif
 };
 
 struct SpanSource {
@@ -283,7 +308,7 @@ protected:
 
 private:
 	enum {
-		MOVE, LINE, QUADRATIC, CUBIC, DIV, CHAR
+		MOVE, LINE, QUADRATIC, CUBIC, CHAR
 	};
 	struct LinearData {
 		Pointf p;
@@ -298,10 +323,6 @@ private:
 		int  ch;
 		int  _filler;
 		Font fnt;
-	};
-	struct Path {
-		Vector<byte> type;
-		Vector<byte> data;
 	};
 	struct PathLine : Moveable<PathLine> {
 		Pointf p;
@@ -346,19 +367,15 @@ private:
 	RGBA                       gradient1, gradient2;
 	int                        gradientn;
 
-//	struct PathInfo {
-		Path         path;
-		bool         ischar;
-		Pointf       path_min, path_max;
-		Attr         pathattr;
-//	};
-	
-//	PathInfo     pi;
+	Vector<String> path;
+	bool           ischar;
+	Pointf         path_min, path_max;
+	Attr           pathattr;
 
 	Pointf       current, ccontrol, qcontrol, move;
 	
-	Rasterizer   rasterizer;
-	Buffer<RGBA> span;
+	Rasterizer       rasterizer;
+	Buffer<RGBA>     span;
 
 	Vector<PathLine> onpath;
 	double           pathlen;
@@ -367,16 +384,50 @@ private:
 	friend struct OnPathTarget;
 	
 	bool co = false;
+
+	struct OnPathTarget : LinearPathConsumer {
+		Vector<BufferPainter::PathLine> path;
+		Pointf pos;
+		double len;
+		
+		virtual void Move(const Pointf& p) {
+			BufferPainter::PathLine& t = path.Add();
+			t.len = 0;
+			pos = t.p = p;
+		}
+		virtual void Line(const Pointf& p) {
+			BufferPainter::PathLine& t = path.Add();
+			len += (t.len = Distance(pos, p));
+			pos = t.p = p;
+		}
+		
+		OnPathTarget() { len = 0; pos = Pointf(0, 0); }
+	};
+	
+	struct PathJob {
+		Transformer   trans;
+		Stroker       stroker;
+		Dasher        dasher;
+		OnPathTarget  onpathtarget;
+		bool          evenodd;
+		bool          regular;
+		double        tolerance;
+
+		LinearPathConsumer *g;
+
+		PathJob(Rasterizer& r, double width, bool ischar, bool dopreclip, Pointf path_min, Pointf path_max, const Attr& attr);
+	};
 	
 	struct CoJob {
-		Attr        attr;
-		Path        path;
-		double      width;
-		RGBA        color;
-		bool        ischar;
-		Rasterizer  rasterizer;
-		Pointf      path_min, path_max;
-		
+		Attr         attr;
+		String       path;
+		double       width;
+		RGBA         color;
+		bool         ischar;
+		Rasterizer   rasterizer;
+		Pointf       path_min, path_max;
+		bool         evenodd;
+		RGBA         c;
 		void DoPath(const BufferPainter& sw);
 		
 		CoJob() {}
@@ -385,16 +436,17 @@ private:
 	friend struct CoJob;
 	
 	Array<CoJob> cojob;
+	int          jobcount;
 	
-	void        *PathAddRaw(int type, int size);
-	template <class T> T& PathAdd(int type) { return *(T *)PathAddRaw(type, sizeof(T)); }
+	void         PathAddRaw(int type, const void *data, int size);
+	template <class T> void PathAdd(int type, const T& data) { return PathAddRaw(type, &data, sizeof(T)); }
 
 	Pointf           PathPoint(const Pointf& p, bool rel);
 	Pointf           EndPoint(const Pointf& p, bool rel);
 	void             DoMove0();
 	void             ClearPath();
 	static void      ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
-	Buffer<ClippingLine> RenderPath(double width, SpanSource *ss, const RGBA& color);
+	Buffer<ClippingLine> RenderPath(double width, Event<One<SpanSource>&> ss, const RGBA& color);
 	void             RenderImage(double width, const Image& image, const Xform2D& transsrc,
 	                             dword flags);
 	void             RenderRadial(double width, const Pointf& f, const RGBA& color1,
@@ -407,7 +459,8 @@ private:
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
 
-	static const byte *RenderPathSegments(LinearPathConsumer *g, Pointf& pos, const Path& path, const byte *data, int& i, const Attr& attr, bool regular, double tolerance);
+	static void RenderPathSegments(LinearPathConsumer *g, const String& path,
+	                               const Attr *attr, double tolerance);
 
 	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 
