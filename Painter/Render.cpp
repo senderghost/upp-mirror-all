@@ -345,11 +345,12 @@ void BufferPainter::Finish()
 	};
 
 	int n = maxy - miny;
-	if(n >= 0)
+	if(n >= 0) {
 		if(n > 6)
 			co * [&] { fill(&co); };
 		else
 			fill(NULL);
+	}
 
 	jobcount = 0;
 }

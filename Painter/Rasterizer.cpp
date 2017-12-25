@@ -70,15 +70,15 @@ void Rasterizer::Init()
 
 void Rasterizer::Reset()
 {
-	RTIMING("Rasterizer::Reset");
 	for(int i = min_y; i <= max_y; i++)
-		if(cell[i])
+		if(cell[i]) {
 			if(cell[i]->alloc > 11) {
 				MemoryFree(cell[i]);
 				cell[i] = NULL;
 			}
 			else
 				cell[i]->count = 0;
+		}
 	Init();
 }
 
