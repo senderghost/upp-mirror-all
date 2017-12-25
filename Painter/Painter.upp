@@ -28,7 +28,6 @@ file
 	Fillers.h,
 	Fillers.cpp,
 	RenderChar.cpp,
-	CoRender.cpp,
 	Render.cpp,
 	Image.cpp,
 	Mask.cpp,
