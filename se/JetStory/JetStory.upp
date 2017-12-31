@@ -3,7 +3,6 @@ uses
 
 file
 	jetstory.h,
-	map.iml,
 	JetStory.iml,
 	Blocks.iml,
 	util.cpp,

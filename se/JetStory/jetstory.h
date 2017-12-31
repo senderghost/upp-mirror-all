@@ -3,10 +3,6 @@
 
 #include <CtrlLib/CtrlLib.h>
 
-#define IMAGECLASS MapImg
-#define IMAGEFILE <JetStory/map.iml>
-#include <Draw/iml_header.h>
-
 #define IMAGECLASS JetStoryImg
 #define IMAGEFILE <JetStory/jetstory.iml>
 #include <Draw/iml_header.h>
@@ -19,10 +15,12 @@ using namespace Upp;
 
 void ImportMap();
 
+void BlockMap();
+
 enum { MAPX = 128, MAPY = 40, BLOCKSIZE = 32 };
 
 extern int jetstory[MAPY][MAPX];
 
-
+extern bool blockmap[32][4][4];
 
 #endif
