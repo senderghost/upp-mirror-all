@@ -2,15 +2,13 @@
 
 using namespace Upp;
 
-
 struct SLock {
-#ifdef PLATFORM_WIN32
+#ifdef COMPILER_MSC
 	volatile LONG locked;
 
 	bool TryEnter() { return InterlockedCompareExchange(&locked, 1, 0) == 0; }
 	void Leave()    { _ReadWriteBarrier(); locked = 0; }
-#endif
-#ifdef PLATFORM_POSIX
+#else
 	volatile int locked;
 	
 	bool TryEnter() { return  __sync_bool_compare_and_swap (&locked, 0, 1); }
@@ -23,14 +21,16 @@ struct SLock {
 	
 	class Lock;
 
-	SLock()      { locked = 0; }
+	SLock()         { locked = 0; }
 };
 
 void SLock::Wait()
 {
-	int n = 0;
+	volatile int n = 0;
 	while(locked) {
+	#ifdef CPU_X86
 		_mm_pause();
+	#endif
 		if(n++ > 500)
 			Sleep(0);
 	}
@@ -69,7 +69,7 @@ CONSOLE_APP_MAIN
 		};
 		
 		{
-			RTIMING("Spin w");
+			RTIMING("Spin work");
 			Thread t1, t2, t3;
 			t1.Run(f);
 			t2.Run(f);
@@ -93,7 +93,7 @@ CONSOLE_APP_MAIN
 		};
 		
 		{
-			RTIMING("Mutex w");
+			RTIMING("Mutex work");
 			Thread t1, t2, t3;
 			t1.Run(f);
 			t2.Run(f);
@@ -118,4 +118,3 @@ CONSOLE_APP_MAIN
 			mutex.Leave();
 		}
 }
-.sese
