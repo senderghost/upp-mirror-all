@@ -298,7 +298,7 @@ void JetStory::Do()
 				Missile& m = missile.Add();
 				m.kind = 0;
 				m.pos = ship.pos;
-				m.speed.y = ship.speed.y;
+				m.speed.y = ship.speed.y - 0.05;
 				m.speed.x = ship.speed.x + (ship.left ? -1 : 1) * 5;
 			}
 		}
@@ -319,7 +319,7 @@ void JetStory::Do()
 		for(int i = 0; i < missile.GetCount(); i++) {
 			Missile& m = missile[i];
 			m.speed.x += m.accelx;
-			if(m.Move(m.kind ? msz1 : msz, 0, 1, m.kind ? 0.01 : 0)) {
+			if(m.Move(m.kind ? msz1 : msz, 0, 1, m.kind ? 0.01 : 0.001)) {
 				Explosion(m.pos, m.kind ? 100 : 5, m.kind ? 20 : 4);
 				if(m.kind)
 					flash = msecs() + 100;
@@ -370,12 +370,13 @@ void JetStory::Paint(Draw& w)
 
 	Point topleft = (Point)ship.pos - sz / 2;
 
-	for(int x = 0; x < MAPX; x++)
-		for(int y = 0; y < MAPY; y++) {
-			Point p = BLOCKSIZE * Size(x, y) - topleft;
-			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy)
-				w.DrawImage(p.x, p.y, BlocksImg::B0());
-		}
+	if(!flash)
+		for(int x = 0; x < MAPX; x++)
+			for(int y = 0; y < MAPY; y++) {
+				Point p = BLOCKSIZE * Size(x, y) - topleft;
+				if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy)
+					w.DrawImage(p.x, p.y, BlocksImg::B0());
+			}
 	
 	static Vector<int> stars;
 	ONCELOCK {
@@ -450,7 +451,7 @@ void JetStory::Paint(Draw& w)
 			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy && jetstory[y][x])
 				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][x]));
 		}
-	
+
 	w.DrawText(0, 0, Format("X:%g Y:%g debris:%d", ship.pos.x, ship.pos.y, debris.GetCount()), StdFont(), White());
 	
 	PostCallback([=] { Do(); });
