@@ -209,6 +209,8 @@ Array<Debris> debris;
 
 Array<Enemy> enemy;
 
+int flash;
+
 struct Ball : Enemy {
 	void SpeedX() {
 		speed.x = (Random(2) ? -1 : 1) * Randomf() * 1;
@@ -315,6 +317,8 @@ void JetStory::Do()
 			m.speed.x += m.accelx;
 			if(m.Move(m.kind ? msz1 : msz, 0, 1, m.kind ? 0.01 : 0)) {
 				Explosion(m.pos, m.kind ? 100 : 5, m.kind ? 20 : 4);
+				if(m.kind)
+					flash = msecs() + 100;
 				done.Add(i);
 			}
 		}
@@ -356,7 +360,7 @@ void JetStory::Paint(Draw& w)
 
 	Size sz = GetSize();
 
-	w.DrawRect(GetSize(), Black());
+	w.DrawRect(GetSize(), ms < flash ? White() : Black());
 	
 	Size isz = JetStoryImg::ship().GetSize();
 	
