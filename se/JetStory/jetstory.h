@@ -4,7 +4,7 @@
 #include <CtrlLib/CtrlLib.h>
 
 #define IMAGECLASS JetStoryImg
-#define IMAGEFILE <JetStory/jetstory.iml>
+#define IMAGEFILE <JetStory/JetStory.iml>
 #include <Draw/iml_header.h>
 
 #define IMAGECLASS BlocksImg
@@ -21,6 +21,6 @@ enum { MAPX = 128, MAPY = 40, BLOCKSIZE = 32 };
 
 extern int jetstory[MAPY][MAPX];
 
-extern bool blockmap[32][4][4];
+extern bool blockmap[64][4][4];
 
 #endif

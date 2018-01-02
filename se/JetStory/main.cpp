@@ -1,7 +1,7 @@
 #include "jetstory.h"
 
 #define IMAGECLASS JetStoryImg
-#define IMAGEFILE <JetStory/jetstory.iml>
+#define IMAGEFILE <JetStory/JetStory.iml>
 #include <Draw/iml_source.h>
 
 using namespace Upp;
@@ -38,30 +38,51 @@ struct JetStory : TopWindow {
 	{
 		switch(key) {
 		case K_Y:
+		#ifdef PLATFORM_POSIX
+		case 'y':
+		case 'Y':
+		#endif
 			left = true;
 			break;
 		case K_Y|K_KEYUP:
 			left = false;
 			break;
 		case K_U:
+		#ifdef PLATFORM_POSIX
+		case 'u':
+		case 'U':
+		#endif
 			right = true;
 			break;
 		case K_U|K_KEYUP:
 			right = false;
 			break;
 		case K_I:
+		#ifdef PLATFORM_POSIX
+		case 'i':
+		case 'I':
+		#endif
 			down = true;
 			break;
 		case K_I|K_KEYUP:
 			down = false;
 			break;
 		case K_O:
+		#ifdef PLATFORM_POSIX
+		case 'o':
+		case 'O':
+		#endif
 			up = true;
 			break;
 		case K_O|K_KEYUP:
 			up = false;
 			break;
 		case K_P:
+		#ifdef PLATFORM_POSIX
+		case 'p':
+		case 'P':
+		case K_SPACE:
+		#endif
 			fire = true;
 			break;
 		case K_P|K_KEYUP:
@@ -71,7 +92,6 @@ struct JetStory : TopWindow {
 			Break();
 			break;
 		}
-		DDUMP(left);
 		return true;
 	}
 
@@ -164,6 +184,7 @@ struct Enemy : Object {
 	Image image;
 
 	virtual void Do();
+	virtual ~Enemy() {}
 };
 
 void Enemy::Do()
@@ -265,7 +286,7 @@ void JetStory::Do()
 		ship.Move(isz, 0.4, 0.997);
 		
 		if(fire) {
-			static int lastfire;
+			static int lastfire = msecs();
 			if(ms - lastfire > 60) {
 				lastfire = ms;
 				Missile& m = missile.Add();
@@ -282,6 +303,7 @@ void JetStory::Do()
 			m.kind = 1;
 			m.pos = ship.pos;
 			m.pos.y += 10;
+			m.speed = ship.speed;
 			m.accelx = ship.left ? -0.05 : 0.05;
 		}
 		
@@ -359,7 +381,7 @@ void JetStory::Paint(Draw& w)
 	}
 
 	Size msz = JetStoryImg::fire().GetSize();
-	int ani3 = ms / 20 % 3;
+	int ani3 = (0x7fffffff & ms) / 20 % 3;
 	for(auto& m : missile) {
 		Point p = (Point)m.pos - (Point)ship.pos + sz / 2 - msz / 2;
 		w.DrawImage(p.x, p.y,
@@ -394,7 +416,7 @@ void JetStory::Paint(Draw& w)
 				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][x]));
 		}
 	
-	w.DrawText(0, 0, Format("X:%g Y:%g", ship.pos.x, ship.pos.y), StdFont(), White());
+	w.DrawText(0, 0, Format("X:%g Y:%g debris:%d", ship.pos.x, ship.pos.y, debris.GetCount()), StdFont(), White());
 	
 	PostCallback([=] { Do(); });
 }

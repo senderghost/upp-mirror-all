@@ -61,9 +61,9 @@ void ImportMap() {
 
 void BlockMap()
 {
-	DDUMP(RGBAZero());
+//	DDUMP(RGBAZero());
 	RGBA black = Black();
-	DDUMP(black);
+//	DDUMP(black);
 	for(int i = 0; i < BlocksImg::GetCount(); i++) {
 		Image mm = BlocksImg::Get(i);
 		for(int x = 0; x < 32; x++)
