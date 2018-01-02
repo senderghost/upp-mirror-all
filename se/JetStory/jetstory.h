@@ -23,4 +23,6 @@ extern int jetstory[MAPY][MAPX];
 
 extern bool blockmap[64][4][4];
 
+void InitSound();
+
 #endif

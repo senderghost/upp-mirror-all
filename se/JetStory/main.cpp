@@ -10,16 +10,20 @@ bool left, right, up, down, fire;
 
 bool MapCollision(Rect r)
 {
+	if(r.bottom < 0)
+		return false;
+	if(r.left < 0 || r.left > 32 * 128)
+		return true;
 	r.right--;
 	r.bottom--;
 	r /= 8;
 	for(int x = r.left; x <= r.right; x++)
 		for(int y = r.top; y <= r.bottom; y++) {
-			if(x < 0 || x > 4 * 128 || y < 0 || y > 4 * 40)
-				return true;
-			int q = jetstory[y >> 2][x >> 2];
-			if(q && blockmap[q][y & 3][x & 3])
-				return true;
+			if(y >= 0 && y < 4 * 40 && x >= 0 && x < 4 * 128) {
+				int q = jetstory[y >> 2][x >> 2];
+				if(q && blockmap[q][y & 3][x & 3])
+					return true;
+			}
 		}
 	return false;
 }
@@ -363,9 +367,34 @@ void JetStory::Paint(Draw& w)
 	w.DrawRect(GetSize(), ms < flash ? White() : Black());
 	
 	Size isz = JetStoryImg::ship().GetSize();
-	
-	Point sp = sz / 2 - isz / 2;
 
+	Point topleft = (Point)ship.pos - sz / 2;
+
+	for(int x = 0; x < MAPX; x++)
+		for(int y = 0; y < MAPY; y++) {
+			Point p = BLOCKSIZE * Size(x, y) - topleft;
+			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy)
+				w.DrawImage(p.x, p.y, BlocksImg::B0());
+		}
+	
+	static Vector<int> stars;
+	ONCELOCK {
+		SeedRandom(0);
+		for(int i = 0; i < MAPX * BLOCKSIZE; i++)
+			stars.Add(Random(MAPX * BLOCKSIZE));
+		SeedRandom();
+	};
+	DDUMP(topleft);
+	for(int i = topleft.y; i < 0; i++) {
+		DDUMP(i);
+		DDUMP(stars[(0 - i) % stars.GetCount()]);
+		if(i - topleft.y > sz.cy)
+			break;
+		int x = (stars[(0 - i) % stars.GetCount()] - topleft.x + 0x70000000) % (MAPX * BLOCKSIZE);
+		if(x >= 0 && x < sz.cx)
+			w.DrawRect(x, i - topleft.y, 1, 1, White());
+	}
+	
 	for(int i = explosion.GetCount() - 1; i >= 0; i--) {
 		ExplosionImage& m = explosion[i];
 		Size msz = JetStoryImg::boom1().GetSize();
@@ -374,25 +403,28 @@ void JetStory::Paint(Draw& w)
 			explosion.Remove(i);
 		else
 		if(ani >= 0) {
-			Point p = (Point)m.pos - (Point)ship.pos + sz / 2 - msz / 2;
+			Point p = (Point)m.pos - topleft - msz / 2;
 			w.DrawImage(p.x, p.y, JetStoryImg::Get(JetStoryImg::I_boom1 + ani));
 		}
 	}
 
 	for(auto& m : debris) {
-		Point p = (Point)m.pos - (Point)ship.pos + sz / 2;
+		Point p = (Point)m.pos - topleft;
 		w.DrawRect(p.x, p.y, m.sz.cx, m.sz.cy, Blend(Yellow(), Red(), (ms - m.start) * 255 / (m.end - m.start)));
 	}
 
 	Size msz = JetStoryImg::fire().GetSize();
 	int ani3 = (0x7fffffff & ms) / 20 % 3;
 	for(auto& m : missile) {
-		Point p = (Point)m.pos - (Point)ship.pos + sz / 2 - msz / 2;
+		Point p = (Point)m.pos - topleft - msz / 2;
 		w.DrawImage(p.x, p.y,
 		            m.kind ? JetStoryImg::Get((m.speed.x < 0 ? JetStoryImg::I_lhmissile0 : JetStoryImg::I_hmissile0) + ani3)
 		                   : m.speed.x < 0 ? JetStoryImg::erif() : JetStoryImg::fire());
 	}
 	
+
+	Point sp = sz / 2 - isz / 2;
+
 	w.DrawImage(sp.x, sp.y,
 	            ship.left ? JetStoryImg::pish() : JetStoryImg::ship());
 
@@ -408,14 +440,13 @@ void JetStory::Paint(Draw& w)
 		                                      : left ? JetStoryImg::pishu2() : JetStoryImg::shipu2());
 	
 	for(auto& m : enemy) {
-		Point p = (Point)m.pos - (Point)ship.pos + sz / 2 - m.image.GetSize() / 2;
+		Point p = (Point)m.pos - topleft - m.image.GetSize() / 2;
 		w.DrawImage(p.x, p.y, m.image);
 	}
 	
 	for(int x = 0; x < MAPX; x++)
 		for(int y = 0; y < MAPY; y++) {
-			Point pos = (Point)ship.pos - sz / 2;
-			Point p = BLOCKSIZE * Size(x, y) - pos;
+			Point p = BLOCKSIZE * Size(x, y) - topleft;
 			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy && jetstory[y][x])
 				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][x]));
 		}
@@ -430,6 +461,8 @@ GUI_APP_MAIN
 {
 //	ImportMap();
 
+	InitSound();
+	
 	BlockMap();
 
 	GenerateEnemy();
