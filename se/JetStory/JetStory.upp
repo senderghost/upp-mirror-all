@@ -7,7 +7,6 @@ file
 	Blocks.iml,
 	util.cpp,
 	map.cpp,
-	sound.cpp,
 	main.cpp;
 
 mainconfig

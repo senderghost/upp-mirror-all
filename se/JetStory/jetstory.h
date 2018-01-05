@@ -17,12 +17,16 @@ void ImportMap();
 
 void BlockMap();
 
-enum { MAPX = 128, MAPY = 40, BLOCKSIZE = 32 };
+enum { MAPX = 128, MAPY = 40, BLOCKSIZE = 64 };
 
 extern int jetstory[MAPY][MAPX];
 
 extern bool blockmap[64][4][4];
 
 void InitSound();
+
+namespace Upp {
+Image Upscale2x(const Image& src);
+};
 
 #endif

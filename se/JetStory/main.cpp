@@ -12,11 +12,11 @@ bool MapCollision(Rect r)
 {
 	if(r.bottom < 0)
 		return false;
-	if(r.left < 0 || r.left > 32 * 128)
+	if(r.left < 0 || r.left >= BLOCKSIZE * 128)
 		return true;
 	r.right--;
 	r.bottom--;
-	r /= 8;
+	r /= 16;
 	for(int x = r.left; x <= r.right; x++)
 		for(int y = r.top; y <= r.bottom; y++) {
 			if(y >= 0 && y < 4 * 40 && x >= 0 && x < 4 * 128) {
@@ -33,6 +33,8 @@ bool MapCollision(Point pos, Size sz)
 	return MapCollision(Rect(pos - sz / 2, sz));
 }
 
+int kind = 1;
+
 struct JetStory : TopWindow {
 	Point pos = Point(0, 0);
 
@@ -41,6 +43,14 @@ struct JetStory : TopWindow {
 	virtual bool Key(dword key, int count)
 	{
 		switch(key) {
+		case '1':
+		case K_1:
+			kind = 1;
+			break;
+		case '2':
+		case K_2:
+			kind = 2;
+			break;
 		case K_Y:
 		#ifdef PLATFORM_POSIX
 		case 'y':
@@ -189,6 +199,7 @@ struct Enemy : Object {
 
 	virtual void Do();
 	virtual ~Enemy() {}
+
 };
 
 void Enemy::Do()
@@ -233,8 +244,8 @@ struct Ball : Enemy {
 
 void GenerateEnemy()
 {
-	while(enemy.GetCount() < 400) {
-		Point pos(Random(MAPX * BLOCKSIZE), Random(MAPY * BLOCKSIZE));
+	while(enemy.GetCount() < 100) {
+		Point pos(Random(MAPX * BLOCKSIZE), (2 * Randomf() - 1) * MAPY * BLOCKSIZE);
 		if(!MapCollision(pos, Size(16, 16))) {
 			Ball& b = enemy.Create<Ball>();
 			b.pos = pos;
@@ -252,7 +263,7 @@ void Explosion(Pointf pos, int n, double spread)
 		m.pos = pos + Sizef(Randomf() * spread - spread / 2, Randomf() * spread - spread / 2);
 	}
 	
-	n = Random(n);
+	n = n / 2 + Random(n / 2);
 	for(int i = 0; i < n; i++) {
 		Debris& d = debris.Add();
 		d.pos = pos;
@@ -260,6 +271,17 @@ void Explosion(Pointf pos, int n, double spread)
 		d.sz = Size(1 + Random(2), 1 + Random(2));
 		d.start = ms;
 		d.end = ms + 300 + Random(100);
+	}
+}
+
+void Fragment(const Missile& m)
+{
+	int n = 50 + Random(50);
+	for(int i = 0; i < n; i++) {
+		Missile& mm = missile.Add();
+		mm.kind = 9;
+		mm.pos = m.pos;
+		mm.speed = Pointf(Randomf() * 10 - 5, Randomf() * 10 - 5);
 	}
 }
 
@@ -306,25 +328,46 @@ void JetStory::Do()
 		if(down) {
 			down = false;
 			Missile& m = missile.Add();
-			m.kind = 1;
+			m.kind = kind;
 			m.pos = ship.pos;
 			m.pos.y += 10;
 			m.speed = ship.speed;
-			m.accelx = ship.left ? -0.05 : 0.05;
+			if(kind == 1)
+				m.accelx = ship.left ? -0.05 : 0.05;
+			if(kind == 2)
+				m.speed.y += 0.5;
 		}
 		
 		Vector<int> done;
 		Size msz = JetStoryImg::fire().GetSize();
 		Size msz1 = JetStoryImg::hmissile0().GetSize();
+		Size msz2 = JetStoryImg::bomb().GetSize();
 		for(int i = 0; i < missile.GetCount(); i++) {
 			Missile& m = missile[i];
 			m.speed.x += m.accelx;
-			if(m.Move(m.kind ? msz1 : msz, 0, 1, m.kind ? 0.01 : 0.001)) {
-				Explosion(m.pos, m.kind ? 100 : 5, m.kind ? 20 : 4);
-				if(m.kind)
-					flash = msecs() + 100;
+			if(m.Move(decode(m.kind, 1, msz1, 2, msz2, msz), 0, 1, m.kind ? 0.01 : 0.001)) {
+				if(m.kind == 2) {
+					Fragment(m);
+				}
+				if(m.kind != 9)
+					Explosion(m.pos, m.kind == 1 ? 100 : 5, m.kind == 1 ? 20 : 4);
 				done.Add(i);
 			}
+			else
+			if(m.kind == 9 && Random(8) == 0)
+				done.Add(i);
+#if 0
+			if(m.kind == 1) {
+				Debris& d = debris.Add();
+				d.pos = m.pos;
+				d.speed = m.speed;
+				d.speed.x -= sgn(m.speed);
+				d.speed.y += 0.2 * (Randomf() - 0.5);
+				d.sz = Size(2, 2);
+				d.start = ms;
+				d.end = ms + 500;
+			}
+#endif
 		}
 		missile.Remove(done);
 		
@@ -348,6 +391,8 @@ void JetStory::Do()
 				if(r.Contains(missile[j].pos)) {
 					done.Add(i);
 					Explosion(e.pos, (int)(esz.cx * esz.cy), min(esz.cx, esz.cy));
+					if(missile[j].kind == 2)
+						Fragment(missile[j]);
 					missile.Remove(j);
 					break;
 				}
@@ -364,13 +409,27 @@ void JetStory::Paint(Draw& w)
 
 	Size sz = GetSize();
 
-	w.DrawRect(GetSize(), ms < flash ? White() : Black());
+	bool doflash = flash - ms > 0 && flash - ms < 100000;
+	
+	w.DrawRect(GetSize(), doflash ? White() : Black());
 	
 	Size isz = JetStoryImg::ship().GetSize();
 
 	Point topleft = (Point)ship.pos - sz / 2;
 
-	if(!flash)
+	if(!doflash) {
+		RTIMING("back3");
+		Image m = BlocksImg::back3();
+		Size isz = m.GetSize();
+		for(int x = 0; x < MAPX * BLOCKSIZE; x += isz.cx)
+			for(int y = 0; y < MAPY * BLOCKSIZE; y += isz.cy) {
+				Point p = Point(x, y) - topleft;
+				if(p.x + sz.cx >= 0 && p.y + sz.cy >= 0 && p.x < sz.cx && p.y < sz.cy)
+					w.DrawImage(p.x, p.y, BlocksImg::back3());
+			}
+	}
+
+	if(!doflash && 0)
 		for(int x = 0; x < MAPX; x++)
 			for(int y = 0; y < MAPY; y++) {
 				Point p = BLOCKSIZE * Size(x, y) - topleft;
@@ -379,52 +438,44 @@ void JetStory::Paint(Draw& w)
 			}
 	
 	static Vector<int> stars;
+	static Vector<Color> star_color;
+	auto StarColor = []() -> Color {
+		const int l = 138;
+		const int r = 117;
+		return Color(Random(r) + l, Random(r) + l, Random(r) + l);
+	};
 	ONCELOCK {
 		SeedRandom(0);
-		for(int i = 0; i < MAPX * BLOCKSIZE; i++)
+		for(int i = 0; i < MAPX * BLOCKSIZE; i++) {
 			stars.Add(Random(MAPX * BLOCKSIZE));
+			star_color.Add(StarColor());
+		}
 		SeedRandom();
 	};
-	DDUMP(topleft);
 	for(int i = topleft.y; i < 0; i++) {
-		DDUMP(i);
-		DDUMP(stars[(0 - i) % stars.GetCount()]);
 		if(i - topleft.y > sz.cy)
 			break;
-		int x = (stars[(0 - i) % stars.GetCount()] - topleft.x + 0x70000000) % (MAPX * BLOCKSIZE);
+		int ii = (0 - i) % stars.GetCount();
+		int x = (stars[ii] - topleft.x + 0x70000000) % (MAPX * BLOCKSIZE);
 		if(x >= 0 && x < sz.cx)
-			w.DrawRect(x, i - topleft.y, 1, 1, White());
+			w.DrawRect(x, i - topleft.y, 1, 1, star_color[ii]);
+		if(Random(10) == 0)
+			star_color[ii] = StarColor();
 	}
 	
-	for(int i = explosion.GetCount() - 1; i >= 0; i--) {
-		ExplosionImage& m = explosion[i];
-		Size msz = JetStoryImg::boom1().GetSize();
-		int ani = (ms - m.start) / 40;
-		if(ani > 4)
-			explosion.Remove(i);
-		else
-		if(ani >= 0) {
-			Point p = (Point)m.pos - topleft - msz / 2;
-			w.DrawImage(p.x, p.y, JetStoryImg::Get(JetStoryImg::I_boom1 + ani));
-		}
-	}
+	Point sp = sz / 2 - isz / 2;
 
-	for(auto& m : debris) {
-		Point p = (Point)m.pos - topleft;
-		w.DrawRect(p.x, p.y, m.sz.cx, m.sz.cy, Blend(Yellow(), Red(), (ms - m.start) * 255 / (m.end - m.start)));
-	}
-
-	Size msz = JetStoryImg::fire().GetSize();
 	int ani3 = (0x7fffffff & ms) / 20 % 3;
 	for(auto& m : missile) {
+		Image img = decode(m.kind, 1, JetStoryImg::Get((m.speed.x < 0 ? JetStoryImg::I_lhmissile0 : JetStoryImg::I_hmissile0) + ani3),
+		                           2, JetStoryImg::bomb(),
+		                           9, JetStoryImg::fragment(),
+		                           m.speed.x < 0 ? JetStoryImg::erif() : JetStoryImg::fire());
+		                           
+		Size msz = img.GetSize();
 		Point p = (Point)m.pos - topleft - msz / 2;
-		w.DrawImage(p.x, p.y,
-		            m.kind ? JetStoryImg::Get((m.speed.x < 0 ? JetStoryImg::I_lhmissile0 : JetStoryImg::I_hmissile0) + ani3)
-		                   : m.speed.x < 0 ? JetStoryImg::erif() : JetStoryImg::fire());
+		w.DrawImage(p.x, p.y, img);
 	}
-	
-
-	Point sp = sz / 2 - isz / 2;
 
 	w.DrawImage(sp.x, sp.y,
 	            ship.left ? JetStoryImg::pish() : JetStoryImg::ship());
@@ -441,18 +492,72 @@ void JetStory::Paint(Draw& w)
 		                                      : left ? JetStoryImg::pishu2() : JetStoryImg::shipu2());
 	
 	for(auto& m : enemy) {
+		Size msz = m.image.GetSize();
 		Point p = (Point)m.pos - topleft - m.image.GetSize() / 2;
-		w.DrawImage(p.x, p.y, m.image);
+		if(Rect(p, msz).Intersects(sz))
+			w.DrawImage(p.x, p.y, m.image);
 	}
-	
+
+	for(int i = explosion.GetCount() - 1; i >= 0; i--) {
+		ExplosionImage& m = explosion[i];
+		Size msz = JetStoryImg::boom1().GetSize();
+		int ani = (ms - m.start) / 40;
+		if(ani > 4)
+			explosion.Remove(i);
+		else
+		if(ani >= 0) {
+			Point p = (Point)m.pos - topleft - msz / 2;
+			w.DrawImage(p.x, p.y, JetStoryImg::Get(JetStoryImg::I_boom1 + ani));
+		}
+	}
+
+	for(auto& m : debris) {
+		Point p = (Point)m.pos - topleft;
+		w.DrawRect(p.x, p.y, m.sz.cx, m.sz.cy, Blend(LtYellow(), Red(), (ms - m.start) * 255 / (m.end - m.start)));
+	}
+
 	for(int x = 0; x < MAPX; x++)
 		for(int y = 0; y < MAPY; y++) {
 			Point p = BLOCKSIZE * Size(x, y) - topleft;
 			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy && jetstory[y][x])
 				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][x]));
 		}
+	
+	int x = MAPX;
+	
+	while(x * BLOCKSIZE - topleft.x < sz.cx) {
+		for(int y = 0; y < MAPY; y++) {
+			Point p = BLOCKSIZE * Size(x, y) - topleft;
+			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy)
+				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][MAPX - 1]));
+		}
+		x++;
+	}
+	
+	x = -1;
+	while(x * BLOCKSIZE - topleft.x + BLOCKSIZE >= 0) {
+		for(int y = 0; y < MAPY; y++) {
+			Point p = BLOCKSIZE * Size(x, y) - topleft;
+			if(p.x + BLOCKSIZE >= 0 && p.y + BLOCKSIZE >= 0 && p.x < sz.cx && p.y < sz.cy)
+				w.DrawImage(p.x, p.y, BlocksImg::Get(jetstory[y][0]));
+		}
+		x--;
+	}
+	
+	static BiVector<int> fpsq;
 
-	w.DrawText(0, 0, Format("X:%g Y:%g debris:%d", ship.pos.x, ship.pos.y, debris.GetCount()), StdFont(), White());
+	fpsq.AddTail(ms);
+	while(fpsq.GetCount() > 20)
+		fpsq.DropHead();
+	
+	double fps = 0;
+	if(fpsq.GetCount())
+		fps = 1000.0 / ((fpsq.Tail() - fpsq.Head()) / fpsq.GetCount());
+
+	w.DrawRect(0, 0, sz.cx, 24, Gray());
+	w.DrawText(0, 0, Format("X:%5.2f Y:%5.2f enemy:%5d missiles:%5d debris:%5d FPS:%3.2f",
+	           ship.pos.x, ship.pos.y, enemy.GetCount(), missile.GetCount(), debris.GetCount(), fps),
+	           Monospace(20), White());
 	
 	PostCallback([=] { Do(); });
 }
@@ -462,14 +567,18 @@ GUI_APP_MAIN
 {
 //	ImportMap();
 
-	InitSound();
+//	InitSound();
+
 	
 	BlockMap();
 
+	for(int i = 0; i < 30; i++)
+		BlocksImg::Set(i, Upscale2x(BlocksImg::Get(i)));
+
 	GenerateEnemy();
 
-	ship.pos.x = 70;
-	ship.pos.y = 100;
+	ship.pos.x = 4000;
+	ship.pos.y = -80;
 	
 	JetStory js;
 	js.Run();

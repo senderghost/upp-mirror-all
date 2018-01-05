@@ -1,9 +1,5 @@
 #include "jetstory.h"
 
-namespace Upp {
-Image Upscale2x(const Image& src);
-};
-
 void ImportMap() {
 //	Index<Image> blocks;
 //	for(int i = 0; i < BlocksImg::GetCount(); i++) {
