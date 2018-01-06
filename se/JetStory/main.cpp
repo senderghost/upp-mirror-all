@@ -147,25 +147,21 @@ bool DoMove(Pointf& pos, double dx, double dy, Size isz)
 	return false;
 }
 
-struct Object {
-	Pointf pos;
-	Pointf speed = Pointf(0, 0);
-	
-	bool Move(Size sz, Pointf bounce, Pointf friction, double gravity = 0.01);
-	bool Move(Size sz, double bounce, double friction = 0.997, double gravity = 0.01);
-};
-
 bool Object::Move(Size sz, Pointf bounce, Pointf friction, double gravity)
 {
 	speed.y += gravity;
+	
+	map_collision = Pointf(0, 0);
 
 	bool r = false;
 	if(DoMove(pos, speed.x, 0, sz)) {
+		map_collision.x = speed.x;
 		speed.x *= -bounce.x;
 		speed.y *= friction.y;
 		r = true;
 	}
 	if(DoMove(pos, 0, speed.y, sz)) {
+		map_collision.y = speed.y;
 		speed.y *= -bounce.y;
 		speed.x *= friction.x;
 		r = true;
@@ -179,27 +175,17 @@ bool Object::Move(Size sz, double bounce, double friction, double gravity)
 }
 
 
-struct Ship : Object {
-	bool left;
-};
-
 Ship ship;
-
-struct Missile : Object {
-	int kind;
-	double accelx;
-	
-	Missile() { kind = 0; accelx = 0; }
-};
 
 Array<Missile> missile;
 
 struct Enemy : Object {
 	Image image;
+	int   shield = 1;
+	int   maxshield = 1;
 
 	virtual void Do();
 	virtual ~Enemy() {}
-
 };
 
 void Enemy::Do()
@@ -242,24 +228,84 @@ struct Ball : Enemy {
 	Ball() { image = JetStoryImg::ball(); speed.y = 0; SpeedX(); }
 };
 
+struct TankMissile : Enemy {
+	virtual void Do() {
+		if(Move(image.GetSize(), 0, 0, 0.001))
+			shield = maxshield = 0;
+	}
+
+	TankMissile() { image = JetStoryImg::fragment(); shield = maxshield = INT_MAX; }
+};
+
+struct Tank : Enemy {
+	void SetImg() {
+		static Image tank2 = MirrorHorz(JetStoryImg::tank());
+		image = pos.x < ship.pos.x ? JetStoryImg::tank() : tank2;
+	}
+
+	virtual void Do() {
+		if(Move(image.GetSize(), 1, 1))
+			speed.y = 0;
+		double a = pos.x - ship.pos.x;
+		if(Random(20) == 0) {
+			if(a > 0) {
+				if(a > 500)
+					speed.x = -1;
+				else
+				if(a < 200)
+					speed.x = 0.5;
+			}
+			else {
+				if(a < -500)
+					speed.x = 1;
+				else
+				if(a > -200)
+					speed.x = -0.5;
+			}
+		}
+		SetImg();
+		if(abs(speed.x) < 0.4)
+			speed.x = 1;
+		speed.x = clamp(speed.x, -1.0, 1.0);
+		if(Random(200) == 0) {
+			TankMissile& m = enemy.Create<TankMissile>();
+			m.pos = pos;
+			m.speed.x = 2 * -sgn(a);
+			m.speed.y = -0.5;
+		}
+	}
+	
+	Tank() { speed.x = Random(2) ? 1 : -1; SetImg(); shield = maxshield = 50; }
+};
+
 void GenerateEnemy()
 {
 	while(enemy.GetCount() < 100) {
 		Point pos(Random(MAPX * BLOCKSIZE), (2 * Randomf() - 1) * MAPY * BLOCKSIZE);
-		if(!MapCollision(pos, Size(16, 16))) {
-			Ball& b = enemy.Create<Ball>();
-			b.pos = pos;
-		}
+		Enemy *e;
+		if(Random(2))
+			e = &enemy.Create<Tank>();
+		else
+			e = &enemy.Create<Ball>();
+		e->pos = pos;
+		if(MapCollision(pos, e->image.GetSize()))
+			enemy.Drop();
 	}
 }
 
 void Explosion(Pointf pos, int n, double spread)
 {
+	if(!n)
+		return;
+	
 	int ms = msecs();
+
+	if(n >= 200)
+		flash = msecs() + 100;
 
 	for(int i = 0; i <= n / 10; i++) {
 		ExplosionImage& m = explosion.Add();
-		m.start = ms + Random(n);
+		m.start = ms + Random(max(n, 100));
 		m.pos = pos + Sizef(Randomf() * spread - spread / 2, Randomf() * spread - spread / 2);
 	}
 	
@@ -322,6 +368,7 @@ void JetStory::Do()
 				m.pos = ship.pos;
 				m.speed.y = ship.speed.y - 0.05;
 				m.speed.x = ship.speed.x + (ship.left ? -1 : 1) * 5;
+				m.left = ship.left;
 			}
 		}
 		
@@ -332,8 +379,12 @@ void JetStory::Do()
 			m.pos = ship.pos;
 			m.pos.y += 10;
 			m.speed = ship.speed;
-			if(kind == 1)
+			m.left = ship.left;
+			m.damage = 10;
+			if(kind == 1) {
 				m.accelx = ship.left ? -0.05 : 0.05;
+				m.damage = 500;
+			}
 			if(kind == 2)
 				m.speed.y += 0.5;
 		}
@@ -357,6 +408,7 @@ void JetStory::Do()
 			if(m.kind == 9 && Random(8) == 0)
 				done.Add(i);
 #if 0
+// missile flame experiment
 			if(m.kind == 1) {
 				Debris& d = debris.Add();
 				d.pos = m.pos;
@@ -387,15 +439,22 @@ void JetStory::Do()
 			e.Do();
 			Sizef esz = e.image.GetSize();
 			Rectf r(e.pos - esz / 2, esz);
-			for(int j = 0; j < missile.GetCount(); j++)
-				if(r.Contains(missile[j].pos)) {
-					done.Add(i);
-					Explosion(e.pos, (int)(esz.cx * esz.cy), min(esz.cx, esz.cy));
+			for(int j = 0; j < missile.GetCount(); j++) {
+				Missile& m = missile[j];
+				if(r.Contains(m.pos)) {
+					e.shield -= m.damage;
+					if(e.shield > 0 && m.kind != 9)
+						Explosion(m.pos, m.kind == 1 ? 100 : 5, m.kind == 1 ? 20 : 4);
 					if(missile[j].kind == 2)
 						Fragment(missile[j]);
 					missile.Remove(j);
 					break;
 				}
+			}
+			if(e.shield <= 0) {
+				done.Add(i);
+				Explosion(e.pos, min(e.maxshield * 50, 1000), min(esz.cx, esz.cy));
+			}
 		}
 		enemy.Remove(done);
 	}

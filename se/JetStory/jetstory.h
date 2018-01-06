@@ -25,8 +25,24 @@ extern bool blockmap[64][4][4];
 
 void InitSound();
 
-namespace Upp {
-Image Upscale2x(const Image& src);
+struct Object {
+	Pointf pos;
+	Pointf speed = Pointf(0, 0);
+	Pointf map_collision;
+	
+	bool Move(Size sz, Pointf bounce, Pointf friction, double gravity = 0.01);
+	bool Move(Size sz, double bounce, double friction = 0.997, double gravity = 0.01);
+};
+
+struct Ship : Object {
+	bool left;
+};
+
+struct Missile : Object {
+	int kind = 0;
+	double accelx = 0;
+	int damage = 1;
+	bool left;
 };
 
 #endif
