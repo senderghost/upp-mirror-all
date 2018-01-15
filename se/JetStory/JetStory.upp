@@ -1,10 +1,12 @@
 uses
-	CtrlLib;
+	CtrlLib,
+	Synth;
 
 file
 	jetstory.h,
 	JetStory.iml,
 	Blocks.iml,
+	hack.iml,
 	util.cpp,
 	map.cpp,
 	main.cpp;

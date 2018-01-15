@@ -1,9 +1,14 @@
 uses
-	CtrlLib;
+	Core,
+	Synth;
+
+library(MSC) "SDL2 SDL2main";
+
+library(GCC WIN32) "SDL.dll SDLmain";
 
 file
-	main.cpp;
+	Sound.cpp;
 
 mainconfig
-	"" = "GUI";
+	"" = "";
 

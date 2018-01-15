@@ -11,6 +11,8 @@
 #define IMAGEFILE <JetStory/Blocks.iml>
 #include <Draw/iml_header.h>
 
+#include <Synth/Synth.h>
+
 using namespace Upp;
 
 void ImportMap();
