@@ -1,4 +1,4 @@
-#include <Core/Core.h>
+#include "fast_math.h"
 
 using namespace Upp;
 
@@ -43,103 +43,17 @@ INITBLOCK {
 }
 
 force_inline
-static double fast_exp2(double x) {
+double fast_exp2(double x) {
 	int exponent = (int)(x + 1);
 	
 	double f = EXPTAB20 * (exponent - x);
 	int ti = (int)f;
 	
-	union { uint64 raw; double dbl; } r;
-	r.raw = uint64(exponent + 1022) << 52;
-	return r.dbl * exptab20[ti] + (f - ti) * (exptab20[ti + 1] - exptab20[ti]);
-}
-
-const size_t EXPD_TABLE_SIZE = 11;
-
-
-typedef unsigned long long uint64_t;
-
-union fi {
-	float f;
-	unsigned int i;
-};
-
-union di {
-	double d;
-	uint64_t i;
-};
-
-template<size_t sbit_ = EXPD_TABLE_SIZE>
-struct ExpdVar {
-	enum {
-		sbit = sbit_,
-		s = 1UL << sbit,
-		adj = (1UL << (sbit + 10)) - (1UL << sbit)
-	};
-	// A = 1, B = 1, C = 1/2, D = 1/6
-	double C1[2]; // A
-	double C2[2]; // D
-	double C3[2]; // C/D
-	uint64_t tbl[s];
-	double a;
-	double ra;
-	ExpdVar()
-		: a(s / ::log(2.0))
-		, ra(1 / a)
-	{
-		for (int i = 0; i < 2; i++) {
-#if 0
-			C1[i] = 1.0;
-			C2[i] = 0.16667794882310216;
-			C3[i] = 2.9997969303278795;
-#else
-			C1[i] = 1.0;
-			C2[i] = 0.16666666685227835064;
-			C3[i] = 3.0000000027955394;
-#endif
-		}
-		for (int i = 0; i < s; i++) {
-			di di;
-			di.d = ::pow(2.0, i * (1.0 / s));
-			tbl[i] = di.i & mask64(52);
-		}
-	}
-};
-
-
-static const ExpdVar<> c;
-
-
-inline unsigned int mask(int x)
-{
-	return (1U << x) - 1;
-}
-
-inline uint64_t mask64(int x)
-{
-	return (1ULL << x) - 1;
-}
-
-inline double expd(double x)
-{
-	if (x <= -708.39641853226408) return 0;
-	if (x >= 709.78271289338397) return std::numeric_limits<double>::infinity();
-
-	const double _b = double(uint64_t(3) << 51);
-	__m128d b = _mm_load_sd(&_b);
-	__m128d xx = _mm_load_sd(&x);
-	__m128d d = _mm_add_sd(_mm_mul_sd(xx, _mm_load_sd(&c.a)), b);
-	uint64_t di = _mm_cvtsi128_si32(_mm_castpd_si128(d));
-	uint64_t iax = c.tbl[di & mask(c.sbit)];
-	__m128d _t = _mm_sub_sd(_mm_mul_sd(_mm_sub_sd(d, b), _mm_load_sd(&c.ra)), xx);
-	uint64_t u = ((di + c.adj) >> c.sbit) << 52;
-	double t;
-	_mm_store_sd(&t, _t);
-	double y = (c.C3[0] - t) * (t * t) * c.C2[0] - t + c.C1[0];
-	double did;
-	u |= iax;
-	memcpy(&did, &u, sizeof(did));
-	return y * did;
+	double val = exptab20[ti];
+	return val * (1 + (f - ti) * (0.999999338963555 - 1)) * exp2i(exponent);
+//	return exp2i(exponent) * (val + (f - ti) * (0.999999338963555 * val - val));
+	
+//	return exp2i(exponent) * (exptab20[ti] + (f - ti) * (exptab20[ti + 1] - exptab20[ti]));
 }
 
 void Test(double arg)
@@ -149,11 +63,15 @@ void Test(double arg)
 	DUMP(exp2(arg));
 	DUMP(fast_exp2(arg));
 }
+
 CONSOLE_APP_MAIN
 {
 //	StdLogSetup(LOG_COUT|LOG_FILE);
 
 	DUMP((double)1 / 0xffffffff);
+	
+	DUMP(exptab20[10] / exptab20[9]);
+	DUMP(exptab20[20000] / exptab20[19999]);
 
 	DUMP(FF(-0.33234));
 //	DUMP(ff(-0.33234));
@@ -190,7 +108,7 @@ CONSOLE_APP_MAIN
 	{
 		RTIMING("expd");
 		for(double i = 0; i < 100; i += 0.00001)
-			s3 += expd(i);
+			s3 += exp(i);
 	}
 	RDUMP(s3);
 
@@ -208,11 +126,9 @@ CONSOLE_APP_MAIN
 		double fval = fast_exp2(q);
 		double err = q > -705 ? 100 * abs(val - fval) / val : 0.0;
 		RLOG(q << ", " << val << ", " << fval << ", " << val - fval << ", " << err << "%");
-		if(q <= 1) {
-			if(err > maxerror) {
-				maxerror = err;
-				maxerrval = q;
-			}
+		if(err > maxerror) {
+			maxerror = err;
+			maxerrval = q;
 		}
 	}
 	RLOG(maxerror << "% at " << maxerrval);

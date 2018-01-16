@@ -2,6 +2,7 @@ uses
 	Core;
 
 file
+	fast_math.h,
 	MakeTable.cpp;
 
 mainconfig
