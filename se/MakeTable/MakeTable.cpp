@@ -43,7 +43,7 @@ INITBLOCK {
 }
 
 force_inline
-double fast_exp2(double x) {
+double fast_exp2_2(double x) {
 	int exponent = (int)(x + 1);
 	
 	double f = EXPTAB20 * (exponent - x);
@@ -56,11 +56,97 @@ double fast_exp2(double x) {
 //	return exp2i(exponent) * (exptab20[ti] + (f - ti) * (exptab20[ti + 1] - exptab20[ti]));
 }
 
+/*
+const int EXPTAB11 = (1 << 11);
+static double exptab11[EXPTAB11 + 1], exptabl[EXPTAB11 + 1];
+
+INITBLOCK {
+	for(int i = 0; i <= EXPTAB11; i++) {
+		exptab11[i] = exp2((double)i / EXPTAB11);
+		exptabl[i] = exp2((double)i / sqr(EXPTAB11));
+	}
+}
+
+force_inline double fast_exp2(double arg) {
+	arg += IEEE_EXPONENT_ZERO + 1;
+	if(arg < 0)
+		return 0;
+	if(arg > 2046)
+		return HUGE_VAL;
+	int exponent = (int)arg;
+	double f = (1 << 22) * (arg - exponent);
+	int ii = (int)f;
+	f -= ii;
+	return exp2i(exponent) * exptab11[ii >> 11] * exptabl[ii & 2047] * (1 + f * 0.000000165259179674138);
+}
+*/
+
+enum {
+	EXP_BITS_H = 11,
+	EXP_BITS_L = 11,
+
+	EXP_COUNT_H = (1 << EXP_BITS_H),
+	EXP_MASK_H = EXP_COUNT_H - 1,
+	EXP_COUNT_L = (1 << EXP_BITS_L),
+	EXP_MASK_L = EXP_COUNT_L - 1,
+};
+
+static double exp_tab_h[EXP_COUNT_H + 1], exp_tab_l[EXP_COUNT_L + 1];
+
+INITBLOCK {
+	for(int i = 0; i <= EXP_COUNT_H; i++)
+		exp_tab_h[i] = exp2((double)i / EXP_COUNT_H);
+	for(int i = 0; i <= EXP_COUNT_L; i++)
+		exp_tab_l[i] = exp2((double)i / (EXP_COUNT_H * EXP_COUNT_L));
+}
+
+force_inline double fast_exp2(double arg) {
+	const double EXP_LSTEP = 0.000000165259179674138; // H:11
+//	const double EXP_LSTEP = 0.00000066103688212138; // H:10
+	arg += IEEE_EXPONENT_ZERO + 1;
+	if(arg < 0)
+		return 0;
+	if(arg > 2046)
+		return HUGE_VAL;
+	int exponent = (int)arg;
+	double f = (1 << (EXP_BITS_H + EXP_BITS_L)) * (arg - exponent);
+	int ii = (int)f;
+	f -= ii;
+	return exp2i(exponent) * exp_tab_h[ii >> EXP_BITS_L] * exp_tab_l[ii & EXP_MASK_L] * (1 + f * EXP_LSTEP);
+}
+
+
 void Test(double arg)
 {
 	LOG("=============");
 	DUMP(arg);
 	DUMP(exp2(arg));
+	DUMP(fast_exp2(arg));
+	
+	DUMP(exp2i((int)arg));
+	DUMP(exp2i(1 + (int)arg) * exp2(arg - (int)arg));
+	DUMP(exp2(arg - (int)arg));
+
+	double f = (1 << 22) * (arg - (int)arg);
+	
+	int ii = (int)f;
+#if 0
+	DUMP(exptab11[ii >> 11]);
+	DUMP(exptabl[ii & 2047]);
+	DUMP(exptab11[ii & 2047]);
+	DUMP(exptab11[ii >> 11] * exptabl[ii & 2047]);
+	DUMP(exptab11[ii >> 11] * exptab11[ii & 2047]);
+	DUMP(exp2i((int)arg + 1) * exptab11[ii >> 11] * exptabl[ii & 2047]);
+	
+	f -= ii;
+	double g = exptab11[ii >> 11] * exptabl[ii & 2047];
+	DUMP(g);
+	DUMP(f);
+	DUMP((1 - f) * g + f * 1.00000016525918 * g);
+	DUMP(exp2i((int)arg + 1) * ((1 - f) * g + f * 1.00000016525918 * g));
+
+	DUMP(exp2i((int)arg + 1) * g * (1 + f * 0.00000016525918));
+#endif
 	DUMP(fast_exp2(arg));
 }
 
@@ -68,10 +154,42 @@ CONSOLE_APP_MAIN
 {
 //	StdLogSetup(LOG_COUT|LOG_FILE);
 
+	int i = 0;
+	
+	DUMP(exp2(208));
+	DUMP(fast_exp2(208));
+	DUMP(fast_exp2(-4.567));
+	
+	DUMP(exp2(sqr((double)i / EXP_COUNT_H)));
+
 	DUMP((double)1 / 0xffffffff);
+	
+	DUMP(exp_tab_h[10] / exp_tab_h[9]);
+	DUMP(exp2(1.0 / EXP_COUNT_H));
+	DUMP(exp2(1.0 / (EXP_COUNT_H * EXP_COUNT_L)) - 1);
+
+	DUMP(exp_tab_h[0]);
+
+	DUMP(exp_tab_l[0]);
+	DUMP(exp_tab_l[1]);
+	DUMP(exp_tab_l[2047]);
 	
 	DUMP(exptab20[10] / exptab20[9]);
 	DUMP(exptab20[20000] / exptab20[19999]);
+	
+	DUMP(exp2(45.0 / 2048));
+	DUMP(exp_tab_h[45]);
+	
+	DUMP(exp2(45.0 / 2048 + 12.0 / 2048 / 2048));
+	DUMP(exp_tab_h[45]);
+	DUMP(exp2(12.0 / 2048 / 2048));
+	DUMP(exp_tab_l[12]);
+	DUMP(exp_tab_h[45] * exp_tab_l[12]);
+
+	DUMP(exp2(45.0 / 2048 + 12.0 / 2048 / 2048) / exp2(45.0 / 2048 + 11.0 / 2048 / 2048));
+
+	DUMP(exp2(49.0 / 2048 + 15.0 / 2048 / 2048) / exp2(49.0 / 2048 + 14.0 / 2048 / 2048));
+
 
 	DUMP(FF(-0.33234));
 //	DUMP(ff(-0.33234));
@@ -86,8 +204,12 @@ CONSOLE_APP_MAIN
 	Test(-arg);
 	Test(1.23);
 	Test(34.98);
-	//Test(-34.98);
-	
+	Test(-34.98);
+
+#ifdef _DEBUG
+	return;
+#endif
+
 	double s0 = 0;
 	{
 		RTIMING("void");
@@ -121,7 +243,8 @@ CONSOLE_APP_MAIN
 	RDUMP(s2);
 	double maxerror = 0;
 	double maxerrval;
-	for(double q = 0.1; q <= TABH + 10; q += 3.3) {
+	for(int qq = -10000; qq < 10000; qq++) {
+		double q = qq / 9;
 		double val = exp2(q);
 		double fval = fast_exp2(q);
 		double err = q > -705 ? 100 * abs(val - fval) / val : 0.0;

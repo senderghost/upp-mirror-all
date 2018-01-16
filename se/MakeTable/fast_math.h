@@ -102,11 +102,16 @@ union double_raw {
 	uint64 raw;
 };
 
+enum {
+	IEEE_EXPONENT_ZERO = 1022,
+	IEEE_EXPONENT_MAX = 2047,
+};
+
 force_inline
 double exp2i(int exponent)
 {
 	double_raw r;
-	r.raw = uint64(exponent + 1022) << 52;
+	r.raw = uint64(exponent) << 52;
 	return r.dbl;
 }
 
