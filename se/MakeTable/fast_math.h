@@ -3,7 +3,29 @@
 
 #include <Core/Core.h>
 
+#include "emmintrin.h"
+
 using namespace Upp;
+
+enum {
+	IEXP_BITS_H = 12,
+	IEXP_BITS_L = 12,
+	
+	IEXP_COUNT_H = (1 << IEXP_BITS_H),
+	IEXP_MASK_H = IEXP_COUNT_H - 1,
+	
+	IEXP_COUNT_L = (1 << IEXP_BITS_L),
+	IEXP_MASK_L = IEXP_COUNT_H - 1,
+};
+
+extern dword tab_h[IEXP_COUNT_H], tab_l[IEXP_COUNT_L];
+
+force_inline double raw_to_dbl(uint64 val)
+{
+	return _mm_cvtsd_f64( _mm_castsi128_pd ( _mm_cvtsi64_si128 ( val )));
+}
+
+
 
 /*
 using namespace Upp;

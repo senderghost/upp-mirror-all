@@ -91,7 +91,7 @@ enum {
 	EXP_MASK_L = EXP_COUNT_L - 1,
 };
 
-static double exp_tab_h[EXP_COUNT_H + 1], exp_tab_l[EXP_COUNT_L + 1];
+double exp_tab_h[EXP_COUNT_H + 1], exp_tab_l[EXP_COUNT_L + 1];
 
 INITBLOCK {
 	for(int i = 0; i <= EXP_COUNT_H; i++)
@@ -100,20 +100,70 @@ INITBLOCK {
 		exp_tab_l[i] = exp2((double)i / (EXP_COUNT_H * EXP_COUNT_L));
 }
 
+force_inline
+double exp2i_(int64 exponent)
+{
+	return raw_to_dbl(uint64(exponent) << 52);
+}
+
+force_inline double fast_exp2_A(double arg) {
+	const double EXP_LSTEP = 0.000000165259179674138; // H:11
+	if(fabs(arg) < 700) {
+		arg += IEEE_EXPONENT_ZERO + 1;
+		int64 exponent = (int64)arg;
+		double f = (1 << (EXP_BITS_H + EXP_BITS_L)) * (arg - exponent);
+		dword ii = (dword)f;
+		return exp2i_(exponent) * exp_tab_h[ii >> EXP_BITS_L] * exp_tab_l[ii & EXP_MASK_L]
+		       * (1 + (f - (int)f) * EXP_LSTEP);
+	}
+	return 0;
+}
+
+// exp: 153ms total
+
+// table fetch: 30ms
+// exponent->double: 10ms
+// double mul: 3ms
+// double add: 5ms
+
+
+force_inline double fast_exp2_B(double arg) {
+	const double EXP_LSTEP = 0.000000165259179674138; // H:11
+	if(fabs(arg) < 700) {
+		arg += IEEE_EXPONENT_ZERO + 1; // 44 ms
+		int64 exponent = (int64)arg;
+		double f = (1 << (EXP_BITS_H + EXP_BITS_L)) * (arg - exponent); // 69 ms
+		dword ii = (dword)f;
+		double fr = exp_tab_h[ii >> EXP_BITS_L] * exp_tab_l[ii & EXP_MASK_L]; // 132 ms
+		double m = 1 + (f - (int)f) * EXP_LSTEP; // 230 ms
+		return exp2i_(exponent) * fr * m; // 240ms
+	}
+	return 0;
+}
+
+
 force_inline double fast_exp2(double arg) {
 	const double EXP_LSTEP = 0.000000165259179674138; // H:11
-//	const double EXP_LSTEP = 0.00000066103688212138; // H:10
-	arg += IEEE_EXPONENT_ZERO + 1;
-	if(arg < 0)
-		return 0;
-	if(arg > 2046)
-		return HUGE_VAL;
-	int exponent = (int)arg;
-	double f = (1 << (EXP_BITS_H + EXP_BITS_L)) * (arg - exponent);
-	int ii = (int)f;
-	f -= ii;
-	return exp2i(exponent) * exp_tab_h[ii >> EXP_BITS_L] * exp_tab_l[ii & EXP_MASK_L] * (1 + f * EXP_LSTEP);
+	if(fabs(arg) < 700) {
+		arg += IEEE_EXPONENT_ZERO + 1;
+		int64 exponent = (int64)arg;
+		double f = (1 << (EXP_BITS_H + EXP_BITS_L)) * (arg - exponent);
+		dword ii = (dword)f;
+		double fr = exp2i_(exponent) * exp_tab_h[ii >> EXP_BITS_L] * exp_tab_l[ii & EXP_MASK_L];
+		double m = (f - (int)f) * EXP_LSTEP;
+		return fr + fr * m;
+	}
+	return 0;
 }
+
+
+force_inline double fast_exp(double arg)
+{
+	return fast_exp2(1.44269504088896 * arg);
+}
+
+
+
 
 
 void Test(double arg)
@@ -148,6 +198,9 @@ void Test(double arg)
 	DUMP(exp2i((int)arg + 1) * g * (1 + f * 0.00000016525918));
 #endif
 	DUMP(fast_exp2(arg));
+	
+	DUMP(exp(arg));
+	DUMP(fast_exp(arg));
 }
 
 CONSOLE_APP_MAIN
@@ -155,6 +208,10 @@ CONSOLE_APP_MAIN
 //	StdLogSetup(LOG_COUT|LOG_FILE);
 
 	int i = 0;
+	
+	
+	
+	
 	
 	DUMP(exp2(208));
 	DUMP(fast_exp2(208));
@@ -190,6 +247,7 @@ CONSOLE_APP_MAIN
 
 	DUMP(exp2(49.0 / 2048 + 15.0 / 2048 / 2048) / exp2(49.0 / 2048 + 14.0 / 2048 / 2048));
 
+	DUMP(log2(M_E));
 
 	DUMP(FF(-0.33234));
 //	DUMP(ff(-0.33234));
@@ -210,37 +268,59 @@ CONSOLE_APP_MAIN
 	return;
 #endif
 
-	double s0 = 0;
+	Vector<double> data;
+	for(int i = 0; i < 50000000; i++)
+		data.Add(Randomf() * 100);
+	
+	double s0;
 	{
-		RTIMING("void");
-		for(double i = 0; i < 100; i += 0.00001)
-			s0 += i;
+		Vector<double> d = clone(data);
+		{
+			RTIMING("void");
+			for(auto& h : d)
+				h = h + 1;
+		}
 	}
 	RDUMP(s0);
 
-	double s1 = 0;
 	{
-		RTIMING("exp");
-		for(double i = 0; i < 100; i += 0.00001)
-			s1 += exp(i);
+		Vector<double> d = clone(data);
+		{
+			RTIMING("fast_exp");
+			for(auto& h : d)
+				h = fast_exp(h);
+		}
+		RDUMP(Sum(d));
 	}
-	RDUMP(s1);
 
-	double s3 = 0;
 	{
-		RTIMING("expd");
-		for(double i = 0; i < 100; i += 0.00001)
-			s3 += exp(i);
+		Vector<double> d = clone(data);
+		{
+			RTIMING("fast_exp_");
+			for(auto& h : d)
+				h = fast_exp2_(h);
+		}
 	}
-	RDUMP(s3);
 
-	double s2 = 0;
 	{
-		RTIMING("fast_exp2");
-		for(double i = 0; i < 100; i += 0.00001)
-			s2 += fast_exp2(i);
+		Vector<double> d = clone(data);
+		{
+			RTIMING("fast_exp2");
+			for(auto& h : d)
+				h = fast_exp2(h);
+		}
 	}
-	RDUMP(s2);
+
+	{
+		Vector<double> d = clone(data);
+		{
+			RTIMING("exp");
+			for(auto& h : d)
+				h = exp(h);
+		}
+		RDUMP(Sum(d));
+	}
+
 	double maxerror = 0;
 	double maxerrval;
 	for(int qq = -10000; qq < 10000; qq++) {
@@ -256,3 +336,21 @@ CONSOLE_APP_MAIN
 	}
 	RLOG(maxerror << "% at " << maxerrval);
 }
+
+#if 0
+
+TIMING exp            :  1.84 s  -  1.84 s  ( 1.84 s  / 1 ), min:  1.84 s , max:  1.84 s , nesting: 1 - 1
+TIMING fast_exp2      : 200.00 ms - 200.00 ms (200.00 ms / 1 ), min: 200.00 ms, max: 200.00 ms, nesting: 1 - 1
+TIMING fast_exp_      : 140.00 ms - 140.00 ms (140.00 ms / 1 ), min: 140.00 ms, max: 140.00 ms, nesting: 1 - 1
+TIMING fast_exp       : 225.00 ms - 225.00 ms (225.00 ms / 1 ), min: 225.00 ms, max: 225.00 ms, nesting: 1 - 1
+TIMING void           : 41.00 ms - 41.00 ms (41.00 ms / 1 ), min: 41.00 ms, max: 41.00 ms, nesting: 1 - 1
+
+
+TIMING exp            : 163.00 ms - 163.00 ms (163.00 ms / 1 ), min: 163.00 ms, max: 163.00 ms, nesting: 1 - 1
+TIMING fast_exp2      : 264.00 ms - 264.00 ms (264.00 ms / 1 ), min: 264.00 ms, max: 264.00 ms, nesting: 1 - 1
+TIMING fast_exp_      : 149.00 ms - 149.00 ms (149.00 ms / 1 ), min: 149.00 ms, max: 149.00 ms, nesting: 1 - 1
+TIMING fast_exp       : 277.00 ms - 277.00 ms (277.00 ms / 1 ), min: 277.00 ms, max: 277.00 ms, nesting: 1 - 1
+TIMING void           : 40.00 ms - 40.00 ms (40.00 ms / 1 ), min: 40.00 ms, max: 40.00 ms, nesting: 1 - 1
+
+#endif
+
