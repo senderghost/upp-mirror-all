@@ -1,8 +1,8 @@
-#include <CtrlLib/CtrlLib.h>
+#include <Core/Core.h>
 
 using namespace Upp;
 
-GUI_APP_MAIN
+CONSOLE_APP_MAIN
 {
 //	__float128 x;
 
@@ -17,7 +17,7 @@ GUI_APP_MAIN
 		double F = expm1(x);
 		double L = expm1(2 * x) / 2;
 		double Q = x + x*x / 2;
-		double T = x + x*x / 2 + x * x * x / 6; x * (1 + x* (1/2 + x * 1/6)
+		double T = x + x*x / 2 + x * x * x / 6;
 		double N = x + x*x / 2 + x * x * x / 6 + x * x * x * x / 24;
 		double M = x + x*x / 2 + x * x * x / 6 + x * x * x * x / 24 + x * x * x * x * x / 120;
 		LOG(i << " " <<

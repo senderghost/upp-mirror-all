@@ -3,7 +3,20 @@ uses
 
 file
 	fast_math.h,
-	MakeTable.cpp;
+	expd.h,
+	Benchmark.h,
+	exp2_1.h,
+	exp2_1.cpp,
+	exp2_2.h,
+	exp2_2.cpp,
+	exp2_3.h,
+	exp2_3.cpp,
+	exp2_4.h,
+	exp2_4.cpp,
+	exp5.h,
+	exp5.cpp,
+	MakeTable.cpp,
+	results.txt;
 
 mainconfig
 	"" = "";

@@ -7,134 +7,48 @@
 
 using namespace Upp;
 
-enum {
-	IEXP_BITS_H = 12,
-	IEXP_BITS_L = 12,
-	
-	IEXP_COUNT_H = (1 << IEXP_BITS_H),
-	IEXP_MASK_H = IEXP_COUNT_H - 1,
-	
-	IEXP_COUNT_L = (1 << IEXP_BITS_L),
-	IEXP_MASK_L = IEXP_COUNT_H - 1,
-};
-
-extern dword tab_h[IEXP_COUNT_H], tab_l[IEXP_COUNT_L];
-
 force_inline double raw_to_dbl(uint64 val)
 {
 	return _mm_cvtsd_f64( _mm_castsi128_pd ( _mm_cvtsi64_si128 ( val )));
 }
 
+const int    MANTISSA_BITS = 52;
+const uint64 DBL_SGNEXP_MASK = 0xfffull << MANTISSA_BITS;
+const uint64 DBL_ONE_BIT = (1ull << MANTISSA_BITS);
 
-
-/*
-using namespace Upp;
-
-const size_t EXPD_TABLE_SIZE = 11;
-
-typedef unsigned long long uint64_t;
-
-union fi {
-	float f;
-	unsigned int i;
-};
-
-union di {
-	double d;
-	uint64_t i;
-};
-
-template<size_t sbit_ = EXPD_TABLE_SIZE>
-struct ExpdVar {
-	enum {
-		sbit = sbit_,
-		s = 1UL << sbit,
-		adj = (1UL << (sbit + 10)) - (1UL << sbit)
-	};
-	// A = 1, B = 1, C = 1/2, D = 1/6
-	double C1[2]; // A
-	double C2[2]; // D
-	double C3[2]; // C/D
-	uint64_t tbl[s];
-	double a;
-	double ra;
-	ExpdVar()
-		: a(s / ::log(2.0))
-		, ra(1 / a)
-	{
-		for (int i = 0; i < 2; i++) {
-#if 0
-			C1[i] = 1.0;
-			C2[i] = 0.16667794882310216;
-			C3[i] = 2.9997969303278795;
-#else
-			C1[i] = 1.0;
-			C2[i] = 0.16666666685227835064;
-			C3[i] = 3.0000000027955394;
-#endif
-		}
-		for (int i = 0; i < s; i++) {
-			di di;
-			di.d = ::pow(2.0, i * (1.0 / s));
-			tbl[i] = di.i & mask64(52);
-		}
-	}
-};
-
-
-static const ExpdVar<> c;
-
-
-inline unsigned int mask(int x)
+force_inline uint64 dbl_to_raw(double val)
 {
-	return (1U << x) - 1;
+	union {
+		double val;
+		uint64 raw;
+	} h;
+	h.val = val;
+	return h.raw;
+//	return _mm_cvtsi128_si32(_mm_castpd_si128( _mm_load_sd(&val)));
 }
-
-inline uint64_t mask64(int x)
-{
-	return (1ULL << x) - 1;
-}
-
-inline double expd(double x)
-{
-	if (x <= -708.39641853226408) return 0;
-	if (x >= 709.78271289338397) return std::numeric_limits<double>::infinity();
-
-	const double _b = double(uint64_t(3) << 51);
-	__m128d b = _mm_load_sd(&_b);
-	__m128d xx = _mm_load_sd(&x);
-	__m128d d = _mm_add_sd(_mm_mul_sd(xx, _mm_load_sd(&c.a)), b);
-	uint64_t di = _mm_cvtsi128_si32(_mm_castpd_si128(d));
-	uint64_t iax = c.tbl[di & mask(c.sbit)];
-	__m128d _t = _mm_sub_sd(_mm_mul_sd(_mm_sub_sd(d, b), _mm_load_sd(&c.ra)), xx);
-	uint64_t u = ((di + c.adj) >> c.sbit) << 52;
-	double t;
-	_mm_store_sd(&t, _t);
-	double y = (c.C3[0] - t) * (t * t) * c.C2[0] - t + c.C1[0];
-	double did;
-	u |= iax;
-	memcpy(&did, &u, sizeof(did));
-	return y * did;
-}
-*/
-
-
-union double_raw {
-	double dbl;
-	uint64 raw;
-};
-
-enum {
-	IEEE_EXPONENT_ZERO = 1022,
-	IEEE_EXPONENT_MAX = 2047,
-};
 
 force_inline
-double exp2i(int exponent)
+double exp2i(int64 exponent)
 {
-	double_raw r;
-	r.raw = uint64(exponent) << 52;
-	return r.dbl;
+	return raw_to_dbl(uint64(exponent) << 52);
 }
+
+const int IEEE_EXPONENT_ZERO = 1022;
+
+
+inline
+double exp2m1(double h)
+{
+	return expm1(log(2) * h);
+}
+
+#include "exp2_1.h"
+#include "exp2_2.h"
+#include "exp2_3.h"
+#include "exp2_4.h"
+#include "expd.h"
+#include "exp5.h"
+
+#include "Benchmark.h"
 
 #endif
