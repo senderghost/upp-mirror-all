@@ -1,60 +1,78 @@
 #include "Synth.h"
 
 #include <Core/Core.h>
-#include <SDL.h>
 
 using namespace Upp;
 
-double sin_wave[2048];
-double square_wave[2048];
-double triangle_wave[2048];
-double saw_wave[2048];
-double was_wave[2048];
-double noise_wave[65536];
-double pink_wave[65536];
-double brown_wave[65536];
+enum {
+	WAVECOUNT = 2048,
+	WAVEMASK = 2047,
+	
+	NOISECOUNT = 1024 * 1024 * 4,
+	NOISEMASK = NOISECOUNT - 1,
+};
 
 struct WaveForm {
-	double wave[2048];
+	float wave[2048];
 };
+
+float BrownNoise[NOISECOUNT];
+
+INITBLOCK {
+	float p;
+	for(int i = 0; i < NOISECOUNT; i++) {
+		p = clamp(p + (0.02 * (Randomf() * 2 - 1)) / 1.02, -1/3.5, 1/3.5);
+		BrownNoise[i] = p;
+	}
+}
 
 void MakeWave(const char *s, WaveForm& h)
 {
-	for(int i = 0; i < 2048; i++)
+	for(int i = 0; i < WAVECOUNT; i++)
 		h.wave[i] = 0;
 	
-	CParser p(s);
 	try {
+		CParser p(s);
 		int harm = 1;
-		if(p.Char('T')) {
-			for(int i = 0; i < 2048; i++)
-				h.wave[i] = (1024 - abs(1024 - i)) / 512.0 - 1;
-			return;
-		}
-		if(p.Char('Z')) {
-			for(int i = 0; i < 2048; i++)
-				h.wave[i] = 2.0 * i / 2047 - 1;
-			return;
-		}
-		if(p.Char('z')) {
-			for(int i = 0; i < 2048; i++)
-				h.wave[i] = -2.0 * i / 2047 - 1;
-			return;
-		}
-		while(!p.IsEof()) {
-			double a = p.ReadDouble();
-			if(p.Char(':'))
-				harm = (int)a;
+		int i = 0;
+		double a = 1;
+		auto fn0 = [&]() -> double { return sin(M_2PI * i * harm / WAVECOUNT); };
+		Function<double ()> fn = fn0;
+		for(;;) {
+			int ii = (i * harm)/* & WAVEMASK*/;
+			if(p.Char('T'))
+				fn = [&]() -> double { return (1024.0 - abs(WAVECOUNT / 2 - ii)) / WAVECOUNT / 4 - 1; };
 			else
-				for(int i = 0; i < 2048; i++)
-					h.wave[i] += a * sin(M_2PI * i * harm / 2048);
-			harm++;
+			if(p.Char('t'))
+				fn = [&]() -> double { return -(1024.0 - abs(WAVECOUNT / 2 - ii)) / WAVECOUNT / 4 + 1; };
+			else
+			if(p.Char('Z'))
+				fn = [&]() -> double { return 2.0f * ii / (WAVECOUNT - 1) - 1; };
+			else
+			if(p.Char('z'))
+				fn = [&]() -> double { return -2.0f * ii / (WAVECOUNT - 1) + 1; };
+			else
+			if(p.Char('S'))
+				fn = fn0;
+			else
+			if(p.IsDouble()) {
+				double a = p.ReadDouble();
+				if(p.Char(':'))
+					harm = (int)a;
+				else {
+					for(i = 0; i < WAVECOUNT; i++)
+						h.wave[i] += (float)(a * fn());
+					harm++;
+				}
+			}
+			else
+				break;
 		}
 	}
 	catch(...) {}
 }
 
-double *GetWave(const String& h)
+float *GetWave(const String& h)
 {
 	static Mutex _;
 	Mutex::Lock __(_);
@@ -64,63 +82,6 @@ double *GetWave(const String& h)
 		return cache[q].wave;
 	MakeWave(h, cache.Add(h));
 	return cache.Top().wave;
-}
-
-INITBLOCK
-{
-	for(int i = 0; i < 2048; i++) {
-		square_wave[i] = sgn(sin_wave[i] = sin(M_2PI * i / 2048));
-		saw_wave[i] = 2.0 * i / 2047 - 1;
-		was_wave[i] = -saw_wave[i];
-		triangle_wave[i] = (1024 - abs(1024 - i)) / 512.0 - 1;
-	}
-	for(int i = 0; i < 65536; i++)
-		noise_wave[i] = Randomf();
-	for(int i = 0; i < 65536; i++) {
-		pink_wave[i] = (noise_wave[i] + noise_wave[(i + 1) & 0xffff] + noise_wave[(i + 2) & 0xffff]) / 3;
-	}
-	for(int i = 0; i < 65536; i++) {
-		brown_wave[i] = (pink_wave[i] + pink_wave[(i + 1) & 0xffff] + pink_wave[(i + 2) & 0xffff]) / 3;
-	}
-}
-
-struct SoundChannel {
-	int                                pos = 0;
-	SoundContext                       context;
-	Gate<SoundContext&, double *, int>  ef;
-};
-
-Array<SoundChannel> ch;
-
-int GetSynthChannelCount()
-{
-	return ch.GetCount();
-}
-
-void AddSound(Gate<SoundContext&, double *, int> ef)
-{
-	SDL_LockAudio();
-//	ch.Clear();
-	SoundChannel& sc = ch.Add();
-	sc.ef = ef;
-	memset(&sc.context, 0, sizeof(sc.context));
-	SDL_UnlockAudio();
-}
-
-void MyAudioCallback(void *, Uint8 *stream, int len)
-{
-	double h[512];
-	float *d = (float *)stream;
-	Fill(d, d + 512, 0.0f);
-	for(int i = ch.GetCount() - 1; i >= 0; i--) {
-		SoundChannel& e = ch[i];
-		if(!e.ef(e.context, h, 512))
-			ch.Remove(i);
-		else
-			e.context.t += 512;
-		for(int j = 0; j < 512; j++)
-			d[j] = float(d[j] + h[j]);
-	}
 }
 
 Instrument::Instrument()
@@ -193,81 +154,223 @@ double MakeNoise(int kind)
 	return 0;
 }
 
-void Play(double volume, double frequency, double duration_, const Instrument& m)
-{
-	enum { WAVEMASK = 2047 };
-	double fdelta = (WAVEMASK + 1) * frequency / 44200;
-	double sustain = m.sustain * volume;
-	double mdelta = (WAVEMASK + 1) * m.mod_frequency / 44200;
-	double mod_amp = (WAVEMASK + 1) * m.mod_amplitude / 44200;
-	int    duration = int(44200 * duration_);
-	int    delay = int(44200 * m.delay);
-	int    attack = int(44200 * m.attack);
-	int    decay = int(44200 * m.decay);
-	int    release = int(44200 * m.decay);
-	double *wave = GetWave(m.wave);
-	double *mod_wave = GetWave(m.mod_wave);
+struct SynthSound : SoundGenerator {
+	virtual bool Get(float *data, int len);
+
+	float  volume;
+	float  fdelta;
+	float  sustain;
+	float  mdelta;
+	float  mod_amp;
+	int    duration;
+	int    delay;
+	int    attack;
+	int    decay;
+	int    release;
+	float *wave;
+	float *mod_wave;
+	int    noise_kind;
+	float  noise_amplitude;
+	float  release_from = 0;
+	float  last = 0;
+	float  frequency_mul;
+	bool   has_noise;
+	float  noise[8];
+
+	float  q = 0;
+	float  w = 0;
+	int    t = 0;
+
+	void SetVolume(float vol)          { volume = vol; }
+	void SetFrequency(float frequency) { fdelta = (WAVEMASK + 1) * frequency * frequency_mul / 44200; }
 	
-	AddSound([=](SoundContext& sc, double *b, int len) -> bool {
-		double& q = sc.p[0];
-		double& w = sc.p[1];
-		int t = sc.t;
-		bool plays = true;
-		for(int i = 0; i < len; i++) {
-			double envelope = 0;
-			if(t < delay)
-				*b++ = 0;
-			else {
-				if(t < delay + attack)
-					envelope = (t * volume) / attack;
-				else
-				if(t < delay + attack + decay)
-					envelope = volume - (volume - sustain) * (t - delay - attack) / decay;
-				else
-				if(t < duration)
-					envelope = sustain;
-				else
-				if(release) {
-					envelope = sustain - sustain * (t - duration) / release;
-					if(envelope <= 0) {
-						plays = false;
-						envelope = 0;
-					}
-				}
-				double a = wave[(int)q & WAVEMASK];
-				if(m.noise_kind)
-					a += m.noise_amplitude * MakeNoise(m.noise_kind);
-				*b++ = LogVol(envelope) * a;
-				w += mdelta;
-				q += fdelta + mod_amp * mod_wave[(int)w & WAVEMASK];
+	void Set(float volume, float frequency, float duration, const Instrument& m);
+
+	SynthSound(float volume, float frequency, float duration, const Instrument& m) {
+		Set(volume, frequency, duration, m);
+	}
+};
+
+void SynthSound::Set(float volume, float frequency, float duration_, const Instrument& m)
+{
+	frequency_mul = m.frequency_mul;
+	
+	SetVolume(volume);
+	SetFrequency(frequency);
+	
+	sustain = m.sustain;
+	mdelta = (WAVEMASK + 1) * m.mod_frequency / 44200;
+	mod_amp = (WAVEMASK + 1) * m.mod_amplitude / 44200;
+	duration = int(44200 * duration_);
+	delay = int(44200 * m.delay);
+	attack = int(44200 * m.attack);
+	decay = int(44200 * m.decay);
+	release = int(44200 * m.release);
+	wave = GetWave(m.wave);
+	mod_wave = GetWave(m.mod_wave);
+	noise_kind = m.noise_kind;
+	noise_amplitude = m.noise_amplitude;
+	
+	has_noise = m.has_noise;
+	for(int i = 0; i < 8; i++)
+		noise[i] = m.noise[i];
+}
+
+bool SynthSound::Get(float *b, int len)
+{
+	bool plays = true;
+	float sustain_volume = sustain * volume;
+	for(int i = 0; i < len; i++) {
+		if(t < delay)
+			*b++ = 0;
+		else {
+			float envelope = 0;
+			if(t < delay + attack) {
+				envelope = (t * volume) / attack;
+				release_from = envelope;
+				last = t;
 			}
-			t++;
+			else
+			if(t < delay + attack + decay) {
+				envelope = volume - (volume - sustain_volume) * (t - delay - attack) / decay;
+				release_from = envelope;
+				last = t;
+			}
+			else
+			if(t < duration || duration < 0) {
+				envelope = sustain_volume;
+				release_from = envelope;
+				last = t;
+			}
+			else
+			if(release) {
+				envelope = release_from - release_from * (t - last) / release;
+				if(envelope <= 0) {
+					plays = false;
+					envelope = 0;
+				}
+			}
+			else
+				plays = false;
+			double a = wave[(int)q & WAVEMASK];
+			if(has_noise) {
+				a += BrownNoise[(int)q & NOISEMASK];
+			}
+			if(noise_kind)
+				a += noise_amplitude * MakeNoise(noise_kind);
+			*b++ = envelope * a;
+			w += mdelta;
+			q += fdelta + mod_amp * mod_wave[(int)w & WAVEMASK];
 		}
-		return plays;
+		t++;
+	}
+	return plays;
+}
+
+int64 Play(float volume, float frequency, float duration, const Instrument& m)
+{
+	return AddSound(new SynthSound(volume, frequency, duration, m));
+}
+
+int64 Play(float volume, float frequency, const Instrument& m)
+{
+	return Play(volume, frequency, -1, m);
+}
+
+
+void SetVolume(int64 id, float volume)
+{
+	AlterSound(id, [=](SoundGenerator *sg) {
+		SynthSound *ss = dynamic_cast<SynthSound *>(sg);
+		if(ss)
+			ss->SetVolume(volume);
 	});
 }
 
-void InitSoundSynth()
+void SetFrequency(int64 id, float frequency)
 {
-	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0)
-		return;
-	
-	SDL_AudioSpec want;
-	SDL_memset(&want, 0, sizeof(want)); /* or SDL_zero(want) */
-	want.freq = 44100;
-	want.format = AUDIO_F32SYS;
-	want.channels = 1;
-	want.samples = 512;
-	want.callback = MyAudioCallback; /* you wrote this function elsewhere. */
-	
-	if(SDL_OpenAudio(&want, NULL) < 0)
-	    DLOG("Failed to open audio: " + (String)SDL_GetError());
-	
-	SDL_PauseAudio(0);
+	AlterSound(id, [=](SoundGenerator *sg) {
+		SynthSound *ss = dynamic_cast<SynthSound *>(sg);
+		if(ss)
+			ss->SetFrequency(frequency);
+	});
 }
 
-void CloseSoundSynth()
+void StopSound(int64 id)
 {
-	SDL_CloseAudio();
-	SDL_Quit();
+	AlterSound(id, [=](SoundGenerator *sg) {
+		SynthSound *ss = dynamic_cast<SynthSound *>(sg);
+		if(ss)
+			ss->duration = 0;
+	});
+}
+
+void Instrument::Read(CParser& p)
+{
+	while(!p.IsEof()) {
+		if(p.Char('{')) {
+			const char *s = p.GetPtr();
+			for(;;) {
+				if(p.IsChar('}') || p.IsEof()) {
+					wave = String(s, p.GetPtr());
+					break;
+				}
+				p.SkipTerm();
+			}
+			p.Char('}');
+			if(p.Char('@'))
+				frequency_mul = p.ReadDouble();
+		}
+		else
+		if(p.Char('[')) {
+			const char *s = p.GetPtr();
+			for(;;) {
+				if(p.IsChar(']') || p.IsEof()) {
+					mod_wave = String(s, p.GetPtr());
+					break;
+				}
+				p.SkipTerm();
+			}
+			p.Char(']');
+			for(;;) {
+				if(p.Char('@'))
+					mod_amplitude = p.ReadDouble();
+				else
+				if(p.Char('^'))
+					mod_frequency = p.ReadDouble();
+				else
+					break;
+			}
+		}
+		else
+		if(p.Char('<')) {
+			has_noise = true;
+			int ii = 0;
+			while(!p.Char('>') && ii < 8)
+				noise[ii++] = p.ReadDouble();
+		}
+		else
+		if(p.Char('a'))
+			attack = p.ReadDouble();
+		else
+		if(p.Char('d'))
+			decay = p.ReadDouble();
+		else
+		if(p.Char('s'))
+			sustain = p.ReadDouble();
+		else
+		if(p.Char('r'))
+			release = p.ReadDouble();
+		else
+			break;
+	}
+}
+
+void Instrument::Read(const char *s)
+{
+	try {
+		CParser p(s);
+		Read(p);
+	}
+	catch(...) {}
 }

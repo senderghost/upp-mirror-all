@@ -41,10 +41,13 @@ struct Ship : Object {
 };
 
 struct Missile : Object {
-	int kind = 0;
+	int    kind = 0;
 	double accelx = 0;
-	int damage = 1;
-	bool left;
+	int    damage = 1;
+	bool   left;
+	int    sound_id = 0;
+	
+	~Missile() { StopSound(sound_id); }
 };
 
 #endif

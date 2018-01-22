@@ -1,0 +1,11 @@
+uses
+	CtrlLib;
+
+file
+	LblBox.h,
+	main.cpp,
+	LblBox.lay;
+
+mainconfig
+	"" = "GUI";
+

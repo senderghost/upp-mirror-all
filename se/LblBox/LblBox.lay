@@ -1,0 +1,5 @@
+LAYOUT(LblBoxLayout, 168, 196)
+	ITEM(LabelBox, Just, SetLabel(t_("Test")).SetInk(Color(226, 42, 0)).SetFont(SansSerif().Bold().Italic()).LeftPosZ(8, 152).TopPosZ(4, 76))
+	ITEM(LabelBox, dv___1, SetLabel(t_("Test")).LeftPosZ(8, 152).TopPosZ(84, 100))
+END_LAYOUT
+

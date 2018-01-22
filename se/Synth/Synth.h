@@ -5,41 +5,45 @@
 
 using namespace Upp;
 
-extern double sin_wave[2048];
-extern double square_wave[2048];
-extern double triangle_wave[2048];
-extern double saw_wave[2048];
-extern double was_wave[2048];
-
-extern double noise_wave[65536];
-extern double pink_wave[65536];
-extern double brown_wave[65536];
-
-struct SoundContext {
-	int    t;
-	double p[16];
+struct SoundGenerator {
+	virtual bool Get(float *e, int) = 0;
+	virtual ~SoundGenerator() {}
 };
 
-void AddSound(Gate<SoundContext&, double *, int> ef);
+int64 AddSound(SoundGenerator *new_sg);
+
+void  AlterSound(int64 id, Event<SoundGenerator *> alter);
 
 struct Instrument {
-	double delay;
-	double attack;
-	double decay;
-	double sustain;
-	double release;
-	double mod_frequency;
-	double mod_amplitude;
-	int    noise_kind;
-	double noise_amplitude;
+	double frequency_mul = 1;
+	double delay = 0;
+	double attack = 0;
+	double decay = 0;
+	double sustain = 1;
+	double release = 0;
+	double mod_frequency = 1;
+	double mod_amplitude = 0;
+	int    noise_kind = 0;
+	double noise_amplitude = 1;
+	
+	bool   has_noise = false;
+	float  noise[8] = { 0 };
 
 	String wave;
 	String mod_wave;
+	
+	void   Read(CParser& p);
+	void   Read(const char *s);
 
 	Instrument();
 };
 
-void Play(double volume, double frequency, double duration_, const Instrument& m);
+int64 Play(float volume, float frequency, float duration_, const Instrument& m);
+int64 Play(float volume, float frequency, const Instrument& m);
+
+void  SetVolume(int64 id, float volume);
+void  SetFrequency(int64 id, float frequency);
+void  StopSound(int64 id);
 
 void InitSoundSynth();
 void CloseSoundSynth();

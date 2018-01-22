@@ -1,4 +1,5 @@
 #include "jetstory.h"
+#include "jetstory.h"
 
 #define IMAGECLASS JetStoryImg
 #define IMAGEFILE <JetStory/JetStory.iml>
@@ -183,6 +184,7 @@ struct Enemy : Object {
 	Image image;
 	int   shield = 1;
 	int   maxshield = 1;
+	int64 sound;
 
 	virtual void Do();
 	virtual ~Enemy() {}
@@ -305,15 +307,17 @@ void Explosion(Pointf pos, int n, double spread)
 
 	{
 		Instrument t;
+		t.wave = "1 1 0.6";
 		t.attack = 0.01;
 		t.decay = 0.3;
 		t.sustain = 0;
-		t.mod_wave = "z";
-		t.mod_amplitude = 20;
-		t.mod_frequency = 100;
+		t.mod_wave = "z 1";
+		t.mod_amplitude = 40;
+		t.mod_frequency = 1;
 		if(n > 5)
-			t.noise_kind = 2;
-		Play(0.9, 120, 0.2, t);
+			t.noise_kind = 3;
+		Play(0.5, 100, 0.2, t);
+		Play(0.5, 107, 0.4, t);
 /*
 		t.wave = brown_wave;
 		t.wavemask = 0xffff;
@@ -339,7 +343,7 @@ void Explosion(Pointf pos, int n, double spread)
 	for(int i = 0; i < n; i++) {
 		Debris& d = debris.Add();
 		d.pos = pos;
-		d.speed = Pointf(Randomf() * 10 - 5, Randomf() * 10 - 5);
+		d.speed = Polar(Randomf() * M_2PI) * Randomf() * 5;
 		d.sz = Size(1 + Random(2), 1 + Random(2));
 		d.start = ms;
 		d.end = ms + 300 + Random(100);
@@ -371,33 +375,43 @@ void JetStory::Do()
 	Size isz = JetStoryImg::ship().GetSize();
 
 	while(n-- > 0) {
-		auto motor = [] {
+		static int64 motor;
+		ONCELOCK {
 			Instrument t;
 //				t.wave = brown_wave;
 //				t.wavemask = 0xffff;
-				t.decay = 0.3;
-				t.sustain = 0;
-				t.noise_kind = 3;
-				Play(0.2, 120 + Random(10), 0.1, t);
-//			t.wave = noise_wave;
-//			t.wavemask = 0xffff;
-//			Play(0.01, 1, 0.1, t);
-		};
+			t.wave = "1 0.1 0.001";
+
+			t.noise_kind = 1;
+			t.noise_amplitude = 1.5;
+			
+			t.mod_frequency = 20;
+			t.mod_amplitude = 60;
+
+			motor = Play(0, 100, t);
+			
+			//motor = Play(0.9, 120, 0.2, t);
+		}
+		
+		double motvol = 0;
 		if(left) {
-			motor();
+			motvol++;
 			ship.speed.x -= 0.01;
 			ship.left = true;
 		}
 		else
 		if(right) {
-			motor();
+			motvol++;
 			ship.speed.x += 0.01;
 			ship.left = false;
 		}
 		if(up) {
-			motor();
+			motvol++;
 			ship.speed.y -= 0.02;
 		}
+		
+	//	SetFrequency(motor, abs(ship.speed.x) * 1000);
+		SetVolume(motor, motvol / 50);
 
 		ship.Move(isz, 0.4, 0.997);
 		
@@ -416,9 +430,11 @@ void JetStory::Do()
 				t.wave = "0.7 7:0.5";
 				t.decay = 0.3;
 				t.sustain = 0;
-				t.mod_wave = "z";
+				t.mod_wave = "z 1 20:0.4";
 				t.mod_frequency = 4;
 				t.mod_amplitude = 500;
+				
+				"{0.7 7:0.5}*1.023 a0d0.3s0r3 [z 1 20:0.4]:4"
 			
 				Play(0.7, 500, 0.5, t);
 
@@ -458,6 +474,9 @@ void JetStory::Do()
 			}
 			if(kind == 2)
 				m.speed.y += 0.5;
+			
+			Instrument tt;
+			m.sound_id = Play(0.05, abs(max(m.speed.x, m.speed.y)) * 500 + 150, tt);
 		}
 		
 		Vector<int> done;
@@ -467,6 +486,9 @@ void JetStory::Do()
 		for(int i = 0; i < missile.GetCount(); i++) {
 			Missile& m = missile[i];
 			m.speed.x += m.accelx;
+			if(Distance(m.pos, ship.pos) > 2000)
+				done.Add(i);
+			else
 			if(m.Move(decode(m.kind, 1, msz1, 2, msz2, msz), 0, 1, m.kind ? 0.01 : 0.001)) {
 				if(m.kind == 2) {
 					Fragment(m);
@@ -480,10 +502,7 @@ void JetStory::Do()
 				done.Add(i);
 			
 			if(m.kind == 1 || m.kind == 2) {
-				Instrument t;
-				t.decay = 0.1;
-				t.sustain = 0;
-				Play(0.05, abs(max(m.speed.x, m.speed.y)) * 500 + 150, 0.1, t);
+				SetFrequency(m.sound_id, abs(max(m.speed.x, m.speed.y)) * 500 + 150);
 			}
 #if 0
 // missile flame experiment
@@ -604,7 +623,7 @@ void JetStory::Paint(Draw& w)
 
 	int ani3 = (0x7fffffff & ms) / 20 % 3;
 	for(auto& m : missile) {
-		Image img = decode(m.kind, 1, JetStoryImg::Get((m.speed.x < 0 ? JetStoryImg::I_lhmissile0 : JetStoryImg::I_hmissile0) + ani3),
+		Image img = decode(m.kind, 1, JetStoryImg::Get((m.accelx < 0 ? JetStoryImg::I_lhmissile0 : JetStoryImg::I_hmissile0) + ani3),
 		                           2, JetStoryImg::bomb(),
 		                           9, JetStoryImg::fragment(),
 		                           m.speed.x < 0 ? JetStoryImg::erif() : JetStoryImg::fire());
@@ -645,23 +664,29 @@ void JetStory::Paint(Draw& w)
 		if(ani >= 0) {
 			if(m.sound) {
 				m.sound = false;
-		
-				Instrument t;
-				t.attack = 0.05;
-				t.decay = 0.2;
-				t.sustain = 0;
-				t.mod_wave = "z";
-				t.mod_amplitude = 100;
-				t.mod_frequency = 10;
-				Play(0.7, 100, 0.3, t);
 
+				if(Random(2) == 0) {		
+					Instrument t;
+					t.attack = 0.05;
+					t.decay = 0.2;
+					t.sustain = 0.1;
+					t.release = 1;
+					t.mod_wave = "z";
+					t.mod_amplitude = 100;
+					t.mod_frequency = 10;
+					Play(0.3, Random(100) + 50, 0.3, t);
+				}
+/*
+				Instrument t;
 				t.wave = "Z";
 				t.attack = 0.05;
 				t.decay = 0.5;
 				t.mod_amplitude = 1000;
-				t.mod_frequency = 2.5;
-				Play(0.7, Random(10000) + 200, 0.55, t);
-
+				t.mod_frequency = 1;
+				Play(0.3, Random(10000) + 200, 0.55, t);*/
+				/*
+				*/
+		
 //				t.wave = noise_wave;
 //				t.attack = 0.05;
 //				t.decay = 0.5;
