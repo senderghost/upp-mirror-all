@@ -1,5 +1,7 @@
 LAYOUT(LblBoxLayout, 168, 196)
-	ITEM(LabelBox, Just, SetLabel(t_("Test")).SetInk(Color(226, 42, 0)).SetFont(SansSerif().Bold().Italic()).LeftPosZ(8, 152).TopPosZ(4, 76))
-	ITEM(LabelBox, dv___1, SetLabel(t_("Test")).LeftPosZ(8, 152).TopPosZ(84, 100))
+	ITEM(LabelBox, Just, SetLabel(t_("Test 1 red label box")).SetInk(Color(226, 42, 0)).SetFont(SansSerif().Bold().Italic()).LeftPosZ(8, 152).TopPosZ(4, 32))
+	ITEM(LabelBox, dv___1, SetLabel(t_("Test 2 default labelbox")).LeftPosZ(8, 152).TopPosZ(44, 36))
+	ITEM(Label, dv___2, SetLabel(t_("Test default label")).LeftPosZ(8, 120).TopPosZ(88, 19))
+	ITEM(Label, dv___3, SetLabel(t_("Test red label")).SetFont(Serif().Italic()).SetInk(Color(141, 42, 0)).HSizePosZ(8, 40).TopPosZ(112, 19))
 END_LAYOUT
 
