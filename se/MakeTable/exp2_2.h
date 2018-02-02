@@ -45,7 +45,7 @@ inline double exp2(double arg)
 
 //	double r = REMK * (double)(h & REMAINDER_MASK);
 	
-	double r = REMK * _mm_cvtsd_f64(_mm_cvtsi64_sd(_mm_undefined_pd(), h & REMAINDER_MASK));
+	double r = REMK * (h & REMAINDER_MASK);
 	
 	
 	double e = raw_to_dbl((h & DBL_SGNEXP_MASK) + val_h);

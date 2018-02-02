@@ -41,7 +41,7 @@ inline double exp2(double arg)
 	
 	uint64 exp = h & DBL_SGNEXP_MASK;
 
-	double rem = REMK * _mm_cvtsd_f64(_mm_cvtsi64_sd(_mm_undefined_pd(), h & REMAINDER_MASK));
+	double rem = REMK * (h & REMAINDER_MASK);
 	h >>= REMAINDER_BITS;
 
 	double val_l = tab_l[h & MASK_L];

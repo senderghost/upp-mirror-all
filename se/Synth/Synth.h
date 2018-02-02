@@ -49,4 +49,35 @@ void InitSoundSynth();
 void CloseSoundSynth();
 int  GetSynthChannelCount();
 
+struct ADSR {
+	double delay = 0;
+	double attack = 0;
+	double decay = 0;
+	double sustain = 1;
+	double release = 0;
+	
+	double Evaluate(double t, double duration);
+};
+
+struct FMPatch {
+	ADSR    adsr;
+
+	double  m1 = 1;
+	double  beta1 = 0;
+	ADSR    adsr1;
+	
+	double  m2 = 1;
+	double  beta2 = 0;
+	ADSR    adsr2;
+
+	double  mf = 1;
+	double  betaf = 0;
+	ADSR    adsrf;
+	
+	double  betan = 0;
+	
+};
+
+int64 Play(double volume, double frequency, double duration, const FMPatch& patch);
+
 #endif

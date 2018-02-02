@@ -31,6 +31,7 @@ void AlterSound(int64 id, Event<SoundGenerator *> alter)
 
 void MyAudioCallback(void *, Uint8 *stream, int len)
 {
+	TIMING("AudioGenerator");
 	float h[512];
 	float *d = (float *)stream;
 	Fill(d, d + 512, 0.0f);

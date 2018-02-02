@@ -1,0 +1,184 @@
+EFCC7970  sub rsp,byte +0x38 
+EFCC7974  movq xmm0,xmm0 
+EFCC7978  movq rdx,xmm0 
+EFCC797D  btr rdx,0x3f 
+EFCC7982  cmp rdx,[rel 0xffffffffefd55f90] 
+EFCC7989  jnl dword 0x7ff7efcc7b00 
+EFCC798F  cmp dword [rel 0xffffffffefe00028],byte +0x0 
+EFCC7996  jnz dword 0x7ff7efcc7bd0 
+EFCC799C  movapd xmm2,xmm0 
+EFCC79A0  movapd xmm3,xmm0 
+EFCC79A4  cmplesd xmm2,[rel 0xffffffffefd55f70] 
+EFCC79AD  cmpnltsd xmm3,[rel 0xffffffffefd55f78] 
+EFCC79B6  andps xmm2,xmm3 
+EFCC79B9  ucomisd xmm2,xmm2 
+EFCC79BD  jpe 0x7ff7efcc79e0 
+EFCC79BF  ucomisd xmm0,[rel 0xffffffffefd55f70] 
+EFCC79C7  ja dword 0x7ff7efcc7b30 
+EFCC79CD  jmp dword 0x7ff7efcc7b50 
+EFCC79D2  nop word [rax+rax+0x0] 
+EFCC79E0  movapd xmm1,xmm0 
+EFCC79E4  btr rdx,0x3f 
+EFCC79E9  cmp rdx,[rel 0xffffffffefd55fd0] 
+EFCC79F0  jna dword 0x7ff7efcc7b90 
+EFCC79F6  mulsd xmm1,[rel 0xffffffffefd55f88] 
+EFCC79FE  cvttpd2dq xmm2,xmm1 
+EFCC7A02  cvtdq2pd xmm1,xmm2 
+EFCC7A06  movd ecx,xmm2 
+EFCC7A0A  movapd xmm2,xmm1 
+EFCC7A0E  mulsd xmm1,[rel 0xffffffffefd55fb0] 
+EFCC7A16  mov rax,dword 0x3f 
+EFCC7A1D  and eax,ecx 
+EFCC7A1F  sar ecx,0x6 
+EFCC7A22  mulsd xmm2,[rel 0xffffffffefd55fb8] 
+EFCC7A2A  addsd xmm0,xmm1 
+EFCC7A2E  addsd xmm2,xmm0 
+EFCC7A32  movapd xmm3,[rel 0xffffffffefd55f00] 
+EFCC7A3A  mulsd xmm3,xmm2 
+EFCC7A3E  movapd xmm0,[rel 0xffffffffefd55f20] 
+EFCC7A46  movapd xmm1,xmm2 
+EFCC7A4A  mulsd xmm0,xmm2 
+EFCC7A4E  addsd xmm3,[rel 0xffffffffefd55f10] 
+EFCC7A56  mulsd xmm1,xmm2 
+EFCC7A5A  addsd xmm0,[rel 0xffffffffefd55f30] 
+EFCC7A62  movapd xmm4,xmm1 
+EFCC7A66  mulsd xmm4,xmm1 
+EFCC7A6A  mulsd xmm3,xmm2 
+EFCC7A6E  mulsd xmm0,xmm1 
+EFCC7A72  addsd xmm3,[rel 0xffffffffefd55f40] 
+EFCC7A7A  addsd xmm0,xmm2 
+EFCC7A7E  mulsd xmm3,xmm4 
+EFCC7A82  addsd xmm0,xmm3 
+EFCC7A86  cmp ecx,0xfffffc02 
+EFCC7A8C  lea rdx,[rel 0xffffffffefd59160] 
+EFCC7A93  lea r11,[rel 0xffffffffefd58cf0] 
+EFCC7A9A  lea r10,[rel 0xffffffffefd58af0] 
+EFCC7AA1  mulsd xmm0,[rdx+rax*8] 
+EFCC7AA6  addsd xmm0,[r11+rax*8] 
+EFCC7AAC  addsd xmm0,[r10+rax*8] 
+EFCC7AB2  jng 0x7ff7efcc7ad0 
+EFCC7AB4  shl rcx,0x34 
+EFCC7AB8  movq xmm2,rcx 
+EFCC7ABD  paddq xmm0,xmm2 
+EFCC7AC1  add rsp,byte +0x38 
+EFCC7AC5  ret 
+EFCC7AC6  nop word [rax+rax+0x0] 
+EFCC7AD0  jl 0x7ff7efcc7adc 
+EFCC7AD2  ucomisd xmm0,[rel 0xffffffffefd55fc8] 
+EFCC7ADA  jnc 0x7ff7efcc7ab4 
+EFCC7ADC  add ecx,0x432 
+EFCC7AE2  mov rax,dword 0x1 
+EFCC7AE9  shl rax,cl 
+EFCC7AEC  movq xmm2,rax 
+EFCC7AF1  mulsd xmm0,xmm2 
+EFCC7AF5  jmp dword 0x7ff7efcc7bc0 
+EFCC7AFA  nop word [rax+rax+0x0] 
+EFCC7B00  movq rax,xmm0 
+EFCC7B05  cmp rax,[rel 0xffffffffefd55f90] 
+EFCC7B0C  jz dword 0x7ff7efcc7bc0 
+EFCC7B12  cmp rax,[rel 0xffffffffefd55f98] 
+EFCC7B19  jz dword 0x7ff7efcc7bb0 
+EFCC7B1F  or rax,[rel 0xffffffffefd55fa0] 
+EFCC7B26  movq xmm0,rax 
+EFCC7B2B  jmp dword 0x7ff7efcc7bc0 
+EFCC7B30  mov rax,0x7ff0000000000000 
+EFCC7B3A  movq xmm1,rax 
+EFCC7B3F  mov r8d,[rel 0xffffffffefd55ef8] 
+EFCC7B46  call dword 0x7ff7efbd554c 
+EFCC7B4B  jmp dword 0x7ff7efcc7bc0 
+EFCC7B50  ucomisd xmm0,[rel 0xffffffffefd55f80] 
+EFCC7B58  jna 0x7ff7efcc7b70 
+EFCC7B5A  movapd xmm0,[rel 0xffffffffefd55fc0] 
+EFCC7B62  jmp short 0x7ff7efcc7bc0 
+EFCC7B64  nop word [rax+rax+0x0] 
+EFCC7B70  pxor xmm1,xmm1 
+EFCC7B74  mov r8d,[rel 0xffffffffefd55ef4] 
+EFCC7B7B  call dword 0x7ff7efbd554c 
+EFCC7B80  jmp short 0x7ff7efcc7bc0 
+EFCC7B82  nop word [rax+rax+0x0] 
+EFCC7B90  movapd xmm1,xmm0 
+EFCC7B94  addsd xmm1,[rel 0xffffffffefd55fd8] 
+EFCC7B9C  addsd xmm0,[rel 0xffffffffefd55fc8] 
+EFCC7BA4  add rsp,byte +0x38 
+EFCC7BA8  ret 
+EFCC7BA9  nop dword [rax+0x0] 
+EFCC7BB0  pxor xmm0,xmm0 
+EFCC7BB4  add rsp,byte +0x38 
+EFCC7BB8  ret 
+EFCC7BB9  nop dword [rax+0x0] 
+EFCC7BC0  add rsp,byte +0x38 
+EFCC7BC4  ret 
+EFCC7BC5  nop word [rax+rax+0x0] 
+EFCC7BD0  vcmplesd xmm2,xmm0,qword [rel 0xffffffffefd55f70] 
+EFCC7BD9  vcmpnltsd xmm3,xmm0,qword [rel 0xffffffffefd55f78] 
+EFCC7BE2  vandps xmm2,xmm3,xmm2 
+EFCC7BE6  vucomisd xmm2,xmm2 
+EFCC7BEA  jpe 0x7ff7efcc7c00 
+EFCC7BEC  vucomisd xmm0,qword [rel 0xffffffffefd55f70] 
+EFCC7BF4  ja dword 0x7ff7efcc7cf0 
+EFCC7BFA  jmp dword 0x7ff7efcc7d30 
+EFCC7BFF  nop 
+EFCC7C00  vmovq rdx,xmm0 
+EFCC7C05  btr rdx,0x3f 
+EFCC7C0A  cmp rdx,[rel 0xffffffffefd55fd0] 
+EFCC7C11  jna dword 0x7ff7efcc7d10 
+EFCC7C17  vmulsd xmm1,xmm0,qword [rel 0xffffffffefd55f88] 
+EFCC7C1F  vroundsd xmm2,xmm1,xmm1,byte 0x3 
+EFCC7C25  vcvttsd2si ecx,xmm1 
+EFCC7C29  vfmadd231sd xmm0,xmm2,qword [rel 0xffffffffefd55fb0] 
+EFCC7C32  vmulsd xmm2,xmm2,qword [rel 0xffffffffefd55fb8] 
+EFCC7C3A  vaddsd xmm2,xmm2,xmm0 
+EFCC7C3E  mov rax,dword 0x3f 
+EFCC7C45  and eax,ecx 
+EFCC7C47  sar ecx,0x6 
+EFCC7C4A  vmovapd xmm3,oword [rel 0xffffffffefd55f00] 
+EFCC7C52  vfmadd213sd xmm3,xmm2,qword [rel 0xffffffffefd55f10] 
+EFCC7C5B  vfmadd213sd xmm3,xmm2,qword [rel 0xffffffffefd55f40] 
+EFCC7C64  vfmadd213sd xmm3,xmm2,qword [rel 0xffffffffefd55f20] 
+EFCC7C6D  vfmadd213sd xmm3,xmm2,qword [rel 0xffffffffefd55f30] 
+EFCC7C76  vmulsd xmm0,xmm2,xmm2 
+EFCC7C7A  vfmadd213sd xmm0,xmm3,xmm2 
+EFCC7C7F  cmp ecx,0xfffffc02 
+EFCC7C85  lea rdx,[rel 0xffffffffefd59160] 
+EFCC7C8C  lea r11,[rel 0xffffffffefd58cf0] 
+EFCC7C93  lea r10,[rel 0xffffffffefd58af0] 
+EFCC7C9A  vmulsd xmm2,xmm0,qword [rdx+rax*8] 
+EFCC7C9F  vaddsd xmm1,xmm2,qword [r11+rax*8] 
+EFCC7CA5  vaddsd xmm0,xmm1,qword [r10+rax*8] 
+EFCC7CAB  jng 0x7ff7efcc7cc0 
+EFCC7CAD  shl rcx,0x34 
+EFCC7CB1  vmovq xmm2,rcx 
+EFCC7CB6  vpaddq xmm0,xmm0,xmm2 
+EFCC7CBA  add rsp,byte +0x38 
+EFCC7CBE  ret 
+EFCC7CBF  nop 
+EFCC7CC0  jl 0x7ff7efcc7ccc 
+EFCC7CC2  vucomisd xmm0,qword [rel 0xffffffffefd55fc8] 
+EFCC7CCA  jnc 0x7ff7efcc7cad 
+EFCC7CCC  add ecx,0x432 
+EFCC7CD2  mov rax,dword 0x1 
+EFCC7CD9  shl rax,cl 
+EFCC7CDC  vmovq xmm2,rax 
+EFCC7CE1  vmulsd xmm0,xmm0,xmm2 
+EFCC7CE5  jmp dword 0x7ff7efcc7d60 
+EFCC7CEA  nop word [rax+rax+0x0] 
+EFCC7CF0  mov rax,0x7ff0000000000000 
+EFCC7CFA  vmovq xmm1,rax 
+EFCC7CFF  mov r8d,[rel 0xffffffffefd55ef8] 
+EFCC7D06  call dword 0x7ff7efbd554c 
+EFCC7D0B  jmp short 0x7ff7efcc7d60 
+EFCC7D0D  nop dword [rax] 
+EFCC7D10  vaddsd xmm1,xmm0,qword [rel 0xffffffffefd55fd8] 
+EFCC7D18  vaddsd xmm0,xmm0,qword [rel 0xffffffffefd55fc8] 
+EFCC7D20  add rsp,byte +0x38 
+EFCC7D24  ret 
+EFCC7D25  nop word [rax+rax+0x0] 
+EFCC7D30  vpxor xmm1,xmm1,xmm1 
+EFCC7D34  mov r8d,[rel 0xffffffffefd55ef4] 
+EFCC7D3B  call dword 0x7ff7efbd554c 
+EFCC7D40  jmp short 0x7ff7efcc7d60 
+EFCC7D42  nop word [rax+rax+0x0] 
+EFCC7D50  vpxor xmm0,xmm0,xmm0 
+EFCC7D54  nop word [rax+rax+0x0] 
+EFCC7D60  add rsp,byte +0x38 
+EFCC7D64  ret 

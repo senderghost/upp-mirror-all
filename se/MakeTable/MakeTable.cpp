@@ -9,6 +9,8 @@ void Test(double arg)
 	LOG("=============");
 	DUMP(arg);
 	
+	double ee = ::exp(arg);
+	RDUMP(ee);
 	
 	uint64 h = dbl_to_raw(arg + 1023);
 	

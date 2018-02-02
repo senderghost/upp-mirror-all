@@ -434,7 +434,7 @@ void JetStory::Do()
 				t.mod_frequency = 4;
 				t.mod_amplitude = 500;
 				
-				"{0.7 7:0.5}*1.023 a0d0.3s0r3 [z 1 20:0.4]:4"
+//				"{0.7 7:0.5}*1.023 a0d0.3s0r3 [z 1 20:0.4]:4"
 			
 				Play(0.7, 500, 0.5, t);
 
