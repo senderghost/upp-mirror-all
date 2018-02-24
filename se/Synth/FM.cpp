@@ -68,7 +68,7 @@ bool FMSound::Get(float *b, int len)
 		state ^= state >> 17;
 		state ^= state << 5;
 		double white = 2.0 / 4294967295.0 * state - 1;
-		noisedir = clamp(noisedir + 0.0001 * fc * white, -0.08, 0.08);
+/*		noisedir = clamp(noisedir + 0.0001 * fc * white, -0.08, 0.08);
 		noiseval = noisedir;
 		if(noiseval > 1) {
 			noisedir = -abs(noisedir);
@@ -80,13 +80,12 @@ bool FMSound::Get(float *b, int len)
 		}
 		
 		*b++ = tanh(noiseval);
-		
-/*		*b++ = float(volume * adsr.Evaluate(t, duration)
+*/		
+		*b++ = float(volume * adsr.Evaluate(t, duration)
 		                    * sin(pt * fc + adsr1.Evaluate(t, duration)
 		                                    * beta1
 		                                    * sin(pt * fm1 + betan * white + betaf * adsrf.Evaluate(t, duration) * sin(pt * fmf))
 		                                   + adsr2.Evaluate(t, duration) * beta2 * sin(pt * fm2)));
-*/
 
 		ti++;
 	}
