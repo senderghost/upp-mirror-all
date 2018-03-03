@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	Synth2;
+
+file
+	SoundMaker.h,
+	SoundMaker.lay,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+
