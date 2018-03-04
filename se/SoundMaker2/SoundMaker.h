@@ -21,7 +21,7 @@ struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
 	Button tone[72];
 	
 	TimeCallback       tm;
-	Vector<SoundPoint> sp;
+//	Vector<SoundPoint> sp;
 	int                tm0 = 0;
 	double             f = 440;
 

@@ -3,7 +3,7 @@
 #include <SDL.h>
 
 struct ChSound : Sound {
-	double t;
+	int t;
 };
 
 ChSound sch[NUM_CHANNELS];
@@ -13,9 +13,11 @@ void SetChannel(int chi, const Sound& c, bool start)
 	SDL_LockAudio();
 	ChSound& ch = sch[chi];
 	(Sound&)ch = c;
-	ch.f *= M_2PI / 22050;
-	if(start)
+	if(start) {
 		ch.t = 0;
+		ch.op[0].Start();
+		ch.op[1].Start();
+	}
 	SDL_UnlockAudio();
 }
 
@@ -26,8 +28,13 @@ void MyAudioCallback(void *, Uint8 *stream, int len)
 
 	for(int j = 0; j < 512; j++) {
 		float h = 0;
-		for(ChSound& ch : sch)
-			*d++ = float(ch.volume * ch.op[0].Evaluate(ch.t, ch.f, ch.duration, ch.op[1].Evaluate(ch.t, ch.f, ch.duration, 0)));
+		*d = 0;
+		ChSound& ch = sch[0];
+		{
+			*d += float(ch.op[0].Evaluate(ch.t, ch.op[1].Evaluate(ch.t, 0)));
+			ch.t++;
+		}
+		d++;
 	}
 }
 

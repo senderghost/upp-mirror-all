@@ -6,20 +6,18 @@ SoundMakerDlg::SoundMakerDlg()
 	
 	for(int i = 0; i < 72; i++)
 		tone[i] << [=] {
-			sp.Clear();
-			for(int i = 0; i < list.GetCount(); i++) {
-				SoundPoint& p = sp.Add();
-				p.duration = list.Get(i, "duration");
-				p.fc = 1;
-				p.mod_fc = list.Get(i, "fmod");
-				p.beta = list.Get(i, "beta");
-				p.volume = list.Get(i, "volume");
-				p.white_noise = list.Get(i, "white");
-				p.brown_noise = list.Get(i, "brown");
-			}
-			tm0 = msecs();
-			f = 65.406 * exp2(i / 12.0);
-			Render(1, sp, 0, f);
+			Sound s;
+/*			s.f = 65.406 * exp2(i / 12.0);
+			s.duration = 0.5;
+			s.op[0].decay = 0.5;
+			s.op[0].release = 0.5;
+			s.op[0].sustain = 0;
+			s.op[1].f = 3;
+			s.op[1].volume = 8;
+			s.op[1].decay = 0.4;
+			s.op[1].sustain = 0;
+			s.op[1].release = 2;
+			SetChannel(0, s, true);*/
 		};
 		
 	AddParam("duration", duration, 3000);
@@ -57,7 +55,19 @@ SoundMakerDlg::SoundMakerDlg()
 	};
 	
 	test << [=] {
-		sp.Clear();
+		Sound s;
+/*		s.f = 110;
+		s.duration = 0.5;
+		s.op[0].decay = 0.5;
+		s.op[0].release = 0.5;
+		s.op[0].sustain = 0;
+		s.op[1].f = 0.5;
+		s.op[1].volume = 5;
+		s.op[1].decay = 0.4;
+		s.op[1].sustain = 0;
+		s.op[1].release = 2;*/
+		SetChannel(0, s, true);
+/*		sp.Clear();
 		for(int i = 0; i < list.GetCount(); i++) {
 			SoundPoint& p = sp.Add();
 			p.duration = list.Get(i, "duration");
@@ -70,7 +80,7 @@ SoundMakerDlg::SoundMakerDlg()
 		}
 		tm0 = msecs();
 		f = 440;
-		Render(1, sp, 0, f);
+		Render(1, sp, 0, f);*/
 	};
 	
 	list.WhenSel << [=] { Sync(); };
@@ -78,7 +88,7 @@ SoundMakerDlg::SoundMakerDlg()
 	Sync();
 
 	tm.Set(-1, [=] {
-		Render(1, sp, msecs(tm0), f);
+//		Render(1, sp, msecs(tm0), f);
 	});
 }
 
@@ -131,78 +141,41 @@ void SoundMakerDlg::SetJSON(const String& s)
 	Set(ParseJSON(s));
 }
 
-// {1 1 1 1 0.5} [1]@1^10a0.05d0.3s0.3r3;{1 1 1 1 0.5}@1.05 [1]@2^12 a0.05d0.3s0.3r3
-
-struct Test : TopWindow {
-	double mod, beta;
-	double t0;
-	Sound s;
-	
-	void Do(Point p, bool first) {
-		Size sz = GetSize();
-		mod = 2 * (double)p.x / sz.cx;
-		beta = 10 * (double)p.y / sz.cy;
-		s.volume = 0.4;
-		s.fc = 440;
-		s.mod_fc = mod * s.fc;
-		s.beta = beta * s.fc;
-		t0 = msecs();
-		SetChannel(0, s, first);
-		Refresh();
-	}
-	
-	virtual void Paint(Draw& w) {
-		Size sz = GetSize();
-		w.DrawRect(sz, White());
-		w.DrawText(10, 10, String() << mod << " " << beta);
-	}
-	
-	virtual void LeftDown(Point p, dword keyflags) {
-		Do(p, true);
-	}
-	
-	virtual void MouseMove(Point p, dword keyflags) {
-		if(keyflags & K_MOUSELEFT)
-			Do(p, false);
-	}
-	
-	TimeCallback tm;
-	
-	Vector<SoundPoint> tst;
-	int tm0;
-	
-	Test() {
-		Do(Point(0, 0), false);
-		if(0) {
-			tm0 = msecs();
-			SoundPoint s;
-			s.fc = 440;
-			s.mod_fc = 0.33333333 * s.fc;
-			s.beta = 2 * s.fc;
-			s.volume = 0.7;
-			s.duration = 4000;
-			tst.Add(s);
-			s.fc = 420;
-			s.beta = 0;
-			s.duration = 5000;
-			s.volume = 0.5;
-			s.brown_noise = 0.3;
-			s.white_noise = 0.1;
-			tst.Add(s);
-		}
-		
-		tm.Set(-10, [=] {
-			if(GetMouseLeft()) t0 = msecs();
-			s.volume = max(0.0, 0.4 * (500 - msecs(t0)) / 500);
-			SetChannel(0, s);
-			Render(1, tst, msecs(tm0));
-		});
-	}
-};
-
 GUI_APP_MAIN
 {
 	InitSoundSynth();
+
+	
+	FMOP op;
+	op.duration = 10000;
+	op.attack = 1.01;
+	op.decay = 0.999;
+	op.release = 0.9999;
+	op.sustain = 0.5;
+	op.volume = 1;
+	op.f = 0.1;
+	op.Start();
+	
+		Sound s;
+		s.op[0] = op;
+		
+		s.op[1].f = 0.3;
+		s.op[1].volume = 200;
+		s.op[1].attack = 1e20;
+		s.op[1].decay = 0;
+		s.op[1].sustain = 1;
+		s.op[1].release = 0.9995;
+		s.op[1].duration = 1000;
+
+/*
+		s.op[0].release = 2;
+		s.op[1].f = 2;
+		s.op[1].volume = 10;
+		s.op[1].decay = 10000;
+		s.op[1].release = 2;
+*/
+		SetChannel(0, s, true);
+
 /*
 	Sound s;
 	for(int i = 1000; i > 800; i -= 10) {

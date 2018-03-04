@@ -5,29 +5,28 @@
 
 using namespace Upp;
 
-#define WAVEMASK  16383
-#define WAVECOUNT (WAVEMASK + 1)
-
 struct FMOP {
 	double delay = 0;
-	double attack = 0;
-	double decay = 0;
+	double attack = 1e12;
+	double decay = 1e-12;
 	double sustain = 1;
-	double release = 0;
+	double duration = 1;
+	double release = 1e-6;
 	
-	double volume = 1;
+	double volume = 0;
 	double f = 1;
 	
-	double Envelope(double t, double duration);
-	double Evaluate(double t, double frequency, double duration, double mod);
+	int    p;
+	double v;
+	
+	void   Start() { v = 1e-12; p = 0; }
+	
+	void   Envelope(int t);
+	double Evaluate(int t, double mod);
 };
 
 	
 struct Sound {
-	double f = 100;
-	double duration = 0.1;
-	double volume = 1;
-	
 	FMOP   op[2];
 };
 
