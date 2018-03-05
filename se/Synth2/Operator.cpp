@@ -24,5 +24,6 @@ double FMOP::Evaluate(int t, double mod)
 	default:
 		v = sustain;
 	}
+	f *= fdrift;
 	return volume * v * sin(f * t + mod);
 }

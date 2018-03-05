@@ -15,11 +15,12 @@ struct FMOP {
 	
 	double volume = 0;
 	double f = 1;
+	double fdrift = 1;
 	
 	int    p;
 	double v;
 	
-	void   Start() { v = 1e-12; p = 0; }
+	void   Start() { v = 1e-3; p = 0; }
 	
 	void   Envelope(int t);
 	double Evaluate(int t, double mod);

@@ -31,7 +31,10 @@ void MyAudioCallback(void *, Uint8 *stream, int len)
 		*d = 0;
 		ChSound& ch = sch[0];
 		{
-			*d += float(ch.op[0].Evaluate(ch.t, ch.op[1].Evaluate(ch.t, 0)));
+			double mod = ch.op[1].Evaluate(ch.t, 0);
+			*d += float(ch.op[0].Evaluate(ch.t, mod));
+	//		DDUMP(mod);
+	//		DDUMP(ch.op[1].v);
 			ch.t++;
 		}
 		d++;

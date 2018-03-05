@@ -9,6 +9,12 @@
 
 using namespace Upp;
 
+struct OperatorCtrl : WithOperatorLayout<ParentCtrl> {
+	void Set(FMOP op);
+	FMOP Get() const;
+	
+	OperatorCtrl();
+};
 
 struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
 	typedef SoundMakerDlg CLASSNAME;
@@ -24,6 +30,8 @@ struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
 //	Vector<SoundPoint> sp;
 	int                tm0 = 0;
 	double             f = 440;
+	
+	OperatorCtrl       op[2];
 
 
 	void Sync();

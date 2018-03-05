@@ -5,6 +5,7 @@ uses
 file
 	SoundMaker.h,
 	SoundMaker.lay,
+	Operator.cpp,
 	main.cpp;
 
 mainconfig
