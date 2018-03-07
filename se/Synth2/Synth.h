@@ -6,28 +6,30 @@
 using namespace Upp;
 
 struct FMOP {
-	double delay = 0;
-	double attack = 1e12;
-	double decay = 1e-12;
+	double attack = 100;
+	double decay = 100;
 	double sustain = 1;
 	double duration = 1;
-	double release = 1e-6;
+	double release = 100;
 	
-	double volume = 0;
+	double volume = 1;
 	double f = 1;
-	double fdrift = 1;
+	double fdrift = 0;
 	
 	int    p;
 	double v;
 	
 	void   Start() { v = 1e-3; p = 0; }
+	void   Comp();
 	
 	void   Envelope(int t);
-	double Evaluate(int t, double mod);
+	double Evaluate(int t, double mf, double mod);
 };
 
-	
+#define OPCOUNT 2
+
 struct Sound {
+	double f;
 	FMOP   op[2];
 };
 

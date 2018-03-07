@@ -6,28 +6,8 @@ SoundMakerDlg::SoundMakerDlg()
 
 	{
 		FMOP op;
-		op.duration = 10000;
-		op.attack = 1.01;
-		op.decay = 0.999;
-		op.release = 0.9999;
-		op.sustain = 0.5;
-		op.volume = 1;
-		op.f = 0.1;
-		
 		this->op[0].Set(op);
-	}
-	
-	{
-		FMOP op;
-		op.volume = 200;
-		op.duration = 10000;
-		op.attack = 1.01;
-		op.decay = 0;
-		op.release = 0.9995;
-		op.sustain = 1;
-		op.volume = 1;
-		op.f = 0.3;
-
+		op.volume = 0;
 		this->op[1].Set(op);
 	}
 
@@ -47,6 +27,7 @@ SoundMakerDlg::SoundMakerDlg()
 			Sound s;
 			s.op[0] = this->op[0].Get();
 			s.op[1] = this->op[1].Get();
+			s.f = 65.406 * exp2(i / 12.0) / s.op[0].f;
 			SetChannel(0, s, true);
 		};
 /*		
@@ -146,27 +127,6 @@ GUI_APP_MAIN
 {
 	InitSoundSynth();
 
-			Sound s;
-			FMOP op;
-			op.duration = 0;
-			op.attack = 1.01;
-			op.decay = 0.999;
-			op.release = 0.9999;
-			op.sustain = 0.5;
-			op.volume = 1;
-			op.f = 0.1;
-			s.op[0] = op;
-			
-			s.op[1].f = 0.3;
-			s.op[1].volume = 200;
-			s.op[1].attack = 1.0001;
-			s.op[1].decay = 0;
-			s.op[1].sustain = 1;
-			s.op[1].release = 0.9995;
-			s.op[1].duration = 1000000;
-
-			SetChannel(0, s, true);
-
 	SoundMakerDlg dlg;
 
 //	dlg.SetJSON(LoadFile(GetHomeDirFile("sound.json")));
@@ -175,3 +135,10 @@ GUI_APP_MAIN
 	
 	CloseSoundSynth();
 }
+
+
+// minimal drift 1.0000001   // 1
+// maximum drif  1.0010000   // 10
+
+// minimum attack 0.999999
+// maximum attack 2

@@ -13,10 +13,13 @@ void SetChannel(int chi, const Sound& c, bool start)
 	SDL_LockAudio();
 	ChSound& ch = sch[chi];
 	(Sound&)ch = c;
+	for(int i = 0; i < OPCOUNT; i++)
+		ch.op[i].Comp();
+	ch.f = ch.f / 22100 * M_PI;
 	if(start) {
 		ch.t = 0;
-		ch.op[0].Start();
-		ch.op[1].Start();
+		for(int i = 0; i < OPCOUNT; i++)
+			ch.op[i].Start();
 	}
 	SDL_UnlockAudio();
 }
@@ -31,8 +34,8 @@ void MyAudioCallback(void *, Uint8 *stream, int len)
 		*d = 0;
 		ChSound& ch = sch[0];
 		{
-			double mod = ch.op[1].Evaluate(ch.t, 0);
-			*d += float(ch.op[0].Evaluate(ch.t, mod));
+			double mod = ch.op[1].Evaluate(ch.t, ch.f, 0);
+			*d += float(ch.op[0].Evaluate(ch.t, ch.f, mod));
 	//		DDUMP(mod);
 	//		DDUMP(ch.op[1].v);
 			ch.t++;
