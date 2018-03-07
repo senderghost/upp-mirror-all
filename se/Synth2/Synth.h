@@ -5,6 +5,14 @@
 
 using namespace Upp;
 
+enum {
+	WAVEFORM_SIN,
+	WAVEFORM_SQUARE,
+	WAVEFORM_TRIANGLE,
+	WAVEFORM_SAWTOOTH,
+	WAVEFORM_TOOTHSAW,
+};
+
 struct FMOP {
 	double attack = 100;
 	double decay = 100;
@@ -15,6 +23,8 @@ struct FMOP {
 	double volume = 1;
 	double f = 1;
 	double fdrift = 0;
+
+	int    waveform = WAVEFORM_SIN;
 	
 	int    p;
 	double v;

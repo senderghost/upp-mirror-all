@@ -3,12 +3,18 @@
 OperatorCtrl::OperatorCtrl()
 {
 	CtrlLayout(*this);
+	waveform.Add(WAVEFORM_SIN, "Sine");
+	waveform.Add(WAVEFORM_SQUARE, "Square");
+	waveform.Add(WAVEFORM_TRIANGLE, "Triangle");
+	waveform.Add(WAVEFORM_SAWTOOTH, "Sawtooth");
+	waveform.Add(WAVEFORM_TOOTHSAW, "Inverse Sawtooth");
 }
 
 void OperatorCtrl::Set(FMOP op)
 {
 	duration <<= op.duration;
 	volume <<= op.volume;
+	waveform <<= op.waveform;
 	f <<= op.f;
 	fdrift <<= op.fdrift;
 	attack <<= op.attack;
@@ -22,6 +28,7 @@ FMOP OperatorCtrl::Get() const
 	FMOP op;
 	op.duration = ~duration;
 	op.volume = ~volume;
+	op.waveform = ~waveform;
 	op.f = ~f;
 	op.fdrift = ~fdrift;
 	op.attack = ~attack;

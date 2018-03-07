@@ -45,5 +45,18 @@ double FMOP::Evaluate(int t, double mf, double mod)
 		DDUMP(f);
 	}
 #endif
-	return volume * v * sin(mf * (f * t + mod));
+	double arg = mf * (f * t + mod);
+	double fn;
+	if(waveform == WAVEFORM_SIN)
+		fn = sin(arg);
+	else {
+		arg = fmod(arg, M_2PI);
+		fn = waveform == WAVEFORM_SQUARE ? sgn(abs(M_PI - arg) / (M_PI / 2) - 1) :
+		     waveform == WAVEFORM_TRIANGLE ? abs(M_PI - arg) / (M_PI / 2) - 1 :
+		     waveform == WAVEFORM_SAWTOOTH ? arg / (M_PI / 2) - 1 :
+		     waveform == WAVEFORM_TOOTHSAW ? 1 - arg / (M_PI / 2) :
+		     0;
+	}
+
+	return volume * v * fn;
 }
