@@ -36,7 +36,8 @@ void MyAudioCallback(void *, Uint8 *stream, int len)
 		{
 			double mod = ch.op[1].Evaluate(ch.t, ch.f, 0);
 			*d += float(ch.op[0].Evaluate(ch.t, ch.f, mod));
-	//		DDUMP(mod);
+			if(mod)
+			DDUMP(mod);
 	//		DDUMP(ch.op[1].v);
 			ch.t++;
 		}
