@@ -7,7 +7,10 @@ OperatorCtrl::OperatorCtrl()
 	waveform.Add(WAVEFORM_SQUARE, "Square");
 	waveform.Add(WAVEFORM_TRIANGLE, "Triangle");
 	waveform.Add(WAVEFORM_SAWTOOTH, "Sawtooth");
-	waveform.Add(WAVEFORM_TOOTHSAW, "Inverse Sawtooth");
+	waveform.Add(WAVEFORM_BROWN, "Brown Noise");
+	waveform.Add(WAVEFORM_WHITE, "White Noise");
+//	waveform.Add(WAVEFORM_TOOTHSAW, "Inverse Sawtooth");
+
 }
 
 void OperatorCtrl::Set(FMOP op)

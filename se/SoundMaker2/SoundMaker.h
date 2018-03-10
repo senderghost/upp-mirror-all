@@ -16,7 +16,22 @@ struct OperatorCtrl : WithOperatorLayout<ParentCtrl> {
 	OperatorCtrl();
 };
 
+struct ScopeCtrl : Ctrl {
+	Vector<float> data;
+	ScrollBar     sb;
+
+	virtual void Paint(Draw& w);
+	virtual void Layout();
+
+	void SetSb();
+	void Pick(Vector<float>&& data);
+	
+	ScopeCtrl();
+};
+
 struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
+	virtual bool Key(dword key, int count);
+
 	typedef SoundMakerDlg CLASSNAME;
 	SoundMakerDlg();
 
@@ -31,18 +46,15 @@ struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
 	int                tm0 = 0;
 	double             f = 440;
 	
-	OperatorCtrl       op[2];
+	OperatorCtrl       op[3];
 
+	ScopeCtrl          scope;
 
 	void Sync();
 	void AddParam(const char *id, EditDouble& p, double max);
 	void Param();
 	
-	Value  Get() const;
-	void   Set(const Value& v);
-
-	String GetJSON() const;
-	void   SetJSON(const String& h);
+	void Set(const Sound& s);
 };
 
 #endif

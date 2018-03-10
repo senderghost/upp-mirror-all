@@ -6,6 +6,7 @@ file
 	SoundMaker.h,
 	SoundMaker.lay,
 	Operator.cpp,
+	Scope.cpp,
 	main.cpp;
 
 mainconfig
