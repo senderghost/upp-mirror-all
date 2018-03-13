@@ -40,7 +40,7 @@ const char * FMOP::Load(const char *s)
 {
 	auto Get = [&](double& r) {
 		try {
-			CParser p(s + 1);
+			CParser p(s);
 			if(p.IsDouble())
 				r = p.ReadDouble();
 			s = p.GetPtr();
@@ -53,7 +53,7 @@ const char * FMOP::Load(const char *s)
 			s++;
 			break;
 		}
-		switch(*s) {
+		switch(*s++) {
 		case 'L': Get(duration); break;
 		case 'V': Get(volume); break;
 		case 'f': Get(f); break;
@@ -62,12 +62,11 @@ const char * FMOP::Load(const char *s)
 		case 'D': Get(decay); break;
 		case 'S': Get(sustain); break;
 		case 'R': Get(release); break;
-		case 'Q': waveform = WAVEFORM_SQUARE;
-		case 'T': waveform = WAVEFORM_TRIANGLE;
-		case 'W': waveform = WAVEFORM_SAWTOOTH;
-		case 'B': waveform = WAVEFORM_BROWN;
-		case 'N': waveform = WAVEFORM_WHITE;
-		default: s++;
+		case 'Q': waveform = WAVEFORM_SQUARE; break;
+		case 'T': waveform = WAVEFORM_TRIANGLE; break;
+		case 'W': waveform = WAVEFORM_SAWTOOTH; break;
+		case 'B': waveform = WAVEFORM_BROWN; break;
+		case 'N': waveform = WAVEFORM_WHITE; break;
 		}
 	}
 	return s;

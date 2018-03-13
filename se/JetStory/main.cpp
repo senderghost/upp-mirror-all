@@ -305,30 +305,7 @@ void Explosion(Pointf pos, int n, double spread)
 	
 	DDUMP(n);
 
-	{
-		Instrument t;
-		t.wave = "1 1 0.6";
-		t.attack = 0.01;
-		t.decay = 0.3;
-		t.sustain = 0;
-		t.mod_wave = "z 1";
-		t.mod_amplitude = 40;
-		t.mod_frequency = 1;
-		if(n > 5)
-			t.noise_kind = 3;
-		Play(0.5, 100, 0.2, t);
-		Play(0.5, 107, 0.4, t);
-/*
-		t.wave = brown_wave;
-		t.wavemask = 0xffff;
-		t.attack = 0;
-		t.decay = 0.3;
-		t.sustain = 0.1;
-		Play(1, 1, 0.5, t);
-		t.delay = 0.07;
-		t.decay = 0.1;
-		Play(0.005 * n, 1, 0.3, t);*/
-	}
+	PlaySound("146.83:L0.25V100r-20A90D35S30R35:V120D20S20B:V100f2A90D43S0N");
 
 	if(n >= 200)
 		flash = msecs() + 100;
@@ -375,24 +352,6 @@ void JetStory::Do()
 	Size isz = JetStoryImg::ship().GetSize();
 
 	while(n-- > 0) {
-		static int64 motor;
-		ONCELOCK {
-			Instrument t;
-//				t.wave = brown_wave;
-//				t.wavemask = 0xffff;
-			t.wave = "1 0.1 0.001";
-
-			t.noise_kind = 1;
-			t.noise_amplitude = 1.5;
-			
-			t.mod_frequency = 20;
-			t.mod_amplitude = 60;
-
-			motor = Play(0, 100, t);
-			
-			//motor = Play(0.9, 120, 0.2, t);
-		}
-		
 		double motvol = 0;
 		if(left) {
 			motvol++;
@@ -411,13 +370,14 @@ void JetStory::Do()
 		}
 		
 	//	SetFrequency(motor, abs(ship.speed.x) * 1000);
-		SetVolume(motor, motvol / 50);
+//		SetVolume(motor, motvol / 50);
 
 		ship.Move(isz, 0.4, 0.997);
 		
 		if(fire) {
 			static int lastfire = msecs();
 			if(ms - lastfire > 60) {
+				PlaySound("293.66:L0.08V100r-15A95D70S80R40:V120r5:V120D30S0B");
 				lastfire = ms;
 				Missile& m = missile.Add();
 				m.kind = 0;
@@ -426,40 +386,10 @@ void JetStory::Do()
 				m.speed.x = ship.speed.x + (ship.left ? -1 : 1) * 10;
 				m.left = ship.left;
 
-				Instrument t;
-				t.wave = "0.7 7:0.5";
-				t.decay = 0.3;
-				t.sustain = 0;
-				t.mod_wave = "z 1 20:0.4";
-				t.mod_frequency = 4;
-				t.mod_amplitude = 500;
-				
-//				"{0.7 7:0.5}*1.023 a0d0.3s0r3 [z 1 20:0.4]:4"
-			
-				Play(0.7, 500, 0.5, t);
-
-				t.wave = "";
-				t.noise_kind = 2;
-				t.noise_amplitude = 0.3;
-				Play(0.1, 500, 1, t);
 			}
 		}
 		
 		if(down) {
-			Instrument t;
-			t.attack = 0.01;
-			t.decay = 0.2;
-			t.sustain = 0;
-
-			t.decay = 0.5;
-			Play(0.7, 120, 0.5, t);
-			t.decay = 0.2;
-			Play(0.2, 500, 0.5, t);
-			t.decay = 0.1;
-			t.noise_kind = 1;
-			t.noise_amplitude = 0.5;
-			Play(0.4, 3500, 0.5, t);
-
 			down = false;
 			Missile& m = missile.Add();
 			m.kind = kind;
@@ -475,8 +405,6 @@ void JetStory::Do()
 			if(kind == 2)
 				m.speed.y += 0.5;
 			
-			Instrument tt;
-			m.sound_id = Play(0.05, abs(max(m.speed.x, m.speed.y)) * 500 + 150, tt);
 		}
 		
 		Vector<int> done;
@@ -501,9 +429,6 @@ void JetStory::Do()
 			if(m.kind == 9 && Random(8) == 0)
 				done.Add(i);
 			
-			if(m.kind == 1 || m.kind == 2) {
-				SetFrequency(m.sound_id, abs(max(m.speed.x, m.speed.y)) * 500 + 150);
-			}
 #if 0
 // missile flame experiment
 			if(m.kind == 1) {
@@ -665,17 +590,6 @@ void JetStory::Paint(Draw& w)
 			if(m.sound) {
 				m.sound = false;
 
-				if(Random(2) == 0) {		
-					Instrument t;
-					t.attack = 0.05;
-					t.decay = 0.2;
-					t.sustain = 0.1;
-					t.release = 1;
-					t.mod_wave = "z";
-					t.mod_amplitude = 100;
-					t.mod_frequency = 10;
-					Play(0.3, Random(100) + 50, 0.3, t);
-				}
 /*
 				Instrument t;
 				t.wave = "Z";
@@ -741,9 +655,9 @@ void JetStory::Paint(Draw& w)
 		fps = 1000.0 / ((fpsq.Tail() - fpsq.Head()) / fpsq.GetCount());
 
 	w.DrawRect(0, 0, sz.cx, 24, Gray());
-	w.DrawText(0, 0, Format("X:%5.2f Y:%5.2f enemy:%5d missiles:%5d debris:%5d FPS:%3.2f channels:%d",
-	           ship.pos.x, ship.pos.y, enemy.GetCount(), missile.GetCount(), debris.GetCount(), fps, GetSynthChannelCount()),
-	           Monospace(20), White());
+	w.DrawText(0, 0, Format("X:%5.2f Y:%5.2f enemy:%5d missiles:%5d debris:%5d FPS:%3.2f",
+	           ship.pos.x, ship.pos.y, enemy.GetCount(), missile.GetCount(), debris.GetCount(), fps,
+	           Monospace(20), White()));
 	
 	PostCallback([=] { Do(); });
 }

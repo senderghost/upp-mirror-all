@@ -1,6 +1,6 @@
 uses
 	CtrlLib,
-	Synth;
+	Synth2;
 
 file
 	jetstory.h,
@@ -9,6 +9,7 @@ file
 	hack.iml,
 	util.cpp,
 	map.cpp,
+	Sound.cpp,
 	main.cpp;
 
 mainconfig

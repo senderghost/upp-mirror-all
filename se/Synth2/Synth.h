@@ -64,6 +64,6 @@ struct Sound {
 void InitSoundSynth();
 void CloseSoundSynth();
 
-void SetChannel(int chi, const Sound& c, bool start = false);
+void SetChannel(int chi, const Sound& c);
 
 #endif

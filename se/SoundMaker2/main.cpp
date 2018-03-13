@@ -35,7 +35,7 @@ SoundMakerDlg::SoundMakerDlg()
 			s.op[1] = op[1].Get();
 			s.op[2] = op[2].Get();
 			s.f = 65.406 * exp2(i / 12.0) / s.op[0].f;
-			SetChannel(0, s, true);
+			SetChannel(0, s);
 		
 			WriteClipboardText(s.Save());
 			
@@ -75,3 +75,5 @@ GUI_APP_MAIN
 // explosion 146.83:L0.25V100r-20A90D35S30R35:V120D20S20B:V100f2A90D43S0N
 
 // gun fire 146.83:L0.25V100r-14A90D35S30R35:V150D30S20B:V100f2A90D43S0N
+
+// bass 130.81:L0.25V90A90D35S30R35:V160D40S20R20:V100f2A90D43S0R40

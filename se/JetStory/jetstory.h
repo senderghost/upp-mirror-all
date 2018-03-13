@@ -11,7 +11,7 @@
 #define IMAGEFILE <JetStory/Blocks.iml>
 #include <Draw/iml_header.h>
 
-#include <Synth/Synth.h>
+#include <Synth2/Synth.h>
 
 using namespace Upp;
 
@@ -24,8 +24,6 @@ enum { MAPX = 128, MAPY = 40, BLOCKSIZE = 64 };
 extern int jetstory[MAPY][MAPX];
 
 extern bool blockmap[64][4][4];
-
-void InitSound();
 
 struct Object {
 	Pointf pos;
@@ -45,9 +43,8 @@ struct Missile : Object {
 	double accelx = 0;
 	int    damage = 1;
 	bool   left;
-	int    sound_id = 0;
-	
-	~Missile() { StopSound(sound_id); }
 };
+
+void PlaySound(const char *s);
 
 #endif

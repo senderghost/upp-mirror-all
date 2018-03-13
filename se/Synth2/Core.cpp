@@ -90,7 +90,7 @@ float Sound::Get()
 
 Sound sch[NUM_CHANNELS];
 
-void SetChannel(int chi, const Sound& c, bool start)
+void SetChannel(int chi, const Sound& c)
 {
 	SDL_LockAudio();
 	Sound& ch = sch[chi];
