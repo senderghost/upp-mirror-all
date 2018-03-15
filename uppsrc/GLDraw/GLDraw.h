@@ -69,9 +69,12 @@ class GLDraw : public SDraw {
 	Vector<RectColor> put_rect;
 #endif
 
-	void FlushPutRect();
-
 public:
+	void FlushPutRect();
+	
+	void PutRectRaw(const Rect& r, Color color);
+	void PutImage(int x, int y, const Image& img);
+
 	virtual void  PutImage(Point p, const Image& img, const Rect& src);
 #ifdef GL_USE_SHADERS
 	virtual void  PutImage(Point p, const Image& img, const Rect& src, Color color);

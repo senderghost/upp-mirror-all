@@ -241,10 +241,10 @@ void GLDraw::PutRect(const Rect& rect, Color color)
 	gl_rect.Use();
 
 	GLshort vertex[] = {
-	    rect.left, rect.top,
-	    rect.left, rect.bottom,
-	    rect.right, rect.bottom,
-	    rect.right, rect.top,
+	    (GLshort)rect.left, (GLshort)rect.top,
+	    (GLshort)rect.left, (GLshort)rect.bottom,
+	    (GLshort)rect.right, (GLshort)rect.bottom,
+	    (GLshort)rect.right, (GLshort)rect.top,
 	};
 
 	bool inv = color == InvertColor();
@@ -286,7 +286,46 @@ void GLDraw::PutRect(const Rect& rect, Color color)
 int PutImagePixels;
 
 EXITBLOCK {
-	RDUMP(PutImagePixels);
+//	RDUMP(PutImagePixels);
+}
+
+void GLDraw::PutRectRaw(const Rect& r, Color color)
+{
+	PutRect(r, color);
+	FlushPutRect();
+}
+
+void GLDraw::PutImage(int x, int y, const Image& img)
+{
+	LTIMING("PutImage");
+	gl_image.Use();
+
+	Size isz = img.GetSize();
+	
+	PutImagePixels += isz.cx * isz.cy;
+
+	GLshort vertex[] = {
+	    x, y,
+	    x, y + isz.cy,
+	    x + isz.cx, y + isz.cy,
+	    x + isz.cx, y,
+	};
+
+	static GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+
+	static float fixed[] = {
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
+	};
+
+	glEnableVertexAttribArray(ATTRIB_TEXPOS);
+	glVertexAttribPointer(ATTRIB_TEXPOS, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), fixed);
+	glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_SHORT, GL_FALSE, 2 * sizeof(GLshort), vertex);
+	glBindTexture(GL_TEXTURE_2D, GetTextureForImage(img));
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+	glDisableVertexAttribArray(ATTRIB_TEXPOS);
 }
 
 void GLDraw::PutImage(Point p, const Image& img, const Rect& src)
@@ -432,7 +471,7 @@ void GLDraw::Init(Size sz, uint64 context_)
 	SDraw::Init(sz);
 
 	ONCELOCK {
-		initializeGL();	
+		initializeGL();
 	}
 
 	gl_image.Use();
@@ -454,6 +493,7 @@ void GLDraw::Finish()
 
 GLDraw::~GLDraw()
 {
+	Finish();
 }
 
 };
