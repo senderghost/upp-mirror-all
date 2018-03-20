@@ -16,8 +16,8 @@ void SoundMakerDlg::Set(const Sound& s)
 {
 	for(int i = 0; i < OPCOUNT; i++) {
 		this->op[i].Set(s.op[i]);
-		this->op[i].Set(s.op[i]);
-		this->op[i].Set(s.op[i]);
+		reverb <<= s.reverb;
+		delay <<= s.delay;
 	}
 }
 
@@ -31,19 +31,21 @@ SoundMakerDlg::SoundMakerDlg()
 	for(int i = 0; i < 72; i++)
 		tone[i] << [=] {
 			Sound s;
-			s.op[0] = op[0].Get();
-			s.op[1] = op[1].Get();
-			s.op[2] = op[2].Get();
+			for(int i = 0; i < OPCOUNT; i++)
+				s.op[i] = op[i].Get();
+			s.reverb = ~reverb;
+			s.delay = ~delay;
 			s.f = 65.406 * exp2(i / 12.0) / s.op[0].f;
 			SetChannel(0, s);
 		
 			WriteClipboardText(s.Save());
-			
-			s.Start();
+
+			SoundGen sg;
+			sg.Start(s);
 
 			Vector<float> data;
 			for(int t = 0; t < 2 * 44100; t++)
-				data.Add(s.Get());
+				data.Add(sg.Get());
 			
 			scope.Pick(pick(data));
 		};

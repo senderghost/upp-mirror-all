@@ -18,7 +18,7 @@ struct double2 {
 	String ToString() const               { return String() << GetL() << ", " << GetH(); }
 
 	double2  operator+(const double2& h) const { return _mm_add_pd(value, h.value); }
-	double2  operator-(const double2& h) const  { return _mm_sub_pd(value, h.value); }
+	double2  operator-(const double2& h) const { return _mm_sub_pd(value, h.value); }
 	double2  operator*(const double2& h) const { return _mm_mul_pd(value, h.value); }
 	double2  operator/(const double2& h) const { return _mm_div_pd(value, h.value); }
 
@@ -30,6 +30,8 @@ struct double2 {
 	double2& operator/=(const double2& h) { value = _mm_div_pd(value, h.value); return *this; }
 	
 	double2 sqrt() const                  { return _mm_sqrt_pd(value); }
+	double2 abs();
+	
 	
 	double2(double *d2)                   { value = _mm_loadu_pd(d2); }
 	double2(double l, double h)           { SetL(l); SetH(h); }
@@ -38,27 +40,35 @@ struct double2 {
 	double2()                             {}
 };
 
+inline
+double Distance(const double2& a, const double2& b)
+{
+	double2 c = a - b;
+	c *= c;
+	return sqrt(c.GetL() + c.GetH());
+}
+
 CONSOLE_APP_MAIN
 {
+	
+	RDUMP(Distance(double2(1, 2), double2(2, 3)));
+	Pointf a(1, 2);
+	Pointf b(2, 3);
+	Distance(a, b);
+	RDUMP(Distance(a, b));
+	
 	double2 x(1, 2);
 	x += 1;
 	for(int i = 0; i < 10; i++)
 		x *= 1.23;
-	RDUMP(x);
-	
+
 	x += { 12.0, 23.1 };
 
-	RDUMP(-x);
-	
 	x *= 1.23;
-	RDUMP(x);
-	
+
 	x /= 2;
-	RDUMP(x);
-	
-	RDUMP(x.sqrt());
 	
 	x = x * 4 - 1;
 	
-	RDUMP(x * 4 - 1);
+	RDUMP(x);
 }

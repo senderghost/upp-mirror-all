@@ -2,7 +2,7 @@
 
 Sound::Sound()
 {
-	op[0].duration = 1;
+	op[0].duration = 250;
 	op[0].volume = 100;
 }
 
@@ -20,7 +20,7 @@ String FMOP::Save() const
 			r << c << Aformat(val);
 	};
 
-	Put('L', duration, 99);
+	Put('L', duration, 99000);
 	Put('V', volume, 0);
 	Put('f', f, 1);
 	Put('r', fdrift, 0);

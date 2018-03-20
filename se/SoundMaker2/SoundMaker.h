@@ -46,7 +46,7 @@ struct SoundMakerDlg : WithSoundMakerLayout<TopWindow> {
 	int                tm0 = 0;
 	double             f = 440;
 	
-	OperatorCtrl       op[3];
+	OperatorCtrl       op[OPCOUNT];
 
 	ScopeCtrl          scope;
 

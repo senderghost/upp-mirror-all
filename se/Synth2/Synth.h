@@ -16,7 +16,7 @@ enum {
 };
 
 struct FMOP {
-	double duration = 99;
+	double duration = 99000;
 	double volume = 0;
 
 	double f = 1;
@@ -29,34 +29,46 @@ struct FMOP {
 	
 	int    waveform = WAVEFORM_SIN;
 	
-	int    p = 0;
-	double v = 0;
-	double n = 0;
-	
-	void   Start() { v = 1e-3; p = 0; n = 0; }
-	void   Comp();
-
 	String Save() const;
 	const char *Load(const char *s);
-	
-	void   Envelope(int t);
-	double Evaluate(int t, double mf, double mod);
 };
 
-#define OPCOUNT 3
+#define OPCOUNT 5
 
 struct Sound {
 	double f = 440;
-	int    t;
-	FMOP   op[3];
-	
-	void Start();
-	float Get();
+	FMOP   op[OPCOUNT];
+
+	double delay = 0;
+	double reverb = 0;
 	
 	String Save() const;
 	void   Load(const char *s);
 	
 	Sound();
+};
+
+struct SoundGen {
+	struct FMOPGen : FMOP {
+		int    p;
+		double v;
+		double n;
+		
+		void   Start() { v = 1e-3; p = 0; n = 0; }
+		void   Comp();
+		
+		double Evaluate(int t, double mf, double mod);
+	};
+	
+	double   f = 440;
+	int      t;
+	int      delay;
+	double   reverb;
+	FMOPGen  op[OPCOUNT];
+	float    feedback[8192];
+	
+	void     Start(const Sound& s);
+	float    Get();
 };
 
 #define NUM_CHANNELS 32

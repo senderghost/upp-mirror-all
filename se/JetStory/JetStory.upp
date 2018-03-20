@@ -9,6 +9,7 @@ file
 	hack.iml,
 	util.cpp,
 	map.cpp,
+	Keys.cpp,
 	Sound.cpp,
 	main.cpp;
 
