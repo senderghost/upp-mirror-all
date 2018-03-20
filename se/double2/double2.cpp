@@ -48,14 +48,21 @@ double Distance(const double2& a, const double2& b)
 
 #define N 10000000
 
+
+
 CONSOLE_APP_MAIN
 {
+	
+	
+	
 	Vector<double2> a;
 	Vector<double2> b;
 	Vector<double> distance;
 
 	Vector<Pointf> pa;
 	Vector<Pointf> pb;
+	
+	double h = hypot(2, 4);
 	
 	for(int i = 0; i < N; i++) {
 		Pointf p1(Randomf(), Randomf());
