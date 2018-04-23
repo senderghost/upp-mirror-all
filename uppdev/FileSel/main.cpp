@@ -11,8 +11,9 @@ GUI_APP_MAIN
 	String fn;
 	fs.AllFilesType();
 	fs.Type("jpeg", "*.jpg");
-	fs.ExecuteSelectDir();
-	return;
+	fs.ActiveDir("c:/xxx");
+//	fs.ExecuteSelectDir();
+//	return;
 	
 	for(;0;) {
 		if(!fs.ExecuteSaveAs())
