@@ -1,0 +1,12 @@
+uses
+	CtrlLib;
+
+file
+	DDAColorRasterizer.h,
+	DDAColorRasterizer.cpp,
+	trides.iml,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

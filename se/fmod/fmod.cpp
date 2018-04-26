@@ -15,8 +15,31 @@ double fmod2(double a, double b)
 	return a - trunc(a / b) * b;
 }
 
+double factorial(int n)
+{
+	double h = 1;
+	for(int i = 1; i <= n; i++)
+		h *= i;
+	return h;
+}
+
 CONSOLE_APP_MAIN
 {
+	DDUMP(pow(2, -54));
+	DDUMP(pow(2, -26));
+	for(int i = 1; i < 100; i++) {
+		DLOG("=========== " << i);
+		DDUMP(i);
+		DDUMP(factorial(i));
+		DDUMP(pow(M_2PI, i));
+		DDUMP(pow(M_PI_2, i));
+		DDUMP(pow(M_2PI, i) / factorial(i));
+		DDUMP(pow(M_PI_2, i) / factorial(i));
+		DDUMP(pow(M_PI_2 / 2, i) / factorial(i));
+	}
+		
+	
+	
 	DDUMP(sin(1e100));
 	DDUMP(sin(1.1e100));
 

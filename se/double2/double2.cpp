@@ -10,19 +10,21 @@ struct double2 : Moveable<double2> {
 	
 	void SetL(double x)                   { value = _mm_loadl_pd(value, &x); }
 	void SetH(double x)                   { value = _mm_loadh_pd(value, &x); }
-	void SetLH(double x)                  { value = _mm_loaddup_pd(&x); }
+	void SetLH(double x)                  { value = _mm_set1_pd(x); }
 	
 	double GetL() const                   { double x; _mm_storel_pd(&x, value); return x; }
 	double GetH() const                   { double x; _mm_storeh_pd(&x, value); return x; }
+
+	void   Swap()                         { value = _mm_shuffle_pd(value, value, 1); }
 	
-	String ToString() const               { return String() << GetL() << ", " << GetH(); }
+	String ToString() const               { return String() << GetH() << ", " << GetL(); }
 
 	double2  operator+(const double2& h) const { return _mm_add_pd(value, h.value); }
 	double2  operator-(const double2& h) const { return _mm_sub_pd(value, h.value); }
 	double2  operator*(const double2& h) const { return _mm_mul_pd(value, h.value); }
 	double2  operator/(const double2& h) const { return _mm_div_pd(value, h.value); }
 
-	double2  operator-() const             { return _mm_sub_pd(_mm_setzero_pd(), value); }
+	double2  operator-() const             { return _mm_sub_pd(_mm_setzero_pd(), value); } // OPTIMIZE!
 	
 	double2& operator+=(const double2& h) { value = _mm_add_pd(value, h.value); return *this; }
 	double2& operator-=(const double2& h) { value = _mm_sub_pd(value, h.value); return *this; }
@@ -30,13 +32,23 @@ struct double2 : Moveable<double2> {
 	double2& operator/=(const double2& h) { value = _mm_div_pd(value, h.value); return *this; }
 	
 	double2 sqrt() const                  { return _mm_sqrt_pd(value); }
-
+	double2 abs() const                   { return _mm_max_pd(_mm_sub_pd(_mm_setzero_pd(), value), value); }
+	double2 sgn() const;
+	double2 swapped() const               { double2 h = *this; h.Swap(); return h; }
+	
 	double2(double *d2)                   { value = _mm_loadu_pd(d2); }
-	double2(double l, double h)           { SetL(l); SetH(h); }
-	double2(double lh)                    { SetLH(lh); }
+	double2(double h, double l)           { value = _mm_set_pd(h, l); }
+	double2(double lh)                    { value = _mm_set1_pd(lh); }
 	double2(__m128d v)                    { value = v; }
 	double2()                             {}
 };
+
+double2 double2::sgn() const
+{
+    __m128d zero = _mm_setzero_pd();
+    return _mm_or_pd(_mm_and_pd(_mm_cmpgt_pd(value, zero), _mm_set1_pd(1.0f)),
+                     _mm_and_pd(_mm_cmplt_pd(value, zero), _mm_set1_pd(-1.0f)));
+}
 
 inline
 double Distance(const double2& a, const double2& b)
@@ -47,12 +59,25 @@ double Distance(const double2& a, const double2& b)
 }
 
 #define N 10000000
+/*
+x*A + x*x*B + x*x*x*C
 
-
-
+x * (A + x*(B + x*C))
+*/
 CONSOLE_APP_MAIN
 {
-	
+	double2 x(1, 2);
+	RDUMP(x);
+	RDUMP(x.GetL());
+	x.Swap();
+	RDUMP(x);
+
+	RDUMP(double2(123, -123).swapped());
+	RDUMP(double2(-23, 0).sgn());
+	RDUMP(double2(123, -123).abs());
+	RDUMP(double2(-23, 0).abs());
+	RDUMP(double2(-23).abs());
+	return;
 	
 	
 	Vector<double2> a;
