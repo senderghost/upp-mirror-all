@@ -1,0 +1,20 @@
+uses
+	Draw,
+	CocoDraw;
+
+options
+	"-framework Foundation";
+
+link
+	" -framework Foundation -framework Cocoa";
+
+file
+	test.iml,
+	CocoUtil.h,
+	CocoUtil.mm,
+	Fonts.mm,
+	NSView.mm;
+
+mainconfig
+	"" = "";
+

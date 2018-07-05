@@ -1,0 +1,177 @@
+#include "CocoUtil.h"
+
+#define IMAGECLASS TestImg
+#define IMAGEFILE <NSView/test.iml>
+#include <Draw/iml_header.h>
+
+#define IMAGECLASS TestImg
+#define IMAGEFILE <NSView/test.iml>
+#include <Draw/iml_source.h>
+
+CGImageRef createCGImage(const Image &img)
+{
+	CGDataProvider *dataProvider = CGDataProviderCreateWithData(NULL, ~img, img.GetLength() * sizeof(RGBA), NULL);
+	static CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB(); // TODO: This is probably wrong...
+	Upp::Size isz = img.GetSize();
+    CGImageRef cg_img = CGImageCreate(isz.cx, isz.cy, 8, 32, isz.cx * sizeof(RGBA),
+                                      colorSpace, kCGImageAlphaPremultipliedFirst,
+                                      dataProvider, 0, false, kCGRenderingIntentDefault);
+	CGDataProviderRelease(dataProvider);
+	return cg_img;
+}
+
+void DrawRect(CGContextRef cgContext, const Upp::Rect& r, Color c)
+{
+    CGContextSetRGBFillColor(cgContext, c.GetR() / 255.0, c.GetG() / 255.0, c.GetB() / 255.0, 1);
+    CGContextFillRect(cgContext, CGRectMake(r.left, r.top, r.GetWidth(), r.GetHeight()));
+}
+
+void DrawRect(CGContextRef cgContext, int x, int y, int cx, int cy, Color c)
+{
+	DrawRect(cgContext, RectC(x, y, cx, cy), c);
+}
+
+@interface TestView : NSView <NSWindowDelegate> { }
+-(void)drawRect:(NSRect)rect;
+//- (BOOL) isFlipped;
+@end
+
+@implementation TestView
+/*
+- (BOOL) isFlipped
+{
+    return YES;
+}
+*/
+-(void)drawRect:(NSRect)rect {
+    [[NSColor blueColor] set];
+    NSRectFill( [self bounds] );
+    
+    CGContext *cgContext = [[NSGraphicsContext currentContext] CGContext];
+
+	DrawRect(cgContext, RectC(10, 10, 200, 100 ), Red());
+
+    {
+        SystemDraw w(cgContext, [self bounds].size.height);
+        w.Offset(17, 17);
+        w.DrawRect(0, 0, 20, 20, LtRed());
+        w.DrawRect(20, 20, 20, 20, LtGreen());
+        w.End();
+        w.DrawRect(0, 0, 20, 20, LtGray());
+    }
+
+	return;
+
+    CGContextSaveGState( cgContext );
+//    CGContextTranslateCTM(cgContext, 0, NSHeight([self bounds]));
+  //  CGContextScaleCTM(cgContext, 1, -1);
+
+	DrawRect(cgContext, RectC(10, 10, 200, 100 ), Red());
+    
+    CGImageRef img = createCGImage(TestImg::TEST());
+    ASSERT(img);
+    CGContextDrawImage(cgContext, CGRectMake (20, 20, 16, 16), img);
+    DDUMP(CGImageGetHeight(img));
+    DDUMP(CGImageGetWidth(img));
+    CGImageRelease(img);
+
+	CFRef<CFStringRef> s = CFStringCreateWithCString(NULL, "Times New Roman", kCFStringEncodingUTF8);
+    CFRef<CTFontRef> ctfont0 = CTFontCreateWithName(s, 32, NULL);
+
+    CTFontSymbolicTraits symbolicTraits = 0;
+    symbolicTraits |= kCTFontBoldTrait;
+    symbolicTraits |= kCTFontItalicTrait;
+
+    CGAffineTransform transform = CGAffineTransformIdentity;
+
+	CFRef<CTFontRef> ctfont = CTFontCreateCopyWithSymbolicTraits(ctfont0, 32, &transform, symbolicTraits, symbolicTraits);
+    
+    wchar h = 'A';
+    
+    CGGlyph glyph;
+    CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)&h, &glyph, 1);
+    
+    DDUMP(glyph);
+
+    CGSize advance;
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, &glyph, &advance, 1);
+    
+    DDUMP(advance.height);
+    DDUMP(advance.width);
+    
+    DDUMP(CTFontGetAscent(ctfont));
+    DDUMP(CTFontGetDescent(ctfont));
+    DDUMP(CTFontGetLeading(ctfont));
+    DDUMP(CTFontGetXHeight(ctfont));
+    DDUMP(CTFontGetUnderlinePosition(ctfont));
+   
+	CFRef<CGFontRef> cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
+	DDUMP(~cgFont);
+   
+	CGContextSetFont(cgContext, cgFont);
+   
+	CGContextSetTextPosition(cgContext, 0, 0);
+
+	CGPoint p;
+	p.x = 50;
+	p.y = 10;
+
+    int ascent = ceil(CTFontGetAscent(ctfont));
+    int descent = ceil(CTFontGetDescent(ctfont));
+
+//	CGContextClipToRect(cgContext, CGRectMake(52, 8, 13, 15));
+
+    DrawRect(cgContext, p.x, p.y - descent, advance.width, descent, Cyan);
+    DrawRect(cgContext, p.x, p.y, advance.width, ascent, Brown);
+
+	CGContextSetFontSize(cgContext, 32);
+
+    CGContextSetTextDrawingMode(cgContext, kCGTextFill);
+    CGContextSetRGBFillColor(cgContext, 1, 1, 1, 1.0);
+    
+    CGContextRotateCTM(cgContext, 0.23);
+
+    CGContextShowGlyphsAtPositions(cgContext, &glyph, &p, 1);
+
+    CGContextRestoreGState(cgContext);
+}
+
+-(void)windowWillClose:(NSNotification *)note {
+    [[NSApplication sharedApplication] terminate:self];
+}
+
+@end
+
+void ListFonts();
+
+int main(int argc, const char *argv[]) {
+   LOG("U++ logging");
+   
+//    ListFonts();
+
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    NSApplication *app = [NSApplication sharedApplication];
+    NSRect frame = NSMakeRect( 100., 100., 300., 300. );
+
+    NSWindow *window = [[NSWindow alloc]
+        initWithContentRect:frame
+                  styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask
+                    backing:NSBackingStoreBuffered
+                      defer:false];
+
+    [window setTitle:@"Testing"];
+
+    TestView *view = [[[TestView alloc] initWithFrame:frame] autorelease];
+    [window setContentView:view];
+    [window setDelegate:view];
+    [window makeKeyAndOrderFront:nil];
+
+    /* someone mentioned:
+     *  [NSApp activateIgnoringOtherApps:YES]; 
+     * not sure where to put it... */
+
+    [app run];
+
+    [pool release];
+    return( EXIT_SUCCESS );
+}
