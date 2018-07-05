@@ -12,6 +12,8 @@
 #undef  Size
 
 namespace Upp {
+	
+struct GuiLock {};
 
 class SystemDraw : public Draw {
 	virtual dword GetInfo() const;

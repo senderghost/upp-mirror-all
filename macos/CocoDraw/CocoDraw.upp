@@ -1,5 +1,6 @@
 file
 	CocoDraw.h,
 	CocoDraw.mm,
+	CocoDrawImage.mm,
 	CocoDraw2.mm;
 

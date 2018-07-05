@@ -2,10 +2,6 @@
 
 namespace Upp {
 
-void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, Color color)
-{
-}
-
 void SystemDraw::DrawLineOp(int x1, int y1, int x2, int y2, int width, Color color)
 {
 }
