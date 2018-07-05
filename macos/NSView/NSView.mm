@@ -40,6 +40,10 @@
 
         w.DrawImage(50, 80, 40, 40, TestImg::TEST());
         w.End();
+     
+		Upp::Size sz = GetTextSize("Hello worldy!", Serif(40));
+		w.DrawRect(30, 30, sz.cx, sz.cy, Yellow());
+        w.DrawText(30, 30, "Hello worldy!", Serif(40), LtMagenta());
 
 		return;
     }
@@ -125,10 +129,10 @@ int main(int argc, const char *argv[]) {
    for(int i = 0; i < Font::GetFaceCount(); i++)
        DDUMP(Font::GetFaceName(i));
    
-   DDUMP(GetTextSize("Hello world!", Arial(12)));
-   DDUMP(GetTextSize("Hello world!", Arial(12).Bold()));
-   DDUMP(Arial(12).GetAscent());
-   DDUMP(Arial(12).GetDescent());
+//   DDUMP(GetTextSize("Hello world!", Arial(12)));
+  // DDUMP(GetTextSize("Hello world!", Arial(12).Bold()));
+//   DDUMP(Arial(12).GetAscent());
+//   DDUMP(Arial(12).GetDescent());
    
 //    ListFonts();
 

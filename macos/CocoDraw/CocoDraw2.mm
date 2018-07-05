@@ -22,8 +22,4 @@ void SystemDraw::DrawEllipseOp(const Rect& r, Color color, int pen, Color pencol
 {
 }
 
-void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink, int n, const int *dx)
-{
-}
-
 };

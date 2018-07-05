@@ -7,6 +7,8 @@ SystemDraw::SystemDraw(CGContext *cgContext_, int cy)
 	cgContext = cgContext_;
 	top = cy;
 	Push();
+	CGContextSetTextPosition(cgContext, 0, 0);
+    CGContextSetTextDrawingMode(cgContext, kCGTextFill);
 }
 
 SystemDraw::~SystemDraw()
