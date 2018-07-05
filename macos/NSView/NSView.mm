@@ -122,6 +122,14 @@ void ListFonts();
 int main(int argc, const char *argv[]) {
    LOG("U++ logging");
    
+   for(int i = 0; i < Font::GetFaceCount(); i++)
+       DDUMP(Font::GetFaceName(i));
+   
+   DDUMP(GetTextSize("Hello world!", Arial(12)));
+   DDUMP(GetTextSize("Hello world!", Arial(12).Bold()));
+   DDUMP(Arial(12).GetAscent());
+   DDUMP(Arial(12).GetDescent());
+   
 //    ListFonts();
 
     NSAutoreleasePool *pool = [NSAutoreleasePool new];

@@ -2,6 +2,7 @@
 
 using namespace Upp;
 
+#if 0
 void ListFonts()
 {
 	AutoreleasePool __;
@@ -43,3 +44,4 @@ void ListFonts()
         }
     }
 }
+#endif

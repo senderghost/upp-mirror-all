@@ -1,6 +1,9 @@
 file
 	CocoDraw.h,
+	main.conf,
+	CocoUtil.mm,
 	CocoDraw.mm,
 	CocoDrawImage.mm,
+	CocoFont.mm,
 	CocoDraw2.mm;
 

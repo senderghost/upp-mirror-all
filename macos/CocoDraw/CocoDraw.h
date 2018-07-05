@@ -12,7 +12,32 @@
 #undef  Size
 
 namespace Upp {
-	
+
+template <class T>
+struct CFRef {
+	T ptr;
+	T operator~()   { return ptr; }
+	operator T()    { return ptr; }
+	T  operator->() { return ptr; }
+	T  Detach()     { T h = ptr; ptr = NULL; return h; }
+	CFRef(T p)      { ptr = p; }
+	~CFRef()        { if(ptr) CFRelease(ptr); }
+};
+
+struct AutoreleasePool {
+	NSAutoreleasePool *pool;
+
+	AutoreleasePool() {
+		pool = [[NSAutoreleasePool alloc] init];
+	}
+	~AutoreleasePool() {
+	    [pool release];
+	}
+};
+
+WString ToWString(CFStringRef s);
+String ToString(CFStringRef s);
+
 struct GuiLock {};
 
 class SystemDraw : public Draw {
