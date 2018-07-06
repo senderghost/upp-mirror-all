@@ -44,6 +44,8 @@
 		Upp::Size sz = GetTextSize("Hello worldy!", Serif(40));
 		w.DrawRect(30, 30, sz.cx, sz.cy, Yellow());
         w.DrawText(30, 30, "Hello worldy!", Serif(40), LtMagenta());
+        
+        w.DrawRect(40, 40, 30, 10, InvertColor());
 
 		return;
     }

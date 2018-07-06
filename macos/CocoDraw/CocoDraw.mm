@@ -135,8 +135,17 @@ CGRect SystemDraw::Convert(int x, int y, int cx, int cy)
 void SystemDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 {
 	DLOG("DrawRectOp");
-	Set(color);
-    CGContextFillRect(cgContext, Convert(x, y, cx, cy));
+	CGRect cgr = Convert(x, y, cx, cy);
+	if(color == InvertColor()) {
+		Set(White());
+		CGContextSetBlendMode(cgContext, kCGBlendModeExclusion);
+		CGContextFillRect(cgContext, cgr);
+		CGContextSetBlendMode(cgContext, kCGBlendModeNormal);
+	}
+	else {
+		Set(color);
+		CGContextFillRect(cgContext, cgr);
+	}
 }
 
 };
