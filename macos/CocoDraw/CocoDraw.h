@@ -82,7 +82,7 @@ private:
 	void   Pop();
 	CGContextRef cgContext;
 	
-	void   ClipCG(Rect r);
+	void   ClipCG(const Rect& r);
 	void   FlipY(int& y)           { y = top - y; }
 	Rect   GetClip() const         { return clip.GetCount() ? clip.Top() : Rect(-999999, -999999, 999999, 999999); }
 	Point  GetOffset() const       { return offset.GetCount() ? offset.Top() : Point(0, 0); }

@@ -62,17 +62,13 @@ GlyphInfo  GetGlyphInfoSys(Font font, int chr)
 	GlyphInfo gi;
 	gi.lspc = gi.rspc = 0;
 	gi.width = 0x8000;
-	
-	DLOG("GetGlyphInfo " << font << " " << (char)chr);
 
 	CFRef<CTFontRef> ctfont = CT_Font(font);
 	if(ctfont) {
-		DDUMP(~ctfont);
 		LTIMING("GetGlyphInfoSys 2");
 	    CGGlyph glyph_index;
 	    UniChar h = chr;
 		CTFontGetGlyphsForCharacters(ctfont, &h, &glyph_index, 1);
-		DDUMP(glyph_index);
 		if(glyph_index) {
 		    CGSize advance;
 			CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, &glyph_index, &advance, 1);
@@ -131,27 +127,21 @@ void RenderCharacterSys(FontGlyphConsumer& sw, double x, double y, int ch, Font 
 
 void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink, int n, const int *dx)
 {
-	DLOG("DrawText " << font);
 	CFRef<CTFontRef> ctfont = CT_Font(font);
-
 	CFRef<CGFontRef> cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
-	DDUMP(~cgFont);
    
 	Set(ink);
 	CGContextSetFont(cgContext, cgFont);
 	
 	Point off = GetOffset();
 	x += off.x;
-	y = top - y - font.GetAscent() + off.y;
+	y = top - y - font.GetAscent() - off.y;
 
 	Buffer<CGGlyph> g(n);
 	Buffer<CGPoint> p(n);
 	for(int i = 0; i < n; i++) {
 		int chr = text[i];
 		GlyphInfo f = GetGlyphInfo(font, chr);
-		DDUMP((char)chr);
-		DDUMP(f.glyphi);
-		DDUMP(f.width);
 		p[i].y = y;
 		p[i].x = x;
 		g[i] = f.glyphi;

@@ -39,13 +39,14 @@
         w.DrawImage(50, 40, TestImg::TEST(), Magenta());
 
         w.DrawImage(50, 80, 40, 40, TestImg::TEST());
-        w.End();
      
 		Upp::Size sz = GetTextSize("Hello worldy!", Serif(40));
+		w.Clip(30, 40, 50, 40);
 		w.DrawRect(30, 30, sz.cx, sz.cy, Yellow());
+        w.DrawImage(25, 35, 40, 40, TestImg::TEST());
         w.DrawText(30, 30, "Hello worldy!", Serif(40), LtMagenta());
-        
         w.DrawRect(40, 40, 30, 10, InvertColor());
+        w.End();
 
 		return;
     }

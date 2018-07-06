@@ -76,16 +76,29 @@ CGRect SystemDraw::AsCG(const Rect& r)
 }
 #endif
 
-void SystemDraw::ClipCG(Rect r)
+
+CGRect SystemDraw::Convert(int x, int y, int cx, int cy)
 {
-	Convert(r);
-	CGContextClipToRect(cgContext, Convert(r));
+	Point p = GetOffset(); // TODO: Optimize
+	x += p.x;
+	y += p.y;
+	return CGRectMake(x, top - y - cy, cx, cy);
+}
+
+void SystemDraw::ClipCG(const Rect& r)
+{
+	Size sz = r.GetSize();
+	CGContextClipToRect(cgContext, CGRectMake(r.left, top - r.top - sz.cy, sz.cx, sz.cy));
 }
 
 bool SystemDraw::ClipOp(const Rect& r)
 {
 	Push();
+	DDUMP(r);
+	DDUMP(clip.Top());
+	DDUMP(GetOffset());
 	clip.Top() &= r.Offseted(GetOffset());
+	DDUMP(clip.Top());
 	ClipCG(clip.Top());
 	return true;
 }
@@ -122,14 +135,6 @@ bool SystemDraw::IsPaintingOp(const Rect& r) const
 Rect SystemDraw::GetPaintRect() const
 {
 	return Rect(0, 0, INT_MAX, INT_MAX);
-}
-
-CGRect SystemDraw::Convert(int x, int y, int cx, int cy)
-{
-	Point p = GetOffset(); // TODO: Optimize
-	x += p.x;
-	y += p.y;
-	return CGRectMake(x, top - y - cy, cx, cy);
 }
 
 void SystemDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)

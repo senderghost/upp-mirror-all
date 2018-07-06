@@ -4,6 +4,6 @@ file
 	CocoUtil.mm,
 	CocoDraw.mm,
 	CocoDrawImage.mm,
-	CocoFont.mm,
+	CocoText.mm,
 	CocoDraw2.mm;
 
