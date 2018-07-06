@@ -29,6 +29,17 @@
 
     {
         DDUMP(cgContext);
+        
+        ImageDraw iw(100, 30);
+        iw.DrawRect(0, 0, 100, 30, Cyan());
+        iw.DrawText(0, 0, "Hello world!", Arial(20), Black());
+        
+        Draw& aw = iw.Alpha();
+        aw.DrawRect(0, 0, 100, 30, White());
+        aw.DrawRect(5, 10, 30, 3, Black());
+        
+        Image h = iw;
+        
         SystemDraw w(cgContext, [self bounds].size.height);
 
         w.DrawImage(0, 40, TestImg::TEST());
@@ -47,6 +58,8 @@
         w.DrawText(30, 30, "Hello worldy!", Serif(40), LtMagenta());
         w.DrawRect(40, 40, 30, 10, InvertColor());
         w.End();
+        
+        w.DrawImage(5, 120, h);
 
 		return;
     }

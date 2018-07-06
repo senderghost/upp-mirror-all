@@ -91,6 +91,8 @@ private:
 
 	void  Set(Color c);
 
+	void Init(CGContext *cgContext_, int cy);
+
 	SystemDraw() {}
 	
 	friend class ImageDraw;
@@ -110,6 +112,25 @@ inline void SetSurface(SystemDraw& w, const Rect& dest, const RGBA *pixels, Size
 { // TODO: Unless we can do this...
 	NEVER();
 }
+
+class ImageDraw : public SystemDraw {
+	ImageBuffer ib;
+	
+	One<ImageDraw> alpha;
+
+	void Init(int cx, int cy);
+
+public:
+	Draw& Alpha();
+
+	operator Image();
+
+	Image GetStraight();
+
+	ImageDraw(Size sz);
+	ImageDraw(int cx, int cy);
+	~ImageDraw();
+};
 
 };
 

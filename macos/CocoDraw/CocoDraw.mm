@@ -2,13 +2,18 @@
 
 namespace Upp {
 
-SystemDraw::SystemDraw(CGContext *cgContext_, int cy)
+void SystemDraw::Init(CGContext *cgContext_, int cy)
 {
 	cgContext = cgContext_;
 	top = cy;
 	Push();
 	CGContextSetTextPosition(cgContext, 0, 0);
     CGContextSetTextDrawingMode(cgContext, kCGTextFill);
+}
+
+SystemDraw::SystemDraw(CGContext *cgContext_, int cy)
+{
+	Init(cgContext_, cy);
 }
 
 SystemDraw::~SystemDraw()
