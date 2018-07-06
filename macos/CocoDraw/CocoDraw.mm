@@ -48,6 +48,7 @@ void SystemDraw::Pop()
 	if(clip.GetCount())
 		clip.Drop();
     CGContextRestoreGState(cgContext);
+    fill = Null;
 }
 
 void SystemDraw::BeginOp()
@@ -119,7 +120,7 @@ bool SystemDraw::ClipoffOp(const Rect& r)
 
 bool SystemDraw::ExcludeClipOp(const Rect& r)
 {
-	// TODO
+	// TODO, perhaps use CGContextClipToRects
 	return true;
 }
 

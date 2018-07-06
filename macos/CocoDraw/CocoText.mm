@@ -125,12 +125,23 @@ void RenderCharacterSys(FontGlyphConsumer& sw, double x, double y, int ch, Font 
 	_DBG_
 }
 
-void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink, int n, const int *dx)
+void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font font, Color ink,
+                            int n, const int *dx)
 {
+	DLOG("angle " << angle << ", text " << text << ", ink " << ink);
+	Set(ink); // needs to be here because rotation saves context...
+	if(angle) {
+		CGContextSaveGState(cgContext);
+	//	CGContextRotateCTM(cgContext, M_PI * angle / 1800);
+		CGContextTranslateCTM(cgContext, x, -y);
+		DrawTextOp(0, 0, 0, text, font, ink, n, dx);
+	    CGContextRestoreGState(cgContext);
+		return;
+	}
+	
 	CFRef<CTFontRef> ctfont = CT_Font(font);
 	CFRef<CGFontRef> cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
    
-	Set(ink);
 	CGContextSetFont(cgContext, cgFont);
 	
 	Point off = GetOffset();
@@ -149,9 +160,6 @@ void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 	}
 
 	CGContextSetFontSize(cgContext, font.GetHeight());
-  
-//    CGContextRotateCTM(cgContext, 0.23); TODO!
-
     CGContextShowGlyphsAtPositions(cgContext, g, p, n);
 }
 

@@ -60,6 +60,10 @@
         w.End();
         
         w.DrawImage(5, 120, h);
+        
+        w.DrawText(150, 150, 0, "Rotated 0", Arial(16), White());
+        w.DrawText(150, 150, 90, "Rotated 9", Arial(16), LtGreen());
+        w.DrawText(150, 150, 900, "Rotated 90", Arial(16), LtRed());
 
 		return;
     }
@@ -159,6 +163,7 @@ int main(int argc, const char *argv[]) {
     NSWindow *window = [[NSWindow alloc]
         initWithContentRect:frame
                   styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask
+                   | NSWindowStyleMaskResizable
                     backing:NSBackingStoreBuffered
                       defer:false];
 
