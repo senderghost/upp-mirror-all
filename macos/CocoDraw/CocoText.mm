@@ -131,8 +131,9 @@ void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 	DLOG("angle " << angle << ", text " << text << ", ink " << ink);
 	Set(ink); // needs to be here because rotation saves context...
 	if(angle) {
+		// TODO: Fix this!
 		CGContextSaveGState(cgContext);
-	//	CGContextRotateCTM(cgContext, M_PI * angle / 1800);
+		CGContextRotateCTM(cgContext, 3 * M_PI * angle / 1800);
 		CGContextTranslateCTM(cgContext, x, -y);
 		DrawTextOp(0, 0, 0, text, font, ink, n, dx);
 	    CGContextRestoreGState(cgContext);

@@ -2,10 +2,6 @@
 
 #define IMAGECLASS TestImg
 #define IMAGEFILE <NSView/test.iml>
-#include <Draw/iml_header.h>
-
-#define IMAGECLASS TestImg
-#define IMAGEFILE <NSView/test.iml>
 #include <Draw/iml_source.h>
 
 @interface TestView : NSView <NSWindowDelegate> { }
@@ -62,6 +58,7 @@
         w.DrawImage(5, 120, h);
         
         w.DrawText(150, 150, 0, "Rotated 0", Arial(16), White());
+        w.DrawText(150, 150, 20, "Rotated 2", Arial(16), LtGray());
         w.DrawText(150, 150, 90, "Rotated 9", Arial(16), LtGreen());
         w.DrawText(150, 150, 900, "Rotated 90", Arial(16), LtRed());
 
@@ -146,8 +143,8 @@ void ListFonts();
 int main(int argc, const char *argv[]) {
    LOG("U++ logging");
    
-   for(int i = 0; i < Font::GetFaceCount(); i++)
-       DDUMP(Font::GetFaceName(i));
+//   for(int i = 0; i < Font::GetFaceCount(); i++)
+  //     DDUMP(Font::GetFaceName(i));
    
 //   DDUMP(GetTextSize("Hello world!", Arial(12)));
   // DDUMP(GetTextSize("Hello world!", Arial(12).Bold()));
@@ -157,7 +154,33 @@ int main(int argc, const char *argv[]) {
 //    ListFonts();
 
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
+    [NSAutoreleasePool new];
+    [NSApplication sharedApplication];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    id menubar = [[NSMenu new] autorelease];
+    id appMenuItem = [[NSMenuItem new] autorelease];
+    [menubar addItem:appMenuItem];
+    [NSApp setMainMenu:menubar];
+    id appMenu = [[NSMenu new] autorelease];
+    id appName = [[NSProcessInfo processInfo] processName];
+    id quitTitle = [@"Quit " stringByAppendingString:appName];
+    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
+        action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
+    [appMenu addItem:quitMenuItem];
+    [appMenuItem setSubmenu:appMenu];
+
+
+	CocoWindow win;
+	win.Create(RectC(100, 100, 300, 300), "Just a test window");
+
+    [NSApp activateIgnoringOtherApps:YES];
+    [NSApp run];
+    return 0;
+
     NSApplication *app = [NSApplication sharedApplication];
+
+#if 0
     NSRect frame = NSMakeRect( 100., 100., 300., 300. );
 
     NSWindow *window = [[NSWindow alloc]
@@ -177,9 +200,14 @@ int main(int argc, const char *argv[]) {
     /* someone mentioned:
      *  [NSApp activateIgnoringOtherApps:YES]; 
      * not sure where to put it... */
+#endif
+#if 0
+	CocoWindow win;
+	win.Create(RectC(100, 100, 300, 300), "Just a test window");
 
     [app run];
 
     [pool release];
+#endif
     return( EXIT_SUCCESS );
 }

@@ -45,6 +45,8 @@ struct ImageSysDataMaker : LRUCache<ImageSysData, int64>::Maker {
 	virtual int    Make(ImageSysData& object) const { object.Init(img); return img.GetLength(); }
 };
 
+static LRUCache<ImageSysData, int64> cg_image_cache;
+
 void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, Color color)
 {
 	GuiLock __;
@@ -53,13 +55,34 @@ void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, Color color)
 		return;
 
 	ImageSysDataMaker m;
-	static LRUCache<ImageSysData, int64> cache;
 	LLOG("SysImage cache pixels " << cache.GetSize() << ", count " << cache.GetCount());
 	m.img = IsNull(color) ? img : CachedSetColorKeepAlpha(img, color); // TODO: Can setcolor be optimized out? By masks e.g.?
-	ImageSysData& sd = cache.Get(m);
+	ImageSysData& sd = cg_image_cache.Get(m);
 	Size isz = img.GetSize();
 	CGContextDrawImage(cgContext, Convert(x, y, isz.cx, isz.cy), sd.cgimg);
-	cache.Shrink(4 * 1024 * 768, 1000); // Cache must be after Paint because of PaintOnly!
+	cg_image_cache.Shrink(4 * 1024 * 768, 1000); // Cache must be after Paint because of PaintOnly!
+}
+
+void SetImageCursor(const Image& img)
+{
+	ImageSysDataMaker m;
+	LLOG("SysImage cache pixels " << cache.GetSize() << ", count " << cache.GetCount());
+	m.img = img;
+	ImageSysData& sd = cg_image_cache.Get(m);
+
+	Point p = img.GetHotSpot();
+	Size isz = img.GetSize();
+	NSSize size;
+	size.width = isz.cx;
+	size.height = isz.cy;
+	NSPoint hot;
+	hot.x = p.x;
+	hot.y = p.y;
+	NSImage *nsimg = [[NSImage alloc] initWithCGImage:sd.cgimg size:size];
+	NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimg hotSpot:hot];
+	[cursor set];
+	[cursor release];
+	[nsimg release];
 }
 
 };

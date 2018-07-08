@@ -132,6 +132,8 @@ public:
 	~ImageDraw();
 };
 
+void SetImageCursor(const Image& img);
+
 };
 
 #endif
