@@ -3,42 +3,11 @@
 
 #include <Draw/Draw.h>
 
-#define Point NS_Point
-#define Rect  NS_Rect
-#define Size  NS_Size
-#include <AppKit/AppKit.h>
-#undef  Point
-#undef  Rect
-#undef  Size
-
 namespace Upp {
 
-template <class T>
-struct CFRef {
-	T ptr;
-	T operator~()   { return ptr; }
-	operator T()    { return ptr; }
-	T  operator->() { return ptr; }
-	T  Detach()     { T h = ptr; ptr = NULL; return h; }
-	CFRef(T p)      { ptr = p; }
-	~CFRef()        { if(ptr) CFRelease(ptr); }
-};
-
-struct AutoreleasePool {
-	NSAutoreleasePool *pool;
-
-	AutoreleasePool() {
-		pool = [[NSAutoreleasePool alloc] init];
-	}
-	~AutoreleasePool() {
-	    [pool release];
-	}
-};
-
-WString ToWString(CFStringRef s);
-String ToString(CFStringRef s);
-
 struct GuiLock {};
+
+struct RectCG;
 
 class SystemDraw : public Draw {
 	virtual dword GetInfo() const;
@@ -80,18 +49,19 @@ private:
 	
 	void   Push();
 	void   Pop();
-	CGContextRef cgContext;
+	
+	void  *handle;
 	
 	void   ClipCG(const Rect& r);
 	void   FlipY(int& y)           { y = top - y; }
 	Rect   GetClip() const         { return clip.GetCount() ? clip.Top() : Rect(-999999, -999999, 999999, 999999); }
 	Point  GetOffset() const       { return offset.GetCount() ? offset.Top() : Point(0, 0); }
-	CGRect Convert(int x, int y, int cx, int cy);
-	CGRect Convert(const Rect& r)  { return Convert(r.left, r.top, r.GetWidth(), r.GetHeight()); }
+	RectCG Convert(int x, int y, int cx, int cy);
+	RectCG Convert(const Rect& r);
 
 	void  Set(Color c);
 
-	void Init(CGContext *cgContext_, int cy);
+	void Init(void *cgContext, int cy);
 
 	SystemDraw() {}
 	
@@ -103,7 +73,7 @@ public:
 	bool     CanSetSurface()          { return false; }
 	static void Flush()               {} // TODO?
 
-	SystemDraw(CGContext *cgContext, int cy);
+	SystemDraw(void *cgContext, int cy);
 	~SystemDraw();
 };
 

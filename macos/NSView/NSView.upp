@@ -11,9 +11,10 @@ link
 file
 	test.iml,
 	todo.txt,
+	Coco.h,
 	CocoUtil.h,
-	CocoUtil.mm,
 	CocoCtrl.mm,
+	CocoCtrl2.cpp,
 	NSView.mm;
 
 mainconfig

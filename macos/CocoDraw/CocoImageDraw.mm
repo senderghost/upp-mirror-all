@@ -1,4 +1,4 @@
-#include "CocoDraw.h"
+#include "MMDraw.h"
 
 namespace Upp {
 
@@ -32,7 +32,7 @@ Draw& ImageDraw::Alpha()
 
 ImageDraw::~ImageDraw()
 {
-	CGContextRelease(cgContext);
+	CGContextRelease(cgHandle);
 }
 
 Image ImageDraw::GetStraight()

@@ -1,4 +1,4 @@
-#include "CocoDraw.h"
+#include "MMDraw.h"
 
 #define LLOG(x)
 #define LTIMING(x)
@@ -132,18 +132,18 @@ void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 	Set(ink); // needs to be here because rotation saves context...
 	if(angle) {
 		// TODO: Fix this!
-		CGContextSaveGState(cgContext);
-		CGContextRotateCTM(cgContext, 3 * M_PI * angle / 1800);
-		CGContextTranslateCTM(cgContext, x, -y);
+		CGContextSaveGState(cgHandle);
+		CGContextRotateCTM(cgHandle, 3 * M_PI * angle / 1800);
+		CGContextTranslateCTM(cgHandle, x, -y);
 		DrawTextOp(0, 0, 0, text, font, ink, n, dx);
-	    CGContextRestoreGState(cgContext);
+	    CGContextRestoreGState(cgHandle);
 		return;
 	}
 	
 	CFRef<CTFontRef> ctfont = CT_Font(font);
 	CFRef<CGFontRef> cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
    
-	CGContextSetFont(cgContext, cgFont);
+	CGContextSetFont(cgHandle, cgFont);
 	
 	Point off = GetOffset();
 	x += off.x;
@@ -160,8 +160,8 @@ void SystemDraw::DrawTextOp(int x, int y, int angle, const wchar *text, Font fon
 		x += dx ? *dx++ : f.width;
 	}
 
-	CGContextSetFontSize(cgContext, font.GetHeight());
-    CGContextShowGlyphsAtPositions(cgContext, g, p, n);
+	CGContextSetFontSize(cgHandle, font.GetHeight());
+    CGContextShowGlyphsAtPositions(cgHandle, g, p, n);
 }
 
 };

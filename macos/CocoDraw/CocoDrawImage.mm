@@ -1,4 +1,4 @@
-#include "CocoDraw.h"
+#include "MMDraw.h"
 
 #define LLOG(x)
 
@@ -59,7 +59,7 @@ void SystemDraw::SysDrawImageOp(int x, int y, const Image& img, Color color)
 	m.img = IsNull(color) ? img : CachedSetColorKeepAlpha(img, color); // TODO: Can setcolor be optimized out? By masks e.g.?
 	ImageSysData& sd = cg_image_cache.Get(m);
 	Size isz = img.GetSize();
-	CGContextDrawImage(cgContext, Convert(x, y, isz.cx, isz.cy), sd.cgimg);
+	CGContextDrawImage(cgHandle, Convert(x, y, isz.cx, isz.cy), sd.cgimg);
 	cg_image_cache.Shrink(4 * 1024 * 768, 1000); // Cache must be after Paint because of PaintOnly!
 }
 

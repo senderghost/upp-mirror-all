@@ -1,4 +1,5 @@
-#include "CocoUtil.h"
+#include <CocoDraw/MMDraw.h>
+#include "Coco.h"
 
 #define IMAGECLASS TestImg
 #define IMAGEFILE <NSView/test.iml>

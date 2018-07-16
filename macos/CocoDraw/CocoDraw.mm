@@ -1,19 +1,19 @@
-#include "CocoDraw.h"
+#include "MMDraw.h"
 
 namespace Upp {
 
-void SystemDraw::Init(CGContext *cgContext_, int cy)
+void SystemDraw::Init(void *cgContext, int cy)
 {
-	cgContext = cgContext_;
+	handle = cgContext;
 	top = cy;
 	Push();
-	CGContextSetTextPosition(cgContext, 0, 0);
-    CGContextSetTextDrawingMode(cgContext, kCGTextFill);
+	CGContextSetTextPosition(cgHandle, 0, 0);
+    CGContextSetTextDrawingMode(cgHandle, kCGTextFill);
 }
 
-SystemDraw::SystemDraw(CGContext *cgContext_, int cy)
+SystemDraw::SystemDraw(void *cgContext, int cy)
 {
-	Init(cgContext_, cy);
+	Init(cgContext, cy);
 }
 
 SystemDraw::~SystemDraw()
@@ -25,7 +25,7 @@ void SystemDraw::Set(Color c)
 {
 	if(c != fill) {
 		fill = c;
-	    CGContextSetRGBFillColor(cgContext, c.GetR() / 255.0, c.GetG() / 255.0, c.GetB() / 255.0, 1.0);
+	    CGContextSetRGBFillColor(cgHandle, c.GetR() / 255.0, c.GetG() / 255.0, c.GetB() / 255.0, 1.0);
 	}
 }
 
@@ -36,7 +36,7 @@ dword SystemDraw::GetInfo() const
 
 void SystemDraw::Push()
 {
-	CGContextSaveGState(cgContext);
+	CGContextSaveGState(cgHandle);
 	offset.Add(GetOffset());
 	clip.Add(GetClip());
 }
@@ -47,7 +47,7 @@ void SystemDraw::Pop()
 		offset.Drop();
 	if(clip.GetCount())
 		clip.Drop();
-    CGContextRestoreGState(cgContext);
+    CGContextRestoreGState(cgHandle);
     fill = Null;
 }
 
@@ -83,28 +83,30 @@ CGRect SystemDraw::AsCG(const Rect& r)
 #endif
 
 
-CGRect SystemDraw::Convert(int x, int y, int cx, int cy)
+RectCG SystemDraw::Convert(int x, int y, int cx, int cy)
 {
 	Point p = GetOffset(); // TODO: Optimize
 	x += p.x;
 	y += p.y;
-	return CGRectMake(x, top - y - cy, cx, cy);
+	return RectCG(x, top - y - cy, cx, cy);
 }
+
+RectCG SystemDraw::Convert(const Rect& r)
+{
+	return Convert(r.left, r.top, r.GetWidth(), r.GetHeight());
+}
+
 
 void SystemDraw::ClipCG(const Rect& r)
 {
 	Size sz = r.GetSize();
-	CGContextClipToRect(cgContext, CGRectMake(r.left, top - r.top - sz.cy, sz.cx, sz.cy));
+	CGContextClipToRect(cgHandle, CGRectMake(r.left, top - r.top - sz.cy, sz.cx, sz.cy));
 }
 
 bool SystemDraw::ClipOp(const Rect& r)
 {
 	Push();
-	DDUMP(r);
-	DDUMP(clip.Top());
-	DDUMP(GetOffset());
 	clip.Top() &= r.Offseted(GetOffset());
-	DDUMP(clip.Top());
 	ClipCG(clip.Top());
 	return true;
 }
@@ -149,13 +151,13 @@ void SystemDraw::DrawRectOp(int x, int y, int cx, int cy, Color color)
 	CGRect cgr = Convert(x, y, cx, cy);
 	if(color == InvertColor()) {
 		Set(White());
-		CGContextSetBlendMode(cgContext, kCGBlendModeExclusion);
-		CGContextFillRect(cgContext, cgr);
-		CGContextSetBlendMode(cgContext, kCGBlendModeNormal);
+		CGContextSetBlendMode(cgHandle, kCGBlendModeExclusion);
+		CGContextFillRect(cgHandle, cgr);
+		CGContextSetBlendMode(cgHandle, kCGBlendModeNormal);
 	}
 	else {
 		Set(color);
-		CGContextFillRect(cgContext, cgr);
+		CGContextFillRect(cgHandle, cgr);
 	}
 }
 
