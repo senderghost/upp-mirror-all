@@ -11,25 +11,12 @@ using namespace Upp;
 
 using namespace Upp;
 
-struct CocoWindow {
-	void      Paint(Draw& draw);
-	void      LeftDown(Upp::Point p);
-	void      LeftUp(Upp::Point p);
-	void      Drag(Upp::Point p);
-	void      Move(Upp::Point p);
-	void      Text(const String& h) { text = h; Refresh(); }
+struct MyTest : Ctrl {
+	virtual void Layout();
+	virtual void Paint(Draw& draw);
+	virtual void MouseMove(Point p, dword flags);
 
-	struct Top;
-	
-	Top      *top = NULL;
-	
-	String    text;
-
-	void      Refresh();
-	Size      GetSize() const;
-	
-	void Create(const Upp::Rect& r, const char *title);
-	~CocoWindow();
+	String    text = "Hello world";
 };
 
 #endif

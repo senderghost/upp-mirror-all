@@ -13,7 +13,6 @@ file
 	todo.txt,
 	Coco.h,
 	CocoUtil.h,
-	CocoCtrl.mm,
 	CocoCtrl2.cpp,
 	NSView.mm;
 
