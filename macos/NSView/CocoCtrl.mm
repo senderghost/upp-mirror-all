@@ -17,7 +17,6 @@
 }
 
 - (void)mouseMoved:(NSEvent *)e {
-	DLOG("Moved!");
 	NSPoint p = [self convertPoint:[e locationInWindow] fromView:nil];
 	window->Move(Upp::Point(p.x, p.y));
 }
@@ -28,7 +27,8 @@
 }
 
 - (void)keyDown:(NSEvent *)e {
-	window->Text("keyDown ");
+	window->Text("keyDown flag: " + AsString(e.modifierFlags) + ", characters: " +
+	             ToString((CFStringRef)(e.characters)) + ", keycode: " + AsString(e.keyCode));
 }
 
 - (void)keyUp:(NSEvent *)e {
@@ -48,8 +48,7 @@
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
-    [[self window] makeFirstResponder:self];
-	[[self window] setAcceptsMouseMovedEvents:YES];
+	// THIS IS "GOT FOCUS"
 }
 
 - (BOOL)acceptsFirstResponder {	return YES; }

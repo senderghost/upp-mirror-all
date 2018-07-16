@@ -155,6 +155,8 @@ int main(int argc, const char *argv[]) {
 
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
+	DDUMP((int)NSUpArrowFunctionKey);
+
     [NSAutoreleasePool new];
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
