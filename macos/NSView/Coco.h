@@ -1,15 +1,13 @@
 #ifndef _NSView_Coco_h_
 #define _NSView_Coco_h_
 
-#include <CocoDraw/CocoDraw.h>
+#include <CtrlLib/CtrlLib.h>
+
+using namespace Upp;
 
 #define IMAGECLASS TestImg
 #define IMAGEFILE <NSView/test.iml>
 #include <Draw/iml_header.h>
-
-using namespace Upp;
-
-#include <Draw/Draw.h>
 
 using namespace Upp;
 

@@ -1,4 +1,4 @@
-#include <CocoDraw/MMDraw.h>
+#include <CtrlCore/CocoMM.h>
 #include "Coco.h"
 
 @interface CocoView : NSView <NSWindowDelegate>

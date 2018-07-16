@@ -48,7 +48,7 @@ void CocoWindow::LeftDown(Upp::Point p)
 //	[top->window setAcceptsMouseMovedEvents:YES];
 //	[window makeFirstResponder:view];
 	
-	SetImageCursor(TestImg::TEST());
+//	Ctrl::SetImageCursor(TestImg::TEST());
 }
 
 void CocoWindow::LeftUp(Upp::Point p)

@@ -1,6 +1,6 @@
 uses
 	Draw,
-	CocoDraw;
+	CtrlLib;
 
 options
 	"-framework Foundation";
