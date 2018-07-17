@@ -17,5 +17,7 @@ void MyTest::Paint(Draw& w)
 
 void MyTest::MouseMove(Point p, dword flags)
 {
+	DLOG("MouseMove " << p);
 	text = AsString(p);
+	Refresh();
 }
