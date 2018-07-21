@@ -15,8 +15,13 @@ struct MyTest : Ctrl {
 	virtual void Layout();
 	virtual void Paint(Draw& draw);
 	virtual void MouseMove(Point p, dword flags);
-
-	String    text = "Hello world";
+	virtual bool Key(dword key, int count);
+	
+	Array<String> text;
+	
+	void Add(const String& text);
+	
+	MyTest();
 };
 
 #endif
