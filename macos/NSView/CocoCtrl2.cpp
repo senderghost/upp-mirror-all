@@ -47,6 +47,11 @@ bool MyTest::Key(dword key, int count)
 	return true;
 }
 
+Image MyTest::CursorImage(Point p, dword keyflags)
+{
+	return Image::Hand();
+}
+
 MyTest::MyTest()
 {
 }

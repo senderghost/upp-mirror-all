@@ -29,7 +29,7 @@ GUI_APP_MAIN {
 
 //	Ctrl::EventLoop();
 
-//	win.Run(); return;
+	win.Run(); return;
 
 	DDUMP(Ctrl::GetPrimaryWorkArea());
 	DDUMP(Ctrl::GetPrimaryScreenArea());
