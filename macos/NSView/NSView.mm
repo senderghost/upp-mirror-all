@@ -22,9 +22,20 @@ GUI_APP_MAIN {
 
 
 	MyTest win;
-	win.Create(RectC(100, 100, 300, 300), "Just a test window", false);
+	win.SetRect(10, Ctrl::GetPrimaryWorkArea().top + 30, 300, 300);
+//	win.SetRect(Ctrl::GetPrimaryWorkArea().Inflated(10));
+	win.Sizeable();
+//	win.Create(RectC(100, 100, 300, 300), "Just a test window", false);
 
-	Ctrl::EventLoop();
+//	Ctrl::EventLoop();
+
+//	win.Run(); return;
+
+	DDUMP(Ctrl::GetPrimaryWorkArea());
+	DDUMP(Ctrl::GetPrimaryScreenArea());
+	
+	String h = "test";
+	EditText(h, "window title", "label");
  
     return;
 

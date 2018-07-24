@@ -32,6 +32,11 @@ void MyTest::MouseMove(Point p, dword flags)
 	Refresh();
 }
 
+void MyTest::LeftDown(Point p, dword flags)
+{
+	Zoomable(!IsZoomable());
+}
+
 bool MyTest::Key(dword key, int count)
 {
 	String kkk = GetKeyDesc(key);

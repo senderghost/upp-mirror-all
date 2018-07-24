@@ -11,12 +11,15 @@ using namespace Upp;
 
 using namespace Upp;
 
-struct MyTest : Ctrl {
+struct MyTest : TopWindow {
 	virtual void Layout();
 	virtual void Paint(Draw& draw);
 	virtual void MouseMove(Point p, dword flags);
 	virtual bool Key(dword key, int count);
-	
+	virtual void LeftDown(Point p, dword flags);
+	virtual Size   GetMinSize() const { return Size(200, 20); }
+	virtual Size   GetMaxSize() const { return Size(300, 300); }
+
 	Array<String> text;
 	
 	void Add(const String& text);
