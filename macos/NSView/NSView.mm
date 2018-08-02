@@ -6,12 +6,30 @@
 #define IMAGEFILE <NSView/test.iml>
 #include <Draw/iml_source.h>
 
+bool IsStringAvailable()
+{
+}
+
+void NSWriteString(const String& s)
+{
+}
+
+WString NSReadString()
+{
+	return ToWString([[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString]);
+}
+
 GUI_APP_MAIN {
 // int main(int argc, const char *argv[]) {
    LOG("U++ logging 2");
    
-//   for(int i = 0; i < Font::GetFaceCount(); i++)
-  //     DDUMP(Font::GetFaceName(i));
+   DDUMP(NSReadString());
+   
+   NSWriteString("Just a test!");
+
+#if 0   
+	for(int i = 0; i < Font::GetFaceCount(); i++)
+	     DDUMP(Font::GetFaceName(i));
    
 //   DDUMP(GetTextSize("Hello world!", Arial(12)));
   // DDUMP(GetTextSize("Hello world!", Arial(12).Bold()));
@@ -21,8 +39,14 @@ GUI_APP_MAIN {
 //    ListFonts();
 
 
+	DDUMP(GetStdFontCy());
+	DDUMP(Ctrl::GetPrimaryWorkArea());
+	DDUMP(Ctrl::GetPrimaryScreenArea());
+#endif
+//	Exclamation("[@B TEST"); return;
+	
 	MyTest win;
-	win.SetRect(10, Ctrl::GetPrimaryWorkArea().top + 30, 300, 300);
+//	win.SetRect(10, Ctrl::GetPrimaryWorkArea().top + 30, 300, 300);
 //	win.SetRect(Ctrl::GetPrimaryWorkArea().Inflated(10));
 	win.Sizeable();
 //	win.Create(RectC(100, 100, 300, 300), "Just a test window", false);
@@ -31,9 +55,6 @@ GUI_APP_MAIN {
 
 	win.Run(); return;
 
-	DDUMP(Ctrl::GetPrimaryWorkArea());
-	DDUMP(Ctrl::GetPrimaryScreenArea());
-	
 	String h = "test";
 	EditText(h, "window title", "label");
  

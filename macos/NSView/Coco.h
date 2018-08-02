@@ -17,6 +17,7 @@ struct MyTest : TopWindow {
 	virtual void MouseMove(Point p, dword flags);
 	virtual bool Key(dword key, int count);
 	virtual void LeftDown(Point p, dword flags);
+	virtual void LeftUp(Point p, dword flags);
 	virtual Image  CursorImage(Point p, dword keyflags);
 	virtual Size   GetMinSize() const { return Size(200, 20); }
 	virtual Size   GetMaxSize() const { return Size(300, 300); }
