@@ -65,6 +65,11 @@ void MyTest::LeftUp(Point p, dword flags)
 	ReleaseCapture();
 }
 
+void MyTest::RightDown(Point, dword)
+{
+	SetRect(500, 50, 600, 600);
+}
+
 bool MyTest::Key(dword key, int count)
 {
 	String kkk = GetKeyDesc(key);

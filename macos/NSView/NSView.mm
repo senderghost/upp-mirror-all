@@ -53,7 +53,7 @@ GUI_APP_MAIN {
 
 //	Ctrl::EventLoop();
 
-	win.Run(); return;
+//	win.Run(); return;
 
 	String h = "test";
 	EditText(h, "window title", "label");
