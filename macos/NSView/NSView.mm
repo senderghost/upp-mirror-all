@@ -6,10 +6,6 @@
 #define IMAGEFILE <NSView/test.iml>
 #include <Draw/iml_source.h>
 
-bool IsStringAvailable()
-{
-}
-
 void NSWriteString(const String& s)
 {
 }
@@ -19,13 +15,34 @@ WString NSReadString()
 	return ToWString([[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString]);
 }
 
+void ReceiveData()
+{
+	DLOG("ReceiveData " << msecs());
+}
+
 GUI_APP_MAIN {
 // int main(int argc, const char *argv[]) {
-   LOG("U++ logging 2");
+   LOG("U++ logging 3");
    
-   DDUMP(NSReadString());
+   DDUMP(Arial(20).GetData().GetCount());
    
-   NSWriteString("Just a test!");
+#if 0
+	Thread::Start([] {
+		for(int i = 0; i < 100; i++) {
+			DLOG("Do IT");
+			Ctrl::Call([] { DLOG("InCall"); ReceiveData(); });
+			Sleep(1);
+		}
+		DLOG("LAST");
+	});
+#endif
+
+//	PostCallback([] { ReceiveData(); });
+
+	for(int i = 0; i < Font::GetFaceCount(); i++)
+	     DDUMP(Font::GetFaceName(i));
+	
+	return;
 
 #if 0   
 	for(int i = 0; i < Font::GetFaceCount(); i++)
@@ -52,6 +69,8 @@ GUI_APP_MAIN {
 //	win.Create(RectC(100, 100, 300, 300), "Just a test window", false);
 
 //	Ctrl::EventLoop();
+
+DLOG("RUN");
 
 //	win.Run(); return;
 

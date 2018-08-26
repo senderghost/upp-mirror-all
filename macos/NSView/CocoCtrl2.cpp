@@ -8,8 +8,6 @@ void MyTest::Layout()
 
 void MyTest::Paint(Draw& w)
 {
-	DLOG("PAINT");	
-	DDUMP(GetSize());
 	w.DrawRect(GetSize(), White());
 	w.DrawEllipse(GetSize(), Magenta());
 	w.DrawLine(100, 100, 500, 140, 4, LtRed());
@@ -49,15 +47,21 @@ void MyTest::Add(const String& s)
 
 void MyTest::MouseMove(Point p, dword flags)
 {
-	DLOG("MouseMove " << p);
 	Add("MouseMove " + AsString(p));
 	Refresh();
 }
 
+void MyTest::LeftTriple(Point p, dword)
+{
+}
+
 void MyTest::LeftDown(Point p, dword flags)
 {
-	Zoomable(!IsZoomable());
-	SetCapture();
+	ViewDraw w(this);
+	w.DrawRect(-1000, -1000, 3000, 3000, Yellow());
+	w.DrawText(0, 0, "TRIPPLE!", Arial(100));
+/*	Zoomable(!IsZoomable());
+	SetCapture();*/
 }
 
 void MyTest::LeftUp(Point p, dword flags)
@@ -73,8 +77,6 @@ void MyTest::RightDown(Point, dword)
 bool MyTest::Key(dword key, int count)
 {
 	String kkk = GetKeyDesc(key);
-	DDUMP(kkk);
-	DUMPHEX(kkk);
 	Add(Format("%d %x", (int)key, (int)key) + "  " + kkk);
 	Refresh();
 	return true;

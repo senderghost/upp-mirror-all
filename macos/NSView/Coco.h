@@ -17,6 +17,7 @@ struct MyTest : TopWindow {
 	virtual void MouseMove(Point p, dword flags);
 	virtual bool Key(dword key, int count);
 	virtual void LeftDown(Point p, dword flags);
+	virtual void LeftTriple(Point p, dword);
 	virtual void LeftUp(Point p, dword flags);
 	virtual void RightDown(Point, dword);
 	virtual Image  CursorImage(Point p, dword keyflags);
