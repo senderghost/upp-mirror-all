@@ -5,50 +5,97 @@
 
 using namespace Upp;
 
-struct double2 : Moveable<double2> {
-	__m128d value;
-	
-	void SetL(double x)                   { value = _mm_loadl_pd(value, &x); }
-	void SetH(double x)                   { value = _mm_loadh_pd(value, &x); }
-	void SetLH(double x)                  { value = _mm_set1_pd(x); }
-	
-	double GetL() const                   { double x; _mm_storel_pd(&x, value); return x; }
-	double GetH() const                   { double x; _mm_storeh_pd(&x, value); return x; }
+#ifdef CPU_SSE2
 
-	void   Swap()                         { value = _mm_shuffle_pd(value, value, 1); }
+class double2 : Moveable<double2> {
+	__m128d value;
+
+public:
+	void SetL(double x)                        { value = _mm_loadl_pd(value, &x); }
+	void SetH(double x)                        { value = _mm_loadh_pd(value, &x); }
+	void SetLH(double x)                       { value = _mm_set1_pd(x); }
 	
-	String ToString() const               { return String() << GetH() << ", " << GetL(); }
+	double GetL() const                        { double x; _mm_storel_pd(&x, value); return x; }
+	double GetH() const                        { double x; _mm_storeh_pd(&x, value); return x; }
+
+	void   Swap()                              { value = _mm_shuffle_pd(value, value, 1); }
+	
+	String ToString() const                    { return String() << GetH() << ", " << GetL(); }
 
 	double2  operator+(const double2& h) const { return _mm_add_pd(value, h.value); }
 	double2  operator-(const double2& h) const { return _mm_sub_pd(value, h.value); }
 	double2  operator*(const double2& h) const { return _mm_mul_pd(value, h.value); }
 	double2  operator/(const double2& h) const { return _mm_div_pd(value, h.value); }
 
-	double2  operator-() const             { return _mm_sub_pd(_mm_setzero_pd(), value); } // OPTIMIZE!
+	double2  operator-() const                 { return _mm_sub_pd(_mm_setzero_pd(), value); } // OPTIMIZE!
 	
-	double2& operator+=(const double2& h) { value = _mm_add_pd(value, h.value); return *this; }
-	double2& operator-=(const double2& h) { value = _mm_sub_pd(value, h.value); return *this; }
-	double2& operator*=(const double2& h) { value = _mm_mul_pd(value, h.value); return *this; }
-	double2& operator/=(const double2& h) { value = _mm_div_pd(value, h.value); return *this; }
+	double2& operator+=(const double2& h)      { value = _mm_add_pd(value, h.value); return *this; }
+	double2& operator-=(const double2& h)      { value = _mm_sub_pd(value, h.value); return *this; }
+	double2& operator*=(const double2& h)      { value = _mm_mul_pd(value, h.value); return *this; }
+	double2& operator/=(const double2& h)      { value = _mm_div_pd(value, h.value); return *this; }
 	
-	double2 sqrt() const                  { return _mm_sqrt_pd(value); }
-	double2 abs() const                   { return _mm_max_pd(_mm_sub_pd(_mm_setzero_pd(), value), value); }
+	double2 sqrt() const                       { return _mm_sqrt_pd(value); }
+	double2 abs() const                        { return _mm_max_pd(_mm_sub_pd(_mm_setzero_pd(), value), value); }
 	double2 sgn() const;
-	double2 swapped() const               { double2 h = *this; h.Swap(); return h; }
+	double2 swapped() const                    { double2 h = *this; h.Swap(); return h; }
+	double2 orthogonal() const                 { static double c[2] = { 1, -1 }; return swapped() * double2(c); }
 	
-	double2(double *d2)                   { value = _mm_loadu_pd(d2); }
-	double2(double h, double l)           { value = _mm_set_pd(h, l); }
-	double2(double lh)                    { value = _mm_set1_pd(lh); }
-	double2(__m128d v)                    { value = v; }
-	double2()                             {}
+	double2(double *d2)                        { value = _mm_loadu_pd(d2); }
+	double2(double h, double l)                { value = _mm_set_pd(h, l); }
+	double2(double lh)                         { value = _mm_set1_pd(lh); }
+	double2(__m128d v)                         { value = v; }
+	double2()                                  {}
 };
 
+inline
 double2 double2::sgn() const
 {
     __m128d zero = _mm_setzero_pd();
     return _mm_or_pd(_mm_and_pd(_mm_cmpgt_pd(value, zero), _mm_set1_pd(1.0f)),
                      _mm_and_pd(_mm_cmplt_pd(value, zero), _mm_set1_pd(-1.0f)));
 }
+
+#else
+
+class double2 : Moveable<double2> {
+	double h, l;
+
+public:
+	void SetL(double x)                        { l = x; }
+	void SetH(double x)                        { h = x; }
+	void SetLH(double x)                       { l = h = x; }
+	
+	double GetL() const                        { return l; }
+	double GetH() const                        { return h; }
+
+	void   Swap()                              { Upp::Swap(h, l); }
+	
+	String ToString() const                    { return String() << GetH() << ", " << GetL(); }
+
+	double2  operator+(const double2& a) const { return double2(h + a.h, l + a.l); }
+	double2  operator-(const double2& a) const { return double2(h - a.h, l - a.l); }
+	double2  operator*(const double2& a) const { return double2(h * a.h, l * a.l); }
+	double2  operator/(const double2& a) const { return double2(h / a.h, l / a.l); }
+
+	double2  operator-() const                 { return double2(-h, -l); }
+	
+	double2& operator+=(const double2& a)      { return *this = *this + a; }
+	double2& operator-=(const double2& a)      { return *this = *this - a; }
+	double2& operator*=(const double2& a)      { return *this = *this * a; }
+	double2& operator/=(const double2& a)      { return *this = *this / a; }
+	
+	double2 sqrt() const                       { return double2(std::sqrt(h), std::sqrt(l)); }
+	double2 abs() const                        { return double2(std::abs(h), std::abs(l)); }
+	double2 sgn() const                        { return double2(Upp::sgn(h), Upp::sgn(l)); }
+	double2 swapped() const                    { return double2(l, h); }
+	
+	double2(double *d2)                        { l = d2[0]; h = d2[1]; }
+	double2(double _h, double _l)              { h = _h, l = _l; }
+	double2(double lh)                         { h = l = lh; }
+	double2()                                  {}
+};
+
+#endif
 
 inline
 double Distance(const double2& a, const double2& b)
@@ -77,7 +124,9 @@ CONSOLE_APP_MAIN
 	RDUMP(double2(123, -123).abs());
 	RDUMP(double2(-23, 0).abs());
 	RDUMP(double2(-23).abs());
-	return;
+	
+	RDUMP(double2(12, 23).orthogonal());
+	// return;
 	
 	
 	Vector<double2> a;
@@ -98,6 +147,18 @@ CONSOLE_APP_MAIN
 		distance.Add(d);
 		pa.Add(p1);
 		pb.Add(p2);
+	}
+
+	{
+		RTIMING("SSE distance");
+		for(int i = 0; i < a.GetCount(); i++)
+			distance[i] = Distance(a[i], b[i]);
+	}
+	
+	{
+		RTIMING("FP distance");
+		for(int i = 0; i < a.GetCount(); i++)
+			distance[i] = Distance(pa[i], pb[i]);
 	}
 	
 	{
