@@ -1,0 +1,28 @@
+uses
+	CtrlLib,
+	Painter;
+
+file
+	main.cpp,
+	Example readonly separator,
+	upptess.cpp,
+	Source readonly separator,
+	tesselator.h,
+	bucketalloc.c,
+	bucketalloc.h,
+	dict.c,
+	dict.h,
+	geom.c,
+	geom.h,
+	mesh.c,
+	mesh.h,
+	priorityq.c,
+	priorityq.h,
+	sweep.c,
+	sweep.h,
+	tess.c,
+	tess.h;
+
+mainconfig
+	"" = "GUI";
+
