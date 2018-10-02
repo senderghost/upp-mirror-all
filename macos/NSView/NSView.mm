@@ -20,30 +20,9 @@ void ReceiveData()
 	DLOG("ReceiveData " << msecs());
 }
 
+	int scrollcx;
+
 GUI_APP_MAIN {
-// int main(int argc, const char *argv[]) {
-   LOG("U++ logging 3");
-   
-   DDUMP(Arial(20).GetData().GetCount());
-   
-#if 0
-	Thread::Start([] {
-		for(int i = 0; i < 100; i++) {
-			DLOG("Do IT");
-			Ctrl::Call([] { DLOG("InCall"); ReceiveData(); });
-			Sleep(1);
-		}
-		DLOG("LAST");
-	});
-#endif
-
-//	PostCallback([] { ReceiveData(); });
-
-	for(int i = 0; i < Font::GetFaceCount(); i++)
-	     DDUMP(Font::GetFaceName(i));
-	
-	return;
-
 #if 0   
 	for(int i = 0; i < Font::GetFaceCount(); i++)
 	     DDUMP(Font::GetFaceName(i));
@@ -61,18 +40,17 @@ GUI_APP_MAIN {
 	DDUMP(Ctrl::GetPrimaryScreenArea());
 #endif
 //	Exclamation("[@B TEST"); return;
-	
+
+	DDUMP([NSScroller scrollerWidthForControlSize:NSControlSizeRegular
+	                  scrollerStyle:NSScrollerStyleLegacy]);
+
+	scrollcx = [NSScroller scrollerWidthForControlSize:NSControlSizeRegular
+	                  scrollerStyle:NSScrollerStyleLegacy];
+
+
 	MyTest win;
-//	win.SetRect(10, Ctrl::GetPrimaryWorkArea().top + 30, 300, 300);
-//	win.SetRect(Ctrl::GetPrimaryWorkArea().Inflated(10));
 	win.Sizeable();
-//	win.Create(RectC(100, 100, 300, 300), "Just a test window", false);
-
-//	Ctrl::EventLoop();
-
-DLOG("RUN");
-
-//	win.Run(); return;
+	win.Run(); return;
 
 	String h = "test";
 	EditText(h, "window title", "label");

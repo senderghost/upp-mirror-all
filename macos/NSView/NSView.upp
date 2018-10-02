@@ -6,13 +6,14 @@ options
 	"-framework Foundation";
 
 link
-	" -framework Foundation -framework Cocoa";
+	" -framework Foundation -framework Cocoa -framework Carbon ";
 
 file
 	test.iml,
 	todo.txt,
 	Coco.h,
 	CocoUtil.h,
+	CocoCtrl.mm,
 	CocoCtrl2.cpp,
 	NSView.mm;
 
