@@ -1,0 +1,9 @@
+link
+	" -framework Foundation -framework Cocoa -framework Carbon ";
+
+file
+	test.mm;
+
+mainconfig
+	"" = "";
+

@@ -13,6 +13,8 @@ file
 	todo.txt,
 	Coco.h,
 	CocoUtil.h,
+	NSMenuKeys.i,
+	MacMenu.mm,
 	CocoCtrl.mm,
 	CocoCtrl2.cpp,
 	NSView.mm;

@@ -133,10 +133,14 @@ void MyTest::LeftDown(Point p, dword flags)
 	Refresh();
 }
 
-void MyTest::RightDown(Point, dword)
+namespace Upp {
+
+void TestMenu(Ctrl *ctrl, Point p);
+};
+
+void MyTest::RightDown(Point p, dword)
 {
-	WriteClipboardText("Hello world!");
-//	Minimize(true);
+	TestMenu(this, GetMousePos());
 }
 
 bool MyTest::Key(dword key, int count)
@@ -158,4 +162,5 @@ Image MyTest::CursorImage(Point p, dword keyflags)
 MyTest::MyTest()
 {
 	Sizeable().Zoomable();
+	Icon(CtrlImg::exclamation());
 }

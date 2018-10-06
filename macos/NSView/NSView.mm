@@ -23,6 +23,10 @@ void ReceiveData()
 	int scrollcx;
 
 GUI_APP_MAIN {
+
+
+
+
 #if 0   
 	for(int i = 0; i < Font::GetFaceCount(); i++)
 	     DDUMP(Font::GetFaceName(i));

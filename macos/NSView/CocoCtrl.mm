@@ -133,3 +133,32 @@ void DrawColors(Upp::Draw& w, Upp::Size sz)
 #endif
 }
 
+namespace Upp {
+	
+
+
+void TestMenu1(Ctrl *ctrl, Point p)
+{
+	NSMenu *menubar = [[NSMenu new] autorelease];
+	id appMenuItem = [[NSMenuItem new] autorelease];
+	[menubar addItem:appMenuItem];	
+	id appMenu = [[NSMenu new] autorelease];
+	id appName = [[NSProcessInfo processInfo] processName];
+	id quitTitle = [@"Quit " stringByAppendingString:appName];
+	id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
+	                                              action:@selector(terminate:)
+	                                       keyEquivalent:@"q"] autorelease];
+	[appMenu addItem:quitMenuItem];
+	[appMenuItem setSubmenu:appMenu];
+	
+	NSPoint location;
+	location.x = p.x * 0.5;
+	location.y = p.y * 0.5;
+	
+	[menubar popUpMenuPositioningItem:(NSMenuItem *)appMenuItem
+                           atLocation:(NSPoint)location
+                               inView:(NSView *)ctrl->GetNSView()];
+
+}
+
+};
