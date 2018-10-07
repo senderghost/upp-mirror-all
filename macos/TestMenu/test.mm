@@ -3,6 +3,7 @@
 int main()
 {
     [NSAutoreleasePool new];
+  //  [NSThread detachNewThreadSelector:@selector(enableCocoaThreads:) toTarget:[[CocoaThreadEnabler alloc] init] withObject:nil];
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     id menubar = [[NSMenu new] autorelease];
@@ -12,7 +13,7 @@ int main()
 	    [menubar addItem:appMenuItem];
 	    id appMenu = [[NSMenu new] autorelease];
 	    id appName = [[NSProcessInfo processInfo] processName];
-	    id quitTitle = [@"Quit " stringByAppendingString:appName];
+	    id quitTitle = [@"Quit this: " stringByAppendingString:appName];
 	    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
 	        action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
 	    [appMenu addItem:quitMenuItem];
@@ -34,9 +35,12 @@ int main()
             autorelease];
     [window setTitle:@"test window"];
     [window makeKeyAndOrderFront:nil];
+    [NSApp setDelegate: NSApp];
     [NSApp activateIgnoringOtherApps:YES];
 
     [NSApp setMainMenu:menubar];
+    
+    [NSApp finishLaunching];
     
     [NSApp run];
     return 0;

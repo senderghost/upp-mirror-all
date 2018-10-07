@@ -1,9 +1,18 @@
+options
+	" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk",
+	"-DNS_BLOCK_ASSERTIONS=1 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -mmacosx-version-min=10.10 -g -fvisibility=hidden ",
+	" -x objective-c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu11 -fobjc-weak -fmodules -gmodules -fmodules-cache-path=/Users/cxl/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -fmodules-prune-interval=86400 -fmodules-prune-after=345600 -fbuild-session-file=/Users/cxl/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -fmodules-validate-once-per-build-session ";
+
 link
-	" -framework Foundation -framework Cocoa -framework Carbon ";
+	" -framework Foundation -framework Cocoa -framework Carbon -mmacosx-version-min=10.13 ",
+	" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk",
+	" -fobjc-link-runtime ";
+
+link(AAA) " -MMD -MT dependencies -MF ";
 
 file
 	test.mm;
 
 mainconfig
-	"" = "";
+	"" = "GUI";
 

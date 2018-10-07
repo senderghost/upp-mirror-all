@@ -26,6 +26,7 @@ GUI_APP_MAIN {
 
 
 
+	DDUMP(GetCommandLine());
 
 #if 0   
 	for(int i = 0; i < Font::GetFaceCount(); i++)
