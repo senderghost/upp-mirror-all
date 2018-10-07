@@ -19,7 +19,7 @@ int main()
 	    [appMenu addItem:quitMenuItem];
 	    [appMenuItem setSubmenu:appMenu];
 	}
-	{
+	{ //tst1
 	    id appMenuItem = [[NSMenuItem new] autorelease];
 	    [menubar addItem:appMenuItem];
 	    NSMenu *appMenu = [[NSMenu new] autorelease];
