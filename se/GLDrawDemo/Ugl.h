@@ -7,6 +7,18 @@ namespace Upp {
 
 struct GLCode : GLProgram {
 	GLCode(const char *vertex_shader, const char *pixel_shader);
+	
+	GLCode& Uniform(const char *id, double a);
+	GLCode& Uniform(const char *id, double a, double b);
+	GLCode& Uniform(const char *id, double a, double b, double c);
+	GLCode& Uniform(const char *id, double a, double b, double c, double d);
+
+	GLCode& operator()(const char *id, double a)                            { return Uniform(id, a); }
+	GLCode& operator()(const char *id, double a, double b)                   { return Uniform(id, a, b); }
+	GLCode& operator()(const char *id, double a, double b, double c)          { return Uniform(id, a, b, c); }
+	GLCode& operator()(const char *id, double a, double b, double c, double d) { return Uniform(id, a, b, c, d); }
+
+	int operator[](const char *id)    { return GetUniform(id); }
 };
 
 class GLMesh {
@@ -16,12 +28,14 @@ class GLMesh {
 	Vector<GLuint> VBO;
 
 public:
-	void Add(const void *data, int size, int count, int gltype);
+	GLMesh& Add(const void *data, int type, int ntuple, int count);
+	GLMesh& Add(const Vector<Pointf>& pt);
+	GLMesh& Index(const int *indices, int count);
+	GLMesh& Index(const Vector<int>& indices)             { return Index(indices, indices.GetCount()); }
 	
-	void Add(const float *vertices, int count);
-	void Set(const float *vertices, int vcount, const int *indices, int icount);
-	void Set(const Vector<Pointf>& vertices, const Vector<int>& indices);
-    void Paint();
+	void Draw(int mode = GL_TRIANGLES);
+
+	void Draw(GLCode& shaders, int mode = GL_TRIANGLES);
 
 	GLMesh();
 	~GLMesh();

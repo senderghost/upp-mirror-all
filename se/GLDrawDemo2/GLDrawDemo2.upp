@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	GLDraw,
+	GLCtrl,
+	Tesselator;
+
+file
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

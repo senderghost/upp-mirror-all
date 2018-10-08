@@ -11,7 +11,7 @@ GLCode::GLCode(const char *vertex_shader, const char *pixel_shader)
 	while(!p.IsEof() && !p.Char('{'))
 		if(p.Id("attribute") || p.Id("in")) {
 			String id;
-			while(!p.IsEof() && p.Char(';'))
+			while(!p.IsEof() && !p.Char(';'))
 				if(p.IsId())
 					id = p.ReadId();
 				else
@@ -21,6 +21,34 @@ GLCode::GLCode(const char *vertex_shader, const char *pixel_shader)
 		}
 		else
 			p.SkipTerm();
+}
+
+GLCode& GLCode::Uniform(const char *id, double a)
+{
+	Use();
+	glUniform1f(GetUniform(id), (float)a);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(const char *id, double a, double b)
+{
+	Use();
+	glUniform2f(GetUniform(id), (float)a, (float)b);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(const char *id, double a, double b, double c)
+{
+	Use();
+	glUniform3f(GetUniform(id), (float)a, (float)b, (float)c);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(const char *id, double a, double b, double c, double d)
+{
+	Use();
+	glUniform4f(GetUniform(id), (float)a, (float)b, (float)c, (float)d);
+	return *this;
 }
 
 };
