@@ -6,69 +6,6 @@ using namespace Upp;
 
 void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<Tuple<int, int, int>>& triangle);
 
-struct GLMesh {
-    unsigned int VBO, VAO, EBO;
-    int      elements;
-    
-	void Set(const float *vertices, int vcount, const int *indices, int icount);
-	void Set(const Vector<Pointf>& vertices, const Vector<int>& indices);
-    void Paint();
-
-	GLMesh();
-	~GLMesh();
-};
-
-GLMesh::GLMesh()
-{
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-}
-
-GLMesh::~GLMesh()
-{
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-}
-
-void GLMesh::Set(const float *vertices, int vcount, const int *indices, int icount)
-{
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vcount, vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * icount, indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(ATTRIB_VERTEX);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindVertexArray(0);
-}
-
-void GLMesh::Set(const Vector<Pointf>& vertices, const Vector<int>& indices)
-{
-	Buffer<float> vx(2 * vertices.GetCount());
-	float *t = vx;
-	for(const Pointf& p : vertices) {
-		*t++ = (float)p.x;
-		*t++ = (float)p.y;
-	}
-	
-	Set(vx, vertices.GetCount() * 2, indices, indices.GetCount());
-	elements = indices.GetCount();
-}
-
-void GLMesh::Paint()
-{
-	glBindVertexArray(VAO);
-	glLineWidth(10);
-	glDrawElements(GL_LINE_LOOP, elements, GL_UNSIGNED_INT, 0);
-}
 
 
 struct OpenGLExample : GLCtrl {
@@ -94,8 +31,6 @@ struct OpenGLExample : GLCtrl {
 		static GLMesh mesh;
 		ONCELOCK {
 			program.Create(R"(
-				
-
 				#version 330 core
 			    in vec4 aPos;
 				uniform mat4 u_projection;
@@ -110,7 +45,6 @@ struct OpenGLExample : GLCtrl {
 			    }
 
 			)", R"(
-			
 				#version 330 core
 				out vec4 FragColor;
 				uniform vec4 ourColor;

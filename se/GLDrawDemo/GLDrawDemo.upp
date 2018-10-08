@@ -8,6 +8,9 @@ uses
 	Tesselator;
 
 file
+	Ugl.h,
+	Code.cpp,
+	Mesh.cpp,
 	main.cpp;
 
 mainconfig
