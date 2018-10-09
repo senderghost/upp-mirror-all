@@ -18,7 +18,8 @@ void stdFree(void* userData, void* ptr)
 	delete[] (byte *)ptr;
 }
 
-void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<Tuple<int, int, int>>& triangle)
+void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex,
+               Vector<Tuple<int, int, int>> *triangle, Vector<int> *index)
 {
 	float t = 0.0f, pt = 0.0f;
 	TESSalloc ma;
@@ -49,12 +50,14 @@ void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<Tup
 	}
 	
 	vertex.Clear();
-	triangle.Clear();
+	if(triangle)
+		triangle->Clear();
+	else
+		index->Clear();
 
 	tessTesselate(tess, TESS_WINDING_POSITIVE, TESS_POLYGONS, 3, 2, 0);
 
-	if (tess)
-	{
+	if (tess) {
 		const double* verts = tessGetVertices(tess);
 		const int nverts = tessGetVertexCount(tess);
 		for(int i = 0; i < nverts; i++)
@@ -65,9 +68,22 @@ void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<Tup
 
 		for(int i = 0; i < nelems; i++) {
 			const int* p = &elems[i * 3];
-			triangle.Add(MakeTuple(p[0], p[1], p[2]));
+			if(triangle)
+				triangle.Add(MakeTuple(p[0], p[1], p[2]));
+			else
+				*index << p[0] << p[1] << p[2];
 		}
 	}
 
 	tessDeleteTess(tess);
+}
+
+void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<Tuple<int, int, int>>& triangle)
+{
+	Tesselate(shape, vertex, &triangle, NULL);
+}
+
+void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex, Vector<int>& index)
+{
+	Tesselate(shape, vertex, NULL, &index);
 }

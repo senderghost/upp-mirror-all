@@ -3,8 +3,6 @@ uses
 	Painter;
 
 file
-	main.cpp,
-	Example readonly separator,
 	upptess.cpp,
 	Source readonly separator,
 	tesselator.h,
@@ -21,7 +19,8 @@ file
 	sweep.c,
 	sweep.h,
 	tess.c,
-	tess.h;
+	tess.h,
+	Copying;
 
 mainconfig
 	"" = "GUI";

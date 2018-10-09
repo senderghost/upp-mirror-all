@@ -5,12 +5,13 @@ uses
 	GLDraw,
 	GLCtrl,
 	plugin/jpg,
-	Tesselator;
+	plugin/tess2;
 
 file
 	Ugl.h,
 	Code.cpp,
 	Mesh.cpp,
+	Image.cpp,
 	main.cpp;
 
 mainconfig

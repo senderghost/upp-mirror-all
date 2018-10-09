@@ -106,7 +106,7 @@ struct OpenGLExample : GLCtrl {
 					vec4 h;
 					h.x = scale.x * aPos.x;
 					h.y = scale.y * aPos.y;
-					gl_Position = u_projection * (aPos + offset);
+					gl_Position = h + offset; // u_projection * (aPos + offset);
 			    }
 
 			)", R"(
@@ -156,7 +156,7 @@ struct OpenGLExample : GLCtrl {
 		DDUMP(point.x);
 
 		program.Use();
-		GLOrtho(0, (float)sz.cx, (float)sz.cy, 0, 0.0f, 1.0f, program.GetUniform("u_projection"));
+	//	GLOrtho(0, (float)sz.cx, (float)sz.cy, 0, 0.0f, 1.0f, program.GetUniform("u_projection"));
 		glUniform4f(program.GetUniform("offset"), point.x, point.y, 0, 0);
 		glUniform2f(program.GetUniform("scale"), point.x / 1000.0, 1);
 		glUniform4f(program.GetUniform("ourColor"), 0.0f, (float)point.x / sz.cx, 0.0f, 1.0f);
