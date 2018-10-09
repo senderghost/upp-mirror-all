@@ -12,6 +12,7 @@ file
 	Code.cpp,
 	Mesh.cpp,
 	Image.cpp,
+	Polygon.cpp,
 	main.cpp;
 
 mainconfig

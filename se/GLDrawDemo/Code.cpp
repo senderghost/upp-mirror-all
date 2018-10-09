@@ -23,6 +23,34 @@ GLCode::GLCode(const char *vertex_shader, const char *pixel_shader)
 			p.SkipTerm();
 }
 
+GLCode& GLCode::Uniform(int i, double a)
+{
+	Use();
+	glUniform1f(i, (float)a);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(int i, double a, double b)
+{
+	Use();
+	glUniform2f(i, (float)a, (float)b);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(int i, double a, double b, double c)
+{
+	Use();
+	glUniform3f(i, (float)a, (float)b, (float)c);
+	return *this;
+}
+
+GLCode& GLCode::Uniform(int i, double a, double b, double c, double d)
+{
+	Use();
+	glUniform4f(i, (float)a, (float)b, (float)c, (float)d);
+	return *this;
+}
+
 GLCode& GLCode::Uniform(const char *id, double a)
 {
 	Use();

@@ -7,7 +7,12 @@ void GLBind(const Image& img, dword style)
 	glBindTexture(GL_TEXTURE_2D, GetTextureForImage(img, style));
 }
 
-void GLDrawImage(Size sz, const Rect& rect, const Image img, double alpha)
+Sizef GLMakeViewScale(Size view_size)
+{
+	return Sizef(2.0 / view_size.cx, -2.0 / view_size.cy);
+}
+
+void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha)
 {
 	static GLCode program(R"(
 		#version 330 core
@@ -30,6 +35,11 @@ void GLDrawImage(Size sz, const Rect& rect, const Image img, double alpha)
 		   gl_FragColor = alpha * texture2D(s_texture, tPos);
 		}
 	)");
+
+	static int offset = program["offset"];
+	static int scale = program["scale"];
+	static int ialpha = program["alpha"];
+
 	static GLMesh mesh;
 	ONCELOCK {
 		static const float box[] = {
@@ -47,14 +57,11 @@ void GLDrawImage(Size sz, const Rect& rect, const Image img, double alpha)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	
-	Size isz = rect.GetSize();
-	Point point = rect.TopLeft();
-
 	GLBind(img);
 	mesh.Draw(
-		program("offset", 2.0 * point.x / sz.cx - 1, -2.0 * point.y / sz.cy + 1)
-		       ("scale", 2.0 * isz.cx / sz.cx, -2.0 * isz.cy / sz.cy)
-		       ("alpha", alpha)
+		program(offset, vs * rect.TopLeft() + Sizef(-1, 1))
+		       (scale, vs * rect.GetSize())
+		       (ialpha, alpha)
 	);
 }
 

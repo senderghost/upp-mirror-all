@@ -1,7 +1,6 @@
 #include <CtrlLib/CtrlLib.h>
 #include <GLDraw/GLDraw.h>
 #include <GLCtrl/GLCtrl.h>
-#include <plugin/tess2/tess2.h>
 
 #include "Ugl.h"
 
@@ -31,8 +30,22 @@ struct OpenGLExample : GLCtrl {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-		GLDrawImage(sz, RectC(point.x, point.y, 200, 200), image, 0.4);
-
+		static GLMesh mesh;
+		ONCELOCK {
+			Vector<Vector<Pointf>> polygon;
+			Vector<Pointf>& c = polygon.Add();
+			for(int i = 0; i < 360; i += 20) {
+				c.Add(300 * Polar(M_2PI * i / 360.0));
+				c.Add(200 * Polar(M_2PI * (i + 10) / 360.0));
+			}
+			GLMakePolygon(mesh, polygon);
+		}
+		
+		Sizef vs = GLMakeViewScale(sz);
+		
+//		GLDrawPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
+		
+		GLDrawImage(vs, RectC(point.x, point.y, 200, 200), image, 0.1);
 	}
 
 	virtual void GLPaint1() {

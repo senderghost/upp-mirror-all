@@ -46,13 +46,13 @@ GLMesh& GLMesh::Index(const int *indices, int count)
 	return *this;
 }
 
-void GLMesh::Draw(int mode)
+void GLMesh::Draw(int mode) const
 {
 	glBindVertexArray(VAO);
 	glDrawElements(mode, elements, GL_UNSIGNED_INT, 0);
 }
 
-void GLMesh::Draw(GLCode& shaders, int mode)
+void GLMesh::Draw(GLCode& shaders, int mode) const
 {
 	shaders.Use();
 	Draw(mode);
