@@ -34,16 +34,33 @@ struct OpenGLExample : GLCtrl {
 		ONCELOCK {
 			Vector<Vector<Pointf>> polygon;
 			Vector<Pointf>& c = polygon.Add();
-			for(int i = 0; i < 360; i += 20) {
+/*			for(int i = 0; i < 360; i += 20) {
 				c.Add(300 * Polar(M_2PI * i / 360.0));
 				c.Add(200 * Polar(M_2PI * (i + 10) / 360.0));
 			}
-			GLMakePolygon(mesh, polygon);
+*/
+			for(int pass = 0; pass < 2; pass++) {
+				Vector<Pointf>& c = polygon.Add();
+				double rot = msecs() / 1000.0;
+				double amp = sin(msecs() / 1000.0) + 1.5;
+				for(int i = 0; i < 360; i += 10) {
+					double f = pass ? 0.8 : 1;
+					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot) + Pointf(350, 350));
+					c.Add(amp * f * 200 * Polar(M_2PI * (i + 10) / 360.0 + rot) + Pointf(350, 350));
+				}
+			}
+
+
+			GLStencilPolygon(mesh, polygon);
 		}
 		
 		Sizef vs = GLMakeViewScale(sz);
-		
-//		GLDrawPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
+
+		for(int i = 0; i < 100; i++) {
+			GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
+		}
+
+		GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
 		
 		GLDrawImage(vs, RectC(point.x, point.y, 200, 200), image, 0.1);
 	}

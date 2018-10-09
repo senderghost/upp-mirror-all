@@ -12,6 +12,24 @@ Sizef GLMakeViewScale(Size view_size)
 	return Sizef(2.0 / view_size.cx, -2.0 / view_size.cy);
 }
 
+const GLMesh& GLRectMesh()
+{
+	static GLMesh mesh;
+	ONCELOCK {
+		static const float box[] = {
+			0, 0, // 0
+			0, 1, // 1
+			1, 0, // 2
+			1, 1, // 3
+		};
+		static const int ndx[] = {
+			0, 1, 2, 1, 2, 3
+		};
+		mesh.Add(box, 2, 4).Index(ndx, 6);
+	}
+	return mesh;
+}
+
 void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha)
 {
 	static GLCode program(R"(
@@ -40,25 +58,11 @@ void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha)
 	static int scale = program["scale"];
 	static int ialpha = program["alpha"];
 
-	static GLMesh mesh;
-	ONCELOCK {
-		static const float box[] = {
-			0, 0, // 0
-			0, 1, // 1
-			1, 0, // 2
-			1, 1, // 3
-		};
-		static const int ndx[] = {
-			0, 1, 2, 1, 2, 3
-		};
-		mesh.Add(box, 2, 4).Index(ndx, 6);
-	}
-	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	
 	GLBind(img);
-	mesh.Draw(
+	GLRectMesh().Draw(
 		program(offset, vs * rect.TopLeft() + Sizef(-1, 1))
 		       (scale, vs * rect.GetSize())
 		       (ialpha, alpha)

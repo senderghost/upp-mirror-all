@@ -31,6 +31,8 @@ void GLDrawPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color co
 		}
 	)");
 
+			RTIMING("Poly");
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -82,8 +82,13 @@ public:
 	~GLMesh();
 };
 
+const GLMesh& GLRectMesh();
+
 void GLMakePolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon);
 void GLDrawPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha);
+
+void GLStencilPolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon);
+void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha);
 
 };
 

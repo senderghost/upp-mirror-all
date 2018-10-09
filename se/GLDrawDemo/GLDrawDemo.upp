@@ -13,6 +13,7 @@ file
 	Mesh.cpp,
 	Image.cpp,
 	Polygon.cpp,
+	StencilPolygon.cpp,
 	main.cpp;
 
 mainconfig
