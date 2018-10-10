@@ -43,10 +43,10 @@ struct OpenGLExample : GLCtrl {
 				Vector<Pointf>& c = polygon.Add();
 				double rot = msecs() / 1000.0;
 				double amp = sin(msecs() / 1000.0) + 1.5;
-				for(int i = 0; i < 360; i += 10) {
+				for(int i = 0; i < 360; i += 2) {
 					double f = pass ? 0.8 : 1;
-					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot) + Pointf(350, 350));
-					c.Add(amp * f * 200 * Polar(M_2PI * (i + 10) / 360.0 + rot) + Pointf(350, 350));
+					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot));
+					c.Add(amp * f * 200 * Polar(M_2PI * (i + 1) / 360.0 + rot));
 				}
 			}
 
@@ -56,9 +56,9 @@ struct OpenGLExample : GLCtrl {
 		
 		Sizef vs = GLMakeViewScale(sz);
 
-		for(int i = 0; i < 100; i++) {
-			GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
-		}
+//		for(int i = 0; i < 100; i++) {
+//			GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
+//		}
 
 		GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
 		
@@ -229,7 +229,7 @@ extern int max_texture_count;
 GUI_APP_MAIN
 {
 	max_texture_memory = 1024*1024*1024;
-	image = StreamRaster::LoadFileAny("C:/xxx/IMG_20180818_183724382.jpg");
+//	image = StreamRaster::LoadFileAny("C:/xxx/IMG_20180818_183724382.jpg");
 //	image = CtrlImg::HelpCursor1();
 //	DDUMP(image.GetSize());
 //	Ctrl::GlobalBackPaint();

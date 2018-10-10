@@ -17,6 +17,8 @@ void GLStencilPolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon)
 	}
 	
 	mesh.Add(vertex).Index(ndx);
+	
+	DDUMP(ndx.GetCount());
 }
 
 void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha)
@@ -39,8 +41,9 @@ void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, C
 		}
 	)");
 
-			RTIMING("Stencil");
-
+	RTIMING("Stencil");
+	
+	
 	program("offset", vs * at + Sizef(-1, 1))
 	       ("scale", vs * scale)
 	       ("color", color.GetR() / 255.0f, color.GetG() / 255.0f, color.GetB() / 255.0f, alpha);
@@ -48,7 +51,7 @@ void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, C
 	glDisable(GL_BLEND);
 	glDisable(GL_CULL_FACE);
 
-	glClearStencil(0);
+//	glClearStencil(0);
 	glEnable(GL_STENCIL_TEST);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	glStencilFunc(GL_NEVER, 0, 1);
@@ -59,7 +62,7 @@ void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, C
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glStencilFunc(GL_EQUAL, 1, 1);
 	glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-	
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
