@@ -2,6 +2,10 @@
 
 using namespace Upp;
 
+String FileName() {
+	return GetHomeDirFile("test.qtf");
+}
+
 GUI_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
@@ -10,17 +14,17 @@ GUI_APP_MAIN
 	Ctrl::SetUHDEnabled();
 
 	RichEditWithToolBar e;
-//	e.Pick(ParseQTF(LoadFile(FileName())));
+	e.Pick(ParseQTF(LoadFile(FileName())));
 //	e.SetPage(Size(4000, 1600));
 	TopWindow w;
-	w.SetRect(0, 0, 700, 500);
+	w.SetRect(0, 0, DPI(700), DPI(500));
 	w.Sizeable().Zoomable();
 	StaticRect r;
 	w.Add(e.SizePos());
 
 	w.Run();
 	String x = e.GetQTF();
-//	SaveFile(FileName(), x);
+	SaveFile(FileName(), x);
 	
 	LOG("Exit");
 }
