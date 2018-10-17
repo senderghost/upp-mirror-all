@@ -5,15 +5,10 @@ uses
 	GLDraw,
 	GLCtrl,
 	plugin/jpg,
-	plugin/tess2;
+	plugin/tess2,
+	GLPainter;
 
 file
-	Ugl.h,
-	Code.cpp,
-	Mesh.cpp,
-	Image.cpp,
-	Polygon.cpp,
-	StencilPolygon.cpp,
 	main.cpp;
 
 mainconfig

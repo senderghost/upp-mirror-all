@@ -1,8 +1,6 @@
 #include <CtrlLib/CtrlLib.h>
-#include <GLDraw/GLDraw.h>
+#include <GLPainter/GLPainter.h>
 #include <GLCtrl/GLCtrl.h>
-
-#include "Ugl.h"
 
 using namespace Upp;
 
@@ -42,7 +40,7 @@ struct OpenGLExample : GLCtrl {
 			for(int pass = 0; pass < 2; pass++) {
 				Vector<Pointf>& c = polygon.Add();
 				double rot = msecs() / 1000.0;
-				double amp = sin(msecs() / 1000.0) + 1.5;
+				double amp = 1;
 				for(int i = 0; i < 360; i += 2) {
 					double f = pass ? 0.8 : 1;
 					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot));
@@ -62,7 +60,7 @@ struct OpenGLExample : GLCtrl {
 
 		GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
 		
-		GLDrawImage(vs, RectC(point.x, point.y, 200, 200), image, 0.1);
+		GLDrawImage(vs, RectC(point.x, point.y, 200, 200), CtrlImg::exclamation(), 1);
 	}
 
 	virtual void GLPaint1() {
@@ -115,40 +113,6 @@ struct OpenGLExample : GLCtrl {
 			Tesselate(polygon, vertex, ndx);
 			
 			mesh.Add(vertex).Index(ndx);
-		}
-		
-		GLMesh mesh2;
-		{
-			Vector<Vector<Pointf>> polygon;
-			for(int pass = 0; pass < 2; pass++) {
-				Vector<Pointf>& c = polygon.Add();
-				double rot = msecs() / 1000.0;
-				double amp = sin(msecs() / 1000.0) + 1.5;
-				for(int i = 0; i < 360; i += 10) {
-					double f = pass ? 0.8 : 1;
-					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot) + Pointf(350, 350));
-					c.Add(amp * f * 200 * Polar(M_2PI * (i + 10) / 360.0 + rot) + Pointf(350, 350));
-				}
-			}
-/*
-			for(int i = 0; i < 100; i++) {
-				RTIMING("Tesselate");
-				Vector<Pointf> vertex;
-				Vector<Tuple<int, int, int>> triangle;
-				Tesselate(polygon, vertex, triangle, true);
-			}
-*/		
-			Vector<Pointf> vertex;
-			Vector<Tuple<int, int, int>> triangle;
-//			Tesselate(polygon, vertex, triangle, true);
-			
-			Vector<int> ndx;
-			for(const auto& t : triangle) {
-				ndx.Add(t.a);
-				ndx.Add(t.b);
-				ndx.Add(t.c);
-			}
-			mesh2.Add(vertex).Index(ndx);
 		}
 
 //		GLOrtho(0, (float)sz.cx, (float)sz.cy, 0, 0.0f, 1.0f, program["u_projection"]);
