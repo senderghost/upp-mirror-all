@@ -46,7 +46,7 @@ struct ExpdVar {
 		for (int i = 0; i < s; i++) {
 			di di;
 			di.d = ::pow(2.0, i * (1.0 / s));
-			tbl[i] = di.i & mask64(52);
+//			tbl[i] = di.i & mask64(52);
 		}
 	}
 };
