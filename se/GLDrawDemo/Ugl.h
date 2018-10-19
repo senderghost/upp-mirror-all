@@ -61,34 +61,34 @@ void GLBind(const Image& img, dword style = TEXTURE_LINEAR|TEXTURE_MIPMAP);
 
 void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha);
 
-class GLMesh {
+class GLVertexData {
 	GLuint  VAO, EBO;
 	int      elements;
     
 	Vector<GLuint> VBO;
 
 public:
-	GLMesh& Add(const void *data, int type, int ntuple, int count);
-	GLMesh& Add(const float *data, int ntuple, int count)                      { return Add(data, GL_FLOAT, ntuple, count); }
-	GLMesh& Add(const Vector<Pointf>& pt);
-	GLMesh& Index(const int *indices, int count);
-	GLMesh& Index(const Vector<int>& indices)                                  { return Index(indices, indices.GetCount()); }
+	GLVertexData& Add(const void *data, int type, int ntuple, int count);
+	GLVertexData& Add(const float *data, int ntuple, int count)                      { return Add(data, GL_FLOAT, ntuple, count); }
+	GLVertexData& Add(const Vector<Pointf>& pt);
+	GLVertexData& Index(const int *indices, int count);
+	GLVertexData& Index(const Vector<int>& indices)                                  { return Index(indices, indices.GetCount()); }
 	
 	void Draw(int mode = GL_TRIANGLES) const;
 
 	void Draw(GLCode& shaders, int mode = GL_TRIANGLES) const;
 
-	GLMesh();
-	~GLMesh();
+	GLVertexData();
+	~GLVertexData();
 };
 
-const GLMesh& GLRectMesh();
+const GLVertexData& GLRectMesh();
 
-void GLMakePolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon);
-void GLDrawPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha);
+void GLMakePolygon(GLVertexData& mesh, const Vector<Vector<Pointf>>& polygon);
+void GLDrawPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Color color, double alpha);
 
-void GLStencilPolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon);
-void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha);
+void GLStencilPolygon(GLVertexData& mesh, const Vector<Vector<Pointf>>& polygon);
+void GLDrawStencilPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Color color, double alpha);
 
 };
 

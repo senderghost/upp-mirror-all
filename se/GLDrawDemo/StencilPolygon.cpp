@@ -2,7 +2,7 @@
 
 namespace Upp {
 
-void GLStencilPolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon)
+void GLStencilPolygon(GLVertexData& mesh, const Vector<Vector<Pointf>>& polygon)
 {
 	Vector<Pointf> vertex;
 	Vector<int> ndx;
@@ -21,7 +21,7 @@ void GLStencilPolygon(GLMesh& mesh, const Vector<Vector<Pointf>>& polygon)
 	DDUMP(ndx.GetCount());
 }
 
-void GLDrawStencilPolygon(Sizef vs, Point at, const GLMesh& mesh, Sizef scale, Color color, double alpha)
+void GLDrawStencilPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Color color, double alpha)
 {
 	static GLCode program(R"(
 		#version 330 core

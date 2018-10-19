@@ -12,9 +12,9 @@ Sizef GLMakeViewScale(Size view_size)
 	return Sizef(2.0 / view_size.cx, -2.0 / view_size.cy);
 }
 
-const GLMesh& GLRectMesh()
+const GLVertexData& GLRectMesh()
 {
-	static GLMesh mesh;
+	static GLVertexData mesh;
 	ONCELOCK {
 		static const float box[] = {
 			0, 0, // 0

@@ -13,6 +13,7 @@ struct OpenGLExample : GLCtrl {
 	
 	OpenGLExample() {
 		cb.Set(-4, [=] { Refresh(); });
+		MSAA();
 	}
 	
 	virtual void GLPaint()
@@ -28,7 +29,7 @@ struct OpenGLExample : GLCtrl {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-		static GLMesh mesh;
+		static GLVertexData mesh;
 		ONCELOCK {
 			Vector<Vector<Pointf>> polygon;
 			Vector<Pointf>& c = polygon.Add();
@@ -49,18 +50,14 @@ struct OpenGLExample : GLCtrl {
 			}
 
 
-			GLStencilPolygon(mesh, polygon);
+			GLPolygon(mesh, polygon);
 		}
 		
-		Sizef vs = GLMakeViewScale(sz);
+		GLContext2D dd(sz);
 
-//		for(int i = 0; i < 100; i++) {
-//			GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
-//		}
-
-		GLDrawStencilPolygon(vs, point, mesh, Sizef(2, 1), Blue(), 0.7);
-		
-		GLDrawImage(vs, RectC(point.x, point.y, 200, 200), CtrlImg::exclamation(), 1);
+		GLDrawEllipse(dd, point, Sizef(200, 100), Blue(), 1);
+		GLDrawPolygon(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
+//		GLDrawImage(dd, RectC(point.x, point.y, 200, 200), CtrlImg::exclamation(), 1);
 	}
 
 	virtual void GLPaint1() {
@@ -95,7 +92,7 @@ struct OpenGLExample : GLCtrl {
 			}
 		)");
 
-		static GLMesh mesh;
+		static GLVertexData mesh;
 		ONCELOCK {
 			Vector<Pointf> p = { Pointf(100, 100), Pointf(200, 100), Pointf(150, 320) };
 //			Vector<Pointf> p = { Pointf(-0.3, -0.3), Pointf(0.3, -0.3), Pointf(0, 0.2) };
@@ -198,10 +195,15 @@ GUI_APP_MAIN
 //	DDUMP(image.GetSize());
 //	Ctrl::GlobalBackPaint();
 	TopWindow win;
-	OpenGLExample gl;
-	gl.MSAA(4);
-	gl.SetFrame(InsetFrame());
-	win.Add(gl.HSizePos(10, 10).VSizePos(10, 10));
+	OpenGLExample gl1, gl2;
+	Splitter sp;
+	gl1.SetFrame(InsetFrame());
+	gl2.SetFrame(InsetFrame());
+	sp.Add(gl2);
+	sp.Add(gl1);
+//	win.Add(gl2.HSizePos(10, 10).BottomPos(0, 500));
+//	win.Add(gl1.HSizePos(10, 10).VSizePos(10, 500));
+	win.Add(sp);
 	win.Sizeable().Zoomable();
 	win.Open();
 	win.Run();
