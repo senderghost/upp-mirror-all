@@ -13,7 +13,7 @@ struct OpenGLExample : GLCtrl {
 	
 	OpenGLExample() {
 		cb.Set(-4, [=] { Refresh(); });
-		MSAA();
+		MSAA(2);
 	}
 	
 	virtual void GLPaint()
@@ -30,7 +30,7 @@ struct OpenGLExample : GLCtrl {
         glClear(GL_COLOR_BUFFER_BIT);
 
 		static GLVertexData mesh;
-		ONCELOCK {
+		/*ONCELOCK*/ {
 			Vector<Vector<Pointf>> polygon;
 			Vector<Pointf>& c = polygon.Add();
 /*			for(int i = 0; i < 360; i += 20) {
@@ -40,7 +40,7 @@ struct OpenGLExample : GLCtrl {
 */
 			for(int pass = 0; pass < 2; pass++) {
 				Vector<Pointf>& c = polygon.Add();
-				double rot = msecs() / 1000.0;
+				double rot = msecs() / 50000.0;
 				double amp = 1;
 				for(int i = 0; i < 360; i += 2) {
 					double f = pass ? 0.8 : 1;
@@ -50,14 +50,38 @@ struct OpenGLExample : GLCtrl {
 			}
 
 
+			glFinish(); TIMING("Create mesh");
+
 			GLPolygon(mesh, polygon);
+			
+			glFinish();
+		}
+		
+		static GLVertexData lmesh;
+		ONCELOCK {
+			Vector<Vector<Pointf>> line;
+			line.Add();
+			for(int i = 0; i < 4 * sz.cx; i += 5) {
+				line.Top().Add(Pointf(i, 200 * sin(M_2PI * i / 360.0)));
+			}
+			GLPolyline(lmesh, line);
 		}
 		
 		GLContext2D dd(sz);
 
-		GLDrawEllipse(dd, point, Sizef(200, 100), Blue(), 1);
-		GLDrawPolygon(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
-//		GLDrawImage(dd, RectC(point.x, point.y, 200, 200), CtrlImg::exclamation(), 1);
+		{ glFinish(); RTIMING("DrawEllipse");
+		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 0.5);
+		glFinish();}
+		{ glFinish(); RTIMING("DrawPolygon");
+//		GLDrawPolygon(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
+		glFinish();}
+		{ glFinish(); RTIMING("Draw Image");
+//		GLDrawImage(dd, RectC(point.x, point.y, 400, 400), CtrlImg::exclamation(), 1);
+		glFinish();}
+		
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 3), lmesh, 1, 12, Green(), 1);
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 2), lmesh, 0.1, 12, Red(), 0.6);
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 2 + 300), lmesh, 0.3, 12, Red(), 0.6);
 	}
 
 	virtual void GLPaint1() {
