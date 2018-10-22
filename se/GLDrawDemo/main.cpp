@@ -70,7 +70,7 @@ struct OpenGLExample : GLCtrl {
 			GLPolyline(lmesh, line);
 	
 			Size sz(100, 100);
-			GLTextureDraw w(sz, 4);
+			GLTextureDraw w(sz, 8);
 			GLContext2D dd(sz);
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 1);
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0.5);
@@ -78,7 +78,7 @@ struct OpenGLExample : GLCtrl {
 		}
 		
 		{ glFinish(); RTIMING("DrawEllipse");
-		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 0.5);
+		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 4, LtGreen(), 0.5);
 		glFinish();}
 		{ glFinish(); RTIMING("DrawPolygon");
 //		GLDrawPolygon(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
@@ -89,9 +89,9 @@ struct OpenGLExample : GLCtrl {
 		
 		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex, 1);
 		
-		GLDrawPolyline(dd, Pointf(0, sz.cy / 3), lmesh, 1, 12, Green(), 1);
-		GLDrawPolyline(dd, Pointf(0, sz.cy / 2), lmesh, 0.1, 12, Red(), 0.6);
-		GLDrawPolyline(dd, Pointf(0, sz.cy / 2 + 300), lmesh, 0.3, 12, Red(), 0.6);
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 3), lmesh, Sizef(1, 1), 12, Green(), 1);
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 2), lmesh, Sizef(1, 0.1), 12, Red(), 0.6);
+		GLDrawPolyline(dd, Pointf(0, sz.cy / 2 + 300), lmesh, Sizef(2, 0.3), 12, Red(), 0.6);
 	}
 
 	virtual void GLPaint1() {
