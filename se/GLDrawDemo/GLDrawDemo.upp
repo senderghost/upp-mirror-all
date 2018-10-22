@@ -5,7 +5,6 @@ uses
 	GLDraw,
 	GLCtrl,
 	plugin/jpg,
-	plugin/tess2,
 	GLPainter;
 
 file
