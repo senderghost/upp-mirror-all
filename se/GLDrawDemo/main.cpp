@@ -13,7 +13,7 @@ struct OpenGLExample : GLCtrl {
 	
 	OpenGLExample() {
 		cb.Set(-4, [=] { Refresh(); });
-		MSAA(2);
+		SetMSAA(4);
 	}
 	
 	virtual void GLPaint()
@@ -70,15 +70,12 @@ struct OpenGLExample : GLCtrl {
 			GLPolyline(lmesh, line);
 	
 			Size sz(100, 100);
-			GLTextureDraw w(sz);
+			GLTextureDraw w(sz, 4);
 			GLContext2D dd(sz);
-			glViewport(0, 0, sz.cx, sz.cy);
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 1);
-			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 1);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0.5);
 			tex = w;
 		}
-
-		glViewport(0, 0, sz.cx, sz.cy);
 		
 		{ glFinish(); RTIMING("DrawEllipse");
 		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 0.5);
@@ -90,7 +87,7 @@ struct OpenGLExample : GLCtrl {
 //		GLDrawImage(dd, RectC(point.x, point.y, 400, 400), CtrlImg::exclamation(), 1);
 		glFinish();}
 		
-		GLDrawTexture(dd, RectC(0, 0, 100, 100), tex, 1);
+		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex, 1);
 		
 		GLDrawPolyline(dd, Pointf(0, sz.cy / 3), lmesh, 1, 12, Green(), 1);
 		GLDrawPolyline(dd, Pointf(0, sz.cy / 2), lmesh, 0.1, 12, Red(), 0.6);
