@@ -82,8 +82,8 @@ struct OpenGLExample : GLCtrl {
 			Size sz(100, 100);
 			GLTextureDraw w(sz, 4);
 			GLContext2D dd(sz);
-			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 1);
-			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0.5);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 0, Green(), 0.5);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0, Blue(), 0.5);
 			tex = w;
 		}
 		
@@ -98,12 +98,14 @@ struct OpenGLExample : GLCtrl {
 		glFinish();}
 		
 		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex, 1);
-		
+
 		GLDrawPolylines(dd, Pointf(0, sz.cy / 3), lmesh, Sizef(1, 1), 12, Green(), 1);
 		GLDrawPolylines(dd, Pointf(0, sz.cy / 2), lmesh, Sizef(1, 0.1), 12, Red(), 0.6);
 		GLDrawPolylines(dd, Pointf(0, sz.cy / 2 + 300), lmesh, Sizef(2, 0.3), 12, Red(), 0.6);
 
 		GLDrawPolylines(dd, Sizef(sz) / 2, lmesh2, Sizef(1, 1), 12, LtCyan(), 0.7);
+
+		GLDrawTexture(dd, RectC(0, 200, 100, 100), tex, RectC(30, 30, 40, 40), 1);
 	}
 
 
