@@ -56,8 +56,11 @@ struct OpenGLExample : GLCtrl {
 			
 			glFinish();
 		}
+
+		GLContext2D dd(sz);
 		
 		static GLVertexData lmesh;
+		static GLTexture tex;
 		ONCELOCK {
 			Vector<Vector<Pointf>> line;
 			line.Add();
@@ -65,10 +68,18 @@ struct OpenGLExample : GLCtrl {
 				line.Top().Add(Pointf(i, 200 * sin(M_2PI * i / 360.0)));
 			}
 			GLPolyline(lmesh, line);
+	
+			Size sz(100, 100);
+			GLTextureDraw w(sz);
+			GLContext2D dd(sz);
+			glViewport(0, 0, sz.cx, sz.cy);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 1);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 1);
+			tex = w;
 		}
-		
-		GLContext2D dd(sz);
 
+		glViewport(0, 0, sz.cx, sz.cy);
+		
 		{ glFinish(); RTIMING("DrawEllipse");
 		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 0.5);
 		glFinish();}
@@ -78,6 +89,8 @@ struct OpenGLExample : GLCtrl {
 		{ glFinish(); RTIMING("Draw Image");
 //		GLDrawImage(dd, RectC(point.x, point.y, 400, 400), CtrlImg::exclamation(), 1);
 		glFinish();}
+		
+		GLDrawTexture(dd, RectC(0, 0, 100, 100), tex, 1);
 		
 		GLDrawPolyline(dd, Pointf(0, sz.cy / 3), lmesh, 1, 12, Green(), 1);
 		GLDrawPolyline(dd, Pointf(0, sz.cy / 2), lmesh, 0.1, 12, Red(), 0.6);
