@@ -194,8 +194,6 @@ struct OpenGLExample : GLCtrl {
 		for(int angle = 0; angle < 360; angle += 30)
 			GLDrawText(dd, Pointf(sz.cx / 2, sz.cy / 2), M_2PI * angle / 360, String("      angle " + AsString(angle)).ToWString(), Arial(40), Blue());
 		
-		GLDrawArc(dd, RectC(410, 20, 80, 60), Point(10, 10), Point(450, 80), 3, Cyan);
-		
 		{
 			DrawGL w(sz, 0.5);
 			w.Clip(20, 20, 40, 40);
@@ -210,7 +208,6 @@ struct OpenGLExample : GLCtrl {
 				w.DrawLine(Point(100, 500), Point(100, 500) + Point(100 * Polar(M_2PI * angle / 360)), 20, LtGreen());
 		}
 		
-			
 		{
 			DrawGL w(sz, 1);
 			GeomTest(w, sz);
