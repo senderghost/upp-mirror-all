@@ -18,7 +18,6 @@ struct OpenGLExample : GLCtrl {
 	
 	virtual void GLPaint()
 	{
-	DDUMP((const char *)glGetString(GL_VERSION));
 
 		Size sz = GetSize();
 
@@ -106,6 +105,15 @@ struct OpenGLExample : GLCtrl {
 		GLDrawPolylines(dd, Sizef(sz) / 2, lmesh2, Sizef(1, 1), 12, LtCyan(), 0.7);
 
 		GLDrawTexture(dd, RectC(0, 200, 100, 100), tex, RectC(30, 30, 40, 40), 1);
+		
+		GLTexture gtex = GetGlyphGLTextureCached(10, 'A', Serif(100), Red());
+		Size tsz = gtex.GetSize();
+		GLDrawTexture(dd, RectC(300, 20, tsz.cx, tsz.cy), gtex, 1);
+		
+		GLDrawText(dd, Pointf(300, 120), 0, String("Hello world!").ToWString(), Serif(80), Blue());
+
+		for(int angle = 0; angle < 360; angle += 30)
+			GLDrawText(dd, Pointf(sz.cx / 2, sz.cy / 2), M_2PI * angle / 360, String("      angle " + AsString(angle)).ToWString(), Arial(40), Blue());
 	}
 
 
@@ -120,6 +128,8 @@ extern int max_texture_memory;
 extern int max_texture_count;
 };
 
+#include <typeindex>
+
 GUI_APP_MAIN
 {
 	max_texture_memory = 1024*1024*1024;
@@ -127,6 +137,7 @@ GUI_APP_MAIN
 //	image = CtrlImg::HelpCursor1();
 //	DDUMP(image.GetSize());
 //	Ctrl::GlobalBackPaint();
+
 	TopWindow win;
 	OpenGLExample gl1, gl2;
 	Splitter sp;
