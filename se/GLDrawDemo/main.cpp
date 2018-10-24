@@ -158,7 +158,7 @@ struct OpenGLExample : GLCtrl {
 			GLPolylines(lmesh2, lines);
 	
 			Size sz(100, 100);
-			GLTextureDraw w(sz, 4);
+			GLTextureDraw w(sz, 0);
 			GLContext2D dd(sz);
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 0, Green());
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0, Blue());
@@ -192,7 +192,7 @@ struct OpenGLExample : GLCtrl {
 		GLDrawText(dd, Pointf(300, 120), 0, String("Hello world!").ToWString(), Serif(80), Blue());
 
 		for(int angle = 0; angle < 360; angle += 30)
-			GLDrawText(dd, Pointf(sz.cx / 2, sz.cy / 2), M_2PI * angle / 360, String("      angle " + AsString(angle)).ToWString(), Arial(40), Blue());
+			GLDrawText(dd, Pointf(sz.cx / 2, sz.cy / 2), M_2PI * angle / 360, String("      angle " + AsString(angle)).ToWString(), Arial(40), LtRed());
 		
 		{
 			DrawGL w(sz, 0.5);
@@ -208,7 +208,7 @@ struct OpenGLExample : GLCtrl {
 				w.DrawLine(Point(100, 500), Point(100, 500) + Point(100 * Polar(M_2PI * angle / 360)), 20, LtGreen());
 		}
 		
-		{
+		if(0) {
 			DrawGL w(sz, 1);
 			GeomTest(w, sz);
 		}
@@ -217,7 +217,7 @@ struct OpenGLExample : GLCtrl {
 
 	virtual void MouseMove(Point p, dword) {
 		point = p;
-//		Refresh();
+		Refresh();
 	}
 };
 
