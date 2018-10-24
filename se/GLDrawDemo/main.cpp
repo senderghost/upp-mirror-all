@@ -87,7 +87,7 @@ struct OpenGLExample : GLCtrl {
 	
 	OpenGLExample() {
 //		cb.Set(-4, [=] { Refresh(); });
-		SetMSAA(8);
+		SetMSAA(4);
 	}
 	
 	virtual void GLPaint()
@@ -160,13 +160,13 @@ struct OpenGLExample : GLCtrl {
 			Size sz(100, 100);
 			GLTextureDraw w(sz, 4);
 			GLContext2D dd(sz);
-			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 0, Green(), 0.5);
-			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0, Blue(), 0.5);
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 0, Green());
+			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0, Blue());
 			tex = w;
 		}
 		
 		{ glFinish(); RTIMING("DrawEllipse");
-		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 4, LtGreen(), 0.5);
+		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 4, LtGreen());
 		glFinish();}
 		{ glFinish(); RTIMING("DrawPolygon");
 		// GLDrawPolygons(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
@@ -175,19 +175,19 @@ struct OpenGLExample : GLCtrl {
 //		GLDrawImage(dd, RectC(point.x, point.y, 400, 400), CtrlImg::exclamation(), 1);
 		glFinish();}
 		
-		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex, 1);
+		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex);
 
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 3), lmesh, Sizef(1, 1), 12, Green(), 1);
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 2), lmesh, Sizef(1, 0.1), 12, Red(), 0.6);
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 2 + 300), lmesh, Sizef(2, 0.3), 12, Red(), 0.6);
+		GLDrawPolylines(dd, Pointf(0, sz.cy / 3), lmesh, Sizef(1, 1), 12, Green());
+		GLDrawPolylines(dd, Pointf(0, sz.cy / 2), lmesh, Sizef(1, 0.1), 12, Red());
+		GLDrawPolylines(dd, Pointf(0, sz.cy / 2 + 300), lmesh, Sizef(2, 0.3), 12, Red());
 
-		GLDrawPolylines(dd, Sizef(sz) / 2, lmesh2, Sizef(1, 1), 12, LtCyan(), 0.7);
+		GLDrawPolylines(dd, Sizef(sz) / 2, lmesh2, Sizef(1, 1), 12, LtCyan());
 
-		GLDrawTexture(dd, RectC(0, 200, 100, 100), tex, RectC(30, 30, 40, 40), 1);
+		GLDrawTexture(dd, RectC(0, 200, 100, 100), tex, RectC(30, 30, 40, 40));
 		
 		GLTexture gtex = GetGlyphGLTextureCached(10, 'A', Serif(100), Red());
 		Size tsz = gtex.GetSize();
-		GLDrawTexture(dd, RectC(300, 20, tsz.cx, tsz.cy), gtex, 1);
+		GLDrawTexture(dd, RectC(300, 20, tsz.cx, tsz.cy), gtex);
 		
 		GLDrawText(dd, Pointf(300, 120), 0, String("Hello world!").ToWString(), Serif(80), Blue());
 
