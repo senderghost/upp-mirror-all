@@ -1,5 +1,5 @@
 #include <CtrlLib/CtrlLib.h>
-#include <GLPainter/GLPainter.h>
+#include <GLDraw/GLDraw.h>
 #include <GLCtrl/GLCtrl.h>
 
 using namespace Upp;

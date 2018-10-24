@@ -4,8 +4,7 @@ uses
 	CtrlLib,
 	GLDraw,
 	GLCtrl,
-	plugin/jpg,
-	GLPainter;
+	plugin/jpg;
 
 file
 	main.cpp;
