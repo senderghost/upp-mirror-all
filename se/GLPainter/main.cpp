@@ -82,6 +82,34 @@ void GeomTest(Draw& w, Size sz)
 
 void PaintLion(Painter& sw);
 
+void Ellipse(GLTriangles& tr, Pointf center, Sizef radius, Color color, double alpha)
+{
+	static Pointf e[256];
+	static byte   step[65];
+	ONCELOCK {
+		for(int i = 0; i < 256; i++)
+			e[i] = Polar(i * M_2PI / 256.0);
+		for(int i = 0; i < 65; i++) {
+			int h = 2 * i;
+			int s = 4;
+			while(s < h)
+				s += s;
+			step[i] = 256 / min(s, 256);
+		}
+	}
+	int st = (int)max(radius.cx, radius.cy);
+	st = st < 65 ? step[st] : 1;
+	int c = tr.Vertex(center, color, alpha);
+	int a = tr.Vertex(center + radius * e[0]/*Pointf(0, radius.cy)*/, color, alpha);
+	int a0 = a;
+	for(int i = st; i < 256; i += st) {
+		int b = tr.Vertex(center + radius * e[i], color, alpha);
+		tr.Triangle(c, a, b);
+		a = b;
+	}
+	tr.Triangle(c, a, a0);
+}
+
 struct OpenGLExample : GLCtrl {
 	Point point;
 	
@@ -97,18 +125,39 @@ struct OpenGLExample : GLCtrl {
 
 		Size sz = GetSize();
 		DrawGL w(sz);
-/*		w.DrawRect(sz, White());
-		GeomTest(w, sz);
+		w.DrawRect(sz, White());
+/*		GeomTest(w, sz);
 		w.Offset(sz.cx / 2, sz.cy / 2);
 		w.Dash("1");
 		PaintLion(w);
-*/		
+*/
+		const int step = 8;
+		{
+			RTIMING("Old style");
+			for(int x = 0; x < 256; x += step)
+				for(int y = 0; y < 256; y += step)
+					w.DrawEllipse(RectC(x, y, 10, 10), Color(x, y, 128));
+			glFinish();
+		}
+		{
+			RTIMING("New style");
+			GLTriangles tr;
+			for(int x = 0; x < 256; x += step)
+				for(int y = 0; y < 256; y += step)
+					Ellipse(tr, Pointf(x + 512 + 5, y + 5), Sizef(5, 5), Color(x, y, 128), 1);
+			tr.Draw(w);
+			glFinish();
+		}
+/*
 		GLTriangles tr;
 		int a = tr.Vertex(Pointf(100, 100), Blue());
 		int b = tr.Vertex(Pointf(50, 200), Blue());
 		int c = tr.Vertex(Pointf(150, 200), Blue());
 		tr.Triangle(a, b, c);
+		Ellipse(tr, Sizef(sz) / 2, Sizef(point.x, point.y), Red(), 1);
+		Ellipse(tr, Pointf(20, 20), Sizef(10, 10), Red(), 1);
 		tr.Draw(w);
+*/
 	}
 
 
