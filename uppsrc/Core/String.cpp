@@ -341,7 +341,7 @@ String::String(StringBuffer& b)
 		SLen() = 15;
 		LLen() = l;
 		chr[KIND] = min(b.GetAlloc(), 255);
-		if(GetAlloc() > 4 * GetLength() / 3)
+		if(GetAlloc() > 2 * GetLength())
 			Shrink();
 	}
 	b.Zero();

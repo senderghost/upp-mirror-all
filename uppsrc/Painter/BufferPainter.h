@@ -223,23 +223,13 @@ struct PainterTarget : LinearPathConsumer {
 	virtual void Fill(double width, SpanSource *ss, const RGBA& color);
 };
 
-class BufferPainter : public Painter {
+struct PainterBackend {
+	Buffer<ClippingLine> RenderPath(double width, SpanSource *ss, const RGBA& color);
+};
+
+class BufferPainter : public PainterFrontend {
 protected:
 	virtual void   ClearOp(const RGBA& color);
-
-	virtual void   MoveOp(const Pointf& p, bool rel);
-	virtual void   LineOp(const Pointf& p, bool rel);
-	virtual void   QuadraticOp(const Pointf& p1, const Pointf& p, bool rel);
-	virtual void   QuadraticOp(const Pointf& p, bool rel);
-	virtual void   CubicOp(const Pointf& p1, const Pointf& p2, const Pointf& p, bool rel);
-	virtual void   CubicOp(const Pointf& p2, const Pointf& p, bool rel);
-	virtual void   ArcOp(const Pointf& c, const Pointf& r, double angle, double sweep, bool rel);
-	virtual void   SvgArcOp(const Pointf& r, double xangle, bool large, bool sweep,
-	                        const Pointf& p, bool rel);
-	virtual void   CloseOp();
-	virtual void   DivOp();
-
-	virtual void   CharacterOp(const Pointf& p, int ch, Font fnt);
 
 	virtual void   FillOp(const RGBA& color);
 	virtual void   FillOp(const Image& image, const Xform2D& transsrc, dword flags);
@@ -272,92 +262,29 @@ protected:
 
 	virtual void   ClipOp();
 
-	virtual void   ColorStopOp(double pos, const RGBA& color);
-	virtual void   ClearStopsOp();
-	
-	virtual void   OpacityOp(double o);
-	virtual void   LineCapOp(int linecap);
-	virtual void   LineJoinOp(int linejoin);
-	virtual void   MiterLimitOp(double l);
-	virtual void   EvenOddOp(bool evenodd);
-	virtual void   DashOp(const Vector<double>& dash, double start);
-	virtual void   InvertOp(bool invert);
-
-	virtual void   TransformOp(const Xform2D& m);
-
-	virtual void   BeginOp();
-	virtual void   EndOp();
-
 	virtual void   BeginMaskOp();
 	virtual void   BeginOnPathOp(double q, bool abs);
+	virtual void   EndOp();
 
 private:
-	enum {
-		MOVE, LINE, QUADRATIC, CUBIC, CHAR
-	};
-	struct LinearData {
-		Pointf p;
-	};
-	struct QuadraticData : LinearData {
-		Pointf p1;
-	};
-	struct CubicData : QuadraticData {
-		Pointf p2;
-	};
-	struct CharData : LinearData {
-		int  ch;
-		int  _filler;
-		Font fnt;
-	};
-	struct PathLine : Moveable<PathLine> {
-		Pointf p;
-		double len;
-	};
-	struct Attr : Moveable<Attr> {
-		Xform2D                         mtx;
-		bool                            evenodd;
-		byte                            join;
-		byte                            cap;
-		double                          miter_limit;
-		WithDeepCopy< Vector<double> >  dash;
-		WithDeepCopy< Vector<double> >  stop;
-		WithDeepCopy< Vector<RGBA> >    stop_color;
-		double                          dash_start;
-		double                          opacity;
-		bool                            invert;
-
-		int                             cliplevel;
-		bool                            hasclip;
-		bool                            mask;
-		bool                            onpath;
-	};
-	
 	PainterTarget             *alt = NULL;
 	double                     alt_tolerance = Null;
-	ImageBuffer                dummy;
-	ImageBuffer&               ib;
+	RGBA                      *pixels;
+	Size                       size;
+	RGBA                      *PixelLine(int y)          { return pixels + y * size.cx; }
 	int                        mode;
 	Buffer<int16>              subpixel;
 	int                        render_cx;
 	int                        dopreclip;
 
-	Attr                       attr;
-	Array<Attr>                attrstack;
-	Vector< Buffer<ClippingLine> > clip;
-	Array< ImageBuffer >       mask;
-	Vector< Vector<PathLine> > onpathstack;
-	Vector<double>             pathlenstack;
+	Vector<Buffer<ClippingLine>> clip;
+//	Array<ImageBuffer>           mask;
+	Vector<Vector<PathLine>>     onpathstack;
+	Vector<double>               pathlenstack;
 	
 	Image                      gradient;
 	RGBA                       gradient1, gradient2;
 	int                        gradientn;
-
-	Vector<String> path;
-	bool           ischar;
-	Pointf         path_min, path_max;
-	Attr           pathattr;
-
-	Pointf       current, ccontrol, qcontrol, move;
 	
 	Rasterizer       rasterizer;
 	Buffer<RGBA>     span;
@@ -366,9 +293,6 @@ private:
 	double           pathlen;
 	
 	struct OnPathTarget;
-	friend struct OnPathTarget;
-	
-	bool co = false;
 
 	struct OnPathTarget : LinearPathConsumer {
 		Vector<BufferPainter::PathLine> path;
@@ -388,51 +312,9 @@ private:
 		
 		OnPathTarget() { len = 0; pos = Pointf(0, 0); }
 	};
-	
-	struct PathJob {
-		Transformer   trans;
-		Stroker       stroker;
-		Dasher        dasher;
-		OnPathTarget  onpathtarget;
-		bool          evenodd;
-		bool          regular;
-		double        tolerance;
-		bool          preclipped;
 
-		LinearPathConsumer *g;
-
-		PathJob(Rasterizer& r, double width, bool ischar, int dopreclip, Pointf path_min, Pointf path_max, const Attr& attr);
-	};
-	
-	struct CoJob {
-		Attr         attr;
-		String       path;
-		double       width;
-		RGBA         color;
-		bool         ischar;
-		Rasterizer   rasterizer;
-		Pointf       path_min, path_max;
-		bool         evenodd;
-		RGBA         c;
-		void DoPath(const BufferPainter& sw);
-		
-		CoJob() {}
-	};
-	
-	friend struct CoJob;
-	
-	Array<CoJob> cojob;
-	int          jobcount;
-	
-	void         PathAddRaw(int type, const void *data, int size);
-	template <class T> void PathAdd(int type, const T& data) { return PathAddRaw(type, &data, sizeof(T)); }
-
-	Pointf           PathPoint(const Pointf& p, bool rel);
-	Pointf           EndPoint(const Pointf& p, bool rel);
-	void             DoMove0();
-	void             ClearPath();
 	static void      ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
-	Buffer<ClippingLine> RenderPath(double width, Event<One<SpanSource>&> ss, const RGBA& color);
+	static Buffer<ClippingLine> RenderPath(double width, SpanSource *ss, const RGBA& color);
 	void             RenderImage(double width, const Image& image, const Xform2D& transsrc,
 	                             dword flags);
 	void             RenderRadial(double width, const Pointf& f, const RGBA& color1,
@@ -442,7 +324,6 @@ private:
 	                              const Xform2D& transsrc, int style);
 	void             MakeGradient(RGBA color1, RGBA color2, int cx);
 	void             Gradient(const RGBA& color1, const RGBA& color2, const Pointf& p1, const Pointf& p2);
-	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
 
 	static void RenderPathSegments(LinearPathConsumer *g, const String& path,
@@ -451,15 +332,15 @@ private:
 	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 
 public:
-	ImageBuffer&       GetBuffer()                             { return ib; }
-	const ImageBuffer& GetBuffer() const                       { return ib; }
+//	ImageBuffer&       GetBuffer()                             { return ib; }
+//	const ImageBuffer& GetBuffer() const                       { return ib; }
 
-	void               Finish();
-	
 	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; return *this; }
 	BufferPainter&     PreClipDashed()                         { dopreclip = 2; return *this; }
-	BufferPainter&     Co(bool b = true)                       { co = b; return *this; }
+	
+	void Finish() {}
 
+	BufferPainter(RGBA *pixels, Size sz, int mode = MODE_ANTIALIASED);
 	BufferPainter(ImageBuffer& ib, int mode = MODE_ANTIALIASED);
 	BufferPainter(PainterTarget& t, double tolerance = Null);
 	

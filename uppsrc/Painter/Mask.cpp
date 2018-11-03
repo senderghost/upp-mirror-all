@@ -2,12 +2,17 @@
 
 namespace Upp {
 
+// TODO: Fix the mask!
+
 void BufferPainter::BeginMaskOp()
 {
+	
+/*
 	attr.mask = true;
 	Size sz = ib.GetSize();
 	mask.Add() = ib;
 	ib.Create(sz);
+*/
 	Clear(RGBAZero());
 	Begin();
 }
@@ -30,21 +35,21 @@ static inline byte *sSpan(byte *t, int c, int& len)
 
 void BufferPainter::FinishMask()
 {
-	Buffer<byte> wb(mode == MODE_SUBPIXEL ? 6 * ib.GetWidth() : 2 * ib.GetWidth());
+	Buffer<byte> wb(mode == MODE_SUBPIXEL ? 6 * size.cx : 2 * size.cx);
 	bool creating = false;
 	if(!attr.hasclip) {
-		clip.Add().Alloc(ib.GetHeight());
+		clip.Add().Alloc(size.cy);
 		attr.hasclip = true;
 		attr.cliplevel = clip.GetCount();
 		creating = true;
 	}
 	Buffer<ClippingLine>& cl = clip.Top();
-	for(int y = 0; y < ib.GetHeight(); y++)
+	for(int y = 0; y < size.cy; y++)
 		if(creating || !cl[y].IsEmpty()) {
 			int  c0 = 0;
 			int  c256 = 0;
-			const RGBA *s = ib[y];
-			const RGBA *e = ib[y] + ib.GetWidth();
+			const RGBA *s = PixelLine(y);
+			const RGBA *e = PixelLine(y) + size.cx;
 			byte  *t = wb;
 			while(s < e) {
 				int val = s->a * (56 * s->r + 183 * s->g + 20 * s->b) >> 16;
@@ -77,7 +82,7 @@ void BufferPainter::FinishMask()
 			cl[y].Clear();
 			cl[y].Set(~wb, int(t - ~wb));
 		}
-	ib = mask.Top();
+//	ib = mask.Top();
 	mask.Drop();
 	attr.mask = false;
 }

@@ -201,15 +201,14 @@ void BufferPainter::RenderImage(double width, const Image& image, const Xform2D&
 	current = Null;
 	if(image.GetWidth() == 0 || image.GetHeight() == 0)
 		return;
+	PainterImageSpan ss;
+	ss.style = byte(flags & 15);
+	ss.hstyle = byte(flags & 3);
+	ss.vstyle = byte(flags & 12);
+	ss.fast = flags & FILL_FAST;
 	Xform2D m = transsrc * pathattr.mtx;
-	RenderPath(width, [=](One<SpanSource>& s) {
-		PainterImageSpan& ss = s.Create<PainterImageSpan>();
-		ss.style = byte(flags & 15);
-		ss.hstyle = byte(flags & 3);
-		ss.vstyle = byte(flags & 12);
-		ss.fast = flags & FILL_FAST;
-		ss.Set(m, image);
-	}, RGBAZero());
+	ss.Set(m, image);
+	RenderPath(width, &ss, RGBAZero());
 }
 
 void BufferPainter::FillOp(const Image& image, const Xform2D& transsrc, dword flags)
