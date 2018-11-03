@@ -1,0 +1,14 @@
+uses
+	CtrlLib,
+	Painter;
+
+file
+	LionBenchmark.h,
+	lion.cpp,
+	Mt.cpp,
+	main.cpp,
+	info.txt;
+
+mainconfig
+	"" = "GUI MT";
+
