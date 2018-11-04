@@ -163,12 +163,12 @@ Image CoPaint(Size sz, Event<BufferPainter&> paint, int bands)
 	int bandcy = sz.cy / bands;
 	CoWork co;
 	co * [&] {
-		BufferPainter sw(ib, MODE_ANTIALISAED);
 		for(;;) {
 			int y = bandcy * co.Next();
 			if(y > sz.cy)
 				break;
 			BufferPainter sw(~ib + y * sz.cx, Size(sz.cx, min(bandcy, sz.cy - y)), MODE_ANTIALIASED, y);
+			sw.PreClip();
 			paint(sw);
 		}
 	};

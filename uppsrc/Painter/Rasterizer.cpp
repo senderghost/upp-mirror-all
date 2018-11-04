@@ -84,10 +84,12 @@ void Rasterizer::Reset()
 	Init();
 }
 
+/*
 void Rasterizer::SetClip(const Rectf& rect)
 {
 	cliprect = rect & Sizef(sz);
 }
+*/
 
 force_inline Rasterizer::CellArray *Rasterizer::AllocArray(int n)
 {

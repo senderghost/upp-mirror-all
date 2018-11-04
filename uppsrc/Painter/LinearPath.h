@@ -166,7 +166,7 @@ public:
 
 	void LineRaw(int x1, int y1, int x2, int y2);
 	
-	void  SetClip(const Rectf& rect);
+//	void  SetClip(const Rectf& rect);
 	Rectf GetClip() const                     { return cliprect; }
 
 	int  MinY() const                         { return min_y; }
