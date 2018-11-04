@@ -202,3 +202,8 @@ void PaintLion(Painter& sw)
 		sw.Fill(l[i].color);
 	}
 }
+
+INITBLOCK {
+	NilPainter p;
+	PaintLion(p);
+}

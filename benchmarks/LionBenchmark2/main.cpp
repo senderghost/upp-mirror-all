@@ -12,22 +12,35 @@ struct MyApp : public TopWindow {
 		co = !co;
 		Refresh();
 	}
+	
+	void MouseMove(Point, dword) override {
+		Refresh();
+	}
 
 	virtual void Paint(Draw& w) {
 		RLOG("========== PAINT");
 		Size sz = GetSize();
 		w.DrawRect(sz, White());
-		sz.cy = band;
+	//	sz.cy = band;
 		ImageBuffer ib(sz);
 		{
 			BufferPainter sw(ib);
+//			sw.PreClip();
+			sw.Co();
 //			sw.Co(co);
 			sw.Clear(White());
 //			sw.Scale(2);
 //			sw.Opacity(0.98);
 			PaintLion(sw);
 		}
+		
 		w.DrawImage(0, 0, ib);
+		
+		w.DrawImage(0, 500, CoPaint(sz, [&](BufferPainter& sw) {
+			sw.Clear(White());
+			PaintLion(sw);
+		}));
+	#ifndef _DEBUG
 		int x = 500;
 		w.DrawText(x, 0, Format("Standard %.4f", tm[0]));
 		w.DrawText(x, 50, Format("Multithreaded %.4f", tm[1]));
@@ -36,22 +49,13 @@ struct MyApp : public TopWindow {
 		w.DrawText(x, 200, Format("Preclipped Multithreaded %.4f", tm[3]));
 		w.DrawText(x, 250, Format("Banded MT %.4f", tm[4]));
 		w.DrawText(500, 300, co ? "MT" : "");
-		
-		{
-			PaintingPainter pp(500, 500);
-			pp.Clear(Blend(White(), LtCyan()));
-//			pp.Opacity(0.5);
-			PaintLion(pp);
-			ImageBuffer ib2(500, 500);
-			MTPaint(ib2, pp);
-			w.DrawImage(0, 500, ib2);
-		}
+	#endif
 	}
 };
 
 GUI_APP_MAIN
 {
-#if 1 && !defined(_DEBUG)
+#ifndef _DEBUG
 	RDUMP(MemoryUsedKb());
 	PeakMemoryProfile();
 	ImageBuffer ib(500, 500);
@@ -61,18 +65,21 @@ GUI_APP_MAIN
 		while(msecs(time0) < 1000) {
 			n++;
 			if(pass == 4) {
-				PaintingPainter pp(500, 500);
-				{
-					RTIMING("MakePainter");
-					PaintLion(pp);
-				}
-				RTIMING("MTPaint");
-				MTPaint(ib, pp);
+				CoPaint(Size(500, 500), [](BufferPainter& sw) {
+					sw.Scale(2, 2);
+					sw.Opacity(0.1);
+					sw.PreClip(false);
+					PaintLion(sw);
+				});
 			}
-			else {
+			else
+			{
 				BufferPainter sw(ib);
-//				sw.Co(pass & 1);
+				if(pass & 1)
+					sw.Co();
 				sw.PreClip(pass & 2);
+				sw.Scale(2, 2);
+				sw.Opacity(0.1);
 				PaintLion(sw);
 			}
 		}
@@ -89,6 +96,7 @@ GUI_APP_MAIN
 	RLOG("Standard " << tm[0]);
 	RLOG("MT " << tm[1]);
 	RLOG("Banded " << tm[4]);
+	RLOG("WTF?");
 #endif
 	MyApp().Run();
 }
