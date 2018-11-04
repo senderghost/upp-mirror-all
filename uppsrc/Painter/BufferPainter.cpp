@@ -6,6 +6,7 @@ void BufferPainter::EndOp()
 {
 	PainterFrontend::EndOp();
 
+#ifdef PAINTER_CLIPS
 	clip.SetCount(attr.cliplevel);
 	if(attr.mask)
 		FinishMask();
@@ -15,18 +16,15 @@ void BufferPainter::EndOp()
 		onpathstack.Drop();
 		pathlen = pathlenstack.Pop();
 	}
+#endif
 }
 
 
-BufferPainter::BufferPainter(RGBA *pixels, Size sz, int mode)
-:	pixels(pixels), size(sz), rasterizer(sz.cx, sz.cy, mode == MODE_SUBPIXEL)
+BufferPainter::BufferPainter(RGBA *pixels, Size sz, int mode, int offsety)
+:	size(sz)
 {
 	RTIMING("INIT");
-	render_cx = sz.cx;
-	if(mode == MODE_SUBPIXEL) {
-		render_cx *= 3;
-		subpixel.Alloc(render_cx + 30);
-	}
+	backend.Init(pixels, size, mode, offsety);
 	
 	gradientn = Null;
 	
@@ -39,7 +37,7 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 
 static RGBA sPixelDummy[1];
 
-BufferPainter::BufferPainter(PainterTarget& t, double tolerance)
+BufferPainter::BufferPainter(LinearPathConsumer& t, double tolerance)
 :	BufferPainter(sPixelDummy, Size(1, 1), MODE_ANTIALIASED)
 {
 	alt = &t;

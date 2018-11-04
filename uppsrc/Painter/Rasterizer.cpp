@@ -45,9 +45,11 @@ void Rasterizer::Free()
 				MemoryFree(cell[i]);
 }
 
-void Rasterizer::Create(int cx, int cy, bool subpixel)
+void Rasterizer::Create(int cx, int cy, bool subpixel, double offsety_)
 {
 	Free();
+	
+	offsety = offsety_;
 
 	mx = subpixel ? 3 * 256 : 256;
 	sz.cx = cx;

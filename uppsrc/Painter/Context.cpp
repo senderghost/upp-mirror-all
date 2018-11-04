@@ -23,6 +23,7 @@ void   PainterFrontend::TransformOp(const Xform2D& m)
 {
 	ASSERT_(IsNull(current), "Cannot change transformation during path definition");
 	pathattr.mtx = attr.mtx = m * attr.mtx;
+	pathattr.mtx_serial = attr.mtx_serial = ++mtx_serial;
 }
 
 void PainterFrontend::OpacityOp(double o)
@@ -115,6 +116,7 @@ PainterFrontend::PainterFrontend()
 	attr.opacity = 1.0;
 	attr.mask = false;
 	attr.invert = false;
+	attr.mtx_serial = 0;
 	pathattr = attr;
 }
 

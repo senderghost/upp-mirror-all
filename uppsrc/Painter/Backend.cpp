@@ -1,41 +1,53 @@
 #include "Painter.h"
+#include "Fillers.h"
 
 namespace Upp {
-
-Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, const RGBA& color)
-{
-	rasterizer.Reset();
 	
-	Rectf preclip = Null;
+#define CTIMING(x)
 
-	if((dopreclip == 1 || dopreclip == 2 && attr.dash.GetCount()) && width != ONPATH) {
-		preclip = rasterizer.GetClip();
-		Pointf tl, br, a;
-		Xform2D imx = Inverse(attr.mtx);
-		tl = br = imx.Transform(preclip.TopLeft());
-		a = imx.Transform(preclip.TopRight());
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(preclip.BottomLeft());
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(preclip.BottomRight());
-		tl = min(a, tl);
-		br = max(a, br);
-		preclip = Rectf(tl, br);
-
-		double ex = max(width, 0.0) * (1 + attr.miter_limit);
-		if(path_max.y + ex < preclip.top || path_min.y - ex > preclip.bottom ||
-		   path_max.x + ex < preclip.left || path_min.x + ex > preclip.right) {
+void PainterBackend::RenderPath(double width, SpanSource *ss, const RGBA& color,
+                                const PainterPathInfo& f, const char *path, const char *end,
+                                LinearPathConsumer *alt)
+{
+	Buffer<ClippingLine> newclip;
+	if((dopreclip == 1 || dopreclip == 2 && f.pathattr.dash.GetCount()) && width != PainterFrontend::ONPATH) {
+		CTIMING("Preclip test");
+		if(f.pathattr.mtx_serial != preclip_serial) {
+			CTIMING("Preclip test 2");
+			preclip_serial = f.pathattr.mtx_serial;
+			Pointf tl, br, a;
+			Xform2D imx = Inverse(f.pathattr.mtx);
+			tl = br = imx.Transform(view.TopLeft());
+			a = imx.Transform(view.TopRight());
+			tl = min(a, tl);
+			br = max(a, br);
+			a = imx.Transform(view.BottomLeft());
+			tl = min(a, tl);
+			br = max(a, br);
+			a = imx.Transform(view.BottomRight());
+			tl = min(a, tl);
+			br = max(a, br);
+			preclip = Rectf(tl, br);
 		}
+
+		double ex = max(width, 0.0) * (1 + f.pathattr.miter_limit);
+
+		CTIMING("Preclip test 3");
+		if(f.path_max.y + ex < preclip.top || f.path_min.y - ex > preclip.bottom ||
+		   f.path_max.x + ex < preclip.left || f.path_min.x + ex > preclip.right) {
+		    CTIMING("Preclipped");
+			return;
+		}
+	    CTIMING("Passed");
 	}
 
-	Transformer trans(pathattr.mtx);
+	rasterizer.Reset();
+
+	Transformer trans(f.pathattr.mtx);
 	Stroker stroker;
 	Dasher dasher;
-	OnPathTarget onpathtarget;
-	bool evenodd = pathattr.evenodd;
-	bool regular = pathattr.mtx.IsRegular() && width < 0 && !ischar;
+	bool evenodd = f.pathattr.evenodd;
+	bool regular = f.pathattr.mtx.IsRegular() && width < 0 && !f.ischar;
 	double tolerance;
 	LinearPathConsumer *g = alt ? (LinearPathConsumer *)alt : &rasterizer;
 
@@ -44,19 +56,19 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 	else {
 		trans.target = g;
 		g = &trans;
-		tolerance = 0.3 / attr.mtx.GetScale();
+		tolerance = 0.3 / f.pathattr.mtx.GetScale();
 	}
 
-	if(width == ONPATH) {
-		g = &onpathtarget;
+	if(width == PainterFrontend::ONPATH) {
+		g = alt;
 		regular = false;
 	}
 	else
 	if(width > 0) {
-		stroker.Init(width, attr.miter_limit, tolerance, attr.cap, attr.join, preclip);
+		stroker.Init(width, f.pathattr.miter_limit, tolerance, f.pathattr.cap, f.pathattr.join, preclip);
 		stroker.target = g;
-		if(attr.dash.GetCount()) {
-			dasher.Init(attr.dash, attr.dash_start);
+		if(f.pathattr.dash.GetCount()) {
+			dasher.Init(f.pathattr.dash, f.pathattr.dash_start);
 			dasher.target = &stroker;
 			g = &dasher;
 		}
@@ -65,7 +77,7 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 		evenodd = false;
 	}
 
-	int opacity = int(256 * pathattr.opacity);
+	int opacity = int(256 * f.pathattr.opacity);
 	Pointf pos = Pointf(0, 0);
 	int i = 0;
 	Rasterizer::Filler *rg;
@@ -76,8 +88,8 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 	NoAAFillerFilter    noaa_filler;
 	MaskFillerFilter    mf;
 	subpixel_filler.sbuffer = subpixel;
-	subpixel_filler.invert = pathattr.invert;
-	bool doclip = width == CLIP;
+	subpixel_filler.invert = f.pathattr.invert;
+	bool doclip = width == PainterFrontend::CLIP;
 	if(doclip) {
 		rg = &clip_filler;
 		newclip.Alloc(size.cy);
@@ -107,7 +119,7 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 		}
 		else {
 			solid_filler.c = Mul8(color, opacity);
-			solid_filler.invert = pathattr.invert;
+			solid_filler.invert = f.pathattr.invert;
 			rg = &solid_filler;
 		}
 	}
@@ -116,16 +128,12 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 		rg = &noaa_filler;
 	}
 
-	const char *data = ~path;
-	const char *end = path.end();
 	for(;;) {
-		int type = ((PathElement *)data)->type;
-		if(data >= end || type == DIV) {
+		int type = ((PainterFrontend::PathElement *)path)->type;
+		if(path >= end || type == PainterFrontend::DIV) {
 			g->End();
-			if(width != ONPATH) {
-				if(alt)
-					alt->Fill(width, ss, color);
-				else {
+			if(width != PainterFrontend::ONPATH) {
+				if(!alt) {
 					PAINTER_TIMING("Fill");
 					for(int y = rasterizer.MinY(); y <= rasterizer.MaxY(); y++) {
 						solid_filler.t = subpixel_filler.t = span_filler.t = PixelLine(y);
@@ -150,29 +158,29 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 					rasterizer.Reset();
 				}
 			}
-			if(data >= end)
+			if(path >= end)
 				break;
-			ReadElement<PathElement>(data);
+			PainterFrontend::ReadElement<PainterFrontend::PathElement>(path);
 		}
 		else
 		switch(type) {
-		case MOVE: {
-			const auto& d = ReadElement<LinearData>(data);
-			g->Move(pos = regular ? pathattr.mtx.Transform(d.p) : d.p);
+		case PainterFrontend::MOVE: {
+			const auto& d = PainterFrontend::ReadElement<PainterFrontend::LinearData>(path);
+			g->Move(pos = regular ? f.pathattr.mtx.Transform(d.p) : d.p);
 			break;
 		}
-		case LINE: {
+		case PainterFrontend::LINE: {
 			PAINTER_TIMING("LINE");
-			const auto& d = ReadElement<LinearData>(data);
-			g->Line(pos = regular ? pathattr.mtx.Transform(d.p) : d.p);
+			const auto& d = PainterFrontend::ReadElement<PainterFrontend::LinearData>(path);
+			g->Line(pos = regular ? f.pathattr.mtx.Transform(d.p) : d.p);
 			break;
 		}
-		case QUADRATIC: {
+		case PainterFrontend::QUADRATIC: {
 			PAINTER_TIMING("QUADRATIC");
-			const auto& d = ReadElement<QuadraticData>(data);
+			const auto& d = PainterFrontend::ReadElement<PainterFrontend::QuadraticData>(path);
 			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d.p);
-				ApproximateQuadratic(*g, pos, pathattr.mtx.Transform(d.p1), p, tolerance);
+				Pointf p = f.pathattr.mtx.Transform(d.p);
+				ApproximateQuadratic(*g, pos, f.pathattr.mtx.Transform(d.p1), p, tolerance);
 				pos = p;
 			}
 			else {
@@ -181,13 +189,13 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 			}
 			break;
 		}
-		case CUBIC: {
+		case PainterFrontend::CUBIC: {
 			PAINTER_TIMING("CUBIC");
-			const auto& d = ReadElement<CubicData>(data);
+			const auto& d = PainterFrontend::ReadElement<PainterFrontend::CubicData>(path);
 			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d.p);
-				ApproximateCubic(*g, pos, pathattr.mtx.Transform(d.p1),
-				                 pathattr.mtx.Transform(d.p2), p, tolerance);
+				Pointf p = f.pathattr.mtx.Transform(d.p);
+				ApproximateCubic(*g, pos, f.pathattr.mtx.Transform(d.p1),
+				                 f.pathattr.mtx.Transform(d.p2), p, tolerance);
 				pos = p;
 			}
 			else {
@@ -196,20 +204,30 @@ Buffer<ClippingLine> PainterBackend::RenderPath(double width, SpanSource *ss, co
 			}
 			break;
 		}
-		case CHAR:
-			ApproximateChar(*g, ReadElement<CharData>(data), tolerance);
+		case PainterFrontend::CHAR: {
+			const auto& d = PainterFrontend::ReadElement<PainterFrontend::CharData>(path);
+			ApproximateChar(*g, d.p, d.ch, d.fnt, tolerance);
 			break;
+		}
 		default:
 			NEVER();
-			return newclip;
+			return;
 		}
 	}
-	current = Null;
-	if(width == ONPATH) {
-		onpath = pick(onpathtarget.path);
-		pathlen = onpathtarget.len;
+}
+
+void PainterBackend::Init(RGBA *p, Size sz, int mode, double offsety)
+{
+	size = sz;
+	pixels = p;
+	rasterizer.Create(sz.cx, sz.cy, mode == MODE_SUBPIXEL, offsety);
+	render_cx = sz.cx;
+	view = (Sizef)size;
+	view.Offset(0, offsety);
+	if(mode == MODE_SUBPIXEL) {
+		render_cx *= 3;
+		subpixel.Alloc(render_cx + 30);
 	}
-	return newclip;
 }
 
 };

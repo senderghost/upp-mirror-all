@@ -6,231 +6,112 @@ namespace Upp {
 #define LLOG(x)   // DLOG(x)
 #define LDUMP(x)  // DDUMP(x)
 
-void PainterTarget::Fill(double width, SpanSource *ss, const RGBA& color) {}
-
 void BufferPainter::ClearOp(const RGBA& color)
 {
-	UPP::Fill(pixels, color, size.cx * size.cy);
+	UPP::Fill(backend.pixels, color, backend.size.cx * backend.size.cy);
+}
+
+BufferPainter& BufferPainter::Co()
+{
+	int bandcy = min(max(size.cy / CPU_Cores(), 8), size.cy); // TODO
+//	bandcy = size.cy;
+	for(int y = 0; y < size.cy; y += bandcy) {
+		CoBand& b = co_band.Add();
+		b.backend.Init(backend.pixels + size.cx * y, Size(size.cx, min(bandcy, size.cy - y)), backend.mode, y);
+		b.backend.dopreclip = 1;
+		dopreclip = 1;
+	}
+	return *this;
 }
 
 Buffer<ClippingLine> BufferPainter::RenderPath(double width, SpanSource *ss, const RGBA& color)
 {
 	PAINTER_TIMING("RenderPath");
-	Buffer<ClippingLine> newclip;
-
 	if(width == FILL)
 		Close();
 
 	if(width == 0 || !ss && color.a == 0 && width >= FILL) {
 		current = Null;
+		Buffer<ClippingLine> newclip;
 		return newclip;
 	}
-
-	rasterizer.Reset();
 	
-	Rectf preclip = Null;
-
-	if((dopreclip == 1 || dopreclip == 2 && attr.dash.GetCount()) && width != ONPATH) {
-		preclip = rasterizer.GetClip();
-		Pointf tl, br, a;
-		Xform2D imx = Inverse(attr.mtx);
-		tl = br = imx.Transform(preclip.TopLeft());
-		a = imx.Transform(preclip.TopRight());
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(preclip.BottomLeft());
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(preclip.BottomRight());
-		tl = min(a, tl);
-		br = max(a, br);
-		preclip = Rectf(tl, br);
-
-		double ex = max(width, 0.0) * (1 + attr.miter_limit);
-		if(path_max.y + ex < preclip.top || path_min.y - ex > preclip.bottom ||
-		   path_max.x + ex < preclip.left || path_min.x + ex > preclip.right) {
+	
+	if(co_band.GetCount() && width != ONPATH) {
+		Mutex::Lock __(co_mutex);
+		while(co_queue.GetCount() && co_queue.Head().bands == 0) {
+			co_queue.DropHead();
+			co_first++;
+			LLOG("Removing queue head, head now starts at: " << co_first);
 		}
-	}
-
-	Transformer trans(pathattr.mtx);
-	Stroker stroker;
-	Dasher dasher;
-	OnPathTarget onpathtarget;
-	bool evenodd = pathattr.evenodd;
-	bool regular = pathattr.mtx.IsRegular() && width < 0 && !ischar;
-	double tolerance;
-	LinearPathConsumer *g = alt ? (LinearPathConsumer *)alt : &rasterizer;
-
-	if(regular)
-		tolerance = 0.3;
-	else {
-		trans.target = g;
-		g = &trans;
-		tolerance = 0.3 / attr.mtx.GetScale();
-	}
-
-	if(width == ONPATH) {
-		g = &onpathtarget;
-		regular = false;
-	}
-	else
-	if(width > 0) {
-		stroker.Init(width, attr.miter_limit, tolerance, attr.cap, attr.join, preclip);
-		stroker.target = g;
-		if(attr.dash.GetCount()) {
-			dasher.Init(attr.dash, attr.dash_start);
-			dasher.target = &stroker;
-			g = &dasher;
-		}
-		else
-			g = &stroker;
-		evenodd = false;
-	}
-
-	int opacity = int(256 * pathattr.opacity);
-	Pointf pos = Pointf(0, 0);
-	int i = 0;
-	Rasterizer::Filler *rg;
-	SpanFiller          span_filler;
-	SolidFiller         solid_filler;
-	SubpixelFiller      subpixel_filler;
-	ClipFiller          clip_filler(render_cx);
-	NoAAFillerFilter    noaa_filler;
-	MaskFillerFilter    mf;
-	subpixel_filler.sbuffer = subpixel;
-	subpixel_filler.invert = pathattr.invert;
-	bool doclip = width == CLIP;
-	if(doclip) {
-		rg = &clip_filler;
-		newclip.Alloc(size.cy);
-	}
-	else
-	if(ss) {
-		if(!span)
-			span.Alloc((subpixel ? 3 : 1) * size.cx + 3);
-		if(subpixel) {
-			subpixel_filler.ss = ss;
-			subpixel_filler.buffer = span;
-			subpixel_filler.alpha = opacity;
-			rg = &subpixel_filler;
-		}
-		else {
-			span_filler.ss = ss;
-			span_filler.buffer = span;
-			span_filler.alpha = opacity;
-			rg = &span_filler;
-		}
-	}
-	else {
-		if(subpixel) {
-			subpixel_filler.color = Mul8(color, opacity);
-			subpixel_filler.ss = NULL;
-			rg = &subpixel_filler;
-		}
-		else {
-			solid_filler.c = Mul8(color, opacity);
-			solid_filler.invert = pathattr.invert;
-			rg = &solid_filler;
-		}
-	}
-	if(mode == MODE_NOAA) {
-		noaa_filler.Set(rg);
-		rg = &noaa_filler;
-	}
-
-	const char *data = ~path;
-	const char *end = path.end();
-	for(;;) {
-		int type = ((PathElement *)data)->type;
-		if(data >= end || type == DIV) {
-			g->End();
-			if(width != ONPATH) {
-				if(alt)
-					alt->Fill(width, ss, color);
-				else {
-					PAINTER_TIMING("Fill");
-					for(int y = rasterizer.MinY(); y <= rasterizer.MaxY(); y++) {
-						solid_filler.t = subpixel_filler.t = span_filler.t = PixelLine(y);
-						subpixel_filler.end = subpixel_filler.t + size.cx;
-						span_filler.y = subpixel_filler.y = y;
-						Rasterizer::Filler *rf = rg;
-						if(clip.GetCount()) {
-							const ClippingLine& s = clip.Top()[y];
-							if(s.IsEmpty()) goto empty;
-							if(!s.IsFull()) {
-								mf.Set(rg, s);
-								rf = &mf;
-							}
+		LLOG("Adding to queue: " << co_queue.GetCount() + co_first << ", queue size: " << co_queue.GetCount());
+		CoEntry& h = co_queue.AddTail();
+		h.path = path;
+		h.pf = *this;
+		h.width = width;
+		h.color = color;
+		h.bands = co_band.GetCount();
+		while(co_processors < CPU_Cores()) {
+			co_processors++;
+			LLOG("Schedule, now scheduled: " << co_processors);
+			cw & [=] {
+				Mutex::Lock __(co_mutex);
+			next:
+				for(CoBand& b : co_band)
+					if(!b.owned && b.at - co_first < co_queue.GetCount()) {
+						b.owned = true;
+						LLOG("Starting band [" << b.backend.rasterizer.GetOffsetY() << "]");
+						while(b.at - co_first < co_queue.GetCount()) {
+							CoEntry& e = co_queue[b.at++ - co_first];
+							co_mutex.Leave();
+							b.backend.RenderPath(e.width, NULL, e.color, e.pf, ~e.path, e.path.End(), NULL);
+							co_mutex.Enter();
+							e.bands--;
+							LLOG("Done " << b.at << "[" << b.backend.rasterizer.GetOffsetY() << "], remaining: " << e.bands);
 						}
-						if(doclip)
-							clip_filler.Clear();
-						rasterizer.Render(y, *rf, evenodd);
-						if(doclip)
-							clip_filler.Finish(newclip[y]);
-					empty:;
+						b.owned = false;
+						LLOG("Leaving band [" << b.backend.rasterizer.GetOffsetY() << "]");
+						goto next;
 					}
-					rasterizer.Reset();
-				}
-			}
-			if(data >= end)
-				break;
-			ReadElement<PathElement>(data);
-		}
-		else
-		switch(type) {
-		case MOVE: {
-			const auto& d = ReadElement<LinearData>(data);
-			g->Move(pos = regular ? pathattr.mtx.Transform(d.p) : d.p);
-			break;
-		}
-		case LINE: {
-			PAINTER_TIMING("LINE");
-			const auto& d = ReadElement<LinearData>(data);
-			g->Line(pos = regular ? pathattr.mtx.Transform(d.p) : d.p);
-			break;
-		}
-		case QUADRATIC: {
-			PAINTER_TIMING("QUADRATIC");
-			const auto& d = ReadElement<QuadraticData>(data);
-			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d.p);
-				ApproximateQuadratic(*g, pos, pathattr.mtx.Transform(d.p1), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateQuadratic(*g, pos, d.p1, d.p, tolerance);
-				pos = d.p;
-			}
-			break;
-		}
-		case CUBIC: {
-			PAINTER_TIMING("CUBIC");
-			const auto& d = ReadElement<CubicData>(data);
-			if(regular) {
-				Pointf p = pathattr.mtx.Transform(d.p);
-				ApproximateCubic(*g, pos, pathattr.mtx.Transform(d.p1),
-				                 pathattr.mtx.Transform(d.p2), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateCubic(*g, pos, d.p1, d.p2, d.p, tolerance);
-				pos = d.p;
-			}
-			break;
-		}
-		case CHAR:
-			ApproximateChar(*g, ReadElement<CharData>(data), tolerance);
-			break;
-		default:
-			NEVER();
-			return newclip;
+				co_processors--;
+				LLOG("Leaving processor, now scheduled: " << co_processors);
+			};
 		}
 	}
+	else {
+		struct OnPathTarget : LinearPathConsumer {
+			Vector<BufferPainter::PathLine> path;
+			Pointf pos;
+			double len;
+			
+			virtual void Move(const Pointf& p) {
+				BufferPainter::PathLine& t = path.Add();
+				t.len = 0;
+				pos = t.p = p;
+			}
+			virtual void Line(const Pointf& p) {
+				BufferPainter::PathLine& t = path.Add();
+				len += (t.len = Distance(pos, p));
+				pos = t.p = p;
+			}
+			
+			OnPathTarget() { len = 0; pos = Pointf(0, 0); }
+		}
+		onpathtarget;
+	
+		backend.dopreclip = dopreclip;
+		backend.RenderPath(width, ss, color, *this, ~path, path.End(),
+		                   width == ONPATH ? &onpathtarget : alt);
+
+		if(width == ONPATH) {
+			onpath = pick(onpathtarget.path);
+			pathlen = onpathtarget.len;
+		}
+	}
+
 	current = Null;
-	if(width == ONPATH) {
-		onpath = pick(onpathtarget.path);
-		pathlen = onpathtarget.len;
-	}
+
+	Buffer<ClippingLine> newclip;
 	return newclip;
 }
 
@@ -247,6 +128,7 @@ void BufferPainter::StrokeOp(double width, const RGBA& color)
 void BufferPainter::ClipOp()
 {
 	Finish();
+#ifdef PAINTER_FULL
 	Buffer<ClippingLine> newclip = RenderPath(CLIP, NULL, RGBAZero());
 	if(attr.hasclip)
 		clip.Top() = pick(newclip);
@@ -255,6 +137,43 @@ void BufferPainter::ClipOp()
 		attr.hasclip = true;
 		attr.cliplevel = clip.GetCount();
 	}
+#endif
+}
+
+#if 0
+Image CoPaint(Size sz, Event<BufferPainter&> paint, int bands)
+{
+	ImageBuffer ib(sz);
+	int bandcy = sz.cy / bands;
+	CoWork co;
+	for(int y = 0; y < sz.cy; y += bandcy)
+		co & [=, &ib] {
+			BufferPainter sw(~ib + y * sz.cx, Size(sz.cx, min(bandcy, sz.cy - y)), MODE_ANTIALIASED, y);
+			sw.PreClip();
+			paint(sw);
+		};
+	co.Finish();
+	return ib;
+}
+#endif
+
+Image CoPaint(Size sz, Event<BufferPainter&> paint, int bands)
+{
+	ImageBuffer ib(sz);
+	int bandcy = sz.cy / bands;
+	CoWork co;
+	co * [&] {
+		BufferPainter sw(ib, MODE_ANTIALISAED);
+		for(;;) {
+			int y = bandcy * co.Next();
+			if(y > sz.cy)
+				break;
+			BufferPainter sw(~ib + y * sz.cx, Size(sz.cx, min(bandcy, sz.cy - y)), MODE_ANTIALIASED, y);
+			paint(sw);
+		}
+	};
+	co.Finish();
+	return ib;
 }
 
 }

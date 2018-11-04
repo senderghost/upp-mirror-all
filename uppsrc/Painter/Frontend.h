@@ -1,7 +1,36 @@
 #ifndef _Painter_PainterPath_h_
 #define _Painter_PainterPath_h_
 
-class PainterFrontend : public Painter {
+struct PainterPathInfo {
+	struct Attr : Moveable<Attr> {
+		Xform2D                         mtx;
+		int                             mtx_serial;
+		bool                            evenodd;
+		byte                            join;
+		byte                            cap;
+		double                          miter_limit;
+		WithDeepCopy< Vector<double> >  dash;
+		WithDeepCopy< Vector<double> >  stop;
+		WithDeepCopy< Vector<RGBA> >    stop_color;
+		double                          dash_start;
+		double                          opacity;
+		bool                            invert;
+
+		int                             cliplevel;
+		bool                            hasclip;
+		bool                            mask;
+		bool                            onpath;
+	};
+
+protected:
+	Pointf           path_min, path_max;
+	Attr             pathattr;
+	bool             ischar;
+	
+	friend struct PainterBackend;
+};
+
+class PainterFrontend : public Painter, public PainterPathInfo {
 public:
 	virtual void   MoveOp(const Pointf& p, bool rel);
 	virtual void   LineOp(const Pointf& p, bool rel);
@@ -34,6 +63,7 @@ public:
 	virtual void   EndOp();
 
 protected:
+	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 	enum {
 		MOVE, LINE, QUADRATIC, CUBIC, CHAR, DIV
 	};
@@ -58,45 +88,28 @@ protected:
 		Pointf p;
 		double len;
 	};
-	struct Attr : Moveable<Attr> {
-		Xform2D                         mtx;
-		bool                            evenodd;
-		byte                            join;
-		byte                            cap;
-		double                          miter_limit;
-		WithDeepCopy< Vector<double> >  dash;
-		WithDeepCopy< Vector<double> >  stop;
-		WithDeepCopy< Vector<RGBA> >    stop_color;
-		double                          dash_start;
-		double                          opacity;
-		bool                            invert;
-
-//		int                             cliplevel;
-		bool                            hasclip;
-		bool                            mask;
-		bool                            onpath;
-	};
 	
 	Attr             attr;
 	Array<Attr>      attrstack;
 	StringBuffer     path;
-	Pointf           path_min, path_max;
-	bool             ischar;
-	Attr             pathattr;
+	int              mtx_serial = 0; // to allow detection of mtx changes
 
 	Pointf           current, ccontrol, qcontrol, move;
-	bool             dopreclip;
 
-	PathElement&           PathAddRaw(int type, int size); // TODO: -> inline
-	template <class T> int ElementSize()                   { union Aligner { double a; T b; }; return sizeof(Aligner); }
-	template <class T> T&  PathAdd(int type)               { return (T&)PathAddRaw(type, ElementSize<T>()); }
-	template <class T> T&  ReadElement(const char *& data) { auto h = (T *)data; data += ElementSize<T>(); return *h; }
+	int              dopreclip;
+
+	PathElement&                  PathAddRaw(int type, int size);
+	template <class T> static int ElementSize()                   { union Aligner { double a; T b; }; return sizeof(Aligner); }
+	template <class T> T&         PathAdd(int type)               { return (T&)PathAddRaw(type, ElementSize<T>()); }
+	template <class T> static T&  ReadElement(const char *& data) { auto h = (T *)data; data += ElementSize<T>(); return *h; }
 
 	Pointf           PathPoint(const Pointf& p, bool rel);
 	Pointf           EndPoint(const Pointf& p, bool rel);
 	void             DoMove0();
 	void             ClearPath();
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
+	
+	friend struct PainterBackend;
 
 public:
 	PainterFrontend();

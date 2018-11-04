@@ -35,6 +35,7 @@ Pointf PainterFrontend::EndPoint(const Pointf& p, bool rel)
 	return current = PathPoint(p, rel);
 }
 
+inline
 PainterFrontend::PathElement& PainterFrontend::PathAddRaw(int type, int size)
 {
 	int l = path.GetLength();

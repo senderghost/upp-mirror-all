@@ -6,13 +6,14 @@ namespace Upp {
 
 void BufferPainter::BeginMaskOp()
 {
-	
+	#ifdef PAINTER_FULL
 /*
 	attr.mask = true;
 	Size sz = ib.GetSize();
 	mask.Add() = ib;
 	ib.Create(sz);
 */
+	#endif
 	Clear(RGBAZero());
 	Begin();
 }
@@ -35,6 +36,7 @@ static inline byte *sSpan(byte *t, int c, int& len)
 
 void BufferPainter::FinishMask()
 {
+	#ifdef PAINTER_FULL
 	Buffer<byte> wb(mode == MODE_SUBPIXEL ? 6 * size.cx : 2 * size.cx);
 	bool creating = false;
 	if(!attr.hasclip) {
@@ -85,6 +87,7 @@ void BufferPainter::FinishMask()
 //	ib = mask.Top();
 	mask.Drop();
 	attr.mask = false;
+	#endif
 }
 
 }
