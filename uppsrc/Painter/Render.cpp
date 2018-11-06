@@ -137,6 +137,8 @@ void BufferPainter::RenderPathSegments(LinearPathConsumer *g, const String& path
 	g->End();
 }
 
+Atomic h;
+
 Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSource>&> ss, const RGBA& color)
 {
 	PAINTER_TIMING("RenderPath");
@@ -152,26 +154,41 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 
 	if(co && width >= FILL && !ss && !alt && mode == MODE_ANTIALIASED) {
 		for(const String& p : path) {
-			while(jobcount >= cojob.GetCount())
-				cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
-			CoJob& job = cojob[jobcount++];
-			job.path = p;
-			job.attr = pathattr;
-			job.width = width;
-			job.color = color;
-			job.ischar = ischar;
-			job.path_min = path_min;
-			job.path_max = path_max;
-			current = Null;
-			if(jobcount >= 1024) {
+			{
+//				RTIMING("Create");
+				while(jobcount >= cojob.GetCount())
+					cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
+			}
+			{
+				CoJob& job = cojob[jobcount++];
+				{
+					RTIMING("Atomic");
+					AtomicInc(h);
+					AtomicDec(h);
+					delete new byte[320];
+				}
+				{
+					RTIMING("Store1");
+					job.path = p;
+					job.attr = pathattr;
+					job.width = width;
+					job.color = color;
+					job.ischar = ischar;
+					job.path_min = path_min;
+					job.path_max = path_max;
+					current = Null;
+				}
+			}
+			if(jobcount >= 256) {
 				LDUMP("Finish A");
-				Finish();
+				FinishPathJob();
 			}
 		}
 		return newclip;
 	}
 	
-	Finish();
+	FinishPathJob();
+	FinishFillJob();
 	
 	rasterizer.Reset();
 
@@ -307,62 +324,96 @@ void BufferPainter::CoJob::DoPath(const BufferPainter& sw)
 	BufferPainter::RenderPathSegments(j.g, path, j.regular ? &attr : NULL, j.tolerance);
 }
 
-void BufferPainter::Finish()
+void BufferPainter::FinishPathJob()
 {
 	if(jobcount == 0)
 		return;
-	CoWork co;
+	RTIMING("Finish");
 	const int TH = 3;
-	if(jobcount >= TH)
+	if(jobcount >= TH) {
+		CoWork co;
 		co * [&] {
 			int i;
 			while((i = co.Next()) < jobcount)
 				cojob[i].DoPath(*this);
 		};
-	int miny = ib.GetHeight() - 1;
-	int maxy = 0;
-	for(int i = 0; i < jobcount; i++) {
-		CoJob& j = cojob[i];
-		if(jobcount < TH)
-			j.DoPath(*this);
-		miny = min(miny, j.rasterizer.MinY());
-		maxy = max(maxy, j.rasterizer.MaxY());
-		j.c = Mul8(j.color, int(256 * j.attr.opacity));
 	}
-	auto fill = [&](CoWork *co) {
-		SolidFiller solid_filler;
-		int y;
-		int ii = 0;
-		while((y = (co ? co->Next() : ii++) + miny) <= maxy)
-			for(int i = 0; i < jobcount; i++) {
-				CoJob& j = cojob[i];
-				if(y >= j.rasterizer.MinY() && y <= j.rasterizer.MaxY()) {
-					solid_filler.c = j.c;
-					solid_filler.invert = j.attr.invert;
-					solid_filler.t = ib[y];
-					if(clip.GetCount()) {
-						MaskFillerFilter mf;
-						const ClippingLine& s = clip.Top()[y];
-						if(!s.IsEmpty() && !s.IsFull()) {
-							mf.Set(&solid_filler, s);
-							j.rasterizer.Render(y, mf, j.evenodd);
+		
+	FinishFillJob();
+	
+	fillcount = jobcount;
+	Swap(cofill, cojob); // Swap to keep allocated rasters (instead of pick)
+	
+	fill_job & [=] {
+		int miny = ib.GetHeight() - 1;
+		int maxy = 0;
+		for(int i = 0; i < fillcount; i++) {
+			CoJob& j = cofill[i];
+			if(fillcount < TH)
+				j.DoPath(*this);
+			miny = min(miny, j.rasterizer.MinY());
+			maxy = max(maxy, j.rasterizer.MaxY());
+			j.c = Mul8(j.color, int(256 * j.attr.opacity));
+		}
+		auto fill = [&](int ymin, int ymax) {
+			SolidFiller solid_filler;
+			for(int i = 0; i < fillcount; i++) {
+				CoJob& j = cofill[i];
+				int jymin = max(j.rasterizer.MinY(), ymin);
+				int jymax = min(j.rasterizer.MaxY(), ymax);
+				for(int y = jymin; y <= jymax; y++)
+					if(j.rasterizer.NotEmpty(y)) {
+						solid_filler.c = j.c;
+						solid_filler.invert = j.attr.invert;
+						solid_filler.t = ib[y];
+						if(clip.GetCount()) {
+							MaskFillerFilter mf;
+							const ClippingLine& s = clip.Top()[y];
+							if(!s.IsEmpty() && !s.IsFull()) {
+								mf.Set(&solid_filler, s);
+								j.rasterizer.Render(y, mf, j.evenodd);
+							}
 						}
+						else
+							j.rasterizer.Render(y, solid_filler, j.evenodd);
 					}
-					else
-						j.rasterizer.Render(y, solid_filler, j.evenodd);
-				}
 			}
+		};
+	
+		int n = maxy - miny;
+		if(n >= 0) {
+			if(n > 6) {
+				CoWork co;
+				co * [&] {
+					for(;;) {
+					#if 0
+						int y = co.Next() + miny;
+						if(y > maxy)
+							break;
+						fill(y);
+					#else
+						const int N = 4;
+						int y = N * co.Next() + miny;
+						if(y > maxy)
+							break;
+						int e = min(y + N - 1, maxy);
+						fill(y, min(y + N - 1, maxy));
+					#endif
+					}
+				};
+			}
+			else
+				fill(miny, maxy);
+		}
 	};
 
-	int n = maxy - miny;
-	if(n >= 0) {
-		if(n > 6)
-			co * [&] { fill(&co); };
-		else
-			fill(NULL);
-	}
-
 	jobcount = 0;
+}
+
+void BufferPainter::Finish()
+{
+	FinishPathJob();
+	FinishFillJob();
 }
 
 void BufferPainter::FillOp(const RGBA& color)
@@ -377,7 +428,7 @@ void BufferPainter::StrokeOp(double width, const RGBA& color)
 
 void BufferPainter::ClipOp()
 {
-	Finish();
+	FinishPathJob();
 	Buffer<ClippingLine> newclip = RenderPath(CLIP, Null, RGBAZero());
 	if(attr.hasclip)
 		clip.Top() = pick(newclip);

@@ -77,6 +77,7 @@ void __LOGF__(const char *format, ...);
 
 #define TIMING(x)        RTIMING(x)
 #define HITCOUNT(x)      RHITCOUNT(x)
+#define IFCOUNT(x)       RIFCOUNT(x)
 #define ACTIVATE_TIMING()    UPP::TimingInspector::Activate(true);
 #define DEACTIVATE_TIMING()  UPP::TimingInspector::Activate(false);
 #define TIMESTOP(x)      RTIMESTOP(x)
@@ -90,6 +91,7 @@ void __LOGF__(const char *format, ...);
 #define DDUMPHEX(x)      DUMPHEX(x)
 #define DTIMESTOP(x)     TIMESTOP(x)
 #define DHITCOUNT(x)     HITCOUNT(x)
+#define DIFCOUNT(x)      IFCOUNT(x)
 
 #else
 
@@ -102,6 +104,7 @@ void __LOGF__(const char *format, ...);
 #define DDUMPHEX(nx)     @ // To clean logs after debugging, this produces error in release mode
 #define DTIMESTOP(x)     @ // To clean logs after debugging, this produces error in release mode
 #define DHITCOUNT(x)     @ // To clean logs after debugging, this produces error in release mode
+#define DIFCOUNT(x)      @ // To clean logs after debugging, this produces error in release mode
 
 #define DEBUGCODE(x)     LOG_NOP
 
@@ -130,6 +133,7 @@ inline void LOGF(const char *format, ...) {}
 
 #define TIMING(x)           LOG_NOP
 #define HITCOUNT(x)         LOG_NOP
+#define IFCOUNT(x)          LOG_NOP
 #define ACTIVATE_TIMING()   LOG_NOP
 #define DEACTIVATE_TIMING() LOG_NOP
 

@@ -184,6 +184,12 @@ void CoWork::Schedule(Function<void ()>&& fn)
 	while(!TrySchedule(pick(fn))) Sleep(0);
 }
 
+#ifdef flagCOWORKST
+void CoWork::Do0(Function<void ()>&& fn, bool)
+{
+	fn();
+}
+#else
 void CoWork::Do0(Function<void ()>&& fn, bool looper)
 {
 	LHITCOUNT("CoWork: Scheduling callback");
@@ -204,6 +210,7 @@ void CoWork::Do0(Function<void ()>&& fn, bool looper)
 	todo++;
 	p.lock.Leave();
 }
+#endif
 
 void CoWork::Loop(Function<void ()>&& fn)
 {

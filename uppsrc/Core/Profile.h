@@ -61,3 +61,5 @@ private:
 
 #define RHITCOUNT(n) \
 	{ static HitCountInspector hitcount(n); hitcount.Step(); }
+
+#define RIFCOUNT(cond) if(cond) RHITCOUNT(#cond);

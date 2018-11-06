@@ -11,13 +11,14 @@ void BufferPainter::BeginOp()
 
 void BufferPainter::EndOp()
 {
-	Finish();
 	if(attrstack.GetCount() == 0) {
 		NEVER_("Painter::End: attribute stack is empty");
 		return;
 	}
 	pathattr = attr = attrstack.Top();
 	attrstack.Drop();
+	if(clip.GetCount() != attr.cliplevel || attr.mask || attr.onpath)
+		FinishPathJob();
 	clip.SetCount(attr.cliplevel);
 	if(attr.mask)
 		FinishMask();

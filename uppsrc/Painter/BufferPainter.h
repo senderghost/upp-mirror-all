@@ -167,6 +167,7 @@ public:
 
 	int  MinY() const                         { return min_y; }
 	int  MaxY() const                         { return max_y; }
+	bool NotEmpty(int y)                      { CellArray *a = cell[y]; return a && a->count; }
 	void Render(int y, Filler& g, bool evenodd);
 
 	void Reset();
@@ -421,8 +422,10 @@ private:
 	
 	friend struct CoJob;
 	
-	Array<CoJob> cojob;
-	int          jobcount;
+	Array<CoJob> cojob, cofill;
+	int          jobcount, fillcount;
+
+	CoWorkNX     fill_job;
 	
 	void         PathAddRaw(int type, const void *data, int size);
 	template <class T> void PathAdd(int type, const T& data) { return PathAddRaw(type, &data, sizeof(T)); }
@@ -448,6 +451,9 @@ private:
 	static void RenderPathSegments(LinearPathConsumer *g, const String& path,
 	                               const Attr *attr, double tolerance);
 
+	void FinishPathJob();
+	void FinishFillJob()                                       { fill_job.Finish(); }
+	                               
 	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 
 public:

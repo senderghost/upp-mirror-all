@@ -123,7 +123,7 @@ String TimingInspector::Dump() {
 
 HitCountInspector::~HitCountInspector()
 {
-	RLOG("HITCOUNT " << name << ": hit count = " << hitcount);
+	RLOG("HITCOUNT " << name << ": " << hitcount);
 }
 
 void  HexDumpData(Stream& s, const void *ptr, int size, bool adr, int maxsize) {
