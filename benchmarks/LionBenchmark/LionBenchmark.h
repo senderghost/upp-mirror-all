@@ -8,4 +8,6 @@ using namespace Upp;
 
 void PaintLion(Painter& sw);
 
+void PythagorasTree(Painter& sw);
+
 #endif

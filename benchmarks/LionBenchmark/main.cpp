@@ -2,6 +2,14 @@
 
 double tm[4];
 
+void Task(Painter& sw)
+{
+//	sw.Scale(2);
+//	sw.Opacity(0.3);
+//	PaintLion(sw);
+	PythagorasTree(sw);
+}
+
 struct MyApp : public TopWindow {
 	bool co = true;
 
@@ -13,22 +21,25 @@ struct MyApp : public TopWindow {
 
 	virtual void Paint(Draw& w) {
 		RLOG("========== PAINT");
-		ImageBuffer ib(GetSize());
+		w.DrawRect(GetSize(), White());
+
+		ImageBuffer ib(1200, 1200);
 		{
 			BufferPainter sw(ib);
-			sw.Co(co);
+			sw.Co();
 			sw.Clear(White());
-//			sw.Scale(2);
-//			sw.Opacity(0.98);
-			PaintLion(sw);
+			Task(sw);
 		}
 		w.DrawImage(0, 0, ib);
-		w.DrawText(500, 0, Format("Standard %.4f", tm[0]));
-		w.DrawText(500, 50, Format("Multithreaded %.4f", tm[1]));
-		w.DrawText(500, 100, Format("Standard / Multithreaded %.4f", tm[0] / tm[1]));
-		w.DrawText(500, 150, Format("Preclipped Standard %.4f", tm[2]));
-		w.DrawText(500, 200, Format("Preclipped Multithreaded %.4f", tm[3]));
-		w.DrawText(500, 250, co ? "MT" : "");
+
+		int x = 1200;
+		int y = 0;
+		w.DrawText(x, y += 50, Format("Standard %.4f", tm[0]));
+		w.DrawText(x, y += 50, Format("Multithreaded %.4f", tm[1]));
+		w.DrawText(x, y += 50, Format("Standard / Multithreaded %.4f", tm[0] / tm[1]));
+		w.DrawText(x, y += 50, Format("Preclipped Standard %.4f", tm[2]));
+		w.DrawText(x, y += 50, Format("Preclipped Multithreaded %.4f", tm[3]));
+		w.DrawText(x, y += 50, co ? "MT" : "");
 	}
 };
 
@@ -36,26 +47,27 @@ GUI_APP_MAIN
 {
 #if 1 && !defined(_DEBUG)
 	RDUMP(MemoryUsedKb());
-	PeakMemoryProfile();
-	ImageBuffer ib(1000, 1000);
+//	PeakMemoryProfile();
+	ImageBuffer ib(1200, 1200);
 	BufferPainter sw(ib);
-	PaintLion(sw);
+	sw.Co();
+//	for(int i = 0; i < 10; i++)
+		PaintLion(sw);
 	for(int pass = 0; pass < 4; pass++) {
 		int time0 = msecs();
 		int n = 0;
-		while(msecs(time0) < 1000) {
+		BufferPainter sw(ib);
+		while(msecs(time0) < 3000) {
 			n++;
-			BufferPainter sw(ib);
 			sw.Co(pass & 1);
 			sw.PreClip(pass & 2);
-//			sw.Scale(2);
-//			sw.Opacity(0.3);
-			PaintLion(sw);
+			Task(sw);
 		}
 		tm[pass] = (double)msecs(time0) / n;
+		RLOG(pass << ": " << n << ", " << tm[pass] << " ms");
 	}
 	RLOG("=========================");
-	RLOG(*PeakMemoryProfile());
+//	RLOG(*PeakMemoryProfile());
 	RLOG("Standard " << tm[0]);
 	RLOG("MT " << tm[1]);
 #endif

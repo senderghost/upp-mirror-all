@@ -5,9 +5,11 @@ uses
 file
 	LionBenchmark.h,
 	lion.cpp,
+	pythagoras.cpp,
 	main.cpp,
 	info.txt;
 
 mainconfig
-	"" = "GUI MT";
+	"" = "GUI MT",
+	"" = "GUI MT COWORKST";
 
