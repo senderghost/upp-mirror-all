@@ -47,6 +47,9 @@ GUI_APP_MAIN
 {
 #if 1 && !defined(_DEBUG)
 	RDUMP(MemoryUsedKb());
+	
+	RDUMP(sizeof(Rasterizer));
+	
 //	PeakMemoryProfile();
 	ImageBuffer ib(1200, 1200);
 	BufferPainter sw(ib);
@@ -71,5 +74,5 @@ GUI_APP_MAIN
 	RLOG("Standard " << tm[0]);
 	RLOG("MT " << tm[1]);
 #endif
-	MyApp().Run();
+	MyApp().Title("6").Run();
 }
