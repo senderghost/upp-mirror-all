@@ -6,12 +6,17 @@ namespace Upp {
 
 void BufferPainter::ClearPath()
 {
-	path.Clear();
+	ONCELOCK {
+		RDUMP(sizeof(Rasterizer));
+		RDUMP(sizeof(CoJob));
+		RDUMP(sizeof(PathInfo));
+	}
+	auto& f = path_info.New();
 	current = move = Null;
 	ccontrol = qcontrol = Pointf(0, 0);
-	ischar = false;
-	path_min = Pointf(DBL_MAX, DBL_MAX);
-	path_max = -path_min;
+	f.ischar = false;
+	f.path_min = Pointf(DBL_MAX, DBL_MAX);
+	f.path_max = -Pointf(DBL_MAX, DBL_MAX);
 }
 
 Pointf BufferPainter::PathPoint(const Pointf& p, bool rel)
@@ -21,11 +26,13 @@ Pointf BufferPainter::PathPoint(const Pointf& p, bool rel)
 	r.y = IsNull(p.y) ? current.y : rel ? p.y + current.y : p.y;
 	if(IsNull(current)) {
 		ClearPath();
-		pathattr = attr;
+		PathAttr() = attr;
+		path = &path_info.Write().path.Add();
 	}
 	if(dopreclip) {
-		path_min = min(r, path_min);
-		path_max = max(r, path_max);
+		auto& f = path_info.Write();
+		f.path_min = min(r, f.path_min);
+		f.path_max = max(r, f.path_max);
 	}
 	return r;
 }
@@ -37,9 +44,10 @@ Pointf BufferPainter::EndPoint(const Pointf& p, bool rel)
 
 void  BufferPainter::PathAddRaw(int type, const void *data, int size)
 {
-	if(path.GetCount() == 0)
-		path.Add();
-	String& p = path.Top();
+	auto& f = path_info.Write();
+	if(f.path.GetCount() == 0)
+		f.path.Add();
+	String& p = f.path.Top();
 	p.Cat(type);
 	p.Cat((char *)data, size);
 }
@@ -128,7 +136,7 @@ void BufferPainter::DivOp()
 {
 	LLOG("@ DivOp");
 	CloseOp();
-	path.Add();
+	path = &path_info.Write().path.Add();
 }
 
 void BufferPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
@@ -143,7 +151,7 @@ void BufferPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
 	m.p = EndPoint(p, false);
 	m.ch = ch;
 	m.fnt = fnt;
-	ischar = true;
+	path_info.Write().ischar = true;
 	EvenOdd();
 	PathAdd(CHAR, m);
 #endif

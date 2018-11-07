@@ -23,7 +23,7 @@ void BufferPainter::BeginOnPathOp(double q, bool abs)
 			pos = l.p;
 		}
 	}
-	attrstack.Top().onpath = true;
+	attrstack.Top().Write().onpath = true;
 	onpathstack.Add() = pick(onpath);
 	pathlenstack.Add(pathlen);
 	onpath.Clear();

@@ -406,13 +406,6 @@ void StringBuffer::Expand()
 		Panic("StringBuffer is too big!");
 }
 
-void StringBuffer::SetLength(int l)
-{
-	if(l > GetAlloc())
-		Realloc(l);
-	pend = pbegin + l;
-}
-
 void StringBuffer::Shrink()
 {
 	int l = GetLength();

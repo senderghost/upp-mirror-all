@@ -201,7 +201,7 @@ void BufferPainter::RenderImage(double width, const Image& image, const Xform2D&
 	current = Null;
 	if(image.GetWidth() == 0 || image.GetHeight() == 0)
 		return;
-	Xform2D m = transsrc * pathattr.mtx;
+	Xform2D m = transsrc * path_info->attr->mtx;
 	RenderPath(width, [=](One<SpanSource>& s) {
 		PainterImageSpan& ss = s.Create<PainterImageSpan>();
 		ss.style = byte(flags & 15);

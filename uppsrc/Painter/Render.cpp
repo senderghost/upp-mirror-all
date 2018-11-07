@@ -152,32 +152,19 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		return newclip;
 	}
 
+	const auto& f = path_info.Read();
 	if(co && width >= FILL && !ss && !alt && mode == MODE_ANTIALIASED) {
-		for(const String& p : path) {
+		for(int i = 0; i < f.path.GetCount(); i++) {
+			while(jobcount >= cojob.GetCount())
+				cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
 			{
-//				RTIMING("Create");
-				while(jobcount >= cojob.GetCount())
-					cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
-			}
-			{
+				RTIMING("Add");
 				CoJob& job = cojob[jobcount++];
-				{
-					RTIMING("Atomic");
-					AtomicInc(h);
-					AtomicDec(h);
-					delete new byte[320];
-				}
-				{
-					RTIMING("Store1");
-					job.path = p;
-					job.attr = pathattr;
-					job.width = width;
-					job.color = color;
-					job.ischar = ischar;
-					job.path_min = path_min;
-					job.path_max = path_max;
-					current = Null;
-				}
+				job.path_info = path_info;
+				job.subpath = i;
+				job.width = width;
+				job.color = color;
+				current = Null;
 			}
 			if(jobcount >= 256) {
 				LDUMP("Finish A");
@@ -192,7 +179,9 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	
 	rasterizer.Reset();
 
-	PathJob j(rasterizer, width, ischar, dopreclip, path_min, path_max, pathattr);
+	auto& pathattr = f.attr.Read();
+
+	PathJob j(rasterizer, width, f.ischar, dopreclip, f.path_min, f.path_max, pathattr);
 	if(j.preclipped) {
 		current = Null;
 		return newclip;
@@ -292,7 +281,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		}
 	};
 	PAINTER_TIMING("RenderPath2");
-	for(const auto& p : path) {
+	for(const auto& p : f.path) {
 		RenderPathSegments(j.g, p, j.regular ? &pathattr : NULL, j.tolerance);
 		int n = rasterizer.MaxY() - rasterizer.MinY();
 		if(n >= 0) {
@@ -317,11 +306,12 @@ void BufferPainter::CoJob::DoPath(const BufferPainter& sw)
 {
 	rasterizer.Reset();
 
-	PathJob j(rasterizer, width, ischar, sw.dopreclip, path_min, path_max, attr);
+	const auto& f = path_info.Read();
+	PathJob j(rasterizer, width, f.ischar, sw.dopreclip, f.path_min, f.path_max, f.attr);
 	if(j.preclipped)
 		return;
 	evenodd = j.evenodd;
-	BufferPainter::RenderPathSegments(j.g, path, j.regular ? &attr : NULL, j.tolerance);
+	BufferPainter::RenderPathSegments(j.g, f.path[subpath], j.regular ? &f.attr.Read() : NULL, j.tolerance);
 }
 
 void BufferPainter::FinishPathJob()
@@ -353,7 +343,7 @@ void BufferPainter::FinishPathJob()
 				j.DoPath(*this);
 			miny = min(miny, j.rasterizer.MinY());
 			maxy = max(maxy, j.rasterizer.MaxY());
-			j.c = Mul8(j.color, int(256 * j.attr.opacity));
+			j.c = Mul8(j.color, int(256 * j.path_info->attr->opacity));
 		}
 		auto fill = [&](int ymin, int ymax) {
 			SolidFiller solid_filler;
@@ -364,7 +354,7 @@ void BufferPainter::FinishPathJob()
 				for(int y = jymin; y <= jymax; y++)
 					if(j.rasterizer.NotEmpty(y)) {
 						solid_filler.c = j.c;
-						solid_filler.invert = j.attr.invert;
+						solid_filler.invert = j.path_info->attr->invert;
 						solid_filler.t = ib[y];
 						if(clip.GetCount()) {
 							MaskFillerFilter mf;
@@ -430,12 +420,13 @@ void BufferPainter::ClipOp()
 {
 	FinishPathJob();
 	Buffer<ClippingLine> newclip = RenderPath(CLIP, Null, RGBAZero());
-	if(attr.hasclip)
+	if(attr->hasclip)
 		clip.Top() = pick(newclip);
 	else {
 		clip.Add() = pick(newclip);
-		attr.hasclip = true;
-		attr.cliplevel = clip.GetCount();
+		auto& a = attr.Write();
+		a.hasclip = true;
+		a.cliplevel = clip.GetCount();
 	}
 }
 

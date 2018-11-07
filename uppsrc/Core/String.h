@@ -428,7 +428,7 @@ public:
 	operator void*()                { return Begin(); }
 	char *operator~()               { return Begin(); }
 
-	void SetLength(int l);
+	void SetLength(int l)           { if(l > GetAlloc()) Realloc(l); pend = pbegin + l; }
 	void SetCount(int l)            { SetLength(l); }
 	int  GetLength() const          { return (int)(pend - pbegin); }
 	int  GetCount() const           { return GetLength(); }

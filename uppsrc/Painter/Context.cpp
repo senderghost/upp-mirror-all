@@ -4,9 +4,9 @@ namespace Upp {
 
 void BufferPainter::BeginOp()
 {
-	attr.onpath = false;
+	attr.Write().onpath = false;
 	attrstack.Add(attr);
-	attr.hasclip = false;
+	attr.Write().hasclip = false;
 }
 
 void BufferPainter::EndOp()
@@ -15,15 +15,16 @@ void BufferPainter::EndOp()
 		NEVER_("Painter::End: attribute stack is empty");
 		return;
 	}
-	pathattr = attr = attrstack.Top();
+	path_info.Write().attr = attr = attrstack.Top();
 	attrstack.Drop();
-	if(clip.GetCount() != attr.cliplevel || attr.mask || attr.onpath)
+	const auto& a = ~attr;
+	if(clip.GetCount() != a.cliplevel || a.mask || a.onpath)
 		FinishPathJob();
-	clip.SetCount(attr.cliplevel);
-	if(attr.mask)
+	clip.SetCount(a.cliplevel);
+	if(a.mask)
 		FinishMask();
-	if(attr.onpath) {
-		attr.onpath = false;
+	if(a.onpath) {
+		attr.Write().onpath = false;
 		onpath = pick(onpathstack.Top());
 		onpathstack.Drop();
 		pathlen = pathlenstack.Pop();
@@ -33,58 +34,62 @@ void BufferPainter::EndOp()
 void   BufferPainter::TransformOp(const Xform2D& m)
 {
 	ASSERT_(IsNull(current), "Cannot change transformation during path definition");
-	pathattr.mtx = attr.mtx = m * attr.mtx;
+	
+	Xform2D mm = m * attr->mtx;
+	PathAttr().mtx = attr.Write().mtx = mm;
 }
 
 void BufferPainter::OpacityOp(double o)
 {
-	pathattr.opacity *= o;
+	PathAttr().opacity *= o;
 	if(IsNull(current))
-		attr.opacity *= o;
+		attr.Write().opacity *= o;
 }
 
 void BufferPainter::LineCapOp(int linecap)
 {
-	pathattr.cap = linecap;
+	PathAttr().cap = linecap;
 	if(IsNull(current))
-		attr.cap = linecap;
+		attr.Write().cap = linecap;
 }
 
 void BufferPainter::LineJoinOp(int linejoin)
 {
-	pathattr.join = linejoin;
+	PathAttr().join = linejoin;
 	if(IsNull(current))
-		attr.join = linejoin;
+		attr.Write().join = linejoin;
 }
 
 void BufferPainter::MiterLimitOp(double l)
 {
-	pathattr.miter_limit = l;
+	PathAttr().miter_limit = l;
 	if(IsNull(current))
-		attr.miter_limit = l;
+		attr.Write().miter_limit = l;
 }
 
 void BufferPainter::EvenOddOp(bool evenodd)
 {
-	pathattr.evenodd = evenodd;
+	PathAttr().evenodd = evenodd;
 	if(IsNull(current))
-		attr.evenodd = evenodd;
+		attr.Write().evenodd = evenodd;
 }
 
 void BufferPainter::InvertOp(bool invert)
 {
-	pathattr.invert = invert;
+	PathAttr().invert = invert;
 	if(IsNull(current))
-		attr.invert = invert;
+		attr.Write().invert = invert;
 }
 
 void BufferPainter::DashOp(const Vector<double>& dash, double start)
 {
-	pathattr.dash <<= dash;
-	pathattr.dash_start = start;
+	auto& pa = PathAttr();
+	pa.dash <<= dash;
+	pa.dash_start = start;
 	if(IsNull(current)) {
-		attr.dash <<= dash;
-		attr.dash_start = start;
+		auto& a = attr.Write();
+		a.dash <<= dash;
+		a.dash_start = start;
 	}
 }
 
@@ -98,18 +103,20 @@ void BufferPainter::ColorStop0(Attr& a, double pos, const RGBA& color)
 
 void BufferPainter::ColorStopOp(double pos, const RGBA& color)
 {
-	ColorStop0(pathattr, pos, color);
+	ColorStop0(PathAttr(), pos, color);
 	if(IsNull(current))
-		ColorStop0(attr, pos, color);
+		ColorStop0(attr.Write(), pos, color);
 }
 
 void BufferPainter::ClearStopsOp()
 {
-	pathattr.stop.Clear();
-	pathattr.stop_color.Clear();
+	auto& pa = PathAttr();
+	pa.stop.Clear();
+	pa.stop_color.Clear();
 	if(IsNull(current)) {
-		attr.stop.Clear();
-		attr.stop_color.Clear();
+		auto& a = attr.Write();
+		a.stop.Clear();
+		a.stop_color.Clear();
 	}
 }
 
@@ -125,17 +132,18 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 		render_cx *= 3;
 		subpixel.Alloc(render_cx + 30);
 	}
-	attr.cap = LINECAP_BUTT;
-	attr.join = LINEJOIN_MITER;
-	attr.miter_limit = 4;
-	attr.evenodd = false;
-	attr.hasclip = false;
-	attr.cliplevel = 0;
-	attr.dash_start = 0.0;
-	attr.opacity = 1.0;
-	attr.mask = false;
-	attr.invert = false;
-	pathattr = attr;
+	auto& a = attr.Write();
+	a.cap = LINECAP_BUTT;
+	a.join = LINEJOIN_MITER;
+	a.miter_limit = 4;
+	a.evenodd = false;
+	a.hasclip = false;
+	a.cliplevel = 0;
+	a.dash_start = 0.0;
+	a.opacity = 1.0;
+	a.mask = false;
+	a.invert = false;
+	PathAttr() = attr;
 	
 	gradientn = Null;
 	

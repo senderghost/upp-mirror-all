@@ -345,6 +345,7 @@ void PaintCharacter(Painter& sw, const Pointf& p, int ch, Font fnt);
 
 #include "Painter.hpp"
 #include "Painting.h"
+#include "LinearPath.h"
 #include "BufferPainter.h"
 
 class ImageBuffer__ {

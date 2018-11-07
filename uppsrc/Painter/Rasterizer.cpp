@@ -55,6 +55,7 @@ void Rasterizer::Create(int cx, int cy, bool subpixel)
 	sz.cy = cy;
 
 	cell.Alloc(sz.cy + 1); // one more for overrun
+	RDUMP(sizeof(CellArray *) * (sz.cy + 1));
 	memset(cell, 0, sizeof(CellArray *) * (sz.cy + 1));
 
 	cliprect = Sizef(sz);
