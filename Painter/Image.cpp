@@ -29,7 +29,7 @@ struct RGBAV {
 	}
 };
 
-Image DownScale0(const Image& img, int nx, int ny, bool co)
+Image DownScale(const Image& img, int nx, int ny, bool co)
 {
 	RTIMING("DownScale");
 	ASSERT(nx > 0 && ny > 0);
@@ -114,10 +114,10 @@ String DownscaleImageMaker::Key() const
 
 Image DownscaleImageMaker::Make() const
 {
-	return DownScale0(image, nx, ny, co);
+	return DownScale(image, nx, ny, co);
 }
 
-Image DownScale(const Image& img, int nx, int ny, bool co)
+Image DownScaleCached(const Image& img, int nx, int ny, bool co)
 {
 	DownscaleImageMaker m;
 	m.image = img;
@@ -136,7 +136,7 @@ struct PainterImageSpanData {
 	Image       image;
 	Xform2D     xform;
 
-	PainterImageSpanData(dword flags, const Xform2D& m, const Image& img, bool co) {
+	PainterImageSpanData(dword flags, const Xform2D& m, const Image& img, bool co, bool imagecache) {
 		style = byte(flags & 15);
 		hstyle = byte(flags & 3);
 		vstyle = byte(flags & 12);
@@ -172,8 +172,8 @@ struct PainterImageSpanData {
 struct PainterImageSpan : SpanSource, PainterImageSpanData {
 	LinearInterpolator interpolator;
 	
-	void Set(const PainterImageSpanData& f) {
-		(PainterImageSpanData&)*this = f;
+	PainterImageSpan(const PainterImageSpanData& f)
+	:	PainterImageSpanData(f) {
 		interpolator.Set(xform);
 	}
 	
@@ -271,10 +271,9 @@ void BufferPainter::RenderImage(double width, const Image& image, const Xform2D&
 	current = Null;
 	if(image.GetWidth() == 0 || image.GetHeight() == 0)
 		return;
-	PainterImageSpanData f(flags, transsrc * path_info->attr.mtx, image, co);
+	PainterImageSpanData f(flags, transsrc * path_info->attr.mtx, image, co, imagecache);
 	RenderPath(width, [&](One<SpanSource>& s) {
-		PainterImageSpan& ss = s.Create<PainterImageSpan>();
-		ss.Set(f);
+		PainterImageSpan& ss = s.Create<PainterImageSpan>(f);
 	}, RGBAZero());
 }
 

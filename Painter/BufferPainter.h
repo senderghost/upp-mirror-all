@@ -207,6 +207,7 @@ private:
 	friend struct OnPathTarget;
 	
 	bool co = false;
+	bool imagecache = true;
 
 	struct OnPathTarget : LinearPathConsumer {
 		Vector<BufferPainter::PathLine> path;
@@ -297,6 +298,8 @@ public:
 	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; return *this; }
 	BufferPainter&     PreClipDashed()                         { dopreclip = 2; return *this; }
 	BufferPainter&     Co(bool b = true)                       { co = b; return *this; }
+	BufferPainter&     ImageCache(bool b = true)               { imagecache = b; return *this; }
+	BufferPainter&     NoImageCache(bool b = true)             { ImageCache(false); }
 
 	BufferPainter(ImageBuffer& ib, int mode = MODE_ANTIALIASED);
 	BufferPainter(PainterTarget& t, double tolerance = Null);
