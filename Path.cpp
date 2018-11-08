@@ -6,33 +6,34 @@ namespace Upp {
 
 void BufferPainter::ClearPath()
 {
-	ONCELOCK {
-		RDUMP(sizeof(Rasterizer));
-		RDUMP(sizeof(CoJob));
-		RDUMP(sizeof(PathInfo));
-	}
-	auto& f = path_info.New();
 	current = move = Null;
 	ccontrol = qcontrol = Pointf(0, 0);
-	f.ischar = false;
-	f.path_min = Pointf(DBL_MAX, DBL_MAX);
-	f.path_max = -Pointf(DBL_MAX, DBL_MAX);
+	path_info->ischar = false;
+	path_info->path_min = Pointf(DBL_MAX, DBL_MAX);
+	path_info->path_max = -Pointf(DBL_MAX, DBL_MAX);
+	path_info->path.SetCount(1);
+	path_info->path.Top().Clear();
+	path_info->path.Top().Reserve(128);
+}
+
+void BufferPainter::DoPath0()
+{
+	path_index = (path_index + 1) & (BATCH_SIZE - 1);
+	path_info = &paths[path_index];
+	ClearPath();
+	path_info->attr = attr;
+	current = Pointf(0, 0);
 }
 
 Pointf BufferPainter::PathPoint(const Pointf& p, bool rel)
 {
+	DoPath();
 	Pointf r;
 	r.x = IsNull(p.x) ? current.x : rel ? p.x + current.x : p.x;
 	r.y = IsNull(p.y) ? current.y : rel ? p.y + current.y : p.y;
-	if(IsNull(current)) {
-		ClearPath();
-		PathAttr() = attr;
-		path = &path_info.Write().path.Add();
-	}
 	if(dopreclip) {
-		auto& f = path_info.Write();
-		f.path_min = min(r, f.path_min);
-		f.path_max = max(r, f.path_max);
+		path_info->path_min = min(r, path_info->path_min);
+		path_info->path_max = max(r, path_info->path_max);
 	}
 	return r;
 }
@@ -42,23 +43,21 @@ Pointf BufferPainter::EndPoint(const Pointf& p, bool rel)
 	return current = PathPoint(p, rel);
 }
 
-void  BufferPainter::PathAddRaw(int type, const void *data, int size)
+template <class T> T& BufferPainter::PathAdd(int type)
 {
-	auto& f = path_info.Write();
-	if(f.path.GetCount() == 0)
-		f.path.Add();
-	String& p = f.path.Top();
-	p.Cat(type);
-	p.Cat((char *)data, size);
+	Vector<byte>& p = path_info->path.Top();
+	int l = p.GetCount();
+	p.SetCount(l + sizeof(T));
+	T *e = (T *)(p.begin() + l);
+	e->type = type;
+	return *e;
 }
 
 void BufferPainter::MoveOp(const Pointf& p, bool rel)
 {
 	LLOG("@ MoveOp " << p << ", " << rel);
 	move = ccontrol = qcontrol = EndPoint(p, rel);
-	LinearData h;
-	h.p = move;
-	PathAdd(MOVE, h);
+	PathAdd<LinearData>(MOVE).p = move;
 }
 
 void BufferPainter::DoMove0()
@@ -72,18 +71,16 @@ void BufferPainter::LineOp(const Pointf& p, bool rel)
 	LLOG("@ LineOp " << p << ", " << rel);
 	DoMove0();
 	LinearData h;
-	h.p = ccontrol = qcontrol = EndPoint(p, rel);
-	PathAdd(LINE, h);
+	PathAdd<LinearData>(LINE).p = ccontrol = qcontrol = EndPoint(p, rel);
 }
 
 void BufferPainter::QuadraticOp(const Pointf& p1, const Pointf& p, bool rel)
 {
 	LLOG("@ QuadraticOp " << p1 << ", " << p << ", " << rel);
 	DoMove0();
-	QuadraticData m;
+	auto& m = PathAdd<QuadraticData>(QUADRATIC);
 	qcontrol = m.p1 = PathPoint(p1, rel);
 	m.p = EndPoint(p, rel);
-	PathAdd(QUADRATIC, m);
 }
 
 void BufferPainter::QuadraticOp(const Pointf& p, bool rel)
@@ -95,11 +92,10 @@ void BufferPainter::CubicOp(const Pointf& p1, const Pointf& p2, const Pointf& p,
 {
 	LLOG("@ CubicOp " << p1 << ", " << p1 << ", " << p << ", " << rel);
 	DoMove0();
-	CubicData m;
+	auto& m = PathAdd<CubicData>(CUBIC);
 	m.p1 = PathPoint(p1, rel);
 	ccontrol = m.p2 = PathPoint(p2, rel);
 	m.p = EndPoint(p, rel);
-	PathAdd(CUBIC, m);
 }
 
 void BufferPainter::CubicOp(const Pointf& p2, const Pointf& p, bool rel)
@@ -136,7 +132,7 @@ void BufferPainter::DivOp()
 {
 	LLOG("@ DivOp");
 	CloseOp();
-	path = &path_info.Write().path.Add();
+	path_info->path.Add();
 }
 
 void BufferPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
@@ -147,13 +143,12 @@ void BufferPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
 	PaintCharacter(*this, p, ch, fnt);
 #else
 	move = current = EndPoint(p, false);
-	CharData m;
+	auto& m = PathAdd<CharData>(CHAR);
 	m.p = EndPoint(p, false);
 	m.ch = ch;
 	m.fnt = fnt;
-	path_info.Write().ischar = true;
+	path_info->ischar = true;
 	EvenOdd();
-	PathAdd(CHAR, m);
 #endif
 }
 

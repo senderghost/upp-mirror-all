@@ -70,18 +70,18 @@ void BufferPainter::RenderRadial(double width, const Pointf& f, const RGBA& colo
 
 void BufferPainter::FillOp(const Pointf& f, const RGBA& color1, const Pointf& c, double r, const RGBA& color2, int style)
 {
-	RenderRadial(-1, f, color1, c, r, color2, path_info->attr->mtx, style);
+	RenderRadial(-1, f, color1, c, r, color2, path_info->attr.mtx, style);
 }
 
 void BufferPainter::StrokeOp(double width, const Pointf& f, const RGBA& color1, const Pointf& c, double r, const RGBA& color2, int style)
 {
-	RenderRadial(width, f, color1, c, r, color2, path_info->attr->mtx, style);
+	RenderRadial(width, f, color1, c, r, color2, path_info->attr.mtx, style);
 }
 
 void BufferPainter::RenderRadial(double width, const Pointf& f, const RGBA& color1,
                                  const RGBA& color2, const Xform2D& transsrc, int style)
 {
-	RenderRadial(width, f, color1, Pointf(0, 0), 1, color2, transsrc * path_info->attr->mtx, style);
+	RenderRadial(width, f, color1, Pointf(0, 0), 1, color2, transsrc * path_info->attr.mtx, style);
 }
 
 void BufferPainter::FillOp(const Pointf& f, const RGBA& color1, const RGBA& color2, const Xform2D& transsrc, int style)

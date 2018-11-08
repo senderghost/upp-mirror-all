@@ -4,7 +4,7 @@ namespace Upp {
 
 void BufferPainter::BeginMaskOp()
 {
-	attr.Write().mask = true;
+	attr.mask = true;
 	Size sz = ib.GetSize();
 	mask.Add() = ib;
 	ib.Create(sz);
@@ -32,10 +32,10 @@ void BufferPainter::FinishMask()
 {
 	Buffer<byte> wb(mode == MODE_SUBPIXEL ? 6 * ib.GetWidth() : 2 * ib.GetWidth());
 	bool creating = false;
-	if(!attr->hasclip) {
+	if(!attr.hasclip) {
 		clip.Add().Alloc(ib.GetHeight());
-		attr.Write().hasclip = true;
-		attr.Write().cliplevel = clip.GetCount();
+		attr.hasclip = true;
+		attr.cliplevel = clip.GetCount();
 		creating = true;
 	}
 	Buffer<ClippingLine>& cl = clip.Top();
@@ -79,7 +79,7 @@ void BufferPainter::FinishMask()
 		}
 	ib = mask.Top();
 	mask.Drop();
-	attr.Write().mask = false;
+	attr.mask = false;
 }
 
 }

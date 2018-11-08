@@ -23,39 +23,6 @@ struct PainterTarget : LinearPathConsumer {
 	virtual void Fill(double width, SpanSource *ss, const RGBA& color);
 };
 
-template <class T>
-class CowData : public Moveable<CowData<T>> {
-	struct Rc {
-		Atomic refcount = 1;
-		T      data;
-		Rc()                                  {}
-		Rc(const T& data) : data(clone(data)) {}
-	};
-	
-	Rc  *rc;
-	
-	void SetEmpty()                    { static Rc empty; rc = &empty; AtomicInc(rc->refcount); }
-	void Copy(const CowData& b)        { rc = b.rc; AtomicInc(rc->refcount); }
-	void Release()                     { if(AtomicDec(rc->refcount) == 0) { delete rc; } }
-	void Unshare()                     { Rc *rc2 = new Rc(clone(rc->data)); Release(); rc = rc2; }
-
-public:
-	const T& Read() const              { return rc->data; }
-	const T& operator~() const         { return Read(); }
-	operator const T&() const          { return Read(); }
-	const T *operator->() const        { return &rc->data; }
-
-	T&   New()                         { Release(); rc = new Rc; return rc->data; }
-	force_inline
-	T&   Write()                       { if(rc->refcount != 1) { Unshare(); } return rc->data; }
-	
-	CowData& operator=(const CowData& b) { Release(); Copy(b); return *this; }
-	
-	CowData()                                { SetEmpty(); }
-	CowData(const CowData& b)            { Copy(b); }
-	~CowData()                               { Release(); }
-};
-
 inline RGBA Mul8(const RGBA& s, int mul)
 {
 	RGBA t;
@@ -158,6 +125,7 @@ private:
 		MOVE, LINE, QUADRATIC, CUBIC, CHAR
 	};
 	struct LinearData {
+		int    type;
 		Pointf p;
 	};
 	struct QuadraticData : LinearData {
@@ -181,9 +149,9 @@ private:
 		byte                            join;
 		byte                            cap;
 		double                          miter_limit;
-		WithDeepCopy< Vector<double> >  dash;
-		WithDeepCopy< Vector<double> >  stop;
-		WithDeepCopy< Vector<RGBA> >    stop_color;
+		WithDeepCopy<Vector<double>>    dash;
+		WithDeepCopy<Vector<double>>    stop;
+		WithDeepCopy<Vector<RGBA>>      stop_color;
 		double                          dash_start;
 		double                          opacity;
 		bool                            invert;
@@ -203,8 +171,8 @@ private:
 	int                        render_cx;
 	int                        dopreclip;
 
-	CowData<Attr>              attr;
-	Array<CowData<Attr>>       attrstack;
+	Attr                       attr;
+	Array<Attr>                attrstack;
 	Vector<Buffer<ClippingLine>> clip;
 	Array< ImageBuffer >       mask;
 	Vector<Vector<PathLine>>   onpathstack;
@@ -215,14 +183,17 @@ private:
 	int                        gradientn;
 
 	struct PathInfo {
-		WithDeepCopy<Vector<String>> path; // todo: StringBuffer
-		bool                         ischar;
-		Pointf                       path_min, path_max;
-		CowData<Attr>                attr;
+		Vector<Vector<byte>>               path; // todo: StringBuffer
+		bool                               ischar;
+		Pointf                             path_min, path_max;
+		Attr                               attr;
 	};
 	
-	CowData<PathInfo>  path_info;
-	String            *path;
+	enum { BATCH_SIZE = 128 }; // must be 2^n
+	
+	Buffer<PathInfo> paths;
+	int              path_index = 0;
+	PathInfo        *path_info;
 
 	Pointf           current, ccontrol, qcontrol, move;
 	
@@ -272,7 +243,7 @@ private:
 	};
 	
 	struct CoJob {
-		CowData<PathInfo> path_info;
+		PathInfo         *path_info;
 		int               subpath;
 		double            width;
 		RGBA              color;
@@ -280,27 +251,23 @@ private:
 		bool              evenodd;
 		RGBA              c;
 		void DoPath(const BufferPainter& sw);
-		
-		CoJob() {}
 	};
 	
 	friend struct CoJob;
 	
-	Array<CoJob> cojob, cofill;
-	int          jobcount, fillcount;
+	Array<CoJob>     cojob, cofill;
+	int              jobcount, fillcount;
 
-	CoWorkNX     fill_job;
+	CoWorkNX         fill_job;
 	
-	void         PathAddRaw(int type, const void *data, int size);
-	template <class T> void PathAdd(int type, const T& data) { return PathAddRaw(type, &data, sizeof(T)); }
+	template <class T> T& PathAdd(int type);
 	
-	Attr&            PathAttr()                              { return path_info.Write().attr.Write(); }
-
 	Pointf           PathPoint(const Pointf& p, bool rel);
 	Pointf           EndPoint(const Pointf& p, bool rel);
 	void             DoMove0();
+	void             DoPath0();
+	void             DoPath()         { if(IsNull(current)) DoPath0(); }
 	void             ClearPath();
-	static void      ApproximateChar(LinearPathConsumer& t, const CharData& ch, double tolerance);
 	Buffer<ClippingLine> RenderPath(double width, Event<One<SpanSource>&> ss, const RGBA& color);
 	void             RenderImage(double width, const Image& image, const Xform2D& transsrc,
 	                             dword flags);
@@ -314,8 +281,7 @@ private:
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
 
-	static void RenderPathSegments(LinearPathConsumer *g, const String& path,
-	                               const Attr *attr, double tolerance);
+	static void RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path, const Attr *attr, double tolerance);
 
 	void FinishPathJob();
 	void FinishFillJob()                                       { fill_job.Finish(); }

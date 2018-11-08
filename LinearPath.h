@@ -169,3 +169,5 @@ public:
 	void   Begin(int x, int y, int len);
 	Point  Get();
 };
+
+void ApproximateChar(LinearPathConsumer& t, Pointf at, int ch, Font fnt, double tolerance);
