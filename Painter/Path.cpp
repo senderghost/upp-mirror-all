@@ -18,7 +18,7 @@ void BufferPainter::ClearPath()
 
 void BufferPainter::DoPath0()
 {
-	path_index = (path_index + 1) & (BATCH_SIZE - 1);
+	path_index = (path_index + co) & (BATCH_SIZE - 1);
 	path_info = &paths[path_index];
 	ClearPath();
 	path_info->attr = attr;
@@ -122,7 +122,7 @@ void BufferPainter::SvgArcOp(const Pointf& r, double xangle, bool large, bool sw
 void BufferPainter::CloseOp()
 {
 	LLOG("@ CloseOp");
-	if(!IsNull(move) && !IsNull(current) && current != move) {
+	if(!IsNull(move) && path_info->path.Top().GetCount() && current != move) {
 		Line(move);
 		move = Null;
 	}

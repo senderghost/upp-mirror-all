@@ -1,5 +1,7 @@
 Clip does not need to sync MT
+Clear co
+
+------
 Cache of downscaled images
 CO images
-Clear co
 UseImageCache option

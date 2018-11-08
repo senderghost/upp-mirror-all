@@ -36,13 +36,14 @@ void   BufferPainter::TransformOp(const Xform2D& m)
 	DoPath();
 	ASSERT_(path_info->path.Top().IsEmpty(), "Cannot change transformation during path definition");
 	path_info->attr.mtx = attr.mtx = m * attr.mtx;
+//	path_info->attr.mtx_serial = ++mtx_serial;
 }
 
 void BufferPainter::OpacityOp(double o)
 {
 	DoPath();
 	path_info->attr.opacity *= o;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.opacity *= o;
 }
 
@@ -50,7 +51,7 @@ void BufferPainter::LineCapOp(int linecap)
 {
 	DoPath();
 	path_info->attr.cap = linecap;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.cap = linecap;
 }
 
@@ -58,7 +59,7 @@ void BufferPainter::LineJoinOp(int linejoin)
 {
 	DoPath();
 	path_info->attr.join = linejoin;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.join = linejoin;
 }
 
@@ -66,7 +67,7 @@ void BufferPainter::MiterLimitOp(double l)
 {
 	DoPath();
 	path_info->attr.miter_limit = l;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.miter_limit = l;
 }
 
@@ -74,7 +75,7 @@ void BufferPainter::EvenOddOp(bool evenodd)
 {
 	DoPath();
 	path_info->attr.evenodd = evenodd;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.evenodd = evenodd;
 }
 
@@ -82,7 +83,7 @@ void BufferPainter::InvertOp(bool invert)
 {
 	DoPath();
 	path_info->attr.invert = invert;
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		attr.invert = invert;
 }
 
@@ -92,7 +93,7 @@ void BufferPainter::DashOp(const Vector<double>& dash, double start)
 	auto& pa = path_info->attr;
 	pa.dash = clone(dash);
 	pa.dash_start = start;
-	if(IsNull(current)) {
+	if(path_info->path.Top().IsEmpty()) {
 		attr.dash = pa.dash;
 		attr.dash_start = start;
 	}
@@ -110,7 +111,7 @@ void BufferPainter::ColorStopOp(double pos, const RGBA& color)
 {
 	DoPath();
 	ColorStop0(path_info->attr, pos, color);
-	if(IsNull(current))
+	if(path_info->path.Top().IsEmpty())
 		ColorStop0(attr, pos, color);
 }
 
@@ -120,7 +121,7 @@ void BufferPainter::ClearStopsOp()
 	auto& pa = path_info->attr;
 	pa.stop.Clear();
 	pa.stop_color.Clear();
-	if(IsNull(current)) {
+	if(path_info->path.Top().IsEmpty()) {
 		auto& a = attr;
 		a.stop.Clear();
 		a.stop_color.Clear();
@@ -159,6 +160,8 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 	
 	dopreclip = false;
 	jobcount = 0;
+	
+	size = ib.GetSize();
 }
 
 BufferPainter::BufferPainter(PainterTarget& t, double tolerance)

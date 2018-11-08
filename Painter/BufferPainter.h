@@ -145,6 +145,7 @@ private:
 	};
 	struct Attr : Moveable<Attr> {
 		Xform2D                         mtx;
+	//	int                             mtx_serial; // used to speedup preclip
 		bool                            evenodd;
 		byte                            join;
 		byte                            cap;
@@ -177,13 +178,18 @@ private:
 	Array< ImageBuffer >       mask;
 	Vector<Vector<PathLine>>   onpathstack;
 	Vector<double>             pathlenstack;
+	int                        mtx_serial = 0;
 	
 	Image                      gradient;
 	RGBA                       gradient1, gradient2;
 	int                        gradientn;
 
+	Sizef                      size; // = ib.GetSize()
+	Rectf                      preclip;
+	int                        preclip_serial = -1;
+
 	struct PathInfo {
-		Vector<Vector<byte>>               path; // todo: StringBuffer
+		Vector<Vector<byte>>               path;
 		bool                               ischar;
 		Pointf                             path_min, path_max;
 		Attr                               attr;
@@ -240,12 +246,13 @@ private:
 
 		LinearPathConsumer *g;
 
-		PathJob(Rasterizer& r, double width, bool ischar, int dopreclip, Pointf path_min, Pointf path_max, const Attr& attr);
+		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info/*, const Rectf& preclip*/);
 	};
 	
 	struct CoJob {
 		PathInfo         *path_info;
 		int               subpath;
+//		Rectf             preclip;
 		double            width;
 		RGBA              color;
 		Rasterizer        rasterizer;
@@ -295,9 +302,9 @@ public:
 
 	void               Finish();
 	
-	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; return *this; }
-	BufferPainter&     PreClipDashed()                         { dopreclip = 2; return *this; }
-	BufferPainter&     Co(bool b = true)                       { co = b; return *this; }
+	BufferPainter&     Co(bool b = true)                       { Finish(); co = b; return *this; }
+	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; preclip_serial = -1; return *this; }
+	BufferPainter&     PreClipDashed()                         { dopreclip = 2; preclip_serial = -1; return *this; }
 	BufferPainter&     ImageCache(bool b = true)               { imagecache = b; return *this; }
 	BufferPainter&     NoImageCache(bool b = true)             { ImageCache(false); }
 
