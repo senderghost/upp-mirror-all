@@ -306,31 +306,31 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	return newclip;
 }
 
-void BufferPainter::CoJob::DoPath(const BufferPainter& sw)
+void BufferPainter::CoRasterize(int from, int to)
 {
-	rasterizer.Reset();
-
-	PathJob j(rasterizer, width, path_info, attr, preclip);
-	if(j.preclipped)
-		return;
-	evenodd = j.evenodd;
-	BufferPainter::RenderPathSegments(j.g, path_info->path[subpath], j.regular ? &attr : NULL, j.tolerance);
+	CoWork co;
+	co * [&] {
+		for(;;) {
+			int i = co.Next() + from;
+			if(i >= to)
+				break;
+			CoJob& b = cojob[i];
+			b.rasterizer.Reset();
+			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip);
+			if(!j.preclipped) {
+				b.evenodd = j.evenodd;
+				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);
+			}
+		}
+	};
 }
 
 void BufferPainter::FinishPathJob()
 {
 	if(jobcount == 0)
 		return;
-	RTIMING("Finish");
-	const int TH = 2;
-	if(jobcount >= TH) {
-		CoWork co;
-		co * [&] {
-			int i;
-			while((i = co.Next()) < jobcount)
-				cojob[i].DoPath(*this);
-		};
-	}
+
+	CoRasterize(0, jobcount);
 		
 	FinishFillJob();
 	
@@ -342,8 +342,6 @@ void BufferPainter::FinishPathJob()
 		int maxy = 0;
 		for(int i = 0; i < fillcount; i++) {
 			CoJob& j = cofill[i];
-			if(fillcount < TH)
-				j.DoPath(*this);
 			miny = min(miny, j.rasterizer.MinY());
 			maxy = max(maxy, j.rasterizer.MaxY());
 			j.c = Mul8(j.color, int(256 * j.attr.opacity));

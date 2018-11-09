@@ -148,6 +148,12 @@ private:
 		WithDeepCopy<Vector<double>>    dash;
 		double                          start;
 	};
+	struct ColorStop : Moveable<ColorStop> {
+		double stop;
+		RGBA   color;
+		
+		bool operator<(const ColorStop& b) const { return stop < b.stop; }
+	};
 	struct SimpleAttr {
 		Xform2D                         mtx;
 		double                          miter_limit;
@@ -160,8 +166,7 @@ private:
 	};
 	struct Attr : Moveable<Attr, SimpleAttr> {
 		int                             mtx_serial; // used to detect changes to speedup preclip
-		WithDeepCopy<Vector<double>>    stop;
-		WithDeepCopy<Vector<RGBA>>      stop_color;
+		WithDeepCopy<Vector<ColorStop>> color_stop;
 
 		int                             cliplevel;
 		bool                            hasclip;
@@ -267,14 +272,14 @@ private:
 		Rasterizer        rasterizer;
 		bool              evenodd;
 		RGBA              c;
-		void DoPath(const BufferPainter& sw);
 	};
 	
 	friend struct CoJob;
 	
 	Array<CoJob>     cojob, cofill;
-	int              jobcount, fillcount;
+	int              jobcount, runningjobs, fillcount;
 
+	CoWorkNX         rasterize_job;
 	CoWorkNX         fill_job;
 	
 	template <class T> T& PathAdd(int type);
@@ -300,6 +305,7 @@ private:
 
 	static void RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path, const SimpleAttr *attr, double tolerance);
 
+	void CoRasterize(int from, int to);
 	void FinishPathJob();
 	void FinishFillJob()                                       { fill_job.Finish(); }
 	                               

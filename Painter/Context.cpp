@@ -125,9 +125,11 @@ void BufferPainter::DashOp(const Vector<double>& dash, double start)
 void BufferPainter::ColorStop0(Attr& a, double pos, const RGBA& color)
 {
 	pos = minmax(pos, 0.0, 1.0);
-	int i = FindLowerBound(a.stop, pos);
-	a.stop.Insert(i, pos);
-	a.stop_color.Insert(i, color);
+	ColorStop c;
+	c.color = color;
+	c.stop = pos;
+	int i = FindLowerBound(a.color_stop, c);
+	a.color_stop.Insert(i, c);
 }
 
 void BufferPainter::ColorStopOp(double pos, const RGBA& color)
@@ -139,12 +141,9 @@ void BufferPainter::ColorStopOp(double pos, const RGBA& color)
 
 void BufferPainter::ClearStopsOp()
 {
-	pathattr.stop.Clear();
-	pathattr.stop_color.Clear();
-	if(IsNull(current)) {
-		attr.stop.Clear();
-		attr.stop_color.Clear();
-	}
+	pathattr.color_stop.Clear();
+	if(IsNull(current))
+		attr.color_stop.Clear();
 }
 
 BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
