@@ -277,9 +277,8 @@ private:
 	friend struct CoJob;
 	
 	Array<CoJob>     cojob, cofill;
-	int              jobcount, runningjobs, fillcount;
+	int              jobcount, fillcount;
 
-	CoWorkNX         rasterize_job;
 	CoWorkNX         fill_job;
 	
 	template <class T> T& PathAdd(int type);

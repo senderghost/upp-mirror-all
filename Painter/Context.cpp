@@ -176,7 +176,7 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 	gradientn = Null;
 	
 	dopreclip = false;
-	jobcount = runningjobs = 0;
+	jobcount = 0;
 	
 	size = ib.GetSize();
 }

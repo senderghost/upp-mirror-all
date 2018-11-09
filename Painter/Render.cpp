@@ -174,15 +174,6 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
-			else
-			if(rasterize_job.GetScheduledCount() == 0 && runningjobs + 8 < jobcount) {
-				int from = runningjobs; // force copy in lambda
-				int to = jobcount;
-				rasterize_job & [=] {
-					CoRasterize(from, to);
-				};
-				runningjobs = jobcount;
-			}
 			return newclip;
 		}
 	
@@ -318,21 +309,6 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 void BufferPainter::CoRasterize(int from, int to)
 {
 //	DLOG("CoRasterize " << from << " " << to);
-	CoWork co;
-	co * [&] {
-		for(;;) {
-			int i = co.Next() + from;
-			if(i >= to)
-				break;
-			CoJob& b = cojob[i];
-			b.rasterizer.Reset();
-			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip);
-			if(!j.preclipped) {
-				b.evenodd = j.evenodd;
-				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);
-			}
-		}
-	};
 }
 
 void BufferPainter::FinishPathJob()
@@ -343,10 +319,23 @@ void BufferPainter::FinishPathJob()
 //	DDUMP(runningjobs);
 //	DDUMP(jobcount);
 	RTIMING("Finish");
-	if(runningjobs < jobcount)
-		CoRasterize(runningjobs, jobcount);
-		
-	rasterize_job.Finish();
+
+	CoWork co;
+	co * [&] {
+		for(;;) {
+			int i = co.Next();
+			if(i >= jobcount)
+				break;
+			CoJob& b = cojob[i];
+			b.rasterizer.Reset();
+			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip);
+			if(!j.preclipped) {
+				b.evenodd = j.evenodd;
+				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);
+			}
+		}
+	};
+
 	FinishFillJob();
 	
 	fillcount = jobcount;
@@ -413,7 +402,7 @@ void BufferPainter::FinishPathJob()
 		}
 	};
 
-	jobcount = runningjobs = 0;
+	jobcount = 0;
 }
 
 void BufferPainter::Finish()
