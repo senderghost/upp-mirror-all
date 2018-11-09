@@ -163,7 +163,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 			for(int i = 0; i < path_info->path.GetCount(); i++) {
 				while(jobcount >= cojob.GetCount())
 					cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
-				RTIMING("Store");
+//				RTIMING("Store");
 				CoJob& job = cojob[jobcount++];
 				job.path_info = path_info;
 				job.subpath = i;
@@ -174,6 +174,15 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
+			else
+			if(rasterize_job.GetScheduledCount() == 0 && runningjobs + 8 < jobcount) {
+				int from = runningjobs; // force copy in lambda
+				int to = jobcount;
+				rasterize_job & [=] {
+					CoRasterize(from, to);
+				};
+				runningjobs = jobcount;
+			}
 			return newclip;
 		}
 	
@@ -304,10 +313,11 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		pathlen = j.onpathtarget.len;
 	}
 	return newclip;
-}
+}	
 
 void BufferPainter::CoRasterize(int from, int to)
 {
+//	DLOG("CoRasterize " << from << " " << to);
 	CoWork co;
 	co * [&] {
 		for(;;) {
@@ -329,9 +339,14 @@ void BufferPainter::FinishPathJob()
 {
 	if(jobcount == 0)
 		return;
-
-	CoRasterize(0, jobcount);
+//	RLOG("===== Finish");
+//	DDUMP(runningjobs);
+//	DDUMP(jobcount);
+	RTIMING("Finish");
+	if(runningjobs < jobcount)
+		CoRasterize(runningjobs, jobcount);
 		
+	rasterize_job.Finish();
 	FinishFillJob();
 	
 	fillcount = jobcount;
@@ -398,7 +413,7 @@ void BufferPainter::FinishPathJob()
 		}
 	};
 
-	jobcount = 0;
+	jobcount = runningjobs = 0;
 }
 
 void BufferPainter::Finish()
