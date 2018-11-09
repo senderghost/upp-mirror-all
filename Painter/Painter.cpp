@@ -169,7 +169,7 @@ Painter& Painter::Scale(double scale)
 	return *this;
 }
 
-Painter& Painter::Dash(const char *dash, double start)
+Vector<double> StringToDash(const String& dash, double& start)
 {
 	Vector<double> d;
 	CParser p(dash);
@@ -181,8 +181,19 @@ Painter& Painter::Dash(const char *dash, double start)
 				d.Add(p.ReadDouble());
 	}
 	catch(CParser::Error) {}
-	Dash(d, start);
-	return *this;
+	if(d.GetCount() & 1) {
+		Vector<double> dash1;
+		dash1.Append(d);
+		dash1.Append(d);
+		return dash1;
+	}
+	return d;
+}
+
+void Painter::DashOp(const String& dash, double start)
+{
+	Vector<double> h = StringToDash(dash, start);
+	DashOp(h, start);
 }
 
 Painter& Painter::Character(double x, double y, int ch, Font fnt)

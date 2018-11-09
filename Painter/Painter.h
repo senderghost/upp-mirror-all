@@ -149,6 +149,7 @@ protected:
 	virtual void   MiterLimitOp(double l) = 0;
 	virtual void   EvenOddOp(bool evenodd) = 0;
 	virtual void   DashOp(const Vector<double>& dash, double start = 0) = 0;
+	virtual void   DashOp(const String& dash, double start = 0);
 	virtual void   InvertOp(bool invert) = 0;
 
 	virtual void   TransformOp(const Xform2D& m) = 0;

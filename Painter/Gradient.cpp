@@ -13,12 +13,12 @@ void BufferPainter::MakeGradient(RGBA color1, RGBA color2, int n)
 	RGBA *t = ib[0];
 	int l = 0;
 	RGBA cl = color1;
-	for(int i = 0; i <= path_info->attr.stop.GetCount(); i++) {
+	for(int i = 0; i <= pathattr.stop.GetCount(); i++) {
 		int h;
 		RGBA ch;
-		if(i < path_info->attr.stop.GetCount()) {
-			h = (int)(path_info->attr.stop[i] * (n - 1));
-			ch = path_info->attr.stop_color[i];
+		if(i < pathattr.stop.GetCount()) {
+			h = (int)(pathattr.stop[i] * (n - 1));
+			ch = pathattr.stop_color[i];
 		}
 		else {
 			h = n - 1;
@@ -41,7 +41,7 @@ void BufferPainter::MakeGradient(RGBA color1, RGBA color2, int n)
 
 void BufferPainter::Gradient(const RGBA& color1, const RGBA& color2, const Pointf& p1, const Pointf& p2)
 {
-	MakeGradient(color1, color2, minmax(int(Distance(p1, p2) * path_info->attr.mtx.GetScale()), 2, 4096));
+	MakeGradient(color1, color2, minmax(int(Distance(p1, p2) * pathattr.mtx.GetScale()), 2, 4096));
 }
 
 static dword sLinearStyle(int style)

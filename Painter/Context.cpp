@@ -15,8 +15,7 @@ void BufferPainter::EndOp()
 		NEVER_("Painter::End: attribute stack is empty");
 		return;
 	}
-	DoPath();
-	path_info->attr = attr = attrstack.Top();
+	pathattr = attr = attrstack.Top();
 	attrstack.Drop();
 	if(clip.GetCount() != attr.cliplevel || attr.mask || attr.onpath)
 		Finish();
@@ -33,70 +32,93 @@ void BufferPainter::EndOp()
 
 void   BufferPainter::TransformOp(const Xform2D& m)
 {
-	DoPath();
-	ASSERT_(path_info->path.Top().IsEmpty(), "Cannot change transformation during path definition");
-	path_info->attr.mtx = attr.mtx = m * attr.mtx;
-//	path_info->attr.mtx_serial = ++mtx_serial;
+	ASSERT_(IsNull(current), "Cannot change transformation during path definition");
+	pathattr.mtx = attr.mtx = m * attr.mtx;
 }
 
 void BufferPainter::OpacityOp(double o)
 {
-	DoPath();
-	path_info->attr.opacity *= o;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.opacity *= o;
+	if(IsNull(current))
 		attr.opacity *= o;
 }
 
 void BufferPainter::LineCapOp(int linecap)
 {
-	DoPath();
-	path_info->attr.cap = linecap;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.cap = linecap;
+	if(IsNull(current))
 		attr.cap = linecap;
 }
 
 void BufferPainter::LineJoinOp(int linejoin)
 {
-	DoPath();
-	path_info->attr.join = linejoin;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.join = linejoin;
+	if(IsNull(current))
 		attr.join = linejoin;
 }
 
 void BufferPainter::MiterLimitOp(double l)
 {
-	DoPath();
-	path_info->attr.miter_limit = l;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.miter_limit = l;
+	if(IsNull(current))
 		attr.miter_limit = l;
 }
 
 void BufferPainter::EvenOddOp(bool evenodd)
 {
-	DoPath();
-	path_info->attr.evenodd = evenodd;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.evenodd = evenodd;
+	if(IsNull(current))
 		attr.evenodd = evenodd;
 }
 
 void BufferPainter::InvertOp(bool invert)
 {
-	DoPath();
-	path_info->attr.invert = invert;
-	if(path_info->path.Top().IsEmpty())
+	pathattr.invert = invert;
+	if(IsNull(current))
 		attr.invert = invert;
+}
+
+Vector<double> StringToDash(const String& dash, double& start);
+
+void BufferPainter::DashOp(const String& dash, double start)
+{
+	String key;
+	if(start) {
+		key.Cat(1);
+		RawCat(key, start);
+	}
+	else
+		key.Cat(2);
+	RawCat(key, dash);
+	const DashInfo *d = dashes.FindPtr(key);
+	if(!d) {
+		DashInfo& h = dashes.Add(key);
+		h.dash = StringToDash(dash, start);
+		h.start = start;
+		d = &h;
+	}
+	pathattr.dash = d;
+	if(IsNull(current))
+		attr.dash = d;
 }
 
 void BufferPainter::DashOp(const Vector<double>& dash, double start)
 {
-	DoPath();
-	auto& pa = path_info->attr;
-	pa.dash = clone(dash);
-	pa.dash_start = start;
-	if(path_info->path.Top().IsEmpty()) {
-		attr.dash = pa.dash;
-		attr.dash_start = start;
+	String key;
+	RawCat(key, 0);
+	RawCat(key, start);
+	for(double h : dash)
+		RawCat(key, h);
+	const DashInfo *d = dashes.FindPtr(key);
+	if(!d) {
+		DashInfo& h = dashes.Add(key);
+		h.start = start;
+		h.dash = clone(dash);
+		d = &h;
 	}
+	pathattr.dash = d;
+	if(IsNull(current))
+		attr.dash = d;
 }
 
 void BufferPainter::ColorStop0(Attr& a, double pos, const RGBA& color)
@@ -109,22 +131,18 @@ void BufferPainter::ColorStop0(Attr& a, double pos, const RGBA& color)
 
 void BufferPainter::ColorStopOp(double pos, const RGBA& color)
 {
-	DoPath();
-	ColorStop0(path_info->attr, pos, color);
-	if(path_info->path.Top().IsEmpty())
+	ColorStop0(pathattr, pos, color);
+	if(IsNull(current))
 		ColorStop0(attr, pos, color);
 }
 
 void BufferPainter::ClearStopsOp()
 {
-	DoPath();
-	auto& pa = path_info->attr;
-	pa.stop.Clear();
-	pa.stop_color.Clear();
-	if(path_info->path.Top().IsEmpty()) {
-		auto& a = attr;
-		a.stop.Clear();
-		a.stop_color.Clear();
+	pathattr.stop.Clear();
+	pathattr.stop_color.Clear();
+	if(IsNull(current)) {
+		attr.stop.Clear();
+		attr.stop_color.Clear();
 	}
 }
 
@@ -150,11 +168,10 @@ BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
 	a.evenodd = false;
 	a.hasclip = false;
 	a.cliplevel = 0;
-	a.dash_start = 0.0;
-	a.opacity = 1.0;
+	a.opacity = 1;
+	a.dash = NULL;
 	a.mask = false;
 	a.invert = false;
-	path_info->attr = attr;
 	
 	gradientn = Null;
 	

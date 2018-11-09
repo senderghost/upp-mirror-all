@@ -198,6 +198,12 @@ inline Painter& Painter::Dash(const Vector<double>& dash, double start)
 	return *this;
 }
 
+inline Painter& Painter::Dash(const char *dash, double start)
+{
+	DashOp(dash, start);
+	return *this;
+}
+
 inline Painter& Painter::Transform(const Xform2D& m)
 {
 	TransformOp(m);

@@ -1,5 +1,6 @@
 Clip does not need to sync MT
 Clear co
+DashOp(const char *)
 
 ------
 Cache of downscaled images

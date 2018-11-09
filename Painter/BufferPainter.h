@@ -109,6 +109,7 @@ protected:
 	virtual void   LineJoinOp(int linejoin);
 	virtual void   MiterLimitOp(double l);
 	virtual void   EvenOddOp(bool evenodd);
+	virtual void   DashOp(const String& dash, double start);
 	virtual void   DashOp(const Vector<double>& dash, double start);
 	virtual void   InvertOp(bool invert);
 
@@ -143,19 +144,24 @@ private:
 		Pointf p;
 		double len;
 	};
-	struct Attr : Moveable<Attr> {
+	struct DashInfo {
+		WithDeepCopy<Vector<double>>    dash;
+		double                          start;
+	};
+	struct SimpleAttr {
 		Xform2D                         mtx;
-	//	int                             mtx_serial; // used to speedup preclip
+		double                          miter_limit;
+		double                          opacity;
+		const DashInfo                 *dash;
 		bool                            evenodd;
 		byte                            join;
 		byte                            cap;
-		double                          miter_limit;
-		WithDeepCopy<Vector<double>>    dash;
+		bool                            invert;
+	};
+	struct Attr : Moveable<Attr, SimpleAttr> {
+		int                             mtx_serial; // used to speedup preclip
 		WithDeepCopy<Vector<double>>    stop;
 		WithDeepCopy<Vector<RGBA>>      stop_color;
-		double                          dash_start;
-		double                          opacity;
-		bool                            invert;
 
 		int                             cliplevel;
 		bool                            hasclip;
@@ -179,6 +185,7 @@ private:
 	Vector<Vector<PathLine>>   onpathstack;
 	Vector<double>             pathlenstack;
 	int                        mtx_serial = 0;
+	ArrayMap<String, DashInfo> dashes;
 	
 	Image                      gradient;
 	RGBA                       gradient1, gradient2;
@@ -192,7 +199,6 @@ private:
 		Vector<Vector<byte>>               path;
 		bool                               ischar;
 		Pointf                             path_min, path_max;
-		Attr                               attr;
 	};
 	
 	enum { BATCH_SIZE = 128 }; // must be 2^n
@@ -200,6 +206,7 @@ private:
 	Buffer<PathInfo> paths;
 	int              path_index = 0;
 	PathInfo        *path_info;
+	Attr             pathattr;
 
 	Pointf           current, ccontrol, qcontrol, move;
 	
@@ -246,13 +253,14 @@ private:
 
 		LinearPathConsumer *g;
 
-		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info/*, const Rectf& preclip*/);
+		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info, const SimpleAttr& attr );
 	};
 	
 	struct CoJob {
+		SimpleAttr        attr;
 		PathInfo         *path_info;
 		int               subpath;
-//		Rectf             preclip;
+		Rectf             preclip;
 		double            width;
 		RGBA              color;
 		Rasterizer        rasterizer;
@@ -289,7 +297,7 @@ private:
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
 
-	static void RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path, const Attr *attr, double tolerance);
+	static void RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path, const SimpleAttr *attr, double tolerance);
 
 	void FinishPathJob();
 	void FinishFillJob()                                       { fill_job.Finish(); }
