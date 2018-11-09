@@ -159,7 +159,7 @@ private:
 		bool                            invert;
 	};
 	struct Attr : Moveable<Attr, SimpleAttr> {
-		int                             mtx_serial; // used to speedup preclip
+		int                             mtx_serial; // used to detect changes to speedup preclip
 		WithDeepCopy<Vector<double>>    stop;
 		WithDeepCopy<Vector<RGBA>>      stop_color;
 
@@ -193,7 +193,7 @@ private:
 
 	Sizef                      size; // = ib.GetSize()
 	Rectf                      preclip;
-	int                        preclip_serial = -1;
+	int                        preclip_mtx_serial = -1;
 
 	struct PathInfo {
 		Vector<Vector<byte>>               path;
@@ -253,7 +253,8 @@ private:
 
 		LinearPathConsumer *g;
 
-		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info, const SimpleAttr& attr );
+		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
+		        const SimpleAttr& attr, const Rectf& preclip);
 	};
 	
 	struct CoJob {
@@ -311,8 +312,8 @@ public:
 	void               Finish();
 	
 	BufferPainter&     Co(bool b = true)                       { Finish(); co = b; return *this; }
-	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; preclip_serial = -1; return *this; }
-	BufferPainter&     PreClipDashed()                         { dopreclip = 2; preclip_serial = -1; return *this; }
+	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; preclip_mtx_serial = -1; return *this; }
+	BufferPainter&     PreClipDashed()                         { dopreclip = 2; preclip_mtx_serial = -1; return *this; }
 	BufferPainter&     ImageCache(bool b = true)               { imagecache = b; return *this; }
 	BufferPainter&     NoImageCache(bool b = true)             { ImageCache(false); }
 

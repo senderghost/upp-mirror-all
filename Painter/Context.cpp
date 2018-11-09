@@ -34,6 +34,7 @@ void   BufferPainter::TransformOp(const Xform2D& m)
 {
 	ASSERT_(IsNull(current), "Cannot change transformation during path definition");
 	pathattr.mtx = attr.mtx = m * attr.mtx;
+	pathattr.mtx_serial = attr.mtx_serial = ++mtx_serial;
 }
 
 void BufferPainter::OpacityOp(double o)

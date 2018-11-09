@@ -14,15 +14,14 @@ void BufferPainter::ClearOp(const RGBA& color)
 }
 
 BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-                                const SimpleAttr& attr/*,
-                                const Rectf& preclip_*/)
+                                const SimpleAttr& attr, const Rectf& preclip)
 :	trans(attr.mtx)
 {
 	evenodd = attr.evenodd;
 	regular = attr.mtx.IsRegular() && width < 0 && !path_info->ischar;
 
 	g = &rasterizer;
-/*
+
 	if(!IsNull(preclip.left)) {
 		double ex = max(width, 0.0) * (1 + attr.miter_limit);
 		if(path_info->path_max.y + ex < preclip.top || path_info->path_min.y - ex > preclip.bottom ||
@@ -31,8 +30,7 @@ BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const Path
 			return;
 		}
 	}
-*/
-	Rectf preclip = Null;
+
 	preclipped = false;
 
 	if(regular)
@@ -140,11 +138,11 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 
 	if(width == 0 || !ss && color.a == 0 && width >= FILL)
 		return newclip;
-/*
-	if(dopreclip && path_info->attr.mtx_serial != preclip_serial) {
-		preclip_serial = path_info->attr.mtx_serial;
+
+	if(dopreclip && pathattr.mtx_serial != preclip_mtx_serial) {
+		preclip_mtx_serial = pathattr.mtx_serial;
 		Pointf tl, br, a;
-		Xform2D imx = Inverse(path_info->attr.mtx);
+		Xform2D imx = Inverse(pathattr.mtx);
 		tl = br = imx.Transform(0, 0);
 		a = imx.Transform(size.cx, 0);
 		tl = min(a, tl);
@@ -157,8 +155,9 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		br = max(a, br);
 		preclip = Rectf(tl, br);
 	}
-	else*/
-//		preclip = Null;
+	else
+		preclip = Null;
+
 	if(co) {
 		if(width >= FILL && !ss && !alt && mode == MODE_ANTIALIASED) {
 			for(int i = 0; i < path_info->path.GetCount(); i++) {
@@ -171,7 +170,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 				job.attr = pathattr;
 				job.width = width;
 				job.color = color;
-	//			job.preclip = preclip;
+				job.preclip = preclip;
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
@@ -185,7 +184,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	rasterizer.Reset();
 
 	RTIMING("Span finish");
-	PathJob j(rasterizer, width, path_info, pathattr/*, preclip*/);
+	PathJob j(rasterizer, width, path_info, pathattr, preclip);
 	if(j.preclipped)
 		return newclip;
 	
@@ -311,7 +310,7 @@ void BufferPainter::CoJob::DoPath(const BufferPainter& sw)
 {
 	rasterizer.Reset();
 
-	PathJob j(rasterizer, width, path_info, attr/*, preclip*/);
+	PathJob j(rasterizer, width, path_info, attr, preclip);
 	if(j.preclipped)
 		return;
 	evenodd = j.evenodd;
