@@ -14,11 +14,11 @@ void BufferPainter::ClearOp(const RGBA& color)
 }
 
 BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-                                const SimpleAttr& attr, const Rectf& preclip, byte xform_class)
+                                const SimpleAttr& attr, const Rectf& preclip, bool isregular)
 :	trans(attr.mtx)
 {
 	evenodd = attr.evenodd;
-	regular = (xform_class & XFORM_REGULAR) && width < 0 && !path_info->ischar;
+	regular = isregular && width < 0 && !path_info->ischar;
 
 	g = &rasterizer;
 
@@ -33,11 +33,8 @@ BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const Path
 
 	preclipped = false;
 
-	if(regular) {
+	if(regular)
 		tolerance = 0.3;
-		if(xform_class == XFORM_IDENTITY)
-			regular = false;
-	}
 	else {
 		trans.target = g;
 		g = &trans;
@@ -61,10 +58,6 @@ BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const Path
 			g = &stroker;
 		evenodd = false;
 	}
-	if(regular) {
-		trans.target = g;
-		g = &trans;
-	}
 }
 
 void BufferPainter::RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path,
@@ -77,29 +70,44 @@ void BufferPainter::RenderPathSegments(LinearPathConsumer *g, const Vector<byte>
 		const LinearData *d = (LinearData *)data;
 		switch(d->type) {
 		case MOVE: {
-			g->Move(pos = d->p);
+			g->Move(pos = attr ? attr->mtx.Transform(d->p) : d->p);
 			data += sizeof(LinearData);
 			break;
 		}
 		case LINE: {
 			PAINTER_TIMING("LINE");
-			g->Line(pos = d->p);
+			g->Line(pos = attr ? attr->mtx.Transform(d->p) : d->p);
 			data += sizeof(LinearData);
 			break;
 		}
 		case QUADRATIC: {
 			PAINTER_TIMING("QUADRATIC");
 			const QuadraticData *d = (QuadraticData *)data;
-			ApproximateQuadratic(*g, pos, d->p1, d->p, tolerance);
-			pos = d->p;
+			if(attr) {
+				Pointf p = attr->mtx.Transform(d->p);
+				ApproximateQuadratic(*g, pos, attr->mtx.Transform(d->p1), p, tolerance);
+				pos = p;
+			}
+			else {
+				ApproximateQuadratic(*g, pos, d->p1, d->p, tolerance);
+				pos = d->p;
+			}
 			data += sizeof(QuadraticData);
 			break;
 		}
 		case CUBIC: {
 			PAINTER_TIMING("CUBIC");
 			const CubicData *d = (CubicData *)data;
-			ApproximateCubic(*g, pos, d->p1, d->p2, d->p, tolerance);
-			pos = d->p;
+			if(attr) {
+				Pointf p = attr->mtx.Transform(d->p);
+				ApproximateCubic(*g, pos, attr->mtx.Transform(d->p1),
+				                 attr->mtx.Transform(d->p2), p, tolerance);
+				pos = p;
+			}
+			else {
+				ApproximateCubic(*g, pos, d->p1, d->p2, d->p, tolerance);
+				pos = d->p;
+			}
 			data += sizeof(CubicData);
 			break;
 		}
@@ -150,7 +158,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		}
 		else
 			preclip = Null;
-		xform_class = pathattr.mtx.GetClass();
+		regular = pathattr.mtx.IsRegular();
 	}
 
 	if(co) {
@@ -165,7 +173,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 				job.width = width;
 				job.color = color;
 				job.preclip = preclip;
-				job.xform_class = xform_class;
+				job.regular = regular;
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
@@ -178,7 +186,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	
 	rasterizer.Reset();
 
-	PathJob j(rasterizer, width, path_info, pathattr, preclip, xform_class);
+	PathJob j(rasterizer, width, path_info, pathattr, preclip, regular);
 	if(j.preclipped)
 		return newclip;
 	
@@ -322,7 +330,7 @@ void BufferPainter::FinishPathJob()
 				break;
 			CoJob& b = cojob[i];
 			b.rasterizer.Reset();
-			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip, b.xform_class);
+			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip, b.regular);
 			if(!j.preclipped) {
 				b.evenodd = j.evenodd;
 				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);

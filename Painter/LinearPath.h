@@ -94,21 +94,30 @@ private:
 
 		bool operator<(const Cell& b) const { return x < b.x; }
     };
+    
+    enum { SVO_ALLOC = 15 };
+    
 	struct CellArray {
-		int  count;
-		int  alloc;
+		int    count;
+		int    alloc;
+		union {
+			Cell *ptr;
+			Cell  svo[SVO_ALLOC];
+		};
+		
+		Cell *Get()         { return alloc == SVO_ALLOC ? svo : ptr; }
+		
+//		CellArray()         { count = 0; alloc = SVO_ALLOC; }
 	};
 
 	Rectf                   cliprect;
 	Pointf                  p0;
-	Buffer<CellArray *>     cell;
+	Buffer<CellArray>       cell;
 
 	int                     min_y;
 	int                     max_y;
 	Size                    sz;
 	int                     mx;
-
-	static CellArray       *AllocArray(int n);
 
 	void  Init();
 	Cell *AddCells(int y, int n);
@@ -138,7 +147,7 @@ public:
 
 	int  MinY() const                         { return min_y; }
 	int  MaxY() const                         { return max_y; }
-	bool NotEmpty(int y)                      { CellArray *a = cell[y]; return a && a->count; }
+	bool NotEmpty(int y)                      { return cell[y].count; }
 	void Render(int y, Filler& g, bool evenodd);
 
 	void Reset();
