@@ -14,11 +14,11 @@ void BufferPainter::ClearOp(const RGBA& color)
 }
 
 BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-                                const SimpleAttr& attr, const Rectf& preclip, bool isregular)
+                                const SimpleAttr& attr, const Rectf& preclip, byte xform_class)
 :	trans(attr.mtx)
 {
 	evenodd = attr.evenodd;
-	regular = isregular && width < 0 && !path_info->ischar;
+	regular = (xform_class & XFORM_REGULAR) && width < 0 && !path_info->ischar;
 
 	g = &rasterizer;
 
@@ -33,8 +33,11 @@ BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const Path
 
 	preclipped = false;
 
-	if(regular)
+	if(regular) {
 		tolerance = 0.3;
+		if(xform_class == XFORM_IDENTITY)
+			regular = false;
+	}
 	else {
 		trans.target = g;
 		g = &trans;
@@ -158,7 +161,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 		}
 		else
 			preclip = Null;
-		regular = pathattr.mtx.IsRegular();
+		xform_class = pathattr.mtx.GetClass();
 	}
 
 	if(co) {
@@ -173,7 +176,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 				job.width = width;
 				job.color = color;
 				job.preclip = preclip;
-				job.regular = regular;
+				job.xform_class = xform_class;
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
@@ -186,7 +189,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	
 	rasterizer.Reset();
 
-	PathJob j(rasterizer, width, path_info, pathattr, preclip, regular);
+	PathJob j(rasterizer, width, path_info, pathattr, preclip, xform_class);
 	if(j.preclipped)
 		return newclip;
 	
@@ -330,7 +333,7 @@ void BufferPainter::FinishPathJob()
 				break;
 			CoJob& b = cojob[i];
 			b.rasterizer.Reset();
-			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip, b.regular);
+			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip, b.xform_class);
 			if(!j.preclipped) {
 				b.evenodd = j.evenodd;
 				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);

@@ -199,7 +199,7 @@ private:
 	Sizef                      size; // = ib.GetSize()
 	Rectf                      preclip;
 	int                        preclip_mtx_serial = -1;
-	bool                       regular;
+	byte                       xform_class;
 
 	struct PathInfo {
 		Vector<Vector<byte>>               path;
@@ -254,13 +254,13 @@ private:
 		OnPathTarget        onpathtarget;
 		LinearPathConsumer *g;
 		double              tolerance;
-		bool                evenodd;
 		bool                regular;
+		bool                evenodd;
 		bool                preclipped;
 
 
 		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-		        const SimpleAttr& attr, const Rectf& preclip, bool regular);
+		        const SimpleAttr& attr, const Rectf& preclip, byte xform_class);
 	};
 	
 	struct CoJob {
@@ -273,7 +273,7 @@ private:
 		RGBA              c;
 		int               subpath;
 		bool              evenodd;
-		bool              regular;
+		bool              xform_class;
 	};
 	
 	friend struct CoJob;
