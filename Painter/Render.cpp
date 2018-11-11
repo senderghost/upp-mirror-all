@@ -61,6 +61,10 @@ BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const Path
 			g = &stroker;
 		evenodd = false;
 	}
+	if(regular) {
+		trans.target = g;
+		g = &trans;
+	}
 }
 
 void BufferPainter::RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path,
@@ -73,44 +77,29 @@ void BufferPainter::RenderPathSegments(LinearPathConsumer *g, const Vector<byte>
 		const LinearData *d = (LinearData *)data;
 		switch(d->type) {
 		case MOVE: {
-			g->Move(pos = attr ? attr->mtx.Transform(d->p) : d->p);
+			g->Move(pos = d->p);
 			data += sizeof(LinearData);
 			break;
 		}
 		case LINE: {
 			PAINTER_TIMING("LINE");
-			g->Line(pos = attr ? attr->mtx.Transform(d->p) : d->p);
+			g->Line(pos = d->p);
 			data += sizeof(LinearData);
 			break;
 		}
 		case QUADRATIC: {
 			PAINTER_TIMING("QUADRATIC");
 			const QuadraticData *d = (QuadraticData *)data;
-			if(attr) {
-				Pointf p = attr->mtx.Transform(d->p);
-				ApproximateQuadratic(*g, pos, attr->mtx.Transform(d->p1), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateQuadratic(*g, pos, d->p1, d->p, tolerance);
-				pos = d->p;
-			}
+			ApproximateQuadratic(*g, pos, d->p1, d->p, tolerance);
+			pos = d->p;
 			data += sizeof(QuadraticData);
 			break;
 		}
 		case CUBIC: {
 			PAINTER_TIMING("CUBIC");
 			const CubicData *d = (CubicData *)data;
-			if(attr) {
-				Pointf p = attr->mtx.Transform(d->p);
-				ApproximateCubic(*g, pos, attr->mtx.Transform(d->p1),
-				                 attr->mtx.Transform(d->p2), p, tolerance);
-				pos = p;
-			}
-			else {
-				ApproximateCubic(*g, pos, d->p1, d->p2, d->p, tolerance);
-				pos = d->p;
-			}
+			ApproximateCubic(*g, pos, d->p1, d->p2, d->p, tolerance);
+			pos = d->p;
 			data += sizeof(CubicData);
 			break;
 		}
