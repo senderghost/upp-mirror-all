@@ -14,11 +14,11 @@ void BufferPainter::ClearOp(const RGBA& color)
 }
 
 BufferPainter::PathJob::PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-                                const SimpleAttr& attr, const Rectf& preclip)
+                                const SimpleAttr& attr, const Rectf& preclip, bool isregular)
 :	trans(attr.mtx)
 {
 	evenodd = attr.evenodd;
-	regular = attr.mtx.IsRegular() && width < 0 && !path_info->ischar;
+	regular = isregular && width < 0 && !path_info->ischar;
 
 	g = &rasterizer;
 
@@ -139,31 +139,33 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	if(width == 0 || !ss && color.a == 0 && width >= FILL)
 		return newclip;
 
-	if(dopreclip && pathattr.mtx_serial != preclip_mtx_serial) {
-		preclip_mtx_serial = pathattr.mtx_serial;
-		Pointf tl, br, a;
-		Xform2D imx = Inverse(pathattr.mtx);
-		tl = br = imx.Transform(0, 0);
-		a = imx.Transform(size.cx, 0);
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(0, size.cy);
-		tl = min(a, tl);
-		br = max(a, br);
-		a = imx.Transform(size.cx, size.cy);
-		tl = min(a, tl);
-		br = max(a, br);
-		preclip = Rectf(tl, br);
+	if(pathattr.mtx_serial != preclip_mtx_serial) {
+		if(dopreclip && pathattr.mtx_serial != preclip_mtx_serial) {
+			preclip_mtx_serial = pathattr.mtx_serial;
+			Pointf tl, br, a;
+			Xform2D imx = Inverse(pathattr.mtx);
+			tl = br = imx.Transform(0, 0);
+			a = imx.Transform(size.cx, 0);
+			tl = min(a, tl);
+			br = max(a, br);
+			a = imx.Transform(0, size.cy);
+			tl = min(a, tl);
+			br = max(a, br);
+			a = imx.Transform(size.cx, size.cy);
+			tl = min(a, tl);
+			br = max(a, br);
+			preclip = Rectf(tl, br);
+		}
+		else
+			preclip = Null;
+		regular = pathattr.mtx.IsRegular();
 	}
-	else
-		preclip = Null;
 
 	if(co) {
 		if(width >= FILL && !ss && !alt && mode == MODE_ANTIALIASED) {
 			for(int i = 0; i < path_info->path.GetCount(); i++) {
 				while(jobcount >= cojob.GetCount())
 					cojob.Add().rasterizer.Create(ib.GetWidth(), ib.GetHeight(), false);
-//				RTIMING("Store");
 				CoJob& job = cojob[jobcount++];
 				job.path_info = path_info;
 				job.subpath = i;
@@ -171,6 +173,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 				job.width = width;
 				job.color = color;
 				job.preclip = preclip;
+				job.regular = regular;
 			}
 			if(jobcount >= BATCH_SIZE)
 				FinishPathJob();
@@ -183,8 +186,7 @@ Buffer<ClippingLine> BufferPainter::RenderPath(double width, Event<One<SpanSourc
 	
 	rasterizer.Reset();
 
-	RTIMING("Span finish");
-	PathJob j(rasterizer, width, path_info, pathattr, preclip);
+	PathJob j(rasterizer, width, path_info, pathattr, preclip, regular);
 	if(j.preclipped)
 		return newclip;
 	
@@ -318,7 +320,7 @@ void BufferPainter::FinishPathJob()
 //	RLOG("===== Finish");
 //	DDUMP(runningjobs);
 //	DDUMP(jobcount);
-	RTIMING("Finish");
+//	RTIMING("Finish");
 
 	CoWork co;
 	co * [&] {
@@ -328,7 +330,7 @@ void BufferPainter::FinishPathJob()
 				break;
 			CoJob& b = cojob[i];
 			b.rasterizer.Reset();
-			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip);
+			PathJob j(b.rasterizer, b.width, b.path_info, b.attr, b.preclip, b.regular);
 			if(!j.preclipped) {
 				b.evenodd = j.evenodd;
 				BufferPainter::RenderPathSegments(j.g, b.path_info->path[b.subpath], j.regular ? &b.attr : NULL, j.tolerance);

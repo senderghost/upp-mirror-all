@@ -39,7 +39,6 @@ Rasterizer::~Rasterizer()
 
 void Rasterizer::Free()
 {
-	RTIMING("Free");
 	if(cell)
 		for(int i = 0; i <= sz.cy; i++)
 			if(cell[i])

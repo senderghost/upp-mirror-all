@@ -199,6 +199,7 @@ private:
 	Sizef                      size; // = ib.GetSize()
 	Rectf                      preclip;
 	int                        preclip_mtx_serial = -1;
+	bool                       regular;
 
 	struct PathInfo {
 		Vector<Vector<byte>>               path;
@@ -247,31 +248,32 @@ private:
 	};
 	
 	struct PathJob {
-		Transformer   trans;
-		Stroker       stroker;
-		Dasher        dasher;
-		OnPathTarget  onpathtarget;
-		bool          evenodd;
-		bool          regular;
-		double        tolerance;
-		bool          preclipped;
-
+		Transformer         trans;
+		Stroker             stroker;
+		Dasher              dasher;
+		OnPathTarget        onpathtarget;
 		LinearPathConsumer *g;
+		double              tolerance;
+		bool                evenodd;
+		bool                regular;
+		bool                preclipped;
+
 
 		PathJob(Rasterizer& rasterizer, double width, const PathInfo *path_info,
-		        const SimpleAttr& attr, const Rectf& preclip);
+		        const SimpleAttr& attr, const Rectf& preclip, bool regular);
 	};
 	
 	struct CoJob {
 		SimpleAttr        attr;
 		PathInfo         *path_info;
-		int               subpath;
 		Rectf             preclip;
 		double            width;
-		RGBA              color;
 		Rasterizer        rasterizer;
-		bool              evenodd;
+		RGBA              color;
 		RGBA              c;
+		int               subpath;
+		bool              evenodd;
+		bool              regular;
 	};
 	
 	friend struct CoJob;
