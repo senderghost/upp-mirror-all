@@ -53,16 +53,8 @@ void Rasterizer::Create(int cx, int cy, bool subpixel)
 	sz.cx = cx;
 	sz.cy = cy;
 
-{ RTIMING("Alloc");
 	cell.Alloc(sz.cy + 1); // one more for overrun
-}
-{
-	RTIMING("Set");
-	for(int i = 0; i < sz.cy + 1; i++) {
-		cell[i].count = 0;
-		cell[i].alloc = SVO_ALLOC;
-	}
-}
+
 	STATIC_ASSERT(sizeof(CellArray) == 128);
 
 	cliprect = Sizef(sz);
@@ -94,7 +86,7 @@ void Rasterizer::SetClip(const Rectf& rect)
 	cliprect = rect & Sizef(sz);
 }
 
-force_inline Rasterizer::Cell *Rasterizer::AddCells(int y, int n)
+Rasterizer::Cell *Rasterizer::AddCells(int y, int n)
 {
 	CellArray& a = cell[y];
 	if(a.count + n <= SVO_ALLOC) {
