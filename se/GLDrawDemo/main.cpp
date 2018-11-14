@@ -95,123 +95,31 @@ struct OpenGLExample : GLCtrl {
 
 		Size sz = GetSize();
 
-		GLDraw w;
+		DrawGL w(sz);
 		
-		w.Init(sz);
-
-		w.Flush();
-		
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-		static GLVertexData mesh;
-		/*ONCELOCK*/ {
-			Vector<Vector<Pointf>> polygon;
-			Vector<Pointf>& c = polygon.Add();
-/*			for(int i = 0; i < 360; i += 20) {
-				c.Add(300 * Polar(M_2PI * i / 360.0));
-				c.Add(200 * Polar(M_2PI * (i + 10) / 360.0));
-			}
-*/
-			for(int pass = 0; pass < 2; pass++) {
-				Vector<Pointf>& c = polygon.Add();
-				double rot = msecs() / 50000.0;
-				double amp = 1;
-				for(int i = 0; i < 360; i += 2) {
-					double f = pass ? 0.8 : 1;
-					c.Add(amp * f * 300 * Polar(M_2PI * i / 360.0 + rot));
-					c.Add(amp * f * 200 * Polar(M_2PI * (i + 1) / 360.0 + rot));
-				}
-			}
-
-
-			glFinish(); TIMING("Create mesh");
-
-			GLPolygons(mesh, polygon);
-			
-			glFinish();
-		}
-
-		GLContext2D dd(sz);
-		
-		static GLVertexData lmesh, lmesh2;
 		static GLTexture tex;
 		ONCELOCK {
-			Vector<Vector<Pointf>> line;
-			line.Add();
-			for(int i = 0; i < 4 * sz.cx; i += 5) {
-				line.Top().Add(Pointf(i, 200 * sin(M_2PI * i / 360.0)));
-			}
-			GLPolylines(lmesh, line);
-
-			line.Clear();
-			line.Add();
-			for(int i = 0; i < 360; i += 120)
-				line.Top().Add(300 * Polar(M_2PI * i / 360.0));
-			line.Top().Add(line.Top()[0]);
-			
-			Vector<Vector<Pointf>> lines;
-			Vector<double> dash;
-			dash << 10 << 20 << 30;
-			DashPolyline(lines, line.Top(), dash, 0);
-			
-			GLPolylines(lmesh2, lines);
-	
+		#if 0
 			Size sz(100, 100);
 			GLTextureDraw w(sz, 0);
 			GLContext2D dd(sz);
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(50, 50), Black(), 0, Green());
 			GLDrawEllipse(dd, Sizef(50, 50), Sizef(20, 20), LtRed(), 0, Blue());
 			tex = w;
+		#else
+			GLTextureDraw tw(sz, 4);
+			GeomTest(tw, sz);
+			tex = tw;
+			DLOG("Texture has been generated");
+		#endif
 		}
 		
-		{ glFinish(); RTIMING("DrawEllipse");
-		GLDrawEllipse(dd, Sizef(sz) / 2, Sizef(sz) / 2, Blue(), 4, LtGreen());
-		glFinish();}
-		{ glFinish(); RTIMING("DrawPolygon");
-		// GLDrawPolygons(dd, point, mesh, Sizef(2, 1), Blue(), 0.7);
-		glFinish();}
-		{ glFinish(); RTIMING("Draw Image");
-//		GLDrawImage(dd, RectC(point.x, point.y, 400, 400), CtrlImg::exclamation(), 1);
-		glFinish();}
+		DDUMP(tex.GetSize());
+		DDUMP(tex.GetID());
 		
-		GLDrawTexture(dd, RectC(point.x, point.y, 100, 100), tex);
-
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 3), lmesh, Sizef(1, 1), 12, Green());
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 2), lmesh, Sizef(1, 0.1), 12, Red());
-		GLDrawPolylines(dd, Pointf(0, sz.cy / 2 + 300), lmesh, Sizef(2, 0.3), 12, Red());
-
-		GLDrawPolylines(dd, Sizef(sz) / 2, lmesh2, Sizef(1, 1), 12, LtCyan());
-
-		GLDrawTexture(dd, RectC(0, 200, 100, 100), tex, RectC(30, 30, 40, 40));
-		
-		GLTexture gtex = GetGlyphGLTextureCached(10, 'A', Serif(100), Red());
-		Size tsz = gtex.GetSize();
-		GLDrawTexture(dd, RectC(300, 20, tsz.cx, tsz.cy), gtex);
-		
-		GLDrawText(dd, Pointf(300, 120), 0, String("Hello world!").ToWString(), Serif(80), Blue());
-
-		for(int angle = 0; angle < 360; angle += 30)
-			GLDrawText(dd, Pointf(sz.cx / 2, sz.cy / 2), M_2PI * angle / 360, String("      angle " + AsString(angle)).ToWString(), Arial(40), LtRed());
-		
-		{
-			DrawGL w(sz, 0.5);
-			w.Clip(20, 20, 40, 40);
-			w.DrawRect(10, 10, 100, 100, Yellow());
-			w.DrawImage(10, 10, CtrlImg::information());
-			w.End();
-			w.DrawImage(100, 10, CtrlImg::information(), Black());
-			w.DrawText(100, 100, "DrawGL 0.99!");
-			w.DrawEllipse(100, 200, 100, 200, Green(), 3, Brown());
-			
-			for(int angle = 0; angle < 360; angle += 30)
-				w.DrawLine(Point(100, 500), Point(100, 500) + Point(100 * Polar(M_2PI * angle / 360)), 20, LtGreen());
-		}
-		
-		if(0) {
-			DrawGL w(sz, 1);
-			GeomTest(w, sz);
-		}
+		GLDrawTexture(w, (Sizef)tex.GetSize(), tex);
+		GLDrawTexture(w, RectfC(100, 100, 200, 200), tex);
+		GLDrawTexture(w, RectfC(point.x, point.y, 800, 400), tex);
 	}
 
 

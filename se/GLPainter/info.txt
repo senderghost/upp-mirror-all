@@ -1,0 +1,3 @@
+TIMING New style      : 49.00 ms - 49.00 ms (49.00 ms / 1 ), min: 49.00 ms, max: 49.00 ms, nesting: 1 - 1
+TIMING Old style      :  2.32 s  -  2.32 s  ( 2.32 s  / 1 ), min:  2.32 s , max:  2.32 s , nesting: 1 - 1
+

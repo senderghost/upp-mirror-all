@@ -8,7 +8,8 @@ uses
 
 file
 	Lion.cpp,
-	main.cpp;
+	main.cpp,
+	info.txt;
 
 mainconfig
 	"" = "GUI";
