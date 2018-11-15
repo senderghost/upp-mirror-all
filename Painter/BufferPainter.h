@@ -153,6 +153,7 @@ private:
 		RGBA   color;
 		
 		bool operator<(const ColorStop& b) const { return stop < b.stop; }
+		void Serialize(Stream& s)                { s % stop % color; }
 	};
 	struct SimpleAttr {
 		Xform2D                         mtx;
@@ -177,11 +178,12 @@ private:
 	PainterTarget             *alt = NULL;
 	double                     alt_tolerance = Null;
 	ImageBuffer                dummy;
-	ImageBuffer&               ib;
-	int                        mode;
+	ImageBuffer               *ip;
+	int                        mode = -1;
 	Buffer<int16>              subpixel;
 	int                        render_cx;
-	int                        dopreclip;
+	int                        dopreclip = 0;
+	Sizef                      size = Sizef(0, 0); // = ib.GetSize()
 
 	Attr                       attr;
 	Array<Attr>                attrstack;
@@ -192,11 +194,6 @@ private:
 	int                        mtx_serial = 0;
 	ArrayMap<String, DashInfo> dashes;
 	
-	Image                      gradient;
-	RGBA                       gradient1, gradient2;
-	int                        gradientn;
-
-	Sizef                      size; // = ib.GetSize()
 	Rectf                      preclip;
 	int                        preclip_mtx_serial = -1;
 	bool                       regular;
@@ -299,35 +296,40 @@ private:
 	                              const Xform2D& m, int style);
 	void             RenderRadial(double width, const Pointf& f, const RGBA& color1, const RGBA& color2,
 	                              const Xform2D& transsrc, int style);
-	void             MakeGradient(RGBA color1, RGBA color2, int cx);
-	void             Gradient(const RGBA& color1, const RGBA& color2, const Pointf& p1, const Pointf& p2);
+
+	struct           GradientImageMaker;
+	static Image     MakeGradient(RGBA color1, Vector<ColorStop>& color_stop, RGBA color2, int n);
+	static Image     MakeGradientCached(RGBA color1, Vector<ColorStop>& color_stop, RGBA color2, int n);
+	Image            Gradient(const RGBA& color1, const RGBA& color2, int n);
+	Image            Gradient(const RGBA& color1, const RGBA& color2, const Pointf& p1, const Pointf& p2);
 	void             ColorStop0(Attr& a, double pos, const RGBA& color);
 	void             FinishMask();
 
 	static void RenderPathSegments(LinearPathConsumer *g, const Vector<byte>& path, const SimpleAttr *attr, double tolerance);
 
-	void CoRasterize(int from, int to);
 	void FinishPathJob();
 	void FinishFillJob()                                       { fill_job.Finish(); }
 	                               
 	enum { FILL = -1, CLIP = -2, ONPATH = -3 };
 
 public:
-	ImageBuffer&       GetBuffer()                             { return ib; }
-	const ImageBuffer& GetBuffer() const                       { return ib; }
-
-	void               Finish();
+	ImageBuffer&       GetBuffer()                             { return *ip; }
+	const ImageBuffer& GetBuffer() const                       { return *ip; }
 	
 	BufferPainter&     Co(bool b = true)                       { Finish(); co = b; return *this; }
 	BufferPainter&     PreClip(bool b = true)                  { dopreclip = b; preclip_mtx_serial = -1; return *this; }
 	BufferPainter&     PreClipDashed()                         { dopreclip = 2; preclip_mtx_serial = -1; return *this; }
 	BufferPainter&     ImageCache(bool b = true)               { imagecache = b; return *this; }
 	BufferPainter&     NoImageCache(bool b = true)             { return ImageCache(false); }
-
-	BufferPainter(ImageBuffer& ib, int mode = MODE_ANTIALIASED);
-	BufferPainter(PainterTarget& t, double tolerance = Null);
 	
-	~BufferPainter()                                           { Finish(); }
+	void               Create(ImageBuffer& ib, int mode = MODE_ANTIALIASED);
+	void               Finish();
+
+	BufferPainter(ImageBuffer& ib, int mode = MODE_ANTIALIASED) { Create(ib, mode); }
+	BufferPainter(PainterTarget& t, double tolerance = Null);
+	BufferPainter() : BufferPainter(dummy, MODE_ANTIALIASED)    {}
+
+	~BufferPainter()                                            { Finish(); }
 };
 
 #include "Interpolator.hpp"

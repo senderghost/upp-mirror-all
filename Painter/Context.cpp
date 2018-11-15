@@ -17,7 +17,7 @@ void BufferPainter::EndOp()
 	}
 	pathattr = attr = attrstack.Top();
 	attrstack.Drop();
-	if(clip.GetCount() != attr.cliplevel || attr.mask || attr.onpath)
+	if(clip.GetCount() != attr.cliplevel || attr.mask)
 		Finish();
 	clip.SetCount(attr.cliplevel);
 	if(attr.mask)
@@ -146,39 +146,56 @@ void BufferPainter::ClearStopsOp()
 		attr.color_stop.Clear();
 }
 
-BufferPainter::BufferPainter(ImageBuffer& ib, int mode)
-:	ib(ib),
-	mode(mode),
-	rasterizer(ib.GetWidth(), ib.GetHeight(), mode == MODE_SUBPIXEL)
+void BufferPainter::Create(ImageBuffer& ib, int mode_)
 {
-	paths.Alloc(BATCH_SIZE);
+	ip = &ib;
+	
+	if(mode_ != mode || (Size)size != ib.GetSize()) {
+		mode = mode_;
+	
+		rasterizer.Create(ib.GetWidth(), ib.GetHeight(), mode == MODE_SUBPIXEL);
+		cojob.Clear();
+		cofill.Clear();
+	
+		render_cx = ib.GetWidth();
+		if(mode == MODE_SUBPIXEL) {
+			render_cx *= 3;
+			subpixel.Alloc(render_cx + 30);
+		}
+		size = ib.GetSize();
+	}
+
+	if(!paths)
+		paths.Alloc(BATCH_SIZE);
+
 	path_info = paths;
 
-	ClearPath();
+	attr.mtx = Xform2D::Identity();
+	attr.cap = LINECAP_BUTT;
+	attr.join = LINEJOIN_MITER;
+	attr.miter_limit = 4;
+	attr.evenodd = false;
+	attr.hasclip = false;
+	attr.cliplevel = 0;
+	attr.opacity = 1;
+	attr.dash = NULL;
+	attr.mask = false;
+	attr.invert = false;
+	attr.mtx_serial = 0;
 
-	render_cx = ib.GetWidth();
-	if(mode == MODE_SUBPIXEL) {
-		render_cx *= 3;
-		subpixel.Alloc(render_cx + 30);
-	}
-	auto& a = attr;
-	a.cap = LINECAP_BUTT;
-	a.join = LINEJOIN_MITER;
-	a.miter_limit = 4;
-	a.evenodd = false;
-	a.hasclip = false;
-	a.cliplevel = 0;
-	a.opacity = 1;
-	a.dash = NULL;
-	a.mask = false;
-	a.invert = false;
+	ClearPath();
 	
-	gradientn = Null;
-	
-	dopreclip = false;
-	jobcount = 0;
-	
-	size = ib.GetSize();
+	jobcount = fillcount = 0;
+
+	attrstack.Clear();
+	clip.Clear();
+	mask.Clear();
+	onpathstack.Clear();
+	pathlenstack.Clear();
+	onpath.Clear();
+
+	preclip_mtx_serial = -1;
+	path_index = 0;
 }
 
 BufferPainter::BufferPainter(PainterTarget& t, double tolerance)

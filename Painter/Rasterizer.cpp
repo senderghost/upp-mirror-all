@@ -27,24 +27,6 @@
 
 namespace Upp {
 
-Rasterizer::Rasterizer(int cx, int cy, bool subpixel)
-{
-	Create(cx, cy, subpixel);
-}
-
-Rasterizer::~Rasterizer()
-{
-	Free();
-}
-
-void Rasterizer::Free()
-{
-	if(cell)
-		for(int i = 0; i <= sz.cy; i++)
-			if(cell[i].alloc != SVO_ALLOC)
-				MemoryFree(cell[i].ptr);
-}
-
 void Rasterizer::Create(int cx, int cy, bool subpixel)
 {
 	Free();
@@ -60,6 +42,14 @@ void Rasterizer::Create(int cx, int cy, bool subpixel)
 	cliprect = Sizef(sz);
 	Init();
 	Reset();
+}
+
+void Rasterizer::Free()
+{
+	if(cell)
+		for(int i = 0; i <= sz.cy; i++)
+			if(cell[i].alloc != SVO_ALLOC)
+				MemoryFree(cell[i].ptr);
 }
 
 void Rasterizer::Init()
@@ -86,6 +76,7 @@ void Rasterizer::SetClip(const Rectf& rect)
 	cliprect = rect & Sizef(sz);
 }
 
+force_inline
 Rasterizer::Cell *Rasterizer::AddCells(int y, int n)
 {
 	CellArray& a = cell[y];
