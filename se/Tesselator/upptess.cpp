@@ -69,7 +69,7 @@ void Tesselate(Vector<Vector<Pointf>>& shape, Vector<Pointf>& vertex,
 		for(int i = 0; i < nelems; i++) {
 			const int* p = &elems[i * 3];
 			if(triangle)
-				triangle.Add(MakeTuple(p[0], p[1], p[2]));
+				triangle->Add(MakeTuple(p[0], p[1], p[2]));
 			else
 				*index << p[0] << p[1] << p[2];
 		}

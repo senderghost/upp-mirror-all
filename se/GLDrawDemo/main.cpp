@@ -120,6 +120,8 @@ struct OpenGLExample : GLCtrl {
 		GLDrawTexture(w, (Sizef)tex.GetSize(), tex);
 		GLDrawTexture(w, RectfC(100, 100, 200, 200), tex);
 		GLDrawTexture(w, RectfC(point.x, point.y, 800, 400), tex);
+
+//		GeomTest(w, GetSize());
 	}
 
 

@@ -1,8 +1,7 @@
 uses
 	CtrlLib,
 	GLDraw,
-	GLCtrl,
-	Tesselator;
+	GLCtrl;
 
 file
 	main.cpp;

@@ -24,8 +24,7 @@ void GLStencilPolygon(GLVertexData& mesh, const Vector<Vector<Pointf>>& polygon)
 void GLDrawStencilPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Color color, double alpha)
 {
 	static GLCode program(R"(
-		#version 330 core
-	    in vec2 aPos;
+	    attribute vec2 aPos;
 		uniform vec2 offset;
 		uniform vec2 scale;
 	    void main()

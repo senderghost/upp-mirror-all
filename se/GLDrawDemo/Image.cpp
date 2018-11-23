@@ -36,8 +36,8 @@ void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha)
 		#version 330 core
 		uniform vec2 offset;
 		uniform vec2 scale;
-	    in      vec2 aPos;
-		out vec2 tPos;
+	    attribute vec2 aPos;
+		varying vec2 tPos;
 	    void main()
 	    {
 			gl_Position = vec4(scale * aPos + offset, 0, 1);
@@ -45,7 +45,7 @@ void GLDrawImage(Sizef vs, const Rect& rect, const Image img, double alpha)
 	    }
 	)", R"(
 		#version 330 core
-		in vec2 tPos;
+		varying vec2 tPos;
 		uniform float alpha;
 		uniform sampler2D s_texture;
 		void main()

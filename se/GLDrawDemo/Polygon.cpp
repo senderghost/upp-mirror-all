@@ -14,8 +14,7 @@ void GLMakePolygon(GLVertexData& mesh, const Vector<Vector<Pointf>>& polygon)
 void GLDrawPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Color color, double alpha)
 {
 	static GLCode program(R"(
-		#version 330 core
-	    in vec2 aPos;
+	    attribute vec2 aPos;
 		uniform vec2 offset;
 		uniform vec2 scale;
 	    void main()
@@ -30,8 +29,6 @@ void GLDrawPolygon(Sizef vs, Point at, const GLVertexData& mesh, Sizef scale, Co
 			gl_FragColor = color;
 		}
 	)");
-
-			RTIMING("Poly");
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
