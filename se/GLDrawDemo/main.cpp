@@ -9,6 +9,9 @@ Image image;
 void GeomTest(Draw& w, Size sz)
 {
 	w.DrawRect(sz, White());
+	return;
+	
+	
 	static const int d[] = { PEN_NULL, PEN_SOLID, PEN_DASH, PEN_DOT, PEN_DASHDOT, PEN_DASHDOTDOT, 1, 2, 3, 10 };
 	for(int i = 0; i < __countof(d); i++) {
 		w.DrawLine(10, i * 10, 200, i * 10, d[i], Red());
@@ -92,8 +95,19 @@ struct OpenGLExample : GLCtrl {
 	
 	virtual void GLPaint()
 	{
-
+		LOG("HERE");
 		Size sz = GetSize();
+
+		GLTriangles t;
+		
+		t.Triangle(t.Vertex(0, 0, Blue(), 1),
+		           t.Vertex(100, 0, Blue(), 1),
+		           t.Vertex(0, 100, Blue(), 1));
+	
+		GLContext2D dd(sz);
+		t.Draw(dd);
+
+		return;
 
 		DrawGL w(sz);
 		
@@ -144,7 +158,7 @@ GUI_APP_MAIN
 
 	TopWindow win;
 	OpenGLExample gl1, gl2;
-#if 1
+#if 0
 	Splitter sp;
 	gl1.SetFrame(InsetFrame());
 	gl2.SetFrame(InsetFrame());
