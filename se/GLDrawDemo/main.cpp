@@ -95,17 +95,35 @@ struct OpenGLExample : GLCtrl {
 	
 	virtual void GLPaint()
 	{
+//		GLDraw ww(GetSize());
+//		ww.DrawRect(100, 100, 100, 100, Blue());
+//		return;
+
 		LOG("HERE");
 		Size sz = GetSize();
-
+		
+		{
+			GLDraw w(sz);
+			w.DrawText(500, 500, "Hello world!");
+		}
+		
 		GLTriangles t;
 		
-		t.Triangle(t.Vertex(0, 0, Blue(), 1),
-		           t.Vertex(100, 0, Blue(), 1),
-		           t.Vertex(0, 100, Blue(), 1));
+		t.Triangle(t.Vertex(0, 0, Blue(), 1), t.Vertex(100, 0, Blue(), 1), t.Vertex(0, 100, Blue(), 1));
 	
-		GLContext2D dd(sz);
-		t.Draw(dd);
+		GLContext2D dd2(sz);
+		DDUMP(sz);
+		DDUMP(dd2.vs);
+		DDUMP(dd2.off);
+		t.Draw(dd2);
+		
+		{
+			DrawGL w(sz);
+			w.Opacity(0.5);
+			w.DrawImage(0, 500, CtrlImg::exclamation());
+			w.DrawText(500, 700, "XXX", Arial(60));
+			w.DrawRect(100, 600, 100, 100, Blue());
+		}
 
 		return;
 
