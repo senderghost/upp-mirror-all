@@ -117,12 +117,15 @@ struct OpenGLExample : GLCtrl {
 		DDUMP(dd2.off);
 		t.Draw(dd2);
 		
+		GLDrawEllipse(dd2, Pointf(200, 200), Sizef(80, 80), Null, 5, Red());
+		
 		{
 			DrawGL w(sz);
 			w.Opacity(0.5);
 			w.DrawImage(0, 500, CtrlImg::exclamation());
 			w.DrawText(500, 700, "XXX", Arial(60));
 			w.DrawRect(100, 600, 100, 100, Blue());
+			w.DrawEllipse(700, 600, 100, 100, Null, 5, Black());
 		}
 
 		return;
