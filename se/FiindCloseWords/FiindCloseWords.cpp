@@ -1,5 +1,4 @@
 #include <Core/Core.h>
-#include <Painter/Painter.h>
 
 using namespace Upp;
 
@@ -249,7 +248,7 @@ CONSOLE_APP_MAIN
 	DUMP(t.Get("keep", "pek"));
 
 //	FindCloseWords(LNG_ENGLISH, "pek", 20);
-	FindCloseWords(LNG_ENGLISH, "tomrw", 20);
+//	FindCloseWords(LNG_ENGLISH, "tomrw", 20);
 //	FindCloseWords(LNG_ENGLISH, "ht", 20);
 	FindCloseWords(LNG_('C','S','C','Z'), "csky", 20);
 //	FindCloseWords(LNG_('C','S','C','Z'), "csky", 20);
