@@ -9,6 +9,7 @@ using namespace Upp;
 
 class GLCamera : public TopWindow {
 public:
+	virtual void MouseWheel(Point p, int zdelta, dword keyflags);
 	virtual void MouseMove(Point p, dword keyflags);
 
 	GLCtrl view;

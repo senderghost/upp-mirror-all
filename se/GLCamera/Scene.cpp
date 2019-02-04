@@ -33,7 +33,7 @@ float fov   =  45.0f;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-unsigned int VBO, VAO;
+// unsigned int VBO, VAO;
 
 static GLTexture texture1, texture2;
 
@@ -50,6 +50,8 @@ glm::vec3 cubePositions[] = {
     glm::vec3( 1.5f,  0.2f, -1.5f),
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
+
+GLVertexData verts;
 
 void InitScene()
 {
@@ -106,6 +108,28 @@ void InitScene()
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
+	Vector<float> vert;
+	Vector<float> tex;
+	Vector<int> index;
+	
+	int ii = 0;
+	for(int i = 0; i < __countof(vertices); i += 5) {
+		float *v = vertices + i;
+		vert << v[0] << v[1] << v[2];
+		tex << v[3] << v[4];
+		index.Add(ii++);
+	}
+
+	verts.Add(vert, 3);
+	verts.Add(tex, 2);
+	verts.Index(index);
+	
+	DDUMPC(index);
+	DDUMPC(vert);
+	DDUMPC(tex);
+
+#if 0
+	
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -120,6 +144,7 @@ void InitScene()
     // texture coord attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+#endif
 
     texture1.Set(DataImg::container());
     texture2.Set(DataImg::awesomeface());
@@ -192,7 +217,7 @@ void PaintScene(Size sz)
     ourShader.Mat4("view", &view[0][0]);
 
         // render boxes
-    glBindVertexArray(VAO);
+//    glBindVertexArray(VAO);
     for (unsigned int i = 0; i < 10; i++)
     {
         // calculate the model matrix for each object and pass it to shader before drawing
@@ -201,8 +226,10 @@ void PaintScene(Size sz)
         float angle = 20.0f * i;
         model = glm::rotate<float>(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         ourShader.Mat4("model", &model[0][0]);
+        
+        verts.Draw(ourShader);
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 }
 

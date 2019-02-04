@@ -32,6 +32,12 @@ void GLCamera::MouseMove(Point p, dword keyflags)
 	view.Refresh();
 }
 
+void GLCamera::MouseWheel(Point p, int zdelta, dword keyflags)
+{
+	mouse_scroll(0, sgn(zdelta));
+	view.Refresh();
+}
+
 GUI_APP_MAIN
 {
 	GLCamera().Run();
