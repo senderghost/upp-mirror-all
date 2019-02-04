@@ -1,0 +1,10 @@
+uses
+	CtrlLib;
+
+file
+	Cutlas.h,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

@@ -1,0 +1,16 @@
+description "OpenGL based GLDraw demo\377";
+
+uses
+	CtrlLib,
+	GLDraw,
+	GLCtrl,
+	plugin/jpg;
+
+file
+	GLDrawNew.h,
+	GLDrawNew.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+
