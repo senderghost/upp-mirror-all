@@ -1,13 +1,5 @@
 #include "GLCamera.h"
 
-#include <plugin/glm/glm.hpp>
-#include <plugin/glm/gtc/matrix_transform.hpp>
-#include <plugin/glm/gtc/type_ptr.hpp>
-
-#define IMAGECLASS DataImg
-#define IMAGEFILE <GLCamera/data.iml>
-#include <Draw/iml_header.h>
-
 #define IMAGECLASS DataImg
 #define IMAGEFILE <GLCamera/data.iml>
 #include <Draw/iml_source.h>
@@ -18,16 +10,6 @@
 // const unsigned int SCR_HEIGHT = 600;
 
 // camera
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 30.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
-
-bool firstMouse = true;
-float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
-float pitch =  0.0f;
-float lastX =  800.0f / 2.0;
-float lastY =  600.0 / 2.0;
-float fov   =  45.0f;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -35,122 +17,8 @@ float lastFrame = 0.0f;
 
 // unsigned int VBO, VAO;
 
-static GLTexture texture1, texture2;
-
 // world space positions of our cubes
-glm::vec3 cubePositions[] = {
-    glm::vec3( 0.0f,  0.0f,  0.0f),
-    glm::vec3( 2.0f,  5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3( 2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f,  3.0f, -7.5f),
-    glm::vec3( 1.3f, -2.0f, -2.5f),
-    glm::vec3( 1.5f,  2.0f, -2.5f),
-    glm::vec3( 1.5f,  0.2f, -1.5f),
-    glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-GLVertexData verts;
-
-void InitScene()
-{
-    // configure global opengl state
-    // -----------------------------
-    glEnable(GL_DEPTH_TEST);
-
-    // build and compile our shader zprogram
-    // ------------------------------------
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    static float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-	Vector<float> vert;
-	Vector<float> tex;
-	Vector<int> index;
-	
-	int ii = 0;
-	for(int i = 0; i < __countof(vertices); i += 5) {
-		float *v = vertices + i;
-		vert << v[0] << v[1] << v[2];
-		tex << v[3] << v[4];
-		index.Add(ii++);
-	}
-
-	verts.Add(vert, 3);
-	verts.Add(tex, 2);
-	verts.Index(index);
-	
-	DDUMPC(index);
-	DDUMPC(vert);
-	DDUMPC(tex);
-
-#if 0
-	
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-#endif
-
-    texture1.Set(DataImg::container());
-    texture2.Set(DataImg::awesomeface());
-}
-
-void PaintScene(Size sz)
+void GLTerrain::PaintScene(Size sz)
 {
     static GLCode ourShader(R"(
 		#version 330 core
@@ -160,12 +28,11 @@ void PaintScene(Size sz)
 		out vec2 TexCoord;
 		
 		uniform mat4 model;
-		uniform mat4 view;
-//		uniform mat4 projection;
+		uniform mat4 viewProjection;
 		
 		void main()
 		{
-			gl_Position = /*projection * */view * model * vec4(aPos, 1.0f);
+			gl_Position = viewProjection * model * vec4(aPos, 1.0f);
 			TexCoord = aTexCoord;
 		}
 	)", R"(
@@ -174,18 +41,17 @@ void PaintScene(Size sz)
 		
 		in vec2 TexCoord;
 		
-		// texture samplers
-		uniform sampler2D texture1;
-		uniform sampler2D texture2;
+		uniform sampler2D tex;
 		
 		void main()
 		{
-			// linearly interpolate between both textures (80% container, 20% awesomeface)
-			FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
+			FragColor = texture(tex, TexCoord);
 		}
 	)");
 	
 	DLOG("PAINT");
+
+    glEnable(GL_DEPTH_TEST);
 
     // per-frame time logic
     // --------------------
@@ -202,8 +68,7 @@ void PaintScene(Size sz)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 	
-	texture1.Bind(0);
-	texture2.Bind(1);
+	texture.Bind(0);
 
 	// activate shader
     ourShader.Use();
@@ -214,23 +79,16 @@ void PaintScene(Size sz)
 
     // camera/view transformation
     glm::mat4 view = projection * glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    ourShader.Mat4("view", &view[0][0]);
 
-        // render boxes
-//    glBindVertexArray(VAO);
-    for (unsigned int i = 0; i < 10; i++)
-    {
-        // calculate the model matrix for each object and pass it to shader before drawing
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        model = glm::translate<float>(model, cubePositions[i]);
-        float angle = 20.0f * i;
-        model = glm::rotate<float>(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        ourShader.Mat4("model", &model[0][0]);
-        
-        verts.Draw(ourShader);
 
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+//    glm::mat4 view = projection * glm::lookAt(glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), glm::vec3(0.0, 1.0, 0.0));
+
+
+    ourShader.Mat4("viewProjection", &view[0][0]);
+
+    glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+    ourShader.Mat4("model", &model[0][0]);
+    verts.Draw(ourShader);
 }
 
 #if 0
@@ -322,7 +180,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 #endif
 
-void mouse_move(double xpos, double ypos)
+void GLTerrain::mouse_move(double xpos, double ypos)
 {
     if (firstMouse)
     {
@@ -359,9 +217,7 @@ void mouse_move(double xpos, double ypos)
     cameraFront = glm::normalize(front);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void mouse_scroll(double xoffset, double yoffset)
+void GLTerrain::mouse_scroll(double xoffset, double yoffset)
 {
 	fov *= yoffset < 0 ? 1.1 : 1 / 1.1;
 }

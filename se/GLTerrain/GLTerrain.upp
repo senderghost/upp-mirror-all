@@ -1,0 +1,15 @@
+uses
+	CtrlLib,
+	GLCtrl,
+	GLDraw;
+
+file
+	GLCamera.h,
+	Init.cpp,
+	Scene.cpp,
+	main.cpp,
+	data.iml;
+
+mainconfig
+	"" = "GUI";
+
