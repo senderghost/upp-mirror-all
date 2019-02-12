@@ -2,6 +2,39 @@
 
 using namespace Upp;
 
+Color DarkTheme2(Color c)
+{
+	int h = 255 - Grayscale(c);
+
+	int v[3], t[3];
+	v[0] = c.GetR();
+	v[1] = c.GetG();
+	v[2] = c.GetB();
+	
+	t[0] = h;
+	t[1] = h;
+	t[2] = h;
+
+	int m0 = v[0] + v[1] + v[2];
+	int m = 3*256 - m0;
+	
+	int i0 = 0;
+	int i1 = 1;
+	int i2 = 2;
+	
+	if(v[i0] > v[i1])
+		Swap(i0, i1);
+	if(v[i1] > v[i2])
+		Swap(i1, i2);
+	if(v[i0] > v[i1])
+		Swap(i0, i1);
+
+	t[i0] = clamp(h - (v[1] - v[0]), 0, 255);
+	t[i2] = clamp(h + (v[2] - v[1]), 0, 255);
+	
+	return Color(t[i0], t[i1], t[i2]);
+}
+
 Image DarkTheme(const Image& img)
 {
 	Image simg = Unmultiply(img);
@@ -16,7 +49,7 @@ Image DarkTheme(const Image& img)
 		byte a = h.a;
 		h.a = 255;
 	//	DLOG(h << " -> " << DarkTheme(Color(h)));
-		h = DarkTheme(Color(h));
+		h = DarkTheme2(Color(h));
 		h.a = a;
 		*t++ = h;
 	}
@@ -30,8 +63,8 @@ void PaintImages(Draw& w, Rect r, Iml& iml, bool dark)
 {
 	// DDUMP(dark);
 	w.DrawRect(r, dark ? Black() : White());
-	int x = r.left;
-	int y = r.top;
+	int x = r.left + 8;
+	int y = r.top + 8;
 	int cy = 0;
 	for(int i = 0; i < iml.GetCount(); i++) {
 		Image m = iml.Get(i);
@@ -40,7 +73,7 @@ void PaintImages(Draw& w, Rect r, Iml& iml, bool dark)
 		Size sz = m.GetSize();
 		if(x + sz.cx + 16 > r.right) {
 			y += cy + 16;
-			x = r.left;
+			x = r.left + 8;
 		}
 		w.DrawImage(x, y, m);
 		x += sz.cx + 16;
@@ -89,5 +122,5 @@ GUI_APP_MAIN
 	return;
 #endif
 	
-	MyApp().Run();
+	MyApp().Sizeable().Run();
 }
