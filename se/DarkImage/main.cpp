@@ -26,9 +26,12 @@ Color DarkTheme2(Color c)
 	if(v[i0] > v[i1])
 		Swap(i0, i1);
 
-	int k = (i2 == 2) + 1; // Blue compensation
-	t[i0] = clamp(h - k * (v[1] - v[0]), 0, 255);
-	t[i2] = clamp(h + k * (v[2] - v[1]), 0, 255);
+	t[i0] = clamp(h - (v[1] - v[0]), 0, 255);
+	int h2 = h + (v[2] - v[1]);
+	t[i2] = clamp(h2, 0, 255);
+	h2 -= t[i2];
+	t[i0] -= h2;
+	t[i1] -= h2;
 	
 	return Color(t[i0], t[i1], t[i2]);
 }
@@ -90,7 +93,7 @@ struct MyApp : TopWindow {
 
 GUI_APP_MAIN
 {
-#if 1
+#if 0
 	DDUMP(DarkTheme2(Color(0,0,255)));
 	return;
 
