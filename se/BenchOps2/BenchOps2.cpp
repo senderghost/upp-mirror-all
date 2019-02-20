@@ -27,6 +27,7 @@ struct Bench {
 const int AN = 256;
 
 volatile int    integer[16];
+volatile thread_local int  tls[16];
 volatile int64  i64[16];
 volatile double fp64[16];
 volatile float  fp32[16];
@@ -40,7 +41,9 @@ Data64 data1[16], data2[16];
 
 CONSOLE_APP_MAIN
 {
-	int n = Random(128) + 1;
+	int n = Random();
+	if(!n)
+		n = 1;
 	int64 n64 = n;
 	double dn = Randomf() + 0.01;
 	float fn = (float)dn;
@@ -51,6 +54,15 @@ CONSOLE_APP_MAIN
 			integer[1] += n;
 			integer[2] += n;
 			integer[3] += n;
+		}
+	}
+	{
+		Bench _("TLS", 100);
+		for(int i = 0; i < 100 * N; i++) {
+			tls[0] += n;
+			tls[1] += n;
+			tls[2] += n;
+			tls[3] += n;
 		}
 	}
 	{
@@ -173,10 +185,14 @@ CONSOLE_APP_MAIN
 	{
 		Bench _("free(malloc(32))", 2);
 		for(int i = 0; i < 2 * N; i++) {
-			free(malloc(32));
-			free(malloc(32));
-			free(malloc(32));
-			free(malloc(32));
+			void *ptr1 = malloc(64);
+			void *ptr2 = malloc(64);
+			void *ptr3 = malloc(64);
+			void *ptr4 = malloc(64);
+			free(ptr1);
+			free(ptr2);
+			free(ptr3);
+			free(ptr4);
 		}
 	}
 	{
@@ -186,6 +202,26 @@ CONSOLE_APP_MAIN
 			delete new byte[32];
 			delete new byte[32];
 			delete new byte[32];
+		}
+	}
+	{
+		Bench _("Spinlock", 10);
+		SpinLock m;
+		for(int i = 0; i < 10 * N; i++) {
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
+		}
+	}
+	{
+		Bench _("Mutex lock/unlock", 10);
+		Mutex m;
+		for(int i = 0; i < 10 * N; i++) {
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
+			m.Enter(); m.Leave();
 		}
 	}
 
