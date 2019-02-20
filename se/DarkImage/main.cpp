@@ -1,4 +1,5 @@
 #include <CtrlLib/CtrlLib.h>
+#include <plugin/jpg/jpg.h>
 
 using namespace Upp;
 
@@ -26,8 +27,8 @@ Color DarkTheme2(Color c)
 	if(v[i0] > v[i1])
 		Swap(i0, i1);
 
-	t[i0] = clamp(h - (v[1] - v[0]), 0, 255);
-	int h2 = h + (v[2] - v[1]);
+	t[i0] = clamp(h - (v[i1] - v[i0]), 0, 255);
+	int h2 = h + (v[i2] - v[i1]);
 	t[i2] = clamp(h2, 0, 255);
 	h2 -= t[i2];
 	t[i0] -= h2;
@@ -82,19 +83,26 @@ void PaintImages(Draw& w, Rect r, Iml& iml, bool dark)
 	}
 }
 
+Image photo;
+
 struct MyApp : TopWindow {
 	virtual void Paint(Draw& w) {
 		Size sz = GetSize();
 		w.DrawRect(sz, White());
+	#if 1
 		PaintImages(w, RectC(0, 0, sz.cx, sz.cy / 2), CtrlImg::Iml(), false);
 		PaintImages(w, RectC(0, sz.cy / 2, sz.cx, sz.cy / 2), CtrlImg::Iml(), true);
+	#else
+		w.DrawImage(0, 0, photo);
+		w.DrawImage(500, 0, DarkTheme(photo));
+	#endif
 	}
 };
 
 GUI_APP_MAIN
 {
 #if 0
-	DDUMP(DarkTheme2(Color(0,0,255)));
+	DDUMP(DarkTheme2(Color(255,255,0)));
 	return;
 
 	RGBA h;
@@ -122,6 +130,8 @@ GUI_APP_MAIN
 	
 	return;
 #endif
+
+	photo = StreamRaster::LoadFileAny("C:/xxx/IMG_20190216_112451776.png");
 	
 	MyApp().Sizeable().Run();
 }
