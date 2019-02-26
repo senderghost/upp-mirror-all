@@ -1,0 +1,15 @@
+uses
+	CtrlLib,
+	plugin/earcut,
+	plugin/tess2;
+
+file
+	Cutlass.h,
+	Data.cpp,
+	Data2.cpp,
+	Cutlass.hpp,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+

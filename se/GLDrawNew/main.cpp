@@ -101,31 +101,58 @@ struct OpenGLExample : GLCtrl {
 
 		LOG("HERE");
 		Size sz = GetSize();
-		
+/*		
 		{
 			GLDraw w(sz);
 			w.DrawText(500, 500, "Hello world!");
 		}
-		
+*/		
+		static GLTexture tx[8];
+		ONCELOCK {
+			int i = 0;
+			for(FindFile ff("S:/safe/DigiFoto/Korea2011/100SSCAM/*.JPG"); i < 8 && ff; ff.Next())
+				tx[i++].Set(StreamRaster::LoadFileAny(ff.GetPath()));
+		}
+
 		GLTriangles2 t;
 		
-		t.Triangle(t.Vertex(0, 0, Red(), 1), t.Vertex(100, 0, Red(), 1), t.Vertex(0, 100, Red(), 1));
-	
-		GLContext2D dd2(sz);
-		DDUMP(sz);
-		DDUMP(dd2.vs);
-		DDUMP(dd2.off);
-		GLTexture tx[8];
+		double t0 = usecs();
 		
+		GLContext2D dd2(sz);
+		Rectf r((Sizef)sz);
+
+#if 0
 		for(int i = 0; i < 8; i++) {
-			ImageDraw iw(100, 100);
-			iw.DrawEllipse(0, 0, 100, 100, LtCyan(), 3, Red());
-			iw.DrawText(20, 20, AsString(i), Arial(30), Black());
-			tx[i].Set(iw);
-			int x = i * 120;
-			t.Triangle(t.Vertex(100 + x, 300, i, 0, 0, 1), t.Vertex(200 + x, 300, i, 100, 0, 1), t.Vertex(100 + x, 400, i, 0, 100, 1));
+			t.Clear();
+			Sizef isz = tx[i].GetSize();
+			isz -= 1;
+			int tl = t.Vertex((float)r.left, (float)r.top, i, 0, 0, 0.5);
+			int tr = t.Vertex((float)r.right, (float)r.top, i, isz.cx, 0, 0.5);
+			int bl = t.Vertex((float)r.left, (float)r.bottom, i, 0, isz.cy, 0.5);
+			int br = t.Vertex((float)r.right, (float)r.bottom, i, isz.cx, isz.cy, 0.5);
+			t.Triangle(tl, tr, bl);
+			t.Triangle(bl, tr, br);
+			r.Deflate(50);
+			t.Draw(dd2, tx, 8);
+		}
+
+#endif
+#if 1
+		for(int i = 0; i < 8; i++) {
+			Sizef isz = tx[i].GetSize();
+			isz -= 1;
+			int tl = t.Vertex((float)r.left, (float)r.top, i, 0, 0, 0.5);
+			int tr = t.Vertex((float)r.right, (float)r.top, i, isz.cx, 0, 0.5);
+			int bl = t.Vertex((float)r.left, (float)r.bottom, i, 0, isz.cy, 0.5);
+			int br = t.Vertex((float)r.right, (float)r.bottom, i, isz.cx, isz.cy, 0.5);
+			t.Triangle(tl, tr, bl);
+			t.Triangle(bl, tr, br);
+			r.Deflate(50);
 		}
 		t.Draw(dd2, tx, 8);
+#endif
+		glFlush();
+		RDUMP(AsString(usecs() - t0));
 		return;
 		
 		GLDrawEllipse(dd2, Pointf(200, 200), Sizef(80, 80), Null, 5, Red());
