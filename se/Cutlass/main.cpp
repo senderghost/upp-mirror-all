@@ -8,6 +8,7 @@ using namespace Upp;
 
 Vector<Vector<Pointf>> TestData();
 Vector<Vector<Pointf>> TestData2();
+Vector<Vector<Pointf>> TestDataSaw();
 
 Vector<Vector<Pointf>> dude =
 {
@@ -18,6 +19,9 @@ Vector<Vector<Pointf>> dude =
 
 Cutlass ct;
 int cii = 0;
+
+Vector<Vector<Pointf>> test = TestData();
+Rectf testr = Null;
 
 Color RandomColor()
 {
@@ -40,10 +44,9 @@ struct MyApp : TopWindow {
 
 		iw.Begin();
 
-		iw.Scale(2);
 		iw.Begin();
-		iw.Translate(-200, -200);
-		for(const auto& s : dude) {
+		iw.Translate(-testr.left, -testr.top + 50);
+		for(const auto& s : test) {
 			for(int i = 0; i < s.GetCount(); i++)
 				if(i) {
 					count1++;
@@ -55,7 +58,8 @@ struct MyApp : TopWindow {
 			iw.Stroke(1, Black());
 		}
 		iw.End();
-		
+
+#if 0
 		cii = 0;
 
 		iw.Begin();
@@ -72,15 +76,15 @@ struct MyApp : TopWindow {
 			}
 		}
 		iw.End();
+#endif
 
 		int count3 = 0;
 #if 1
 		iw.Begin();
 		cii = 0;
-		iw.Translate(500, -200);
-		iw.Scale(0.2);
 		Cutlass ct;
-		for(const auto& s : TestData()) {
+		iw.Translate(-testr.left + sz.cx / 2, -testr.top + 50);
+		for(const auto& s : test) {
 			for(int i = 0; i < s.GetCount(); i++)
 				ct.AddLine(s[i], s[(i + 1) % s.GetCount()]);
 		}
@@ -146,26 +150,32 @@ void Benchmark(const Vector<Vector<Pointf>>& data, int N)
 
 GUI_APP_MAIN
 {
-#ifndef _DEBUG
-	Benchmark(TestData2(), 50);
-//	Benchmark(TestData(), 50);
-//	Benchmark(dude, 50000);
-	BeepExclamation();
-	return;
-#endif
-
 	{
 		Vector<Pointf> vertex;
 		Vector<int> index;
-		Tesselate(dude, vertex, index, true);
+		Tesselate(test, vertex, index, true);
 		RDUMP(index.GetCount() / 3);
 	}
 
-	for(const auto& s : dude) {
-		for(int i = 0; i < s.GetCount(); i++)
-			ct.AddLine(s[i], s[(i + 1) % s.GetCount()]);
-	}
+#ifndef _DEBUG
+//	Benchmark(TestData2(), 50);
+//	Benchmark(TestData(), 50);
+	Benchmark(test, 50000);
+	BeepExclamation();
+	return;
 
+#endif
+
+	for(const auto& s : test) {
+		for(int i = 0; i < s.GetCount(); i++) {
+			if(IsNull(testr))
+				testr = Rectf(s[i], s[i]);
+			else
+				testr.Union(s[i]);
+			ct.AddLine(s[i], s[(i + 1) % s.GetCount()]);
+		}
+	}
+	
 	ct.Do([](double, double, double, double, double, double) {});
 
 	MyApp().Run();

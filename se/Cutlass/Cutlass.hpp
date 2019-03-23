@@ -50,19 +50,19 @@ void Cutlass::Do(const Out& out)
 		Pointf h = ln.p2 - ln.p1;
 		double d = h.x / h.y;
 
-		double x1 = ln.p1.x;
+		double x1 = ln.p1.x; // x at the top of band
 		for(int i = ii; i + 1 < band.GetCount(); i++) { // cut the line, add to appropriate bands
 			BandLine& bl = band[i].line.Add(); // we need to add line segment to this band
 			bl.dir = ln.dir;
 			bl.x1 = x1;
 
-			double y2 = band[i + 1].y; // start of next band is end of the current
+			double y2 = band[i + 1].y; // start of next band is the end of the current
 			if(y2 >= ln.p2.y) { // this is the last band for ln
 				bl.x2 = ln.p2.x;
 				break;
 			}
 			else
-				bl.x2 = x1 = d * (y2 - ln.p1.y) + ln.p1.x; // cut the line
+				x1 = bl.x2 = d * (y2 - ln.p1.y) + ln.p1.x; // cut the line
 		}
 	}
 	

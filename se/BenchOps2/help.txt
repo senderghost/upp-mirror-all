@@ -1,0 +1,1052 @@
+D30D4FD0  mov rax,rsp 
+D30D4FD3  push rbp 
+D30D4FD4  push rbx 
+D30D4FD5  push rsi 
+D30D4FD6  push rdi 
+D30D4FD7  push r12 
+D30D4FD9  push r13 
+D30D4FDB  push r14 
+D30D4FDD  push r15 
+D30D4FDF  lea rbp,[rax-0x3c8] 
+D30D4FE6  rex.w 
+D30D4FE7  sub esp,0x488 
+D30D4FED  mov qword [rbp+0x10],0xfffffffe 
+D30D4FF5  movaps [rax-0x58],xmm6 
+D30D4FF9  movaps [rax-0x68],xmm7 
+D30D4FFD  movaps [rax-0x78],xmm8 
+D30D5002  movaps [rax-0x88],xmm9 
+D30D500A  movaps [rax-0x98],xmm10 
+D30D5012  mov ecx,[rel 0xffffffffd3243758] 
+D30D5018  mov rax,[gs:0x58] 
+D30D5021  mov rbx,[rax+rcx*8] 
+D30D5025  mov r13d,0x110 
+D30D502B  mov eax,[rbx+r13] 
+D30D502F  inc eax 
+D30D5031  mov [rbx+r13],eax 
+D30D5035  mov ecx,0x20 
+D30D503A  call dword 0x7ff6d2e59304 
+D30D503F  mov esi,0x1 
+D30D5044  mov edx,esi 
+D30D5046  mov rcx,rax 
+D30D5049  call dword 0x7ff6d2e523fb 
+D30D504E  lea ecx,[rsi+0x1f] 
+D30D5051  call dword 0x7ff6d2e59304 
+D30D5056  mov edx,esi 
+D30D5058  mov rcx,rax 
+D30D505B  call dword 0x7ff6d2e523fb 
+D30D5060  call dword 0x7ff6d2e5a5a1 
+D30D5065  test eax,eax 
+D30D5067  cmovz eax,esi 
+D30D506A  mov [rsp+0x30],eax 
+D30D506E  movsxd rdi,eax 
+D30D5071  call dword 0x7ff6d2e5b415 
+D30D5076  movaps xmm6,xmm0 
+D30D5079  movsd xmm9,[rel 0xffffffffd3137a48] 
+D30D5082  addsd xmm6,xmm9 
+D30D5087  xorps xmm7,xmm7 
+D30D508A  cvtsd2ss xmm7,xmm6 
+D30D508E  movsd xmm8,[rel 0xffffffffd31057c8] 
+D30D5097  movaps xmm2,xmm8 
+D30D509B  lea rdx,[rel 0xffffffffd3105c3c] 
+D30D50A2  lea rcx,[rbp+0x30] 
+D30D50A6  call dword 0x7ff6d2e5f0ab 
+D30D50AB  mov r12d,0x3b9aca00 
+D30D50B1  mov ecx,r12d 
+D30D50B4  nop dword [rax+0x0] 
+D30D50B8  nop dword [rax+rax+0x0] 
+D30D50C0  mov eax,[rel 0xffffffffd32059f0] 
+D30D50C6  add eax,[rsp+0x30] 
+D30D50CA  mov [rel 0xffffffffd32059f0],eax 
+D30D50D0  mov eax,[rel 0xffffffffd32059f4] 
+D30D50D6  add eax,[rsp+0x30] 
+D30D50DA  mov [rel 0xffffffffd32059f4],eax 
+D30D50E0  mov eax,[rel 0xffffffffd32059f8] 
+D30D50E6  add eax,[rsp+0x30] 
+D30D50EA  mov [rel 0xffffffffd32059f8],eax 
+D30D50F0  mov eax,[rel 0xffffffffd32059fc] 
+D30D50F6  add eax,[rsp+0x30] 
+D30D50FA  mov [rel 0xffffffffd32059fc],eax 
+D30D5100  sub rcx,rsi 
+D30D5103  jnz 0x7ff6d30d50c0 
+D30D5105  lea rcx,[rbp+0x30] 
+D30D5109  call dword 0x7ff6d2e5511e 
+D30D510E  movaps xmm2,xmm8 
+D30D5112  lea rdx,[rel 0xffffffffd3107068] 
+D30D5119  lea rcx,[rbp+0x50] 
+D30D511D  call dword 0x7ff6d2e5f0ab 
+D30D5122  movsxd rcx,dword [rel 0xffffffffd31c7000] 
+D30D5129  mov rdx,rcx 
+D30D512C  shl rdx,0x6 
+D30D5130  lea r14,[rel 0xffffffffd3205fc0] 
+D30D5137  lea eax,[rcx+0x1] 
+D30D513A  movsxd r8,eax 
+D30D513D  shl r8,0x6 
+D30D5141  lea eax,[rcx+0x2] 
+D30D5144  movsxd r9,eax 
+D30D5147  shl r9,0x6 
+D30D514B  lea eax,[rcx-0x1] 
+D30D514E  movsxd rcx,eax 
+D30D5151  shl rcx,0x6 
+D30D5155  mov rax,r12 
+D30D5158  nop dword [rax+rax+0x0] 
+D30D5160  movups xmm0,[rdx+r14] 
+D30D5165  movaps [rel 0xffffffffd3205bc0],xmm0 
+D30D516C  movups xmm1,[rdx+r14+0x10] 
+D30D5172  movaps [rel 0xffffffffd3205bd0],xmm1 
+D30D5179  movups xmm0,[rdx+r14+0x20] 
+D30D517F  movaps [rel 0xffffffffd3205be0],xmm0 
+D30D5186  movups xmm1,[rdx+r14+0x30] 
+D30D518C  movaps [rel 0xffffffffd3205bf0],xmm1 
+D30D5193  movups xmm0,[r8+r14] 
+D30D5198  movaps [rel 0xffffffffd3205c00],xmm0 
+D30D519F  movups xmm1,[r8+r14+0x10] 
+D30D51A5  movaps [rel 0xffffffffd3205c10],xmm1 
+D30D51AC  movups xmm0,[r8+r14+0x20] 
+D30D51B2  movaps [rel 0xffffffffd3205c20],xmm0 
+D30D51B9  movups xmm1,[r8+r14+0x30] 
+D30D51BF  movaps [rel 0xffffffffd3205c30],xmm1 
+D30D51C6  movups xmm0,[r9+r14] 
+D30D51CB  movaps [rel 0xffffffffd3205c40],xmm0 
+D30D51D2  movups xmm1,[r9+r14+0x10] 
+D30D51D8  movaps [rel 0xffffffffd3205c50],xmm1 
+D30D51DF  movups xmm0,[r9+r14+0x20] 
+D30D51E5  movaps [rel 0xffffffffd3205c60],xmm0 
+D30D51EC  movups xmm1,[r9+r14+0x30] 
+D30D51F2  movaps [rel 0xffffffffd3205c70],xmm1 
+D30D51F9  movups xmm0,[rcx+r14] 
+D30D51FE  movaps [rel 0xffffffffd3205c80],xmm0 
+D30D5205  movups xmm1,[rcx+r14+0x10] 
+D30D520B  movaps [rel 0xffffffffd3205c90],xmm1 
+D30D5212  movups xmm0,[rcx+r14+0x20] 
+D30D5218  movaps [rel 0xffffffffd3205ca0],xmm0 
+D30D521F  movups xmm1,[rcx+r14+0x30] 
+D30D5225  movaps [rel 0xffffffffd3205cb0],xmm1 
+D30D522C  sub rax,rsi 
+D30D522F  jnz dword 0x7ff6d30d5160 
+D30D5235  lea rcx,[rbp+0x50] 
+D30D5239  call dword 0x7ff6d2e5511e 
+D30D523E  movaps xmm2,xmm8 
+D30D5242  lea rdx,[rel 0xffffffffd3105c50] 
+D30D5249  lea rcx,[rbp+0x70] 
+D30D524D  call dword 0x7ff6d2e5f0ab 
+D30D5252  mov rcx,r12 
+D30D5255  mov eax,[rel 0xffffffffd32059f0] 
+D30D525B  imul eax,[rsp+0x30] 
+D30D5260  mov [rel 0xffffffffd32059f0],eax 
+D30D5266  mov eax,[rel 0xffffffffd32059f4] 
+D30D526C  imul eax,[rsp+0x30] 
+D30D5271  mov [rel 0xffffffffd32059f4],eax 
+D30D5277  mov eax,[rel 0xffffffffd32059f8] 
+D30D527D  imul eax,[rsp+0x30] 
+D30D5282  mov [rel 0xffffffffd32059f8],eax 
+D30D5288  mov eax,[rel 0xffffffffd32059fc] 
+D30D528E  imul eax,[rsp+0x30] 
+D30D5293  mov [rel 0xffffffffd32059fc],eax 
+D30D5299  sub rcx,rsi 
+D30D529C  jnz 0x7ff6d30d5255 
+D30D529E  lea rcx,[rbp+0x70] 
+D30D52A2  call dword 0x7ff6d2e5511e 
+D30D52A7  movaps xmm2,xmm8 
+D30D52AB  lea rdx,[rel 0xffffffffd3105c54] 
+D30D52B2  lea rcx,[rbp+0x90] 
+D30D52B9  call dword 0x7ff6d2e5f0ab 
+D30D52BE  mov rcx,r12 
+D30D52C1  mov eax,[rel 0xffffffffd32059f0] 
+D30D52C7  cdq 
+D30D52C8  idiv dword [rsp+0x30] 
+D30D52CC  mov [rel 0xffffffffd32059f0],eax 
+D30D52D2  mov eax,[rel 0xffffffffd32059f4] 
+D30D52D8  cdq 
+D30D52D9  idiv dword [rsp+0x30] 
+D30D52DD  mov [rel 0xffffffffd32059f4],eax 
+D30D52E3  mov eax,[rel 0xffffffffd32059f8] 
+D30D52E9  cdq 
+D30D52EA  idiv dword [rsp+0x30] 
+D30D52EE  mov [rel 0xffffffffd32059f8],eax 
+D30D52F4  mov eax,[rel 0xffffffffd32059fc] 
+D30D52FA  cdq 
+D30D52FB  idiv dword [rsp+0x30] 
+D30D52FF  mov [rel 0xffffffffd32059fc],eax 
+D30D5305  sub rcx,rsi 
+D30D5308  jnz 0x7ff6d30d52c1 
+D30D530A  lea rcx,[rbp+0x90] 
+D30D5311  call dword 0x7ff6d2e5511e 
+D30D5316  movaps xmm2,xmm8 
+D30D531A  lea rdx,[rel 0xffffffffd31055e8] 
+D30D5321  lea rcx,[rbp+0xb0] 
+D30D5328  call dword 0x7ff6d2e5f0ab 
+D30D532D  mov rcx,r12 
+D30D5330  mov rax,[rel 0xffffffffd3205a30] 
+D30D5337  cqo 
+D30D5339  idiv rdi 
+D30D533C  mov [rel 0xffffffffd3205a30],rax 
+D30D5343  mov rax,[rel 0xffffffffd3205a38] 
+D30D534A  cqo 
+D30D534C  idiv rdi 
+D30D534F  mov [rel 0xffffffffd3205a38],rax 
+D30D5356  mov rax,[rel 0xffffffffd3205a40] 
+D30D535D  cqo 
+D30D535F  idiv rdi 
+D30D5362  mov [rel 0xffffffffd3205a40],rax 
+D30D5369  mov rax,[rel 0xffffffffd3205a48] 
+D30D5370  cqo 
+D30D5372  idiv rdi 
+D30D5375  mov [rel 0xffffffffd3205a48],rax 
+D30D537C  sub rcx,rsi 
+D30D537F  jnz 0x7ff6d30d5330 
+D30D5381  lea rcx,[rbp+0xb0] 
+D30D5388  call dword 0x7ff6d2e5511e 
+D30D538D  movaps xmm2,xmm8 
+D30D5391  lea rdx,[rel 0xffffffffd3105c60] 
+D30D5398  lea rcx,[rbp+0x310] 
+D30D539F  call dword 0x7ff6d2e5f0ab 
+D30D53A4  mov rax,r12 
+D30D53A7  nop word [rax+rax+0x0] 
+D30D53B0  movaps xmm0,xmm6 
+D30D53B3  mulsd xmm0,[rel 0xffffffffd3205ab0] 
+D30D53BB  movsd [rel 0xffffffffd3205ab0],xmm0 
+D30D53C3  movaps xmm1,xmm6 
+D30D53C6  mulsd xmm1,[rel 0xffffffffd3205ab8] 
+D30D53CE  movsd [rel 0xffffffffd3205ab8],xmm1 
+D30D53D6  movaps xmm0,xmm6 
+D30D53D9  mulsd xmm0,[rel 0xffffffffd3205ac0] 
+D30D53E1  movsd [rel 0xffffffffd3205ac0],xmm0 
+D30D53E9  movaps xmm1,xmm6 
+D30D53EC  mulsd xmm1,[rel 0xffffffffd3205ac8] 
+D30D53F4  movsd [rel 0xffffffffd3205ac8],xmm1 
+D30D53FC  sub rax,rsi 
+D30D53FF  jnz 0x7ff6d30d53b0 
+D30D5401  lea rcx,[rbp+0x310] 
+D30D5408  call dword 0x7ff6d2e5511e 
+D30D540D  movaps xmm2,xmm8 
+D30D5411  lea rdx,[rel 0xffffffffd3105c98] 
+D30D5418  lea rcx,[rbp+0xd0] 
+D30D541F  call dword 0x7ff6d2e5f0ab 
+D30D5424  mov rax,r12 
+D30D5427  nop word [rax+rax+0x0] 
+D30D5430  movaps xmm0,xmm6 
+D30D5433  addsd xmm0,[rel 0xffffffffd3205ab0] 
+D30D543B  movsd [rel 0xffffffffd3205ab0],xmm0 
+D30D5443  movaps xmm1,xmm6 
+D30D5446  addsd xmm1,[rel 0xffffffffd3205ab8] 
+D30D544E  movsd [rel 0xffffffffd3205ab8],xmm1 
+D30D5456  movaps xmm0,xmm6 
+D30D5459  addsd xmm0,[rel 0xffffffffd3205ac0] 
+D30D5461  movsd [rel 0xffffffffd3205ac0],xmm0 
+D30D5469  movaps xmm1,xmm6 
+D30D546C  addsd xmm1,[rel 0xffffffffd3205ac8] 
+D30D5474  movsd [rel 0xffffffffd3205ac8],xmm1 
+D30D547C  sub rax,rsi 
+D30D547F  jnz 0x7ff6d30d5430 
+D30D5481  lea rcx,[rbp+0xd0] 
+D30D5488  call dword 0x7ff6d2e5511e 
+D30D548D  movaps xmm2,xmm8 
+D30D5491  lea rdx,[rel 0xffffffffd3105cc8] 
+D30D5498  lea rcx,[rbp+0xf0] 
+D30D549F  call dword 0x7ff6d2e5f0ab 
+D30D54A4  mov rax,r12 
+D30D54A7  nop word [rax+rax+0x0] 
+D30D54B0  movsd xmm0,[rel 0xffffffffd3205ab0] 
+D30D54B8  divsd xmm0,xmm6 
+D30D54BC  movsd [rel 0xffffffffd3205ab0],xmm0 
+D30D54C4  movsd xmm1,[rel 0xffffffffd3205ab8] 
+D30D54CC  divsd xmm1,xmm6 
+D30D54D0  movsd [rel 0xffffffffd3205ab8],xmm1 
+D30D54D8  movsd xmm0,[rel 0xffffffffd3205ac0] 
+D30D54E0  divsd xmm0,xmm6 
+D30D54E4  movsd [rel 0xffffffffd3205ac0],xmm0 
+D30D54EC  movsd xmm1,[rel 0xffffffffd3205ac8] 
+D30D54F4  divsd xmm1,xmm6 
+D30D54F8  movsd [rel 0xffffffffd3205ac8],xmm1 
+D30D5500  sub rax,rsi 
+D30D5503  jnz 0x7ff6d30d54b0 
+D30D5505  lea rcx,[rbp+0xf0] 
+D30D550C  call dword 0x7ff6d2e5511e 
+D30D5511  movaps xmm2,xmm8 
+D30D5515  lea rdx,[rel 0xffffffffd3105cd8] 
+D30D551C  lea rcx,[rbp+0x110] 
+D30D5523  call dword 0x7ff6d2e5f0ab 
+D30D5528  mov rax,r12 
+D30D552B  nop dword [rax+rax+0x0] 
+D30D5530  movaps xmm0,xmm7 
+D30D5533  addss xmm0,[rel 0xffffffffd3205b30] 
+D30D553B  movss [rel 0xffffffffd3205b30],xmm0 
+D30D5543  movaps xmm1,xmm7 
+D30D5546  addss xmm1,[rel 0xffffffffd3205b34] 
+D30D554E  movss [rel 0xffffffffd3205b34],xmm1 
+D30D5556  movaps xmm0,xmm7 
+D30D5559  addss xmm0,[rel 0xffffffffd3205b38] 
+D30D5561  movss [rel 0xffffffffd3205b38],xmm0 
+D30D5569  movaps xmm1,xmm7 
+D30D556C  addss xmm1,[rel 0xffffffffd3205b3c] 
+D30D5574  movss [rel 0xffffffffd3205b3c],xmm1 
+D30D557C  sub rax,rsi 
+D30D557F  jnz 0x7ff6d30d5530 
+D30D5581  lea rcx,[rbp+0x110] 
+D30D5588  call dword 0x7ff6d2e5511e 
+D30D558D  movaps xmm2,xmm8 
+D30D5591  lea rdx,[rel 0xffffffffd3105ce8] 
+D30D5598  lea rcx,[rbp+0x130] 
+D30D559F  call dword 0x7ff6d2e5f0ab 
+D30D55A4  mov rax,r12 
+D30D55A7  nop word [rax+rax+0x0] 
+D30D55B0  movaps xmm0,xmm7 
+D30D55B3  mulss xmm0,[rel 0xffffffffd3205b30] 
+D30D55BB  movss [rel 0xffffffffd3205b30],xmm0 
+D30D55C3  movaps xmm1,xmm7 
+D30D55C6  mulss xmm1,[rel 0xffffffffd3205b34] 
+D30D55CE  movss [rel 0xffffffffd3205b34],xmm1 
+D30D55D6  movaps xmm0,xmm7 
+D30D55D9  mulss xmm0,[rel 0xffffffffd3205b38] 
+D30D55E1  movss [rel 0xffffffffd3205b38],xmm0 
+D30D55E9  movaps xmm1,xmm7 
+D30D55EC  mulss xmm1,[rel 0xffffffffd3205b3c] 
+D30D55F4  movss [rel 0xffffffffd3205b3c],xmm1 
+D30D55FC  sub rax,rsi 
+D30D55FF  jnz 0x7ff6d30d55b0 
+D30D5601  lea rcx,[rbp+0x130] 
+D30D5608  call dword 0x7ff6d2e5511e 
+D30D560D  movaps xmm2,xmm8 
+D30D5611  lea rdx,[rel 0xffffffffd3105cf8] 
+D30D5618  lea rcx,[rbp+0x150] 
+D30D561F  call dword 0x7ff6d2e5f0ab 
+D30D5624  mov rax,r12 
+D30D5627  nop word [rax+rax+0x0] 
+D30D5630  movss xmm0,[rel 0xffffffffd3205b30] 
+D30D5638  divss xmm0,xmm7 
+D30D563C  movss [rel 0xffffffffd3205b30],xmm0 
+D30D5644  movss xmm1,[rel 0xffffffffd3205b34] 
+D30D564C  divss xmm1,xmm7 
+D30D5650  movss [rel 0xffffffffd3205b34],xmm1 
+D30D5658  movss xmm0,[rel 0xffffffffd3205b38] 
+D30D5660  divss xmm0,xmm7 
+D30D5664  movss [rel 0xffffffffd3205b38],xmm0 
+D30D566C  movss xmm1,[rel 0xffffffffd3205b3c] 
+D30D5674  divss xmm1,xmm7 
+D30D5678  movss [rel 0xffffffffd3205b3c],xmm1 
+D30D5680  sub rax,rsi 
+D30D5683  jnz 0x7ff6d30d5630 
+D30D5685  lea rcx,[rbp+0x150] 
+D30D568C  call dword 0x7ff6d2e5511e 
+D30D5691  movsd xmm7,[rel 0xffffffffd310b298] 
+D30D5699  movaps xmm2,xmm7 
+D30D569C  lea rdx,[rel 0xffffffffd3105d08] 
+D30D56A3  lea rcx,[rbp+0x170] 
+D30D56AA  call dword 0x7ff6d2e5f0ab 
+D30D56AF  mov r15d,0x5f5e100 
+D30D56B5  mov edi,r15d 
+D30D56B8  nop dword [rax+rax+0x0] 
+D30D56C0  movsd xmm0,[rel 0xffffffffd3205ab0] 
+D30D56C8  call dword 0x7ff6d2e60c3f 
+D30D56CD  movsd [rel 0xffffffffd3205ab0],xmm0 
+D30D56D5  movsd xmm0,[rel 0xffffffffd3205ab8] 
+D30D56DD  call dword 0x7ff6d2e60c3f 
+D30D56E2  movsd [rel 0xffffffffd3205ab8],xmm0 
+D30D56EA  movsd xmm0,[rel 0xffffffffd3205ac0] 
+D30D56F2  call dword 0x7ff6d2e60c3f 
+D30D56F7  movsd [rel 0xffffffffd3205ac0],xmm0 
+D30D56FF  movsd xmm0,[rel 0xffffffffd3205ac8] 
+D30D5707  call dword 0x7ff6d2e60c3f 
+D30D570C  movsd [rel 0xffffffffd3205ac8],xmm0 
+D30D5714  sub rdi,rsi 
+D30D5717  jnz 0x7ff6d30d56c0 
+D30D5719  lea rcx,[rbp+0x170] 
+D30D5720  call dword 0x7ff6d2e5511e 
+D30D5725  movaps xmm2,xmm7 
+D30D5728  lea rdx,[rel 0xffffffffd3105c40] 
+D30D572F  lea rcx,[rbp+0x190] 
+D30D5736  call dword 0x7ff6d2e5f0ab 
+D30D573B  mov rdi,r15 
+D30D573E  xchg ax,ax 
+D30D5740  movss xmm0,[rel 0xffffffffd3205b30] 
+D30D5748  call dword 0x7ff6d2e6197d 
+D30D574D  movss [rel 0xffffffffd3205b30],xmm0 
+D30D5755  movss xmm0,[rel 0xffffffffd3205b34] 
+D30D575D  call dword 0x7ff6d2e6197d 
+D30D5762  movss [rel 0xffffffffd3205b34],xmm0 
+D30D576A  movss xmm0,[rel 0xffffffffd3205b38] 
+D30D5772  call dword 0x7ff6d2e6197d 
+D30D5777  movss [rel 0xffffffffd3205b38],xmm0 
+D30D577F  movss xmm0,[rel 0xffffffffd3205b3c] 
+D30D5787  call dword 0x7ff6d2e6197d 
+D30D578C  movss [rel 0xffffffffd3205b3c],xmm0 
+D30D5794  sub rdi,rsi 
+D30D5797  jnz 0x7ff6d30d5740 
+D30D5799  lea rcx,[rbp+0x190] 
+D30D57A0  call dword 0x7ff6d2e5511e 
+D30D57A5  movaps xmm2,xmm8 
+D30D57A9  lea rdx,[rel 0xffffffffd3107068] 
+D30D57B0  lea rcx,[rbp+0x1b0] 
+D30D57B7  call dword 0x7ff6d2e5f0ab 
+D30D57BC  movsxd rcx,dword [rel 0xffffffffd31c7000] 
+D30D57C3  mov rdx,rcx 
+D30D57C6  shl rdx,0x6 
+D30D57CA  lea eax,[rcx+0x1] 
+D30D57CD  movsxd r8,eax 
+D30D57D0  shl r8,0x6 
+D30D57D4  lea eax,[rcx+0x2] 
+D30D57D7  movsxd r9,eax 
+D30D57DA  shl r9,0x6 
+D30D57DE  lea eax,[rcx-0x1] 
+D30D57E1  movsxd rcx,eax 
+D30D57E4  shl rcx,0x6 
+D30D57E8  mov rax,r12 
+D30D57EB  nop dword [rax+rax+0x0] 
+D30D57F0  movups xmm0,[rdx+r14] 
+D30D57F5  movaps [rel 0xffffffffd3205bc0],xmm0 
+D30D57FC  movups xmm1,[rdx+r14+0x10] 
+D30D5802  movaps [rel 0xffffffffd3205bd0],xmm1 
+D30D5809  movups xmm0,[rdx+r14+0x20] 
+D30D580F  movaps [rel 0xffffffffd3205be0],xmm0 
+D30D5816  movups xmm1,[rdx+r14+0x30] 
+D30D581C  movaps [rel 0xffffffffd3205bf0],xmm1 
+D30D5823  movups xmm0,[r8+r14] 
+D30D5828  movaps [rel 0xffffffffd3205c00],xmm0 
+D30D582F  movups xmm1,[r8+r14+0x10] 
+D30D5835  movaps [rel 0xffffffffd3205c10],xmm1 
+D30D583C  movups xmm0,[r8+r14+0x20] 
+D30D5842  movaps [rel 0xffffffffd3205c20],xmm0 
+D30D5849  movups xmm1,[r8+r14+0x30] 
+D30D584F  movaps [rel 0xffffffffd3205c30],xmm1 
+D30D5856  movups xmm0,[r9+r14] 
+D30D585B  movaps [rel 0xffffffffd3205c40],xmm0 
+D30D5862  movups xmm1,[r9+r14+0x10] 
+D30D5868  movaps [rel 0xffffffffd3205c50],xmm1 
+D30D586F  movups xmm0,[r9+r14+0x20] 
+D30D5875  movaps [rel 0xffffffffd3205c60],xmm0 
+D30D587C  movups xmm1,[r9+r14+0x30] 
+D30D5882  movaps [rel 0xffffffffd3205c70],xmm1 
+D30D5889  movups xmm0,[rcx+r14] 
+D30D588E  movaps [rel 0xffffffffd3205c80],xmm0 
+D30D5895  movups xmm1,[rcx+r14+0x10] 
+D30D589B  movaps [rel 0xffffffffd3205c90],xmm1 
+D30D58A2  movups xmm0,[rcx+r14+0x20] 
+D30D58A8  movaps [rel 0xffffffffd3205ca0],xmm0 
+D30D58AF  movups xmm1,[rcx+r14+0x30] 
+D30D58B5  movaps [rel 0xffffffffd3205cb0],xmm1 
+D30D58BC  sub rax,rsi 
+D30D58BF  jnz dword 0x7ff6d30d57f0 
+D30D58C5  lea rcx,[rbp+0x1b0] 
+D30D58CC  call dword 0x7ff6d2e5511e 
+D30D58D1  movaps xmm2,xmm8 
+D30D58D5  lea rdx,[rel 0xffffffffd3105c80] 
+D30D58DC  lea rcx,[rbp+0x1d0] 
+D30D58E3  call dword 0x7ff6d2e5f0ab 
+D30D58E8  mov eax,[rbx+r13] 
+D30D58EC  inc eax 
+D30D58EE  mov [rbx+r13],eax 
+D30D58F2  mov edx,0x120 
+D30D58F7  mov rcx,r12 
+D30D58FA  nop word [rax+rax+0x0] 
+D30D5900  mov eax,[rdx+rbx] 
+D30D5903  add eax,[rsp+0x30] 
+D30D5907  mov [rdx+rbx],eax 
+D30D590A  mov eax,[rdx+rbx+0x4] 
+D30D590E  add eax,[rsp+0x30] 
+D30D5912  mov [rdx+rbx+0x4],eax 
+D30D5916  mov eax,[rdx+rbx+0x8] 
+D30D591A  add eax,[rsp+0x30] 
+D30D591E  mov [rdx+rbx+0x8],eax 
+D30D5922  mov eax,[rdx+rbx+0xc] 
+D30D5926  add eax,[rsp+0x30] 
+D30D592A  mov [rdx+rbx+0xc],eax 
+D30D592E  sub rcx,rsi 
+D30D5931  jnz 0x7ff6d30d5900 
+D30D5933  lea rcx,[rbp+0x1d0] 
+D30D593A  call dword 0x7ff6d2e5511e 
+D30D593F  movaps xmm2,xmm7 
+D30D5942  lea rdx,[rel 0xffffffffd3105ca8] 
+D30D5949  lea rcx,[rbp+0x1f0] 
+D30D5950  call dword 0x7ff6d2e5f0ab 
+D30D5955  mov rdx,r15 
+D30D5958  nop dword [rax+rax+0x0] 
+D30D5960  mov eax,esi 
+D30D5962  lock xadd [rel 0xffffffffd3205b70],eax 
+D30D596A  mov ecx,esi 
+D30D596C  lock xadd [rel 0xffffffffd3205b74],ecx 
+D30D5974  mov eax,esi 
+D30D5976  lock xadd [rel 0xffffffffd3205b78],eax 
+D30D597E  mov ecx,esi 
+D30D5980  lock xadd [rel 0xffffffffd3205b7c],ecx 
+D30D5988  sub rdx,rsi 
+D30D598B  jnz 0x7ff6d30d5960 
+D30D598D  lea rcx,[rbp+0x1f0] 
+D30D5994  call dword 0x7ff6d2e5511e 
+D30D5999  movsd xmm2,[rel 0xffffffffd312ebc0] 
+D30D59A1  lea rdx,[rel 0xffffffffd3106e50] 
+D30D59A8  lea rcx,[rbp+0x210] 
+D30D59AF  call dword 0x7ff6d2e5f0ab 
+D30D59B4  mov r13d,0x1312d00 
+D30D59BA  nop word [rax+rax+0x0] 
+D30D59C0  mov ecx,0x20 
+D30D59C5  call dword 0x7ff6d2e616b7 
+D30D59CA  mov r14,rax 
+D30D59CD  mov ecx,0x20 
+D30D59D2  call dword 0x7ff6d2e616b7 
+D30D59D7  mov rsi,rax 
+D30D59DA  mov ecx,0x20 
+D30D59DF  call dword 0x7ff6d2e616b7 
+D30D59E4  mov rdi,rax 
+D30D59E7  mov ecx,0x20 
+D30D59EC  call dword 0x7ff6d2e616b7 
+D30D59F1  mov rbx,rax 
+D30D59F4  mov rcx,r14 
+D30D59F7  call dword 0x7ff6d2e572f7 
+D30D59FC  mov rcx,rsi 
+D30D59FF  call dword 0x7ff6d2e572f7 
+D30D5A04  mov rcx,rdi 
+D30D5A07  call dword 0x7ff6d2e572f7 
+D30D5A0C  mov rcx,rbx 
+D30D5A0F  call dword 0x7ff6d2e572f7 
+D30D5A14  sub r13,byte +0x1 
+D30D5A18  jnz 0x7ff6d30d59c0 
+D30D5A1A  lea rcx,[rbp+0x210] 
+D30D5A21  call dword 0x7ff6d2e5511e 
+D30D5A26  movaps xmm2,xmm9 
+D30D5A2A  lea rdx,[rel 0xffffffffd3107108] 
+D30D5A31  lea rcx,[rbp+0x230] 
+D30D5A38  call dword 0x7ff6d2e5f0ab 
+D30D5A3D  mov ebx,0x186a0 
+D30D5A42  mov ecx,0x989680 
+D30D5A47  call dword 0x7ff6d2e616b7 
+D30D5A4C  mov rcx,rax 
+D30D5A4F  call dword 0x7ff6d2e572f7 
+D30D5A54  mov ecx,0x989680 
+D30D5A59  call dword 0x7ff6d2e616b7 
+D30D5A5E  mov rcx,rax 
+D30D5A61  call dword 0x7ff6d2e572f7 
+D30D5A66  mov ecx,0x989680 
+D30D5A6B  call dword 0x7ff6d2e616b7 
+D30D5A70  mov rcx,rax 
+D30D5A73  call dword 0x7ff6d2e572f7 
+D30D5A78  mov ecx,0x989680 
+D30D5A7D  call dword 0x7ff6d2e616b7 
+D30D5A82  mov rcx,rax 
+D30D5A85  call dword 0x7ff6d2e572f7 
+D30D5A8A  sub rbx,byte +0x1 
+D30D5A8E  jnz 0x7ff6d30d5a42 
+D30D5A90  lea rcx,[rbp+0x230] 
+D30D5A97  call dword 0x7ff6d2e5511e 
+D30D5A9C  movaps xmm2,xmm7 
+D30D5A9F  lea rdx,[rel 0xffffffffd310de28] 
+D30D5AA6  lea rcx,[rbp+0x250] 
+D30D5AAD  call dword 0x7ff6d2e5f0ab 
+D30D5AB2  nop 
+D30D5AB3  mov rbx,r15 
+D30D5AB6  mov edi,0x1 
+D30D5ABB  nop dword [rax+rax+0x0] 
+D30D5AC0  mov ecx,0x20 
+D30D5AC5  call dword 0x7ff6d2e59304 
+D30D5ACA  mov rdx,rdi 
+D30D5ACD  mov rcx,rax 
+D30D5AD0  call dword 0x7ff6d2e523fb 
+D30D5AD5  mov ecx,0x20 
+D30D5ADA  call dword 0x7ff6d2e59304 
+D30D5ADF  mov rdx,rdi 
+D30D5AE2  mov rcx,rax 
+D30D5AE5  call dword 0x7ff6d2e523fb 
+D30D5AEA  mov ecx,0x20 
+D30D5AEF  call dword 0x7ff6d2e59304 
+D30D5AF4  mov rdx,rdi 
+D30D5AF7  mov rcx,rax 
+D30D5AFA  call dword 0x7ff6d2e523fb 
+D30D5AFF  mov ecx,0x20 
+D30D5B04  call dword 0x7ff6d2e59304 
+D30D5B09  mov rdx,rdi 
+D30D5B0C  mov rcx,rax 
+D30D5B0F  call dword 0x7ff6d2e523fb 
+D30D5B14  sub rbx,rdi 
+D30D5B17  jnz 0x7ff6d30d5ac0 
+D30D5B19  lea rcx,[rbp+0x250] 
+D30D5B20  call dword 0x7ff6d2e5511e 
+D30D5B25  movsd xmm2,[rel 0xffffffffd3138e48] 
+D30D5B2D  lea rdx,[rel 0xffffffffd310dec8] 
+D30D5B34  lea rcx,[rbp+0x270] 
+D30D5B3B  call dword 0x7ff6d2e5f0ab 
+D30D5B40  nop 
+D30D5B41  mov ebx,0x2625a00 
+D30D5B46  mov ecx,0x3e8 
+D30D5B4B  call dword 0x7ff6d2e59304 
+D30D5B50  mov rdx,rdi 
+D30D5B53  mov rcx,rax 
+D30D5B56  call dword 0x7ff6d2e523fb 
+D30D5B5B  mov ecx,0x3e8 
+D30D5B60  call dword 0x7ff6d2e59304 
+D30D5B65  mov rdx,rdi 
+D30D5B68  mov rcx,rax 
+D30D5B6B  call dword 0x7ff6d2e523fb 
+D30D5B70  mov ecx,0x3e8 
+D30D5B75  call dword 0x7ff6d2e59304 
+D30D5B7A  mov rdx,rdi 
+D30D5B7D  mov rcx,rax 
+D30D5B80  call dword 0x7ff6d2e523fb 
+D30D5B85  mov ecx,0x3e8 
+D30D5B8A  call dword 0x7ff6d2e59304 
+D30D5B8F  mov rdx,rdi 
+D30D5B92  mov rcx,rax 
+D30D5B95  call dword 0x7ff6d2e523fb 
+D30D5B9A  sub rbx,byte +0x1 
+D30D5B9E  jnz 0x7ff6d30d5b46 
+D30D5BA0  lea rcx,[rbp+0x270] 
+D30D5BA7  call dword 0x7ff6d2e5511e 
+D30D5BAC  movsd xmm2,[rel 0xffffffffd3137a68] 
+D30D5BB4  lea rdx,[rel 0xffffffffd311aa38] 
+D30D5BBB  lea rcx,[rbp+0x290] 
+D30D5BC2  call dword 0x7ff6d2e5f0ab 
+D30D5BC7  nop 
+D30D5BC8  mov ebx,0xf4240 
+D30D5BCD  nop dword [rax] 
+D30D5BD0  mov ecx,0xf4240 
+D30D5BD5  call dword 0x7ff6d2e59304 
+D30D5BDA  mov rdx,rdi 
+D30D5BDD  mov rcx,rax 
+D30D5BE0  call dword 0x7ff6d2e523fb 
+D30D5BE5  mov ecx,0xf4240 
+D30D5BEA  call dword 0x7ff6d2e59304 
+D30D5BEF  mov rdx,rdi 
+D30D5BF2  mov rcx,rax 
+D30D5BF5  call dword 0x7ff6d2e523fb 
+D30D5BFA  mov ecx,0xf4240 
+D30D5BFF  call dword 0x7ff6d2e59304 
+D30D5C04  mov rdx,rdi 
+D30D5C07  mov rcx,rax 
+D30D5C0A  call dword 0x7ff6d2e523fb 
+D30D5C0F  mov ecx,0xf4240 
+D30D5C14  call dword 0x7ff6d2e59304 
+D30D5C19  mov rdx,rdi 
+D30D5C1C  mov rcx,rax 
+D30D5C1F  call dword 0x7ff6d2e523fb 
+D30D5C24  sub rbx,byte +0x1 
+D30D5C28  jnz 0x7ff6d30d5bd0 
+D30D5C2A  lea rcx,[rbp+0x290] 
+D30D5C31  call dword 0x7ff6d2e5511e 
+D30D5C36  movaps xmm2,xmm7 
+D30D5C39  lea rdx,[rel 0xffffffffd3120820] 
+D30D5C40  lea rcx,[rbp+0x2b0] 
+D30D5C47  call dword 0x7ff6d2e5f0ab 
+D30D5C4C  lea rcx,[rbp-0x40] 
+D30D5C50  call qword [rel 0xffffffffd3268610] 
+D30D5C56  mov rbx,r15 
+D30D5C59  nop dword [rax+0x0] 
+D30D5C60  lea rcx,[rbp-0x40] 
+D30D5C64  call qword [rel 0xffffffffd3268600] 
+D30D5C6A  lea rcx,[rbp-0x40] 
+D30D5C6E  call qword [rel 0xffffffffd32685f8] 
+D30D5C74  lea rcx,[rbp-0x40] 
+D30D5C78  call qword [rel 0xffffffffd3268600] 
+D30D5C7E  lea rcx,[rbp-0x40] 
+D30D5C82  call qword [rel 0xffffffffd32685f8] 
+D30D5C88  lea rcx,[rbp-0x40] 
+D30D5C8C  call qword [rel 0xffffffffd3268600] 
+D30D5C92  lea rcx,[rbp-0x40] 
+D30D5C96  call qword [rel 0xffffffffd32685f8] 
+D30D5C9C  lea rcx,[rbp-0x40] 
+D30D5CA0  call qword [rel 0xffffffffd3268600] 
+D30D5CA6  lea rcx,[rbp-0x40] 
+D30D5CAA  call qword [rel 0xffffffffd32685f8] 
+D30D5CB0  sub rbx,byte +0x1 
+D30D5CB4  jnz 0x7ff6d30d5c60 
+D30D5CB6  lea rcx,[rbp-0x40] 
+D30D5CBA  call qword [rel 0xffffffffd32685f0] 
+D30D5CC0  lea rcx,[rbp+0x2b0] 
+D30D5CC7  call dword 0x7ff6d2e5511e 
+D30D5CCC  mov [rbp+0x3d0],bl 
+D30D5CD2  lea rax,[rbp+0x3d0] 
+D30D5CD9  mov [rbp-0x80],rax 
+D30D5CDD  lea rax,[rsp+0x30] 
+D30D5CE2  mov [rbp-0x78],rax 
+D30D5CE6  movaps xmm6,[rbp-0x80] 
+D30D5CEA  movdqa [rbp+0x20],xmm6 
+D30D5CEF  lea ecx,[rbx+0x20] 
+D30D5CF2  call dword 0x7ff6d2e5ea2a 
+D30D5CF7  mov [rbp-0x80],rax 
+D30D5CFB  xor r13d,r13d 
+D30D5CFE  lea rbx,[rel 0xffffffffd310f4c8] 
+D30D5D05  test rax,rax 
+D30D5D08  jz 0x7ff6d30d5d22 
+D30D5D0A  mov [rax],rbx 
+D30D5D0D  mov ecx,edi 
+D30D5D0F  xchg ecx,[rax+0x8] 
+D30D5D12  lea rdx,[rel 0xffffffffd3120a58] 
+D30D5D19  mov [rax],rdx 
+D30D5D1C  movups [rax+0x10],xmm6 
+D30D5D20  jmp short 0x7ff6d30d5d25 
+D30D5D22  mov rax,r13 
+D30D5D25  mov [rbp-0x50],rax 
+D30D5D29  xor edx,edx 
+D30D5D2B  lea rcx,[rbp-0x50] 
+D30D5D2F  call dword 0x7ff6d2e520a9 
+D30D5D34  movaps xmm2,xmm8 
+D30D5D38  lea rdx,[rel 0xffffffffd3120930] 
+D30D5D3F  lea rcx,[rbp+0x2d0] 
+D30D5D46  call dword 0x7ff6d2e5f0ab 
+D30D5D4B  nop dword [rax+rax+0x0] 
+D30D5D50  mov eax,[rel 0xffffffffd32059f0] 
+D30D5D56  add eax,[rsp+0x30] 
+D30D5D5A  mov [rel 0xffffffffd32059f0],eax 
+D30D5D60  mov eax,[rel 0xffffffffd32059f4] 
+D30D5D66  add eax,[rsp+0x30] 
+D30D5D6A  mov [rel 0xffffffffd32059f4],eax 
+D30D5D70  mov eax,[rel 0xffffffffd32059f8] 
+D30D5D76  add eax,[rsp+0x30] 
+D30D5D7A  mov [rel 0xffffffffd32059f8],eax 
+D30D5D80  mov eax,[rel 0xffffffffd32059fc] 
+D30D5D86  add eax,[rsp+0x30] 
+D30D5D8A  mov [rel 0xffffffffd32059fc],eax 
+D30D5D90  sub r12,byte +0x1 
+D30D5D94  jnz 0x7ff6d30d5d50 
+D30D5D96  mov eax,edi 
+D30D5D98  xchg al,[rbp+0x3d0] 
+D30D5D9E  lea rcx,[rbp+0x2d0] 
+D30D5DA5  call dword 0x7ff6d2e5511e 
+D30D5DAA  mov [rbp+0x3d8],r13b 
+D30D5DB1  lea ecx,[r12+0x18] 
+D30D5DB6  call dword 0x7ff6d2e5ea2a 
+D30D5DBB  mov [rbp-0x80],rax 
+D30D5DBF  test rax,rax 
+D30D5DC2  jz 0x7ff6d30d5de3 
+D30D5DC4  mov [rax],rbx 
+D30D5DC7  mov ecx,edi 
+D30D5DC9  xchg ecx,[rax+0x8] 
+D30D5DCC  lea rdx,[rel 0xffffffffd3120b70] 
+D30D5DD3  mov [rax],rdx 
+D30D5DD6  lea rcx,[rbp+0x3d8] 
+D30D5DDD  mov [rax+0x10],rcx 
+D30D5DE1  jmp short 0x7ff6d30d5de6 
+D30D5DE3  mov rax,r13 
+D30D5DE6  mov [rbp-0x48],rax 
+D30D5DEA  xor edx,edx 
+D30D5DEC  lea rcx,[rbp-0x48] 
+D30D5DF0  call dword 0x7ff6d2e520a9 
+D30D5DF5  movaps xmm2,xmm7 
+D30D5DF8  lea rdx,[rel 0xffffffffd311aa08] 
+D30D5DFF  lea rcx,[rbp+0x2f0] 
+D30D5E06  call dword 0x7ff6d2e5f0ab 
+D30D5E0B  nop dword [rax+rax+0x0] 
+D30D5E10  mov eax,edi 
+D30D5E12  lock xadd [rel 0xffffffffd3205b70],eax 
+D30D5E1A  mov ecx,edi 
+D30D5E1C  lock xadd [rel 0xffffffffd3205b74],ecx 
+D30D5E24  mov eax,edi 
+D30D5E26  lock xadd [rel 0xffffffffd3205b78],eax 
+D30D5E2E  mov ecx,edi 
+D30D5E30  lock xadd [rel 0xffffffffd3205b7c],ecx 
+D30D5E38  sub r15,byte +0x1 
+D30D5E3C  jnz 0x7ff6d30d5e10 
+D30D5E3E  lea rcx,[rbp+0x2f0] 
+D30D5E45  call dword 0x7ff6d2e5511e 
+D30D5E4A  call dword 0x7ff6d2e53e77 
+D30D5E4F  mov rbx,rax 
+D30D5E52  lea rdx,[rel 0xffffffffd3105648] 
+D30D5E59  mov rcx,rax 
+D30D5E5C  call dword 0x7ff6d2e56735 
+D30D5E61  lea rdx,[rel 0xffffffffd3105618] 
+D30D5E68  mov rcx,rbx 
+D30D5E6B  call dword 0x7ff6d2e56735 
+D30D5E70  lea rdx,[rel 0xffffffffd32063c8] 
+D30D5E77  lea rcx,[rsp+0x48] 
+D30D5E7C  call dword 0x7ff6d2e5c068 
+D30D5E81  nop 
+D30D5E82  cmp [rsp+0x56],r15b 
+D30D5E87  jnz 0x7ff6d30d5e96 
+D30D5E89  movsx r8d,byte [rsp+0x57] 
+D30D5E8F  lea rdx,[rsp+0x48] 
+D30D5E94  jmp short 0x7ff6d30d5ea0 
+D30D5E96  mov r8d,[rsp+0x50] 
+D30D5E9B  mov rdx,[rsp+0x48] 
+D30D5EA0  movsxd rdi,r8d 
+D30D5EA3  mov rcx,[rbx+0x18] 
+D30D5EA7  lea rax,[rcx+rdi] 
+D30D5EAB  cmp rax,[rbx+0x28] 
+D30D5EAF  ja 0x7ff6d30d5ebf 
+D30D5EB1  mov r8,rdi 
+D30D5EB4  call dword 0x7ff6d2e586f7 
+D30D5EB9  add [rbx+0x18],rdi 
+D30D5EBD  jmp short 0x7ff6d30d5ec8 
+D30D5EBF  mov rax,[rbx] 
+D30D5EC2  mov rcx,rbx 
+D30D5EC5  call qword [rax] 
+D30D5EC7  nop 
+D30D5EC8  cmp byte [rsp+0x56],0x0 
+D30D5ECD  jz 0x7ff6d30d5eda 
+D30D5ECF  lea rcx,[rsp+0x48] 
+D30D5ED4  call dword 0x7ff6d2e5cb62 
+D30D5ED9  nop 
+D30D5EDA  mov r12d,0xa0d 
+D30D5EE0  mov [rbp+0x3e0],r12w 
+D30D5EE8  mov rcx,[rbx+0x18] 
+D30D5EEC  mov rdx,[rbx+0x28] 
+D30D5EF0  lea rax,[rcx+0x1] 
+D30D5EF4  cmp rax,rdx 
+D30D5EF7  jnc 0x7ff6d30d5f04 
+D30D5EF9  mov [rcx],r12w 
+D30D5EFD  add qword [rbx+0x18],byte +0x2 
+D30D5F02  jmp short 0x7ff6d30d5f2d 
+D30D5F04  lea rax,[rcx+0x2] 
+D30D5F08  cmp rax,rdx 
+D30D5F0B  ja 0x7ff6d30d5f18 
+D30D5F0D  mov [rcx],r12w 
+D30D5F11  add qword [rbx+0x18],byte +0x2 
+D30D5F16  jmp short 0x7ff6d30d5f2d 
+D30D5F18  mov rax,[rbx] 
+D30D5F1B  mov r8d,0x2 
+D30D5F21  lea rdx,[rbp+0x3e0] 
+D30D5F28  mov rcx,rbx 
+D30D5F2B  call qword [rax] 
+D30D5F2D  mov rax,[rel 0xffffffffd32063c8] 
+D30D5F34  movsd xmm7,[rax+0x10] 
+D30D5F39  movaps xmm6,xmm7 
+D30D5F3C  movsd xmm8,[rel 0xffffffffd3105738] 
+D30D5F45  divsd xmm6,xmm8 
+D30D5F4A  movsd xmm9,[rel 0xffffffffd3106ed0] 
+D30D5F53  mulsd xmm6,xmm9 
+D30D5F58  movsd xmm10,[rel 0xffffffffd31057f8] 
+D30D5F61  mulsd xmm6,xmm10 
+D30D5F66  call dword 0x7ff6d2e53e77 
+D30D5F6B  mov rbx,rax 
+D30D5F6E  movaps xmm1,xmm6 
+D30D5F71  lea rcx,[rsp+0x58] 
+D30D5F76  call dword 0x7ff6d2e5a7db 
+D30D5F7B  nop 
+D30D5F7C  cmp byte [rsp+0x66],0x0 
+D30D5F81  jnz 0x7ff6d30d5f90 
+D30D5F83  movsx r8d,byte [rsp+0x67] 
+D30D5F89  lea rdx,[rsp+0x58] 
+D30D5F8E  jmp short 0x7ff6d30d5f9a 
+D30D5F90  mov r8d,[rsp+0x60] 
+D30D5F95  mov rdx,[rsp+0x58] 
+D30D5F9A  movsxd rdi,r8d 
+D30D5F9D  mov rcx,[rbx+0x18] 
+D30D5FA1  lea rax,[rcx+rdi] 
+D30D5FA5  cmp rax,[rbx+0x28] 
+D30D5FA9  ja 0x7ff6d30d5fb9 
+D30D5FAB  mov r8,rdi 
+D30D5FAE  call dword 0x7ff6d2e586f7 
+D30D5FB3  add [rbx+0x18],rdi 
+D30D5FB7  jmp short 0x7ff6d30d5fc2 
+D30D5FB9  mov rax,[rbx] 
+D30D5FBC  mov rcx,rbx 
+D30D5FBF  call qword [rax] 
+D30D5FC1  nop 
+D30D5FC2  cmp byte [rsp+0x66],0x0 
+D30D5FC7  jz 0x7ff6d30d5fd4 
+D30D5FC9  lea rcx,[rsp+0x58] 
+D30D5FCE  call dword 0x7ff6d2e5cb62 
+D30D5FD3  nop 
+D30D5FD4  lea rdx,[rel 0xffffffffd3105cc0] 
+D30D5FDB  mov rcx,rbx 
+D30D5FDE  call dword 0x7ff6d2e56735 
+D30D5FE3  mov [rbp+0x3e8],r12w 
+D30D5FEB  mov rcx,[rbx+0x18] 
+D30D5FEF  mov rdx,[rbx+0x28] 
+D30D5FF3  lea rax,[rcx+0x1] 
+D30D5FF7  cmp rax,rdx 
+D30D5FFA  jnc 0x7ff6d30d6007 
+D30D5FFC  mov [rcx],r12w 
+D30D6000  add qword [rbx+0x18],byte +0x2 
+D30D6005  jmp short 0x7ff6d30d6030 
+D30D6007  lea rax,[rcx+0x2] 
+D30D600B  cmp rax,rdx 
+D30D600E  ja 0x7ff6d30d601b 
+D30D6010  mov [rcx],r12w 
+D30D6014  add qword [rbx+0x18],byte +0x2 
+D30D6019  jmp short 0x7ff6d30d6030 
+D30D601B  mov rax,[rbx] 
+D30D601E  mov r8d,0x2 
+D30D6024  lea rdx,[rbp+0x3e8] 
+D30D602B  mov rcx,rbx 
+D30D602E  call qword [rax] 
+D30D6030  call dword 0x7ff6d2e53e77 
+D30D6035  mov rbx,rax 
+D30D6038  lea rdx,[rel 0xffffffffd31220b8] 
+D30D603F  mov rcx,rax 
+D30D6042  call dword 0x7ff6d2e56735 
+D30D6047  mov [rsp+0x38],r12w 
+D30D604D  mov rdx,[rbx+0x18] 
+D30D6051  mov r8,[rbx+0x28] 
+D30D6055  lea rcx,[rdx+0x1] 
+D30D6059  cmp rcx,r8 
+D30D605C  jnc 0x7ff6d30d6069 
+D30D605E  mov [rdx],r12w 
+D30D6062  add qword [rbx+0x18],byte +0x2 
+D30D6067  jmp short 0x7ff6d30d6090 
+D30D6069  lea rax,[rdx+0x2] 
+D30D606D  cmp rax,r8 
+D30D6070  ja 0x7ff6d30d607d 
+D30D6072  mov [rdx],r12w 
+D30D6076  add qword [rbx+0x18],byte +0x2 
+D30D607B  jmp short 0x7ff6d30d6090 
+D30D607D  mov rax,[rbx] 
+D30D6080  mov r8d,0x2 
+D30D6086  lea rdx,[rsp+0x38] 
+D30D608B  mov rcx,rbx 
+D30D608E  call qword [rax] 
+D30D6090  cmp dword [rel 0xffffffffd32063d0],byte +0x0 
+D30D6097  jng dword 0x7ff6d30d62cf 
+D30D609D  mov r15,r13 
+D30D60A0  movsd xmm6,[rel 0xffffffffd3106f50] 
+D30D60A8  nop dword [rax+rax+0x0] 
+D30D60B0  mov rax,[rel 0xffffffffd32063c8] 
+D30D60B7  movsd xmm0,[r15+rax+0x10] 
+D30D60BE  divsd xmm0,xmm8 
+D30D60C3  mulsd xmm0,xmm9 
+D30D60C8  mulsd xmm0,xmm10 
+D30D60CD  movsd [rsp+0x68],xmm0 
+D30D60D3  mov dword [rsp+0x74],0x200 
+D30D60DB  movsd xmm0,[r15+rax+0x10] 
+D30D60E2  divsd xmm0,xmm7 
+D30D60E6  mulsd xmm0,xmm6 
+D30D60EA  movsd [rbp-0x60],xmm0 
+D30D60EF  mov dword [rbp-0x54],0x200 
+D30D60F6  movsd xmm0,[r15+rax+0x10] 
+D30D60FD  divsd xmm0,xmm7 
+D30D6101  movsd [rbp-0x70],xmm0 
+D30D6106  mov dword [rbp-0x64],0x200 
+D30D610D  lea rax,[rsp+0x68] 
+D30D6112  mov [rsp+0x20],rax 
+D30D6117  lea r9,[rbp-0x60] 
+D30D611B  lea r8,[rbp-0x70] 
+D30D611F  lea rdx,[rel 0xffffffffd3119120] 
+D30D6126  lea rcx,[rbp+0x0] 
+D30D612A  call dword 0x7ff6d2e55e66 
+D30D612F  mov rsi,rax 
+D30D6132  mov rdx,[rel 0xffffffffd32063c8] 
+D30D6139  add rdx,r15 
+D30D613C  cmp byte [rdx+0xe],0x0 
+D30D6140  jz 0x7ff6d30d6145 
+D30D6142  mov rdx,[rdx] 
+D30D6145  lea rcx,[rbp-0x10] 
+D30D6149  call dword 0x7ff6d2e5a3d0 
+D30D614E  mov rdi,rax 
+D30D6151  call dword 0x7ff6d2e53e77 
+D30D6156  mov rbx,rax 
+D30D6159  lea rdx,[rel 0xffffffffd3105678] 
+D30D6160  mov rcx,rax 
+D30D6163  call dword 0x7ff6d2e56735 
+D30D6168  cmp byte [rdi+0xe],0x0 
+D30D616C  jnz 0x7ff6d30d6175 
+D30D616E  movsx r8d,byte [rdi+0xf] 
+D30D6173  jmp short 0x7ff6d30d617c 
+D30D6175  mov r8d,[rdi+0x8] 
+D30D6179  mov rdi,[rdi] 
+D30D617C  movsxd r14,r8d 
+D30D617F  mov rcx,[rbx+0x18] 
+D30D6183  lea rax,[rcx+r14] 
+D30D6187  mov rdx,rdi 
+D30D618A  cmp rax,[rbx+0x28] 
+D30D618E  ja 0x7ff6d30d619e 
+D30D6190  mov r8,r14 
+D30D6193  call dword 0x7ff6d2e586f7 
+D30D6198  add [rbx+0x18],r14 
+D30D619C  jmp short 0x7ff6d30d61a6 
+D30D619E  mov rax,[rbx] 
+D30D61A1  mov rcx,rbx 
+D30D61A4  call qword [rax] 
+D30D61A6  mov rcx,[rbx+0x18] 
+D30D61AA  cmp byte [rsi+0xe],0x0 
+D30D61AE  jnz 0x7ff6d30d61b7 
+D30D61B0  movsx r8d,byte [rsi+0xf] 
+D30D61B5  jmp short 0x7ff6d30d61be 
+D30D61B7  mov r8d,[rsi+0x8] 
+D30D61BB  mov rsi,[rsi] 
+D30D61BE  movsxd rdi,r8d 
+D30D61C1  lea rax,[rcx+rdi] 
+D30D61C5  mov rdx,rsi 
+D30D61C8  cmp rax,[rbx+0x28] 
+D30D61CC  ja 0x7ff6d30d61dc 
+D30D61CE  mov r8,rdi 
+D30D61D1  call dword 0x7ff6d2e586f7 
+D30D61D6  add [rbx+0x18],rdi 
+D30D61DA  jmp short 0x7ff6d30d61e4 
+D30D61DC  mov rax,[rbx] 
+D30D61DF  mov rcx,rbx 
+D30D61E2  call qword [rax] 
+D30D61E4  mov rcx,[rbx+0x18] 
+D30D61E8  mov [rsp+0x40],r12w 
+D30D61EE  mov rdx,[rbx+0x28] 
+D30D61F2  lea rax,[rcx+0x1] 
+D30D61F6  cmp rax,rdx 
+D30D61F9  jnc 0x7ff6d30d6206 
+D30D61FB  mov [rcx],r12w 
+D30D61FF  add qword [rbx+0x18],byte +0x2 
+D30D6204  jmp short 0x7ff6d30d622e 
+D30D6206  lea rax,[rcx+0x2] 
+D30D620A  cmp rax,rdx 
+D30D620D  ja 0x7ff6d30d621a 
+D30D620F  mov [rcx],r12w 
+D30D6213  add qword [rbx+0x18],byte +0x2 
+D30D6218  jmp short 0x7ff6d30d622e 
+D30D621A  mov rax,[rbx] 
+D30D621D  mov r8d,0x2 
+D30D6223  lea rdx,[rsp+0x40] 
+D30D6228  mov rcx,rbx 
+D30D622B  call qword [rax] 
+D30D622D  nop 
+D30D622E  cmp byte [rbp-0x2],0x0 
+D30D6232  jz 0x7ff6d30d623e 
+D30D6234  lea rcx,[rbp-0x10] 
+D30D6238  call dword 0x7ff6d2e5cb62 
+D30D623D  nop 
+D30D623E  cmp byte [rbp+0xe],0x0 
+D30D6242  jz 0x7ff6d30d624e 
+D30D6244  lea rcx,[rbp+0x0] 
+D30D6248  call dword 0x7ff6d2e5cb62 
+D30D624D  nop 
+D30D624E  cmp dword [rbp-0x64],0xff00 
+D30D6255  jnz 0x7ff6d30d6261 
+D30D6257  lea rcx,[rbp-0x70] 
+D30D625B  call dword 0x7ff6d2e574e1 
+D30D6260  nop 
+D30D6261  cmp byte [rbp-0x62],0x0 
+D30D6265  jz 0x7ff6d30d6271 
+D30D6267  lea rcx,[rbp-0x70] 
+D30D626B  call dword 0x7ff6d2e5cb62 
+D30D6270  nop 
+D30D6271  cmp dword [rbp-0x54],0xff00 
+D30D6278  jnz 0x7ff6d30d6284 
+D30D627A  lea rcx,[rbp-0x60] 
+D30D627E  call dword 0x7ff6d2e574e1 
+D30D6283  nop 
+D30D6284  cmp byte [rbp-0x52],0x0 
+D30D6288  jz 0x7ff6d30d6294 
+D30D628A  lea rcx,[rbp-0x60] 
+D30D628E  call dword 0x7ff6d2e5cb62 
+D30D6293  nop 
+D30D6294  cmp dword [rsp+0x74],0xff00 
+D30D629C  jnz 0x7ff6d30d62a9 
+D30D629E  lea rcx,[rsp+0x68] 
+D30D62A3  call dword 0x7ff6d2e574e1 
+D30D62A8  nop 
+D30D62A9  cmp byte [rsp+0x76],0x0 
+D30D62AE  jz 0x7ff6d30d62bb 
+D30D62B0  lea rcx,[rsp+0x68] 
+D30D62B5  call dword 0x7ff6d2e5cb62 
+D30D62BA  nop 
+D30D62BB  inc r13d 
+D30D62BE  add r15,byte +0x18 
+D30D62C2  cmp r13d,[rel 0xffffffffd32063d0] 
+D30D62C9  jl dword 0x7ff6d30d60b0 
+D30D62CF  call dword 0x7ff6d2e53e77 
+D30D62D4  mov rbx,rax 
+D30D62D7  lea rdx,[rel 0xffffffffd31056a8] 
+D30D62DE  mov rcx,rax 
+D30D62E1  call dword 0x7ff6d2e56735 
+D30D62E6  xor edx,edx 
+D30D62E8  mov rcx,rbx 
+D30D62EB  call dword 0x7ff6d2e56857 
+D30D62F0  lea r11,[rsp+0x488] 
+D30D62F8  movaps xmm6,[r11-0x18] 
+D30D62FD  movaps xmm7,[r11-0x28] 
+D30D6302  movaps xmm8,[r11-0x38] 
+D30D6307  movaps xmm9,[r11-0x48] 
+D30D630C  movaps xmm10,[r11-0x58] 
+D30D6311  mov rsp,r11 
+D30D6314  pop r15 
+D30D6316  pop r14 
+D30D6318  pop r13 
+D30D631A  pop r12 
+D30D631C  pop rdi 
+D30D631D  pop rsi 
+D30D631E  pop rbx 
+D30D631F  pop rbp 
+D30D6320  ret 
