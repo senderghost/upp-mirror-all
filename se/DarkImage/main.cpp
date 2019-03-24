@@ -106,7 +106,7 @@ Color DarkTheme3(Color c)
 	return Color(t[i0], t[i1], t[i2]);
 }
 
-Image DarkTheme(const Image& img)
+Image DarkTheme5(const Image& img)
 {
 	Image simg = Unmultiply(img);
 	const RGBA *s = simg.begin();
@@ -158,7 +158,7 @@ struct MyApp : TopWindow {
 	virtual void Paint(Draw& w) {
 		Size sz = GetSize();
 		w.DrawRect(sz, White());
-	#if 0
+	#if 1
 		PaintImages(w, RectC(0, 0, sz.cx, sz.cy / 2), CtrlImg::Iml(), false);
 		PaintImages(w, RectC(0, sz.cy / 2, sz.cx, sz.cy / 2), CtrlImg::Iml(), true);
 	#else
