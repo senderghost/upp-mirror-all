@@ -1,0 +1,10 @@
+uses
+	CtrlLib;
+
+file
+	colors.i,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+
