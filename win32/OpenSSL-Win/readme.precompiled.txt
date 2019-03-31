@@ -1,9 +1,9 @@
  
-27 May 2017
+30 Mar 2019
 ====================================================================================================================== 	
  url: http://www.npcglib.org/~stathis/blog/precompiled-openssl 	
 ====================================================================================================================== 
-These are custom and unsupported, pre-built OpenSSL Libraries v1.0.2l (http://www.openssl.org). 
+These are custom and unsupported, pre-built OpenSSL Libraries v1.0.2r (http://www.openssl.org). 
 They are compiled with Cygwin/MSVC for 32/64-bit Windows, using Visual Studio 2017. 
  
 Please note that the OpenSSL Project (http://www.openssl.org) is the only official source of OpenSSL. 
