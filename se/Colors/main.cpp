@@ -4,14 +4,39 @@ using namespace Upp;
 
 String Qtf(Color c)
 {
-	return String() << "$(" << c.GetR() << '.' << c.GetG() << '.' << c.GetB() << ")";
+	ImageDraw iw(128, 48);
+	iw.DrawRect(0, 0, 128, 48, c);
+	DrawFatFrame(iw, 0, 0, 128, 48, Black(), 4);
+	return AsQTF(CreateRawImageObject(PNGEncoder().SaveString(iw), 256, 96));
 }
 
 GUI_APP_MAIN
 {
-	String qtf;
+	String qtf = "{{1:1:1:1 ";
 	
-	#define DO(x)       qtf << #x << " " << "[" << Qtf(x()) << " ____]" << ", in dark theme: [" << Qtf(DarkTheme(x())) << " ____]&";
+	DDUMP(Qtf(Black()));
+	
+	#define DO(x)       qtf << "[:" << #x << "`(`): " << "Color [* " << #x << "]()]:: :: " << Qtf(x()) << ":: " << Qtf(DarkTheme(x())) << ":: ";
+	
+	DO(Black)
+	DO(Gray)
+	DO(LtGray)
+	DO(WhiteGray)
+	DO(White)
+	DO(Red)
+	DO(Green)
+	DO(Brown)
+	DO(Blue)
+	DO(Magenta)
+	DO(Cyan)
+	DO(Yellow)
+	DO(LtRed)
+	DO(LtGreen)
+	DO(LtYellow)
+	DO(LtBlue)
+	DO(LtMagenta)
+	DO(LtCyan)
+
 	DO(SBlack)
 	DO(SGray)
 	DO(SLtGray)

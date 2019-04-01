@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	MastModel.cpp;
+
+mainconfig
+	"" = "";
+
