@@ -141,6 +141,22 @@ void SearchPoints::Finish()
 	for(Ball& b : ball) { // Sort all ball points by distance and set radius
 		Sort(b.point);
 		b.radius = b.point.Top().distance;
+		DLOG("=====================");
+		DDUMP(b.radius);
+		
+		int    besti;
+		double best = DBL_MAX;
+		for(int i = 0; i < b.point.GetCount(); i++) {
+			double maxr = 0;
+			for(PI& p : b.point)
+				maxr = max(maxr, Distance(p.index, b.point[i].index));
+			DLOG(i << ": " << maxr);
+			if(maxr < best) {
+				best = maxr;
+				besti = i;
+			}
+		}
+		DDUMP(best);
 		
 		for(int i = 0; i < ball_count; i++) { // Add and sort all neighbor balls by distance
 			if(i != b.center) {
@@ -152,9 +168,9 @@ void SearchPoints::Finish()
 		Sort(b.neighbor);
 	}
 
-#if 0
-	for(Ball& b : ball)
-		Dump(b);
+#if 1
+	for(int i = 0; i < min(3, ball.GetCount()); i++)
+		Dump(ball[i]);
 #endif
 }
 
@@ -269,13 +285,13 @@ void SearchPoints::Dimensions(int n)
 	point.Clear();
 }
 
-const int M = 100000;
+const int M = 10000;
 const int R = 1000;
 const int N = 100;
 
 double *RandomPoint()
 {
-	static double x[20];
+	static double x[10];
 	for(int i = 0; i < 20; i++)
 		x[i] = Random(R);
 	return x;
@@ -291,6 +307,8 @@ CONSOLE_APP_MAIN {
 	}
 	
 	sp.Finish();
+	
+	return;
 
 //	for(int i = 0; i < sp.GetCount(); i++)
 //		RLOG(sp.AsString(i));
