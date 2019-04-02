@@ -1,61 +1,4 @@
-#include <Core/Core.h>
-
-using namespace Upp;
-
-class SearchPoints {
-	int            dims;
-	int            count;
-	Vector<double> point;
-
-	struct PI : Moveable<PI> { // point & distance
-		int    index;
-		double distance;
-		
-		bool   operator<(const PI& b) const            { return distance < b.distance; }
-	};
-	
-	struct Ball : Moveable<Ball> { // hypersphere with its points
-		int        center;
-		double     radius;
-		Vector<PI> point; // index is index of SerachPoints::point
-		Vector<PI> neighbor; // index is index of SerachPoints::ball, distance is closest distance (accounting radius)
-	};
-	
-	Vector<Ball> ball;
-
-	const double *At(int i) const                      { return (const double *)point + dims * i; }
-	double  SquaredDistance(const double *a, const double *b);
-	double  Distance(const double *a, const double *b) { return sqrt(SquaredDistance(a, b)); }
-	double  SquaredDistance(int ai, int bi)            { return SquaredDistance(At(ai), At(bi)); }
-	double  Distance(int ai, int bi)                   { return Distance(At(ai), At(bi)); }
-	bool    FindCloserPoint(const Ball& b, const double *p, int& besti, double& qbest);
-
-public:
-	void Dimensions(int n);
-	void Add(const double *p);
-	void Finish();
-
-	int  GetDimensions() const                    { return dims; }
-	int  GetCount() const                         { return count; }
-	const double *operator[](int i) const         { return At(i); }
-
-	int  Search(const double *p);
-
-// performance counters
-	int distance_tests = 0; // performance counter
-	int excluded_balls = 0;
-	int balls_tested = 0;
-	
-	void ClearCounters() { distance_tests = excluded_balls = balls_tested = 0; }
-	void DumpCounters();
-	
-// diagnostics only...
-	int  SimpleSearch(const double *p);
-	String AsString(const double *p);
-	String AsString(int i)                        { return AsString(At(i)); }
-	String AsString(const Ball& b);
-	void   Dump(const Ball& b);
-};
+#include "SearchPoints.h"
 
 void SearchPoints::DumpCounters()
 {
@@ -66,7 +9,8 @@ void SearchPoints::DumpCounters()
 
 String SearchPoints::AsString(const Ball& b)
 {
-	return String() << "Ball " << AsString(b.center) << ", radius " << Format("%.1f", b.radius);
+	return String() << "Ball " << AsString(b.center) << ", radius " << Format("%.1f", b.radius) << ", projected radius: "
+	                << Format("%.1f", b.projected_radius) << ", points " << b.point.GetCount();
 }
 
 void SearchPoints::Dump(const Ball& b)
@@ -75,16 +19,9 @@ void SearchPoints::Dump(const Ball& b)
 	String s;
 	for(const PI& p : b.point) {
 		if(s.GetCount()) s << ", ";
-		s << AsString(p.index) << ":" << Format("%.1f", p.distance);
+		s << Format("%.1f", p.distance);
 	}
 	LOG("   subs: " << s);
-	s.Clear();
-	for(const PI& p : b.neighbor) {
-		if(s.GetCount()) s << ", ";
-		const Ball& n = ball[p.index];
-		s << AsString(n.center) << ", radius " << Format("%.1f", n.radius) << ", distance " << Format("%.1f", p.distance);
-	}
-	LOG("   neighbor: " << s);
 }
 
 double SearchPoints::SquaredDistance(const double *a, const double *b)
@@ -106,9 +43,13 @@ void SearchPoints::Finish()
 {
 	if(!count)
 		return;
-
+	TIMESTOP("Finish");
+	projected.SetCount(GetCount());
+	for(int i = 0; i < GetCount(); i++)
+		projected[i] = Projected(At(i));
+	
 	Index<int> centeri;
-	int ball_count = min(512, max(GetCount() / 2, 1));
+	int ball_count = min(100, max(GetCount() / 2, 1));
 	for(int i = 0; i < ball_count; i++) { // Find ball_count random center points of balls
 		int ii;
 		for(;;) {
@@ -120,7 +61,7 @@ void SearchPoints::Finish()
 		ball.Add().center = ii;
 	}
 	
-	for(int j = 0; j < count; j++) { // Assign each point to closest ball
+	for(int j = 0; j < GetCount(); j++) { // Assign each point to closest ball
 		double qbest = DBL_MAX; // best distance squared
 		int    besti = -1; // index of best ball
 		
@@ -139,36 +80,17 @@ void SearchPoints::Finish()
 	}
 	
 	for(Ball& b : ball) { // Sort all ball points by distance and set radius
+		b.projected_radius = 0;
+		for(const PI& p : b.point)
+			b.projected_radius = max(b.projected_radius, Length(projected[b.center] - projected[p.index]));
 		Sort(b.point);
 		b.radius = b.point.Top().distance;
-		DLOG("=====================");
-		DDUMP(b.radius);
-		
-		int    besti;
-		double best = DBL_MAX;
-		for(int i = 0; i < b.point.GetCount(); i++) {
-			double maxr = 0;
-			for(PI& p : b.point)
-				maxr = max(maxr, Distance(p.index, b.point[i].index));
-			DLOG(i << ": " << maxr);
-			if(maxr < best) {
-				best = maxr;
-				besti = i;
-			}
-		}
-		DDUMP(best);
-		
-		for(int i = 0; i < ball_count; i++) { // Add and sort all neighbor balls by distance
-			if(i != b.center) {
-				PI& p = b.neighbor.Add();
-				p.index = i;
-				p.distance = Distance(i, b.center) - b.radius;
-			}
-		}
-		Sort(b.neighbor);
+		DDUMP(AsString(b));
 	}
+	
+	DDUMP(ball.GetCount());
 
-#if 1
+#if 0
 	for(int i = 0; i < min(3, ball.GetCount()); i++)
 		Dump(ball[i]);
 #endif
@@ -176,11 +98,12 @@ void SearchPoints::Finish()
 
 int gsteps = 0;
 
-bool SearchPoints::FindCloserPoint(const Ball& b, const double *p, int& besti, double& qbest)
+bool SearchPoints::FindCloserPoint(const Ball& b, const double *p, int fromi, int& besti, double& qbest)
 { // refine the search for the closest point in the ball
 	balls_tested++;
 	bool refined = false;
-	for(const PI& pi : b.point) {
+	for(int i = fromi; i < b.point.GetCount(); i++) {
+		const PI& pi = b.point[i];
 		distance_tests++;
 		double q = SquaredDistance(p, At(pi.index));
 		if(q < qbest) {
@@ -197,54 +120,35 @@ int SearchPoints::Search(const double *p)
 	if(count == 0)
 		return -1;
 
-	double qbest = DBL_MAX; // best distance squared
-	int    besti = -1; // index of the ball with closest center
+	Vector<double> ball_distance; // distance of ball i (distance of p, center minus radius)
 	
-	for(int i = 0; i < ball.GetCount(); i++) {
-		double q = SquaredDistance(p, At(ball[i].center));
-		if(q < qbest) {
-			qbest = q;
-			besti = i;
+	for(const Ball& b : ball)
+		ball_distance.Add(Distance(p, At(b.center)) - b.radius);
+	
+	Vector<int> ball_order = GetSortOrder(ball_distance); // order from closest ball
+	
+	int besti = -1; // closest point index
+	double qbest = DBL_MAX; // closest point distance squared
+	double best = DBL_MAX / 10; // closest point distance
+	for(int bi : ball_order) {
+		const Ball& b = ball[bi];
+		double distance = ball_distance[bi];
+		double from_radius = best - distance; // outer ball portion that needs to be tested
+		if(from_radius < 0) { // all points from now on are further than best one
+			LOG("Stopping: Ball " << AsString(b) << " too far at distance " << ball_distance[bi] << " while closest point at " << best);
+			break;
+		}
+		double min_radius = b.radius - from_radius;
+		int fromi = FindLowerBound(b.point, min_radius, [](const PI& pi, double min_radius) { return pi.distance < min_radius; });
+		LOG("Ball at distance " << distance << ", center distance " << Distance(p, At(b.center)) << " needs to be tested from radius " << min_radius << " which is from point " << fromi);
+		Dump(b);
+		if(FindCloserPoint(b, p, fromi, besti, qbest)) {
+			best = sqrt(qbest);
+			LOG("* New best point: " << besti << " " << AsString(besti) << ", distance: " << best);
 		}
 	}
 		
-	ASSERT(besti >= 0);
-
-	const Ball& b = ball[besti];
-	LOG("Closest ball, distance to center: " << sqrt(qbest));
-	Dump(b);
-
-	besti = 0; // center point of ball has index 0
-	FindCloserPoint(b, p, besti, qbest); // find closest point in the ball
-	double best = sqrt(qbest); // distance of best from from the ball center
-	
-	double center_distance = Distance(besti, b.center); // distance from the best point to the center of the ball
-
-	LOG("* Best point in ball: " << besti << " " << AsString(besti) << ", distance: " << best << ", center distance " << center_distance);
-	
-	for(const PI& pi : b.neighbor) {
-		const Ball& nb = ball[pi.index];
-		if(pi.distance - center_distance > best) { // starting with this ball, too far to affect the results
-			LOG("Neighbor " << AsString(nb) << " too far at distance " << pi.distance);
-			break;
-		}
-		double test_point_distance = Distance(p, At(nb.center)) - nb.radius;
-		if(test_point_distance <= best) {
-			LOG("Testing neighbor at distance " << pi.distance << ", test point distance " << test_point_distance);
-			Dump(nb);
-			if(FindCloserPoint(nb, p, besti, qbest)) {
-				best = sqrt(qbest);
-				center_distance = Distance(besti, b.center);
-				LOG("* Best point in neighbor: " << besti << " " << AsString(besti) << ", distance: " << best << ", center distance " << center_distance);
-			}
-		}
-		else {
-			excluded_balls++;
-			LOG("Neighbor " << AsString(nb) << " at distance " << pi.distance << " too far from test point " << Distance(p, At(nb.center)) - nb.radius);
-		}
-	}
-
-	LOG("Best point: " << besti << " " << AsString(besti) << ", distance: " << best);
+	LOG("Final best point: " << besti << " " << AsString(besti) << ", distance: " << best);
 
 	return besti;
 }
@@ -291,9 +195,23 @@ const int N = 100;
 
 double *RandomPoint()
 {
-	static double x[10];
+	static double x[20];
 	for(int i = 0; i < 20; i++)
 		x[i] = Random(R);
+	return x;
+}
+
+double *Zero()
+{
+	static double x[20];
+	return x;
+}
+
+double *MaxR()
+{
+	static double x[20];
+	for(int i = 0; i < 20; i++)
+		x[i] = R;
 	return x;
 }
 
@@ -301,15 +219,16 @@ CONSOLE_APP_MAIN {
 	SeedRandom(0);
 
 	SearchPoints sp;
-	sp.Dimensions(20);
+	sp.Dimensions(2);
 	for(int i = 0; i < M; i++) {
 		sp.Add(RandomPoint());
 	}
+
+	DDUMP(sp.Distance(Zero(), MaxR()));
 	
 	sp.Finish();
 	
-	return;
-
+	
 //	for(int i = 0; i < sp.GetCount(); i++)
 //		RLOG(sp.AsString(i));
 	
