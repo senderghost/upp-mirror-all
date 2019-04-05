@@ -3,6 +3,7 @@ uses
 
 file
 	SearchPoints.h,
+	Util.cpp,
 	SearchPoints.cpp,
 	MastModel.cpp;
 

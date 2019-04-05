@@ -3,8 +3,11 @@ uses
 
 file
 	SearchPoints.h,
+	Util.cpp,
+	Finish.cpp,
 	SearchPoints.cpp,
-	MastModel.cpp;
+	MastModel.cpp,
+	info.txt;
 
 mainconfig
 	"" = "";
