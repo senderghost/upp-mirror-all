@@ -1,30 +1,8 @@
-#include "SearchPoints.h"
+#include "NNSearch.h"
 
-const int M = 1000000;
+const int M = 100000;
 const int R = 1000;
 const int Q = 10;
-
-double *RandomPoint()
-{
-	static double x[20];
-	for(int i = 0; i < 20; i++)
-		x[i] = Random(R);
-	return x;
-}
-
-double *Zero()
-{
-	static double x[20];
-	return x;
-}
-
-double *MaxR()
-{
-	static double x[20];
-	for(int i = 0; i < 20; i++)
-		x[i] = R;
-	return x;
-}
 
 struct FVecReader {
 	FileIn in;
@@ -63,9 +41,9 @@ const double *FVecReader::Get()
 }
 
 CONSOLE_APP_MAIN {
-	SeedRandom(0);
+//	SeedRandom(0);
 
-	SearchPoints sp;
+	NNSearch sp;
 	sp.Dimensions(20);
 
 	FVecReader in;
@@ -73,7 +51,7 @@ CONSOLE_APP_MAIN {
 	for(int i = 0; i < M && !in.IsEof(); i++)
 		sp.Add(in.Get());
 
-	sp.Finish();
+	sp.PrepareForSearch();
 	
 	in.Open("C:/xxx/sift/sift/sift_query.fvecs");
 	for(int i = 0; i < Q; i++) {

@@ -2,7 +2,7 @@
 
 using namespace Upp;
 
-class SearchPoints {
+class NNSearch {
 	int            dims;
 	int            count;
 	Vector<double> point;
@@ -18,7 +18,6 @@ class SearchPoints {
 
 	const double *At(int i) const                      { return (const double *)point + dims * i; }
 
-public:
 	double  SquaredDistance(const double *a, const double *b) const;
 	double  SquaredDistance(int ai, int bi) const            { return SquaredDistance(At(ai), At(bi)); }
 	double  Distance(int ai, int bi) const                   { return Distance(At(ai), At(bi)); }
@@ -33,9 +32,10 @@ public:
 	double  Scalar(const double *a, const double *b) const;
 	double  Length(const double *s) const;
 
+public:
 	void Dimensions(int n);
 	void Add(const double *p);
-	void Finish();
+	void PrepareForSearch();
 
 	int  GetDimensions() const                    { return dims; }
 	int  GetCount() const                         { return count; }
@@ -46,9 +46,8 @@ public:
 // performance counters
 	int distance_tests = 0; // performance counter
 	int excluded_points = 0;
-	int first_count = 0;
 	
-	void ClearCounters()                          { distance_tests = excluded_points = first_count = 0; }
+	void ClearCounters()                          { distance_tests = excluded_points = 0; }
 	void DumpCounters();
 	
 // diagnostics only...

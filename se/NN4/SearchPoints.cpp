@@ -1,13 +1,12 @@
-#include "SearchPoints.h"
+#include "NNSearch.h"
 
-void SearchPoints::DumpCounters()
+void NNSearch::DumpCounters()
 {
 	RDUMP(distance_tests);
 	RDUMP(excluded_points);
-	RDUMP(first_count);
 }
 
-int SearchPoints::Search(const double *q)
+int NNSearch::Search(const double *q)
 {
 	if(count == 0)
 		return -1;
@@ -24,8 +23,6 @@ int SearchPoints::Search(const double *q)
 	double best = DBL_MAX / 10; // closest point distance
 	int    foundi;
 	
-	bool   found_in_first = false;
-	
 	for(int oi : ball_order) { // search from the closest cluster
 		Ball& b = ball[oi];
 		double q_center = Distance(q, b.center);
@@ -39,17 +36,10 @@ int SearchPoints::Search(const double *q)
 			if(d2 < best2) {
 				best2 = d2;
 				best = sqrt(d2);
-				found_in_first = oi == 0;
 				foundi = oi;
 			}
 		}
 	}
 	
-	RDUMP(foundi);
-	if(found_in_first)
-		first_count++;
-		
-//	LOG("Final best point: " << besti << " " << AsString(besti) << ", distance: " << best);
-
 	return besti;
 }
