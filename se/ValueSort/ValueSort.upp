@@ -2,8 +2,7 @@ uses
 	Core;
 
 file
-	info.txt,
-	HashFoldTests.cpp;
+	ValueSort.cpp;
 
 mainconfig
 	"" = "";

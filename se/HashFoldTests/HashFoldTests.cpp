@@ -17,7 +17,9 @@ inline dword FoldHash2(dword h)
 
 //	return 0x1b873593 * SwapEndian32(h * 0xcc9e2d51);
 //	return 17895441 * SwapEndian32(h * 53731411);
-	return SwapEndian32(h * 2833151717);
+	h = SwapEndian32(h * 0xd418553f);
+	h = SwapEndian32(h * 0xa049e5bd);
+	return h;
 //	return h - SwapEndian32((h << 5) - h);
 }
 
@@ -30,6 +32,8 @@ inline dword FoldHash4(dword h)
 {
 	h = SwapEndian32(h * 0x45d9f3b) ^ (h * 0x45d9f3b);
 	return h;
+	
+	
 }
 
 dword FoldHash5(dword x)
@@ -45,16 +49,29 @@ dword FoldHashT(dword x)
 	return FoldHash2(x);
 }
 
+int PopCnt(dword n)
+{
+	int cnt = 0;
+	for(dword b = 0x80000000; b; b >>= 1)
+		cnt += !!(b & n);
+	return cnt;
+}
+
 void NumberInfo(dword n)
 {
 	RLOG("====================================");
 	RLOG(FormatIntHex(n));
 	RLOG(n);
 	RLOG(FormatIntBase(n, 2));
-	int cnt = 0;
-	for(dword b = 0x80000000; b; b >>= 1)
-		cnt += !!(b & n);
-	RLOG("Bit count: " << cnt);
+	RLOG("Bit count: " << PopCnt(n));
+}
+
+dword MakeHashNumber()
+{
+	dword w = 0x80000008;
+	while(PopCnt(w) < 16)
+		w |= 1 << Random(32);
+	return w;
 }
 
 CONSOLE_APP_MAIN
@@ -64,6 +81,10 @@ CONSOLE_APP_MAIN
 	NumberInfo(0x1b873593);
 	NumberInfo(0xcc9e2d51);
 	NumberInfo(0xa3613c16);
+	
+	for(int i = 0; i < 20; i++)
+		NumberInfo(MakeHashNumber());
+	
 	Vector<int> porter;
 	const int SEQ = 10;
 	const int MAX = 3000000 * SEQ;

@@ -3,7 +3,7 @@ uses
 
 file
 	info.txt,
-	HashFoldTests.cpp;
+	Index3.cpp;
 
 mainconfig
 	"" = "";
