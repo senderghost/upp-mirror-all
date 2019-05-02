@@ -69,19 +69,23 @@ struct Heap {
 	};
 
 	struct Header { // Large block header
-		byte    free;
-		byte    filler1, filler2, filler3;
-		word    size;
-		word    prev;
-		Heap   *heap;
+		dword      size;
+		dword      prev;
+		uintptr_t  heap_ptr;
 	#ifdef CPU_32
-		dword   filler4;
+		dword      filler1; // sizeof(Header) == 16
 	#endif
 
-		Header     *Next()                 { return (Header *)((byte *)this + size) + 1; }
-		Header     *Prev()                 { return (Header *)((byte *)this - prev) - 1; }
+		Header     *Next()                   { return (Header *)((byte *)this + size) + 1; }
+		Header     *Prev()                   { return (Header *)((byte *)this - prev) - 1; }
+		
+		void        SetFree(bool b)          { heap_ptr = (heap_ptr & ~1) | (int)b; }
+		bool        IsFree()                 { return heap_ptr & 1; }
 
-		DLink      *GetBlock()             { return (DLink *)(this + 1); }
+		void        SetHeap(Heap *h, bool f) { heap_ptr = (uintptr_t)h | (int)f; }
+		Heap       *GetHeap()                { return (Heap *)(heap_ptr & ~1); }
+
+		DLink      *GetBlock()               { return (DLink *)(this + 1); }
 	};
 	
 	struct BigHdr : DLink {

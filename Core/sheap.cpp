@@ -294,14 +294,56 @@ void Heap::Free48(void *ptr)
 	Free(ptr, KLASS_48);
 }
 
+#if defined(COMPILER_GCC) && defined(PLATFORM_WIN32)  // Workaround for MINGW bug
+struct TEB_ {
+  PVOID Reserved1[12];
+  PVOID ProcessEnvironmentBlock;
+  PVOID Reserved2[399];
+  BYTE  Reserved3[1952];
+  PVOID TlsSlots[64];
+  BYTE  Reserved4[8];
+  PVOID Reserved5[26];
+  PVOID ReservedForOle;
+  PVOID Reserved6[4];
+  PVOID TlsExpansionSlots;
+};
+
+dword TlsPointerNdx = TlsAlloc();
+
+void SetTlsPointer(void *ptr)
+{
+	TlsSetValue(TlsPointerNdx, ptr);
+}
+
+force_inline
+void *GetTlsPointer()
+{
+#ifdef CPU_64
+	TEB_ *teb = (TEB_ *)__readgsqword(0x30);
+#else
+	TEB_ *teb = (TEB_ *)__readfsdword(0x18);
+#endif
+	return teb->TlsSlots[TlsPointerNdx];
+}
+#endif
+
 force_inline
 Heap *ThreadHeap()
 {
 #if defined(COMPILER_GCC) && defined(PLATFORM_WIN32)  // Workaround for MINGW bug
 	thread_local byte sHeap[sizeof(Heap)];
+#if 1
+	Heap *heap = (Heap *)GetTlsPointer();
+	if(!heap) {
+		heap = (Heap *)sHeap;
+		SetTlsPointer(heap);
+		ASSERT(GetTlsPointer() == heap);
+	}
+#else
 	thread_local Heap *heap;
 	if(!heap)
 		heap = (Heap *)sHeap;
+#endif
 	return heap;
 #else
 	thread_local Heap heap[1];

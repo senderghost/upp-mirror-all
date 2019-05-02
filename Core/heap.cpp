@@ -89,7 +89,7 @@ void Heap::Shutdown()
 	while(large != large->next) {
 		Header *bh = (Header *)((byte *)large->next + LARGEHDRSZ);
 		LLOG("Orphan large block " << (void *)large->next << " size: " << bh->size);
-		if(bh->size == MAXBLOCK && bh->free)
+		if(bh->size == MAXBLOCK && bh->IsFree())
 			MoveToEmpty(large->next, bh);
 		else
 			MoveLarge(&aux, large->next);
@@ -162,7 +162,7 @@ void Heap::Check() {
 		Header *bh = (Header *)((byte *)l + LARGEHDRSZ);
 		while(bh->size) {
 			Assert((byte *)bh >= (byte *)l + LARGEHDRSZ && (byte *)bh < (byte *)l + 65536);
-			if(bh->free)
+			if(bh->IsFree())
 				DbgFreeCheck(bh->GetBlock() + 1, bh->size - sizeof(DLink));
 			bh = bh->Next();
 		}

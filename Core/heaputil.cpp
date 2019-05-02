@@ -281,7 +281,7 @@ void Heap::Make(MemoryProfile& f)
 	while(m != large) {
 		Header *h = (Header *)((byte *)m + LARGEHDRSZ);
 		while(h->size) {
-			if(h->free) {
+			if(h->IsFree()) {
 				f.large_free_count++;
 				f.large_free_total += h->size;
 				if(fi < 1024)

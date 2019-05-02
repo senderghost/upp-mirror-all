@@ -39,11 +39,6 @@ bool IsEqualBySerialize(const T& a, const T& b)
 	return sa.GetResult() == sb.GetResult();
 }
 
-void VectorReAlloc_(void *vector_, int newalloc, int sizeofT);
-void VectorReAllocF_(void *vector_, int newalloc, int sizeofT);
-void VectorGrow_(void *vector_, int sizeofT);
-void VectorGrowF_(void *vector_, int sizeofT);
-
 template <class T>
 T * Vector<T>::RawAlloc(int& n)
 {
@@ -57,25 +52,43 @@ T * Vector<T>::RawAlloc(int& n)
 template <class T>
 void Vector<T>::ReAlloc(int newalloc)
 {
-	VectorReAlloc_(this, newalloc, sizeof(T));
+	ASSERT(newalloc >= items);
+	size_t sz0 = (size_t)newalloc * sizeof(T);
+	size_t sz = sz0;
+	void *newvector = newalloc ? MemoryAllocSz(sz) : NULL;
+	alloc = newalloc == INT_MAX ? INT_MAX // maximum alloc reached
+	        : (int)((sz - sz0) / sizeof(T) + newalloc); // adjust alloc to real memory size
+	if(vector)
+		memcpy(newvector, vector, (size_t)items * sizeof(T));
+	vector = (T *)newvector;
 }
 
 template <class T>
 void Vector<T>::ReAllocF(int newalloc)
 {
-	VectorReAllocF_(this, newalloc, sizeof(T));
+	void *prev = vector;
+	ReAlloc(newalloc);
+	MemoryFree(prev);
 }
 
 template <class T>
 void Vector<T>::Grow()
 {
-	VectorGrow_(this, sizeof(T));
+	if(alloc == INT_MAX)
+		Panic("Too many items in container!");
+#ifdef _DEBUG
+	ReAlloc(max(alloc + 1, alloc >= INT_MAX / 2 ? INT_MAX : 2 * alloc));
+#else
+	ReAlloc(max(alloc + 1, alloc >= int((int64)2 * INT_MAX / 3) ? INT_MAX : alloc + (alloc >> 1)));
+#endif
 }
 
 template <class T>
 void Vector<T>::GrowF()
 {
-	VectorGrowF_(this, sizeof(T));
+	void *prev = vector;
+	Grow();
+	MemoryFree(prev);
 }
 
 template <class T>
@@ -891,4 +904,3 @@ void Bits::SetN(int i, bool b, int count)
 	mask = (dword)-1 >> (32 - count);
 	bp[q] = (bp[q] & ~mask) | (bits & mask);
 }
-

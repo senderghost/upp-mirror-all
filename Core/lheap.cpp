@@ -79,16 +79,14 @@ Heap::DLink *Heap::AddChunk(int reqsize)
 	Header *bh = (Header *)((byte *)ml + LARGEHDRSZ);
 	bh->size = MAXBLOCK;
 	bh->prev = 0;
-	bh->free = true;
-	bh->heap = this;
+	bh->SetHeap(this, true);
 	DLink *b = bh->GetBlock();
 	LinkFree(b, MAXBLOCK);
 	DbgFreeFill(b + 1, MAXBLOCK - sizeof(DLink));
 	bh = bh->Next();
 	bh->prev = MAXBLOCK;
 	bh->size = 0;
-	bh->free = false;
-	bh->heap = this;
+	bh->SetHeap(this, false);
 	return b;
 }
 
@@ -98,13 +96,12 @@ void *Heap::DivideBlock(DLink *b, int size)
 	b->Unlink();
 	Header *bh = b->GetHeader();
 	ASSERT(bh->size >= (dword)size && size > 0);
-	bh->free = false;
+	bh->SetFree(false);
 	int sz2 = bh->size - size - sizeof(Header);
 	if(sz2 >= 48) {
 		Header *bh2 = (Header *)((byte *)b + size);
 		bh2->prev = size;
-		bh2->free = true;
-		bh2->heap = this;
+		bh2->SetHeap(this, true);
 		LinkFree(bh2->GetBlock(), sz2);
 		bh->Next()->prev = bh2->size = sz2;
 		bh->size = size;
@@ -122,8 +119,8 @@ void Heap::MoveLarge(Heap *dest, DLink *l)
 	l->Link(dest->large);
 	Header *h = (Header *)((byte *)l + LARGEHDRSZ);
 	while(h->size) {
-		h->heap = dest;
-		if(h->free) {
+		h->SetHeap(dest, h->IsFree());
+		if(h->IsFree()) {
 			DLink *b = h->GetBlock();
 			b->Unlink();
 			dest->LinkFree(b, h->size);
@@ -172,7 +169,7 @@ void *Heap::LAlloc(size_t& size)
 		h->size = size = ((size + BIGHDRSZ + 4095) & ~4095) - BIGHDRSZ;
 		Header *b = (Header *)((byte *)h + BIGHDRSZ - sizeof(Header));
 		b->size = 0; // header contains large header with size = 0, to detect big during free
-		b->free = false;
+		b->SetHeap(NULL, false);
 		LLOG("Big alloc " << size << ": " << (void *)b->GetBlock());
 		return b->GetBlock();
 	}
@@ -218,18 +215,18 @@ void Heap::LFree(void *ptr)
 		SysFreeRaw(h, h->size);
 		return;
 	}
-	if(bh->heap != this) {
+	if(bh->GetHeap() != this) {
 		LLOG("Remote large, heap " << (void *)bh->heap);
 		Mutex::Lock __(mutex); // TODO: Replace with SpinLock
 		FreeLink *f = (FreeLink *)ptr;
-		f->next = bh->heap->large_remote_list;
-		bh->heap->large_remote_list = f;
+		f->next = bh->GetHeap()->large_remote_list;
+		bh->GetHeap()->large_remote_list = f;
 		return;
 	}
 	LLOG("--- LFree " << asString(bh->size));
 	if(bh->prev) { // there is previous block
 		Header *p = bh->Prev();
-		if(p->free) { // previous block is free, join
+		if(p->IsFree()) { // previous block is free, join
 			b = p->GetBlock();
 			b->Unlink(); // remove previous block from free list
 			p->size += bh->size + sizeof(Header);
@@ -238,12 +235,12 @@ void Heap::LFree(void *ptr)
 		}
 	}
 	Header *n = bh->Next();
-	if(n->free) { // next block block is free, join
+	if(n->IsFree()) { // next block block is free, join
 		n->GetBlock()->Unlink(); // remove next block from free list
 		bh->size += n->size + sizeof(Header);
 		n->Next()->prev = bh->size;
 	}
-	bh->free = true;
+	bh->SetFree(true);
 	LinkFree(b, bh->size);
 	DbgFreeFill(b + 1, bh->size - sizeof(DLink));
 	LLOG("Freed, joined size " << asString(bh->size) << " lcount " << asString(lcount));
@@ -264,13 +261,13 @@ bool   Heap::LTryRealloc(void *ptr, size_t newsize)
 		BigHdr *h = (BigHdr *)((byte *)ptr - BIGHDRSZ);
 		return newsize <= h->size;
 	}
-	if(bh->heap != this) // if another thread's heap, do not bother to be smart
+	if(bh->GetHeap() != this) // if another thread's heap, do not bother to be smart
 		return newsize <= bh->size;
 	if(bh->size >= newsize)
 		return true;
 	LLOG("--- TryRealloc " << asString(bh->size));
 	Header *n = bh->Next();
-	if(n->free && newsize <= (size_t)n->size + (size_t)bh->size) {
+	if(n->IsFree() && newsize <= (size_t)n->size + (size_t)bh->size) {
 		DivideBlock(n->GetBlock(), int(newsize - n->size));
 		bh->size += n->size + sizeof(Header);
 		n->Next()->prev = bh->size;
