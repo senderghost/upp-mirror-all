@@ -44,7 +44,7 @@ public:
 	int Find(dword h, P x) const;
 	
 	void Unlink(int i);
-	bool IsUnlinked(int i)               { return hash[i].hash == 0; }
+	bool IsUnlinked(int i) const         { return hash[i].hash == 0; }
 	int  Put(dword h);
 
 	void Set(int ii, dword h);
@@ -98,7 +98,7 @@ void HashBase::Ins(int ii, dword sh)
 		m.last = ii;
 	}
 	else
-		while(i >= 0) {
+		while(i >= 0) { // find the position
 			Hash& p = hash[i];
 			if(ii < p.next) {
 				h.next = p.next;
@@ -217,11 +217,20 @@ int sum = 0;
 
 #define N 1000
 
+	struct Page { // small block Page
+		Page        *heap;     // pointer to Heap
+		byte         klass;    // size class
+		word         active;   // number of used (active) blocks in this page
+		Page        *freelist; // single linked list of free blocks in Page
+		Page        *next;     // Pages are in work/full/empty lists
+		Page        *prev;
+	};
+
 void Benchmark()
 {
 	Vector<String> data;
 	for(int i = 0; i < N; i++)
-		data.Add(AsString(i));
+		data.Add(AsString(i) + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	int rep = max(100000000 / N, 1);
 	for(int n = 0; n < rep; n++) {
 		{
@@ -294,6 +303,8 @@ CONSOLE_APP_MAIN
 {
 	RDUMP(sizeof(Index<int>));
 	RDUMP(sizeof(New::Index<int>));
+	DDUMP(sizeof(Page));
+	return;
 
 #ifndef _DEBUG
 	Benchmark();
@@ -308,9 +319,6 @@ CONSOLE_APP_MAIN
 	}
 
 	DUMP(sum);
-	DUMP(New::second);
-	DUMP(New::first_overflow);
-	DUMP(New::next_overflow);
 
 #if 0
 	New::HashBase h;

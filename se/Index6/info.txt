@@ -30,3 +30,37 @@ TIMING Old int find   : 323.30 ms -  6.47 us (324.00 ms / 50000 ), min:  0.00 ns
 TIMING Old int add    :  1.56 s  - 31.17 us ( 1.56 s  / 50000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 50000
 TIMING New int find   : 358.30 ms -  7.17 us (359.00 ms / 50000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 50000
 TIMING New int add    : 803.30 ms - 16.07 us (804.00 ms / 50000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 50000
+
+
+
+
+
+MINGW+TLS
+TIMING Old string find: 698.74 ms -  6.99 us (700.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING Old string add :  1.62 s  - 16.16 us ( 1.62 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New string find: 596.74 ms -  5.97 us (598.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING New string add :  1.35 s  - 13.55 us ( 1.36 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING Old int find   : 213.74 ms -  2.14 us (215.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING Old int add    :  1.11 s  - 11.15 us ( 1.12 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New int find   : 241.74 ms -  2.42 us (243.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING New int add    : 850.74 ms -  8.51 us (852.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+
+MINGW-TLS
+TIMING Old string find: 735.72 ms -  7.36 us (737.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING Old string add :  1.83 s  - 18.34 us ( 1.83 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New string find: 588.72 ms -  5.89 us (590.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING New string add :  1.28 s  - 12.77 us ( 1.28 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING Old int find   : 226.72 ms -  2.27 us (228.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING Old int add    :  1.35 s  - 13.55 us ( 1.36 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New int find   : 229.72 ms -  2.30 us (231.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New int add    : 852.72 ms -  8.53 us (854.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+
+MSC64
+TIMING Old string find: 938.61 ms -  9.39 us (940.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING Old string add :  2.33 s  - 23.32 us ( 2.33 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New string find: 748.61 ms -  7.49 us (750.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New string add :  1.51 s  - 15.11 us ( 1.51 s  / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING Old int find   : 201.61 ms -  2.02 us (203.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING Old int add    :  1.39 s  - 13.94 us ( 1.40 s  / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000
+TIMING New int find   : 276.61 ms -  2.77 us (278.00 ms / 100000 ), min:  0.00 ns, max:  2.00 ms, nesting: 0 - 100000
+TIMING New int add    : 782.61 ms -  7.83 us (784.00 ms / 100000 ), min:  0.00 ns, max:  1.00 ms, nesting: 0 - 100000

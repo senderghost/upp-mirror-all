@@ -23,30 +23,20 @@ inline dword FoldHash2(dword h)
 //	return h - SwapEndian32((h << 5) - h);
 }
 
-inline dword FoldHash3(dword h)
-{
-	return 0x1b873593 * _rotl(h * 0xcc9e2d51, 15);
-}
+dword hash_const1;
+dword hash_const2;
+dword hash_const3;
 
-inline dword FoldHash4(dword h)
+inline dword FoldHash1(dword h)
 {
-	h = SwapEndian32(h * 0x45d9f3b) ^ (h * 0x45d9f3b);
+	h = SwapEndian32(h * hash_const1);
+	h = SwapEndian32(h * hash_const2);
 	return h;
-	
-	
-}
-
-dword FoldHash5(dword x)
-{
-    x = ((x >> 16) ^ x) * UINT32_C(0x45d9f3b);
-    x = ((x >> 16) ^ x) * UINT32_C(0x45d9f3b);
-    x = (x >> 16) ^ x;
-    return x;
 }
 
 dword FoldHashT(dword x)
 {
-	return FoldHash2(x);
+	return FoldHash1(x);
 }
 
 int PopCnt(dword n)
@@ -68,20 +58,50 @@ void NumberInfo(dword n)
 
 dword MakeHashNumber()
 {
-	dword w = 0x80000008;
+	dword w = 0x80000001;
 	while(PopCnt(w) < 16)
 		w |= 1 << Random(32);
 	return w;
 }
 
+dword sum;
+
 CONSOLE_APP_MAIN
 {
+	/*
 	NumberInfo(0x45d9f3b);
 	NumberInfo(2833151717);
 	NumberInfo(0x1b873593);
 	NumberInfo(0xcc9e2d51);
 	NumberInfo(0xa3613c16);
+	*/
 	
+	hash_const1 = MakeHashNumber();
+	hash_const2 = MakeHashNumber();
+	hash_const3 = MakeHashNumber();
+	NumberInfo(hash_const1);
+	NumberInfo(hash_const2);
+	NumberInfo(hash_const3);
+
+	FoldHash1(0);
+	
+
+#ifndef _DEBUG
+	RDUMP(hash_const1);
+	SeedRandom(0);
+	{
+		Vector<int> data;
+		for(int i = 0; i < 100000000; i++)
+			data.Add(Random());
+
+		RTIMING("Hash");
+		for(int i = 0; i < 100000000; i++) {
+			sum += FoldHash1(data[i]);
+		}
+	}
+	return;
+#endif
+
 	for(int i = 0; i < 20; i++)
 		NumberInfo(MakeHashNumber());
 	
@@ -106,17 +126,8 @@ CONSOLE_APP_MAIN
 	for(int i = 0; i < 1000; i++)
 		c.At(FoldHashT(i) & 31).Add(i);
 	
-	RDUMP(FoldHash2(0xf0000000) & 255);
-	RDUMP(FoldHash2(0xe0000000) & 255);
-
-	RDUMP(FoldHash3(0xf0000000) & 255);
-	RDUMP(FoldHash3(0xe0000000) & 255);
-
-	RDUMP(FoldHash4(0xf0000000) & 255);
-	RDUMP(FoldHash4(0xe0000000) & 255);
-
-	RDUMP(FoldHash5(0xf0000000) & 255);
-	RDUMP(FoldHash5(0xe0000000) & 255);
+	RDUMP(FoldHashT(0xf0000000) & 255);
+	RDUMP(FoldHashT(0xe0000000) & 255);
 	
 	for(auto& v : c)
 		RLOG(v.GetCount() << " " << v);
@@ -128,4 +139,6 @@ CONSOLE_APP_MAIN
 	RLOG("==================");
 	for(auto& v : c)
 		RLOG(v.GetCount() << " " << v);
+	DDUMP(hash_const1);
+	DDUMP(hash_const2);
 }

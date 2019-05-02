@@ -119,7 +119,7 @@ CONSOLE_APP_MAIN
 		}
 	}
 
-#if 0
+#if 1
 	if(0) {
 		for(int pass = 0; pass < 2; pass++) {
 			LOG("==================");
@@ -308,6 +308,15 @@ CONSOLE_APP_MAIN
 		}
 	}
 	{
+		Bench _("free(malloc(70000))", 0.01);
+		for(int i = 0; i < N / 100; i++) {
+			free(malloc(70000));
+			free(malloc(70000));
+			free(malloc(70000));
+			free(malloc(70000));
+		}
+	}
+	{
 		Bench _("free(malloc(1000000))", 0.01);
 		for(int i = 0; i < N / 100; i++) {
 			free(malloc(10000000));
@@ -332,6 +341,15 @@ CONSOLE_APP_MAIN
 			delete new byte[1000];
 			delete new byte[1000];
 			delete new byte[1000];
+		}
+	}
+	{
+		Bench _("delete new byte[70000] (U++)", 0.1);
+		for(int i = 0; i < N / 10; i++) {
+			delete new byte[70000];
+			delete new byte[70000];
+			delete new byte[70000];
+			delete new byte[70000];
 		}
 	}
 	{
