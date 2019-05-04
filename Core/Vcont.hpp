@@ -277,6 +277,19 @@ void Vector<T>::Remove(const Vector<int>& v)
 }
 
 template <class T>
+template <class Condition>
+void Vector<T>::RemoveIf(Condition c)
+{
+	int ti = 0;
+	for(int i = 0; i < items; i++)
+		if(c(i))
+			(vector + i)->~T();
+		else
+			*((Data_S_<sizeof(T)>*)vector + ti++) = *((Data_S_<sizeof(T)>*)vector + i);
+	items = ti;
+}
+
+template <class T>
 void Vector<T>::RawInsert(int q, int count)
 {
 	ASSERT(count >= 0);
@@ -540,6 +553,20 @@ void Array<T>::Remove(const Vector<int>& sorted_list)
 {
 	Remove(sorted_list, sorted_list.GetCount());
 }
+
+template <class T>
+template <class Condition>
+void Array<T>::RemoveIf(Condition c)
+{
+	int ti = 0;
+	for(int i = 0; i < vector.GetCount(); i++)
+		if(c(i))
+			delete (T *)vector[i];
+		else
+			vector[ti++] = vector[i];
+	vector.Trim(ti);
+}
+
 
 template <class T>
 void Array<T>::Set(int i, const T& x, int count) {

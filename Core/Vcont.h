@@ -84,7 +84,7 @@ class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 
 	void     Free();
 	void     __DeepCopy(const Vector& src);
-	T&       Get(int i) const        { ASSERT(i >= 0 && i < items); return vector[i]; }
+	T&       Get(int i) const                { ASSERT(i >= 0 && i < items); return vector[i]; }
 	void     ReAlloc(int alloc);
 	void     ReAllocF(int alloc);
 	void     Grow();
@@ -129,6 +129,8 @@ public:
 	void     Remove(int i, int count = 1);
 	void     Remove(const int *sorted_list, int n);
 	void     Remove(const Vector<int>& sorted_list);
+	template <class Condition>
+	void     RemoveIf(Condition c);
 
 	void     InsertN(int i, int count = 1);
 	T&       Insert(int i)              { InsertN(i); return Get(i); }
@@ -273,6 +275,8 @@ public:
 	void     Remove(int i, int count = 1);
 	void     Remove(const int *sorted_list, int n);
 	void     Remove(const Vector<int>& sorted_list);
+	template <class Condition>
+	void     RemoveIf(Condition c);
 	void     InsertN(int i, int count = 1);
 	T&       Insert(int i)              { InsertN(i); return Get(i); }
 	void     Insert(int i, const T& x, int count);
