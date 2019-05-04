@@ -46,13 +46,29 @@ struct HugeHeader : HugePrefix {
 	void  SetNextPrev()              { if(!IsLast()) GetNextHeader()->SetPrevSize(GetSize()); }
 };
 
-static HugeHeader freelist[8193];
+/*
+inline
+int HugeCv(int count) {
+	return count < 17 ? count : count < 512 ? (count >> 4) + 17 : (count >> 6) + 17 + (512 >> 4);
+}
+
+const int BUCKETS = 17 + (512 >> 4) + (8192 >> 6) + 1;
+*/
+
+inline
+int HugeCv(int count) {
+	return count < 17 ? count : count < 512 ? (count >> 4) + 17 : (count >> 7) + 17 + (512 >> 4);
+}
+
+const int BUCKETS = 17 + (512 >> 4) + (8192 >> 7) + 1;
+
+static HugeHeader freelist[BUCKETS];
 int freecount;
 
 inline
 void HugeHeader::LinkFree()
 {
-	Dbl_LinkAfter(this, &freelist[GetSize()]);
+	Dbl_LinkAfter(this, &freelist[HugeCv(GetSize())]);
 	freecount++;
 }
 
@@ -77,41 +93,49 @@ void HugeMore()
 	LLOG("HugeMore " << h);
 }
 
+int failed_pass;
+int failed_list;
+
 void *HugeAlloc(int count) // count in 4kb pages
 {
 	ASSERT(count);
 	if(!freelist[0].next) { // initialization
-		for(int i = 0; i < 16; i++)
+		for(int i = 0; i < BUCKETS; i++)
 			freelist[i].next = freelist[i].prev = &freelist[i];
 	}
 	for(int pass = 0; pass < 2; pass++) {
-		for(int q = count; q < 8193; q++) {
+		for(int q = HugeCv(count); q < BUCKETS; q++) {
 			HugeHeader *l = &freelist[q];
 			HugeHeader *h = l->next;
 			if(h != l) {
 	//			RTIMING("Scan");
 				word sz = h->GetSize();
-				LDUMP(sz);
-				h->UnlinkFree();
-				h->SetFree(false);
-				if(sz > count) { // split the block
-					HugeHeader *h2 = (HugeHeader *)((byte *)h + 4096 * count);
-					LDUMP(h);
-					LDUMP(h2);
-					LDUMP(sz - count);
-					word nsz = sz - count;
-					h2->SetFree(true);
-					h2->SetLast(h->IsLast());
-					h2->SetSize(nsz);
-					h2->SetPrevSize(count);
-					h2->SetNextPrev();
-					h2->LinkFree();
-
-					h->SetSize(count);
-					h->SetLast(false);
+				if(sz >= count) {
+					LDUMP(sz);
+					h->UnlinkFree();
+					h->SetFree(false);
+					if(sz > count) { // split the block
+						HugeHeader *h2 = (HugeHeader *)((byte *)h + 4096 * count);
+						LDUMP(h);
+						LDUMP(h2);
+						LDUMP(sz - count);
+						word nsz = sz - count;
+						h2->SetFree(true);
+						h2->SetLast(h->IsLast());
+						h2->SetSize(nsz);
+						h2->SetPrevSize(count);
+						h2->SetNextPrev();
+						h2->LinkFree();
+	
+						h->SetSize(count);
+						h->SetLast(false);
+					}
+					return h;
 				}
-				return h;
+				failed_pass++;
 			}
+			else
+				failed_list++;
 		}
 		HugeMore();
 	}
@@ -186,6 +210,7 @@ CONSOLE_APP_MAIN
 	for(int i = 1; i < 512; i++)
 		DLOG(i << " " << Bsr(i));
 	return;*/
+	RDUMP(BUCKETS);
 
 	void *ptr = HugeAlloc(16);
 	DumpFreeList();
@@ -205,20 +230,97 @@ CONSOLE_APP_MAIN
 		for(int i = 0; i < 5000000; i++) {
 			int ii = Random(1000);
 			if(ptr[ii]) {
+				RTIMING("HugeFree 4KB");
+				HugeFree(ptr[ii]);
+				ptr[ii] = NULL;
+			}
+			if(Random(2)) {
+				RTIMING("HugeAlloc 4KB");
+				ptr[ii] = HugeAlloc(1);
+			}
+		}
+		for(int i = 0; i < 1000; i++)
+			if(ptr[i]) {
+				HugeFree(ptr[i]);
+				ptr[i] = NULL;
+			}
+		RLOG("4KB failed pass: " << failed_pass << ", failed list: " << failed_list); failed_pass = failed_list = 0;
+
+		for(int i = 0; i < 5000000; i++) {
+			int ii = Random(1000);
+			if(ptr[ii]) {
+				RTIMING("HugeFree 64KB");
+				HugeFree(ptr[ii]);
+				ptr[ii] = NULL;
+			}
+			if(Random(2)) {
+				RTIMING("HugeAlloc 64KB");
+				ptr[ii] = HugeAlloc(16);
+			}
+		}
+		for(int i = 0; i < 1000; i++)
+			if(ptr[i]) {
+				HugeFree(ptr[i]);
+				ptr[i] = NULL;
+			}
+		RLOG("64KB failed pass: " << failed_pass << ", failed list: " << failed_list); failed_pass = failed_list = 0;
+
+		for(int i = 0; i < 5000000; i++) {
+			int ii = Random(1000);
+			if(ptr[ii]) {
+				RTIMING("HugeFree <300KB");
+				HugeFree(ptr[ii]);
+				ptr[ii] = NULL;
+			}
+			if(Random(2)) {
+				RTIMING("HugeAlloc <300KB");
+				ptr[ii] = HugeAlloc(Random(300) + 1);
+			}
+		}
+		for(int i = 0; i < 1000; i++)
+			if(ptr[i]) {
+				HugeFree(ptr[i]);
+				ptr[i] = NULL;
+			}
+		RLOG("<300KB failed pass: " << failed_pass << ", failed list: " << failed_list); failed_pass = failed_list = 0;
+
+		for(int i = 0; i < 5000000; i++) {
+			int ii = Random(1000);
+			if(ptr[ii]) {
+				RTIMING("HugeFree 1MB");
+				HugeFree(ptr[ii]);
+				ptr[ii] = NULL;
+			}
+			if(Random(2)) {
+				RTIMING("HugeAlloc 1MB");
+				ptr[ii] = HugeAlloc(256);
+			}
+		}
+		for(int i = 0; i < 1000; i++)
+			if(ptr[i]) {
+				HugeFree(ptr[i]);
+				ptr[i] = NULL;
+			}
+		RLOG("1MB failed pass: " << failed_pass << ", failed list: " << failed_list); failed_pass = failed_list = 0;
+
+		for(int i = 0; i < 5000000; i++) {
+			int ii = Random(1000);
+			if(ptr[ii]) {
 				RTIMING("HugeFree");
 				HugeFree(ptr[ii]);
 				ptr[ii] = NULL;
 			}
 			if(Random(2)) {
 				RTIMING("HugeAlloc");
-//				ptr[ii] = HugeAlloc(Random(1000) + 100);
 				ptr[ii] = HugeAlloc(Random(8192) + 1);
 			}
 		}
-
 		for(int i = 0; i < 1000; i++)
-			if(ptr[i])
+			if(ptr[i]) {
 				HugeFree(ptr[i]);
+				ptr[i] = NULL;
+			}
+		RLOG("Failed pass: " << failed_pass << ", failed list: " << failed_list); failed_pass = failed_list = 0;
 
 		DumpFreeList(true);
 	}
