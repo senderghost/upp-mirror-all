@@ -125,6 +125,8 @@ CONSOLE_APP_MAIN
 	x.Add(1);
 	x.Add(1);
 	LOG(AsString(x));
+	x.Set(1, 2);
+	LOG(AsString(x));
 	x.UnlinkKey(1);
 	LOG(AsString(x));
 
@@ -155,6 +157,13 @@ CONSOLE_APP_MAIN
 		Check(x);
 	}
 	for(int i = 0; i < COUNT; i++) {
+		int ii = Random(x.GetCount());
+		int v = Random(Q);
+		x.Set(ii, v);
+		LOG("Set " << ii << ", " << v << ": " << AsString(x));
+		Check(x);
+	}
+	for(int i = 0; i < COUNT; i++) {
 		int v = Random(Q);
 		{
 			RTIMING("Add");
@@ -166,7 +175,7 @@ CONSOLE_APP_MAIN
 	}
 
 #ifndef _DEBUG
-	Benchmark();
+//	Benchmark();
 #endif
 	
 	RDUMP(sizeof(Index<int>));

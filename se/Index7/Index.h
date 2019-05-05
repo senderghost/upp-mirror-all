@@ -78,9 +78,8 @@ public:
 	int  Find(const T& k) const      { return hash.Find(GetHashValue(k), [&](int i) { return key[i] == k; }); }
 	int  FindNext(int i) const       { const T& k = key[i]; return hash.FindFrom(hash.hash[i].next, hash[i], [&](int i) { return key[i] == k; }); }
 
-//	void Push(const T& k)            { if(hash.WillGrow()) SweepGrow(); Add(k); }
-	
 	void Put(const T& k)             { dword h = GetHashValue(k); if(hash.HasUnlinked()) key[hash.PutUnlinked(h)] = k; else { key.Add(k); hash.Add(h); }}
+	void Set(int i, const T& k)      { key[i] = k; hash.Set(i, GetHashValue(k)); }
 
 	void Unlink(int i)               { hash.Unlink(i); }
 	bool IsUnlinked(int i) const     { return hash.IsUnlinked(i); }

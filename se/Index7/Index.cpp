@@ -47,12 +47,6 @@ void HashBase::Clear()
 	mask = 0;
 	unlinked = -1;
 }
-	
-void HashBase::Set(int ii, dword h)
-{
-	Del(ii); // remove from original bucket list
-	Ins(ii, Smear(h)); // put to new bucket list
-}
 
 void HashBase::GrowMap()
 {

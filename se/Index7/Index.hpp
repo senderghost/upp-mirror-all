@@ -4,6 +4,8 @@ force_inline
 void HashBase::Del(int ii)
 { // remove ii from its list
 	Hash& h = hash[ii];
+	if(h.hash == 0)
+		return;
 	Bucket& m = map[h.hash & mask];
 	int i = m.first;
 	ASSERT(i >= 0);
@@ -59,6 +61,13 @@ void HashBase::Ins(int ii, dword sh)
 }
 
 force_inline
+void HashBase::Set(int ii, dword h)
+{
+	Del(ii); // remove from original bucket list
+	Ins(ii, Smear(h)); // put to new bucket list
+}
+
+force_inline
 int HashBase::PutUnlinked(dword h)
 {
 	int ii = unlinked;
@@ -67,7 +76,7 @@ int HashBase::PutUnlinked(dword h)
 	Ins(ii, Smear(h)); // put to new bucket list
 	return ii;
 }
-
+	
 force_inline
 void HashBase::Link(int ii, dword sh)
 {
