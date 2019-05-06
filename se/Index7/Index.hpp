@@ -2,25 +2,24 @@ namespace New {
 
 force_inline
 void HashBase::Del(int ii)
-{ // remove ii from its list
+{ // remove ii from its bucket
 	Hash& h = hash[ii];
 	if(h.hash == 0)
 		return;
 	Bucket& m = map[h.hash & mask];
-	int i = m.first;
-	ASSERT(i >= 0);
-	if(i == ii) {
-		if(m.first == m.last) // this is the only item in the bucket
+	ASSERT(m.first >= 0);
+	if(ii == m.first) {
+		if(m.first == m.last) // this was the only item in the bucket
 			m.first = m.last = -1;
 		else
 			m.first = h.next;
 	}
 	else // need to find the item before ii
-		while(i >= 0) {
+		for(int i = m.first; i >= 0;) {
 			Hash& p = hash[i];
-			if(p.next == ii) { // item before ii
+			if(p.next == ii) { // found item before ii, remove
 				p.next = h.next; // point to item after ii
-				if(ii == m.last) // ii is the last item
+				if(ii == m.last) // ii was the last item
 					m.last = i; // set it to item before ii
 				break;
 			}
@@ -30,28 +29,33 @@ void HashBase::Del(int ii)
 
 force_inline
 void HashBase::Ins(int ii, dword sh)
-{ // insert into bucket
+{ // insert ii into bucket
 	Hash& h = hash[ii];
 	h.hash = sh;
-	h.next = -1;
 	Bucket& m = map[sh & mask];
-	int i = m.first;
-	if(i < 0) // first in bucket
+	if(m.first < 0) { // first in bucket
+		DLOG("First in bucket");
 		m.first = m.last = ii;
+		h.next = -1;
+	}
 	else
-	if(ii < i) { // before first
-		h.next = i;
+	if(ii < m.first) { // before first
+		DLOG("Before first " << m.first);
+		h.next = m.first;
 		m.first = ii;
 	}
 	else
 	if(ii > m.last) { // after last
+		DLOG("After last " << m.last);
 		hash[m.last].next = ii;
 		m.last = ii;
+		h.next = -1;
 	}
 	else
-		while(i >= 0) { // find the position in the the list
+		for(int i = m.first; i >= 0;) { // find the position in the the list
 			Hash& p = hash[i];
-			if(ii < p.next) {
+			if(ii < p.next) { // found item before ii, insert
+				DDUMP(i);
 				h.next = p.next;
 				p.next = ii;
 				break;
@@ -63,8 +67,21 @@ void HashBase::Ins(int ii, dword sh)
 force_inline
 void HashBase::Set(int ii, dword h)
 {
-	Del(ii); // remove from original bucket list
+	if(IsUnlinked(ii)) { // this should not happen very often...
+		if(ii == unlinked)
+			unlinked = hash[ii].next;
+		else { // remove from unlinked list
+			for(int i = unlinked; i >= 0; i = hash[i].next)
+				if(hash[i].next == ii) {
+					hash[i].next = hash[ii].next;
+					break;
+				}
+		}
+	}
+	else
+		Del(ii); // remove from original bucket list
 	Ins(ii, Smear(h)); // put to new bucket list
+	Check();
 }
 
 force_inline
@@ -142,8 +159,12 @@ void HashBase::UnlinkKey(dword h, P pred)
 		const Hash& ih = hash[i];
 		int ni = ih.next;
 		if(h == ih.hash && pred(i)) {
-			if(i == m.first)
-				m.first = ih.next;
+			if(i == m.first) {
+				if(i == m.last)
+					m.first = m.last = -1;
+				else
+					m.first = ih.next;
+			}
 			else {
 				if(i == m.last)
 					m.last = pi;
@@ -166,19 +187,7 @@ void HashBase::Unlink(int ii)
 	hash[ii].hash = 0;
 	hash[ii].next = unlinked;
 	unlinked = ii;
+	Check();
 }
-
-/*
-template <class T>
-void Index<T>::UnlinkKey(const T& k)
-{
-	int q = Find(k);
-	while(q >= 0) {
-		int qq = FindNext(q);
-		Unlink(q);
-		q = qq;
-	}
-}
-*/
 
 };

@@ -83,6 +83,7 @@ void Benchmark()
 void Check(const New::Index<int>& x)
 {
 //	LOG(x.Dump());
+	bool un = false;
 	for(int i = 0; i < x.GetCount(); i++) {
 		if(!x.IsUnlinked(i)) {
 			int q = x.Find(x[i]);
@@ -96,7 +97,11 @@ void Check(const New::Index<int>& x)
 				q = qq;
 			}
 		}
+		else
+			un = true;
 	}
+	
+	ASSERT(un == x.HasUnlinked());
 }
 
 String AsString(const New::Index<int>& x)
@@ -120,23 +125,30 @@ CONSOLE_APP_MAIN
 	New::Index<int> x;
 	
 	SeedRandom(0);
-	
+
 	x.Add(1);
 	x.Add(1);
 	x.Add(1);
 	LOG(AsString(x));
 	x.Set(1, 2);
 	LOG(AsString(x));
+	LOG(x.Dump());
 	x.UnlinkKey(1);
+//	x.Unlink(0);
+//	x.Unlink(2);
+	LOG(AsString(x));
+	LOG(x.Dump());
+	x.Trim(1);
 	LOG(AsString(x));
 
 #ifdef _DEBUG
 	int Q = 20;
-	int COUNT = 1000;
+	int COUNT = 100000;
 #else
 	int Q = 50;
 	int COUNT = 100000000;
 #endif
+
 	for(int i = 0; i < COUNT; i++)
 	{
 		int v = Random(Q);
@@ -156,22 +168,48 @@ CONSOLE_APP_MAIN
 		LOG("Pushed  " << v << ": " << AsString(x));
 		Check(x);
 	}
+#if 1
 	for(int i = 0; i < COUNT; i++) {
 		int ii = Random(x.GetCount());
 		int v = Random(Q);
+		bool here = // (ii == 24 && v == 6 || ii == 36 && v == 6 || ii == 37 && v == 8) && x[0] == 14 && x[1] == 17 ||
+		            ii == 36 && v == 1 && x[0] == 1 && x[1] == 17;
+		if(here) {
+			LOG("============================== HERE!");
+			LOG(x.Dump());
+		}
 		x.Set(ii, v);
+		if(here) {
+			LOG(x.Dump());
+			LOG("-----------------");
+		}
 		LOG("Set " << ii << ", " << v << ": " << AsString(x));
 		Check(x);
 	}
+#endif
 	for(int i = 0; i < COUNT; i++) {
 		int v = Random(Q);
 		{
 			RTIMING("Add");
+			if(v == 6)
+				LOG(x.Dump());
 			x.Add(v);
+			if(v == 6)
+				LOG(x.Dump());
 		}
-		if(x.GetCount() > 100)
-			x.Clear();
+		LOG("Add " << v << ": " << AsString(x));
 		Check(x);
+		if(x.GetCount() > 100) {
+		#if 0
+			x.Clear();
+		#else
+			int n = Random(x.GetCount());
+			x.Trim(n);
+			LOG("Trim " << n << ": " << AsString(x));
+			LOG(x.Dump());
+		#endif
+			Check(x);
+		}
 	}
 
 #ifndef _DEBUG

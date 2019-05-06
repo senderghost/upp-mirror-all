@@ -24,12 +24,13 @@ struct HashBase {
 	Vector<Hash> hash;
 	dword        mask;
 	int          unlinked;
+
+	void MakeMap();
 	
 	static Bucket empty[1];
 
 	static dword Smear(dword h)          { return FoldHash(h) | HIBIT; }
 
-	void AddOverflow(Bucket& m, int ii);
 	void Reindex();
 	void GrowMap();
 	void Link(int ii, dword h);
@@ -39,6 +40,7 @@ struct HashBase {
 	void Free();
 	
 	dword operator[](int i) const        { return hash[i].hash; }
+	int   GetCount() const               { return hash.GetCount(); }
 
 	void Add(dword h);
 	
@@ -57,9 +59,16 @@ struct HashBase {
 
 	void Set(int ii, dword h);
 	
-	void Clear();
+	void Sweep();
 	
+	void Reserve(int n);
+	void Shrink();
+	
+	void Clear();
+	void Trim(int n = 0);
+
 	String Dump() const;
+	void Check();
 	
 	HashBase();
 	~HashBase();
@@ -67,8 +76,8 @@ struct HashBase {
 
 template <class T>
 class Index {
-	Vector<T> key;
 	HashBase  hash;
+	Vector<T> key;
 
 	void SweepGrow();
 
@@ -84,11 +93,14 @@ public:
 	void Unlink(int i)               { hash.Unlink(i); }
 	bool IsUnlinked(int i) const     { return hash.IsUnlinked(i); }
 	void UnlinkKey(const T& k)       { hash.UnlinkKey(GetHashValue(k), [&](int i) { return key[i] == k; }); }
+	bool HasUnlinked() const         { return hash.HasUnlinked(); }
 
 	const T& operator[](int i) const { return key[i]; }
 	int  GetCount() const            { return key.GetCount(); }
 	
 	void  Clear()                    { key.Clear(); hash.Clear(); }
+	
+	void  Trim(int n)                { key.Trim(n); hash.Trim(n); }
 	
 	String Dump() const              { return hash.Dump(); }
 };
