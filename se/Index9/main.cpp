@@ -1,17 +1,19 @@
 #include "Index.h"
 
+#include <set>
+
 
 int nnn = 200;
 int val = 0;
 int sum = 0;
 
-#define N 5000
+#define N 500
 
 void Benchmark()
 {
 	Vector<String> data;
 	for(int i = 0; i < N; i++)
-		data.Add(AsString(i)/* + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"*/);
+		data.Add(AsString(i));
 	int rep = max(100000000 / N, 1);
 	for(int n = 0; n < rep; n++) {
 		{
@@ -79,7 +81,7 @@ void Benchmark()
 			{
 				RTIMING("New string findadd");
 				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(data[i >> 2]) == i)
+					if(test.FindAdd(data[i >> 5]) == i)
 						sum++;
 				}
 			}
@@ -101,7 +103,7 @@ void Benchmark()
 			{
 				RTIMING("Old string findadd");
 				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(data[i >> 2]) == i)
+					if(test.FindAdd(data[i >> 5]) == i)
 						sum++;
 				}
 			}
@@ -110,61 +112,150 @@ void Benchmark()
 	RDUMP(sum);
 }
 
-void Check(const New::Index<int>& x)
+void Check(const New::Index<int>& x, bool ordered = true)
 {
-//	LOG(x.Dump());
-	bool un = false;
+	int un = 0;
+	Vector<int> uns = x.GetUnlinked();
 	for(int i = 0; i < x.GetCount(); i++) {
-		if(!x.IsUnlinked(i)) {
+		if(x.IsUnlinked(i)) {
+			ASSERT(FindIndex(uns, i) >= 0);
+			un++;
+		}
+		else {
 			int q = x.Find(x[i]);
+			bool f = false;
 			ASSERT(x[i] == x[q]);
 			while(q >= 0) {
+				if(q == i)
+					f = true;
 				ASSERT(x[i] == x[q]);
 				int qq = x.FindNext(q);
 				if(qq < 0)
 					break;
-				ASSERT(qq > q);
+				ASSERT(!ordered || qq > q);
+				q = qq;
+			}
+			ASSERT(f);
+
+			q = x.FindLast(x[i]);
+			ASSERT(x[i] == x[q]);
+			while(q >= 0) {
+				ASSERT(x[i] == x[q]);
+				int qq = x.FindPrev(q);
+				if(qq < 0)
+					break;
+				ASSERT(!ordered || qq < q);
 				q = qq;
 			}
 		}
-		else
-			un = true;
 	}
 	
-	ASSERT(un == x.HasUnlinked());
+	ASSERT(un == uns.GetCount());
 }
 
-String AsString(const New::Index<int>& x)
+void RealBenchmark();
+void RealBenchmarkCollisions();
+
+void PickTests()
 {
-	String r;
-	int n = 0;
-	for(int i = 0; i < x.GetCount(); i++) {
-		if(i)
-			r << ", ";
-		if(x.IsUnlinked(i)) {
-			r << "#";
-			n++;
-		}
-		r << x[i];
-	}
-	return String() << "(" << x.GetCount() << "/#" << n << "): " << r;
+	New::Index<String> s;
+	String h = "Hello!";
+	s.Add(h);
+	s.Add(h);
+	ASSERT(h.GetCount());
+	s.Add(pick(h));
+	ASSERT(IsNull(h));
+	h = "1";
+	s.Add(pick(h));
+	ASSERT(IsNull(h));
+	h = "2";
+	int hi = s.FindAdd(pick(h));
+	ASSERT(IsNull(h));
+	h = "2";
+	ASSERT(s.FindAdd(pick(h)) == hi);
+	ASSERT(h == "2");
 }
 
 CONSOLE_APP_MAIN
 {
-	New::Index<int> x;
-	
-	SeedRandom(0);
+	StdLogSetup(LOG_FILE|LOG_COUT);
+
+	RDUMP(sizeof(New::Index<int>));
+	RDUMP(sizeof(New::VectorMap<String, int>));
+	RDUMP(sizeof(Index<int>));
+	RDUMP(sizeof(VectorMap<String, int>));
+	RDUMP(sizeof(std::set<int>));
 
 #ifndef _DEBUG
+	RealBenchmark();
 	Benchmark();
 	return;
 #endif
+
+//	RealBenchmarkCollisions();
+
+	PickTests();
+
+	New::Index<int> x;
+
+	SeedRandom(0);
 	
+	int rnd = Random(100);
+
+	x.Add(0);
+	x.Add(0);
+	x.Add(0);
 
 	x.Add(1);
 	x.Add(1);
 	x.Add(1);
+	DUMP(x);
+
+	ASSERT(x.Find(10) < 0);
+	ASSERT(x.Find(1) == 3);
+	ASSERT(x.FindNext(3) == 4);
+
+	x.Unlink(0);
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	x.Unlink(1);
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	x.Unlink(2);
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	
+	DUMP(x.Put(2));
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	DUMP(x.Put(2));
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	DUMP(x.Put(2));
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+	
+	x.UnlinkKey(1);
+	DUMP(x);
+	DUMP(x.GetUnlinked());
+
+	DLOG("----- Put(2)");
+	x.Put(2);
+	DUMP(x);
+	x.Put(2);
+	DUMP(x);
+	x.Put(2);
+	DUMP(x);
+	
+	DLOG("----- Set");
+	x.Set(1, 5);
+	DUMP(x);
+	x.Set(2, 5);
+	DUMP(x);
+	
+	return;
+	
+/*
 	LOG(AsString(x));
 	x.Set(1, 2);
 	LOG(AsString(x));
@@ -176,7 +267,7 @@ CONSOLE_APP_MAIN
 	LOG(x.Dump());
 	x.Trim(1);
 	LOG(AsString(x));
-
+*/
 #ifdef _DEBUG
 	int Q = 20;
 	int COUNT = 100000;
@@ -184,6 +275,8 @@ CONSOLE_APP_MAIN
 	int Q = 50;
 	int COUNT = 100000000;
 #endif
+
+	#define CLOG(x)
 
 	for(int i = 0; i < COUNT; i++)
 	{
@@ -193,7 +286,7 @@ CONSOLE_APP_MAIN
 			x.UnlinkKey(v);
 		}
 		Check(x);
-		LOG("Removed " << v << ": " << AsString(x));
+		CLOG("Removed " << v << ": " << AsString(x));
 		v = Random(Q);
 		{
 //			RTIMING("Push");
@@ -201,7 +294,7 @@ CONSOLE_APP_MAIN
 			RTIMING("Put");
 			x.Put(v);
 		}
-		LOG("Pushed  " << v << ": " << AsString(x));
+		CLOG("Pushed  " << v << ": " << AsString(x));
 		Check(x);
 	}
 
@@ -214,33 +307,29 @@ CONSOLE_APP_MAIN
 			ii = x.FindAdd(v);
 		}
 		ASSERT(x[ii] == v);
-		LOG("FindAdd " << v << ": " << ii << ": " << AsString(x));
+		CLOG("FindAdd " << v << ": " << ii << ": " << AsString(x));
 		if(Random(Q) == 0) {
 			x.Clear();
 			LOG("Clear " << AsString(x));
 		}
 		Check(x);
 	}
-	return;
-
 	for(int i = 0; i < COUNT; i++) {
 		int ii = Random(x.GetCount());
 		int v = Random(Q);
 		x.Set(ii, v);
-		LOG("Set " << ii << ", " << v << ": " << AsString(x));
+		ASSERT(x[ii] == v);
+		CLOG("Set " << ii << ", " << v << ": " << AsString(x));
 		Check(x);
 	}
+	return;
 	for(int i = 0; i < COUNT; i++) {
 		int v = Random(Q);
 		{
 			RTIMING("Add");
-			if(v == 6)
-				LOG(x.Dump());
 			x.Add(v);
-			if(v == 6)
-				LOG(x.Dump());
 		}
-		LOG("Add " << v << ": " << AsString(x));
+		CLOG("Add " << v << ": " << AsString(x));
 		Check(x);
 		if(x.GetCount() > 100) {
 		#if 0
@@ -249,7 +338,6 @@ CONSOLE_APP_MAIN
 			int n = Random(x.GetCount());
 			x.Trim(n);
 			LOG("Trim " << n << ": " << AsString(x));
-			LOG(x.Dump());
 		#endif
 			Check(x);
 		}

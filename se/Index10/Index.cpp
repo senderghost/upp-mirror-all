@@ -6,10 +6,11 @@ using namespace Upp;
 
 namespace New {
 
-HashBase::Bucket HashBase::empty[1] = { -1, -1 };
+int HashBase::empty[1] = { -1 };
 
 HashBase::HashBase()
 {
+	hash = NULL;
 	map = empty;
 	mask = 0;
 	unlinked = -1;
@@ -20,51 +21,43 @@ HashBase::~HashBase()
 	Free();
 }
 
-void HashBase::Free()
+void HashBase::FreeMap()
 {
 	if(map != empty)
-		delete[] map;
+		MemoryFree(map);
 }
 
-void HashBase::Reindex()
+void HashBase::Free()
 {
-	LOG("== Reindex " << mask);
-	Free();
-	map = new Bucket[mask + 1];
-	for(int i = 0; i < hash.GetCount(); i++) {
-		hash[i].next = -1;
+	if(hash)
+		MemoryFree(hash);
+	FreeMap();
+}
+
+void HashBase::Reindex(int count)
+{
+	FreeMap();
+	map = (int *)MemoryAlloc((mask + 1) * sizeof(int));
+	Fill(map, map + mask + 1, -1);
+	for(int i = 0; i < count; i++) // todo: unlinked
 		if(hash[i].hash)
 			Link(i, hash[i].hash);
-	}
 }
 
 void HashBase::Clear()
 {
-	hash.Clear();
 	Free();
+	hash = NULL;
 	map = empty;
 	mask = 0;
 	unlinked = -1;
 }
 
-void HashBase::GrowMap()
+void HashBase::GrowMap(int count)
 {
 	LLOG("== GrowMap");
 	mask = (mask << 1) | 3;
-	Reindex();
-}
-
-String HashBase::Dump() const
-{
-	String h;
-	for(int i = 0; i < hash.GetCount(); i++) {
-		if(i)
-			h << ", ";
-		if(IsUnlinked(i))
-			h << "#";
-		h << i << ": " << hash[i].hash << " -> " << hash[i].next;
-	}
-	return h;
+	Reindex(count);
 }
 
 void HashBase::Sweep()
@@ -72,7 +65,8 @@ void HashBase::Sweep()
 	
 }
 
-void HashBase::MakeMap()
+/*
+void HashBase::MakeMap(int)
 {
 	while(mask <= (dword)hash.GetCount())
 		mask = (mask << 1) | 3;
@@ -91,9 +85,12 @@ void HashBase::Shrink()
 	mask = 0;
 	MakeMap();
 }
+*/
+
 
 void HashBase::Trim(int n)
 {
+#if 0
 	if(n == 0) { // trim everything
 		hash.Trim(0);
 		for(int i = 0; i < int(mask + 1); i++)
@@ -120,11 +117,7 @@ void HashBase::Trim(int n)
 	hash.Trim(n);
 
 	Check();
-}
-
-void HashBase::Check() {
-	for(int i = 0; i < mask + 1; i++)
-		ASSERT(map[i].first < hash.GetCount() && map[i].last < hash.GetCount());
+#endif
 }
 
 };

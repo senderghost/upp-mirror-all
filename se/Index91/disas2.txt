@@ -1,0 +1,1655 @@
+40032620  push r15
+40032622  push r14
+40032624  push r13
+40032626  push r12
+40032628  push rbp
+40032629  push rdi
+4003262A  push rsi
+4003262B  push rbx
+4003262C  sub rsp,0xf8
+40032633  movaps XMMWORD PTR [rsp+0xe0],xmm6
+4003263B  mov ebx,0x1f4
+40032640  pxor xmm6,xmm6
+40032644  mov QWORD PTR [rsp+0x80],0x0
+40032650  lea r15,[rsp+0x90]
+40032658  mov QWORD PTR [rsp+0x88],0x0
+40032664  lea rsi,[rsp+0x80]
+4003266C  nop DWORD PTR [rax+0x0]
+40032670  mov ecx,0xa6
+40032675  call 0x14008bb00 <Upp::Random(unsigned long)>
+4003267A  mov edx,eax
+4003267C  mov rcx,r15
+4003267F  call 0x1400b1ae0 <Upp::Format64(unsigned long long)>
+40032684  movsxd rax,DWORD PTR [rsp+0x88]
+4003268C  cmp eax,DWORD PTR [rsp+0x8c]
+40032693  mov rdi,QWORD PTR [rsp+0x80]
+4003269B  jge 0x140033c3a <Benchmark()+5658>
+400326A1  lea edx,[rax+0x1]
+400326A4  shl rax,0x4
+400326A8  mov DWORD PTR [rsp+0x88],edx
+400326AF  mov edx,DWORD PTR [rsp+0x90]
+400326B6  add rax,rdi
+400326B9  mov DWORD PTR [rax],edx
+400326BB  mov edx,DWORD PTR [rsp+0x94]
+400326C2  mov DWORD PTR [rax+0x4],edx
+400326C5  mov edx,DWORD PTR [rsp+0x98]
+400326CC  mov DWORD PTR [rax+0x8],edx
+400326CF  mov edx,DWORD PTR [rsp+0x9c]
+400326D6  mov DWORD PTR [rax+0xc],edx
+400326D9  sub ebx,0x1
+400326DC  jne 0x140032670 <Benchmark()+80>
+400326DE  lea rax,[rsp+0x70]
+400326E3  mov DWORD PTR [rsp+0x5c],0x30d40
+400326EB  mov QWORD PTR [rsp+0x48],rax
+400326F0  mov rcx,r15
+400326F3  call 0x1400358d0 <New::HashBase::HashBase()>
+400326F8  mov QWORD PTR [rsp+0xb0],0x0
+40032704  mov QWORD PTR [rsp+0xb8],0x0
+40032710  movzx eax,BYTE PTR [rip+0x1122a9]        # 0x1401449c0
+40032717  test al,al
+40032719  jne 0x14003272f <Benchmark()+271>
+4003271B  lea rcx,[rip+0x11229e]        # 0x1401449c0
+40032722  call 0x1400e95e0 <__cxa_guard_acquire>
+40032727  test eax,eax
+40032729  jne 0x140033dc0 <Benchmark()+6048>
+4003272F  lea rcx,[rip+0xfe8ea]        # 0x140131020 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting22>
+40032736  call 0x140002b00 <__emutls_get_address>
+4003273B  mov rbx,rax
+4003273E  call QWORD PTR [rip+0xea22c]        # 0x14011c970 <__imp_timeGetTime>
+40032744  add DWORD PTR [rbx],0x1
+40032747  lea rdi,[rsp+0x7c]
+4003274C  mov esi,eax
+4003274E  mov DWORD PTR [rsp+0x7c],0x0
+40032756  xor eax,eax
+40032758  mov QWORD PTR [rsp+0x28],rdi
+4003275D  nop DWORD PTR [rax]
+40032760  imul r9d,eax,0xa3613c16
+40032767  mov r8,QWORD PTR [rsp+0x28]
+4003276C  mov rcx,r15
+4003276F  bswap r9d
+40032772  or r9d,0x80000000
+40032779  mov rax,QWORD PTR [rsp+0x90]
+40032781  mov edx,r9d
+40032784  and edx,DWORD PTR [rsp+0xa8]
+4003278B  lea rdx,[rax+rdx*4]
+4003278F  call 0x1400354c0 <New::Index<int>::AddS(int&, int const&, unsigned long)>
+40032794  mov eax,DWORD PTR [rsp+0x7c]
+40032798  add eax,0x1
+4003279B  cmp eax,0x1f3
+400327A0  mov DWORD PTR [rsp+0x7c],eax
+400327A4  jle 0x140032760 <Benchmark()+320>
+400327A6  mov eax,DWORD PTR [rbx]
+400327A8  lea rcx,[rip+0x112231]        # 0x1401449e0
+400327AF  mov edx,esi
+400327B1  lea r8d,[rax-0x1]
+400327B5  mov DWORD PTR [rbx],r8d
+400327B8  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400327BD  movzx eax,BYTE PTR [rip+0x11217c]        # 0x140144940
+400327C4  test al,al
+400327C6  jne 0x1400327dc <Benchmark()+444>
+400327C8  lea rcx,[rip+0x112171]        # 0x140144940
+400327CF  call 0x1400e95e0 <__cxa_guard_acquire>
+400327D4  test eax,eax
+400327D6  jne 0x140033df0 <Benchmark()+6096>
+400327DC  lea rcx,[rip+0xfe85d]        # 0x140131040 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting28>
+400327E3  call 0x140002b00 <__emutls_get_address>
+400327E8  mov rbx,rax
+400327EB  call QWORD PTR [rip+0xea17f]        # 0x14011c970 <__imp_timeGetTime>
+400327F1  add DWORD PTR [rbx],0x1
+400327F4  xor edi,edi
+400327F6  xor r9d,r9d
+400327F9  mov rdx,QWORD PTR [rsp+0x90]
+40032801  mov ebp,DWORD PTR [rsp+0xa8]
+40032808  mov r11,QWORD PTR [rsp+0xb0]
+40032810  mov rsi,QWORD PTR [rsp+0x98]
+40032818  nop DWORD PTR [rax+rax*1+0x0]
+40032820  mov ecx,edi
+40032822  bswap ecx
+40032824  or ecx,0x80000000
+4003282A  and ecx,ebp
+4003282C  mov r10d,DWORD PTR [rdx+rcx*4]
+40032830  test r10d,r10d
+40032833  js 0x14003285e <Benchmark()+574>
+40032835  mov ecx,r10d
+40032838  jmp 0x140032849 <Benchmark()+553>
+4003283A  nop WORD PTR [rax+rax*1+0x0]
+40032840  mov ecx,DWORD PTR [rsi+r8*4]
+40032844  cmp r10d,ecx
+40032847  je 0x14003285e <Benchmark()+574>
+40032849  movsxd r8,ecx
+4003284C  cmp r9d,DWORD PTR [r11+r8*4]
+40032850  jne 0x140032840 <Benchmark()+544>
+40032852  cmp r9d,ecx
+40032855  jne 0x14003285e <Benchmark()+574>
+40032857  add DWORD PTR [rip+0x111be2],0x1        # 0x140144440
+4003285E  add r9d,0x1
+40032862  sub edi,0x5c9ec3ea
+40032868  cmp r9d,0x1f4
+4003286F  jne 0x140032820 <Benchmark()+512>
+40032871  mov edi,DWORD PTR [rbx]
+40032873  lea rcx,[rip+0x1120e6]        # 0x140144960
+4003287A  mov edx,eax
+4003287C  lea r8d,[rdi-0x1]
+40032880  mov DWORD PTR [rbx],r8d
+40032883  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40032888  movzx eax,BYTE PTR [rip+0x112031]        # 0x1401448c0
+4003288F  test al,al
+40032891  jne 0x1400328a7 <Benchmark()+647>
+40032893  lea rcx,[rip+0x112026]        # 0x1401448c0
+4003289A  call 0x1400e95e0 <__cxa_guard_acquire>
+4003289F  test eax,eax
+400328A1  jne 0x140033e20 <Benchmark()+6144>
+400328A7  lea rcx,[rip+0xfe7b2]        # 0x140131060 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting35>
+400328AE  call 0x140002b00 <__emutls_get_address>
+400328B3  mov rdi,rax
+400328B6  call QWORD PTR [rip+0xea0b4]        # 0x14011c970 <__imp_timeGetTime>
+400328BC  mov rcx,QWORD PTR [rsp+0xb0]
+400328C4  mov ebp,eax
+400328C6  add DWORD PTR [rdi],0x1
+400328C9  test rcx,rcx
+400328CC  je 0x1400328d3 <Benchmark()+691>
+400328CE  call 0x14003b590 <Upp::MemoryFree(void*)>
+400328D3  mov QWORD PTR [rsp+0xb0],0x0
+400328DF  mov rcx,r15
+400328E2  mov QWORD PTR [rsp+0xb8],0x0
+400328EE  call 0x140035690 <New::HashBase::Clear()>
+400328F3  xor esi,esi
+400328F5  mov eax,esi
+400328F7  mov rdx,QWORD PTR [rsp+0x90]
+400328FF  sar eax,0x2
+40032902  imul r9d,eax,0xa3613c16
+40032909  mov DWORD PTR [rsp+0x7c],eax
+4003290D  bswap r9d
+40032910  or r9d,0x80000000
+40032917  mov ecx,r9d
+4003291A  and ecx,DWORD PTR [rsp+0xa8]
+40032921  lea rdx,[rdx+rcx*4]
+40032925  mov ecx,DWORD PTR [rdx]
+40032927  test ecx,ecx
+40032929  js 0x140032b10 <Benchmark()+1264>
+4003292F  mov r11,QWORD PTR [rsp+0xb0]
+40032937  mov ebx,ecx
+40032939  mov r10,QWORD PTR [rsp+0x98]
+40032941  jmp 0x14003294f <Benchmark()+815>
+40032943  mov ebx,DWORD PTR [r10+r8*4]
+40032947  cmp ecx,ebx
+40032949  je 0x140032b10 <Benchmark()+1264>
+4003294F  movsxd r8,ebx
+40032952  cmp eax,DWORD PTR [r11+r8*4]
+40032956  jne 0x140032943 <Benchmark()+803>
+40032958  cmp ebx,esi
+4003295A  je 0x140032b2c <Benchmark()+1292>
+40032960  add esi,0x1
+40032963  cmp esi,0x1f4
+40032969  jne 0x1400328f5 <Benchmark()+725>
+4003296B  mov eax,DWORD PTR [rdi]
+4003296D  lea rcx,[rip+0x111f6c]        # 0x1401448e0
+40032974  mov edx,ebp
+40032976  lea r8d,[rax-0x1]
+4003297A  mov DWORD PTR [rdi],r8d
+4003297D  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40032982  mov rcx,QWORD PTR [rsp+0xb0]
+4003298A  test rcx,rcx
+4003298D  je 0x140032994 <Benchmark()+884>
+4003298F  call 0x14003b590 <Upp::MemoryFree(void*)>
+40032994  mov rcx,r15
+40032997  call 0x140035900 <New::HashBase::~HashBase()>
+4003299C  lea rcx,[r15+0x18]
+400329A0  mov QWORD PTR [rsp+0x98],0x0
+400329AC  mov QWORD PTR [rsp+0xa0],0x0
+400329B8  call 0x1400b3370 <Upp::HashBase::HashBase()>
+400329BD  movzx eax,BYTE PTR [rip+0x111e7c]        # 0x140144840
+400329C4  test al,al
+400329C6  jne 0x1400329dc <Benchmark()+956>
+400329C8  lea rcx,[rip+0x111e71]        # 0x140144840
+400329CF  call 0x1400e95e0 <__cxa_guard_acquire>
+400329D4  test eax,eax
+400329D6  jne 0x140033e50 <Benchmark()+6192>
+400329DC  lea rcx,[rip+0xfe69d]        # 0x140131080 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting46>
+400329E3  call 0x140002b00 <__emutls_get_address>
+400329E8  mov rbp,rax
+400329EB  call QWORD PTR [rip+0xe9f7f]        # 0x14011c970 <__imp_timeGetTime>
+400329F1  add DWORD PTR [rbp+0x0],0x1
+400329F5  lea r12,[r15+0x8]
+400329F9  mov r14d,eax
+400329FC  xor esi,esi
+400329FE  mov DWORD PTR [rsp+0x7c],0x0
+40032A06  lea r13,[r15+0x20]
+40032A0A  jmp 0x140032a8b <Benchmark()+1131>
+40032A0C  nop DWORD PTR [rax+0x0]
+40032A10  imul esi,esi,0xa3613c16
+40032A16  bswap esi
+40032A18  and esi,eax
+40032A1A  mov rax,QWORD PTR [rsp+0xd0]
+40032A22  lea rdi,[rax+rsi*4]
+40032A26  movsxd rax,DWORD PTR [rsp+0xc8]
+40032A2E  cmp eax,DWORD PTR [rsp+0xcc]
+40032A35  mov rsi,QWORD PTR [rsp+0xc0]
+40032A3D  jge 0x140032b80 <Benchmark()+1376>
+40032A43  lea edx,[rax+0x1]
+40032A46  mov DWORD PTR [rsp+0xc8],edx
+40032A4D  mov edx,DWORD PTR [rdi]
+40032A4F  lea rax,[rsi+rax*8]
+40032A53  test edx,edx
+40032A55  js 0x140032b72 <Benchmark()+1362>
+40032A5B  movsxd rcx,edx
+40032A5E  mov DWORD PTR [rax],edx
+40032A60  lea rcx,[rsi+rcx*8]
+40032A64  mov edx,DWORD PTR [rcx+0x4]
+40032A67  mov DWORD PTR [rax+0x4],edx
+40032A6A  mov DWORD PTR [rcx+0x4],ebx
+40032A6D  movsxd rax,DWORD PTR [rax+0x4]
+40032A71  mov DWORD PTR [rsi+rax*8],ebx
+40032A74  mov eax,DWORD PTR [rsp+0x7c]
+40032A78  lea esi,[rax+0x1]
+40032A7B  cmp esi,0x1f3
+40032A81  mov DWORD PTR [rsp+0x7c],esi
+40032A85  jg 0x140032ba6 <Benchmark()+1414>
+40032A8B  movsxd rax,DWORD PTR [rsp+0xa0]
+40032A93  cmp eax,DWORD PTR [rsp+0xa4]
+40032A9A  jge 0x140032b60 <Benchmark()+1344>
+40032AA0  lea edx,[rax+0x1]
+40032AA3  mov DWORD PTR [rsp+0xa0],edx
+40032AAA  mov rdx,QWORD PTR [rsp+0x98]
+40032AB2  mov DWORD PTR [rdx+rax*4],esi
+40032AB5  and esi,0x7fffffff
+40032ABB  mov ebx,DWORD PTR [rsp+0xb8]
+40032AC2  cmp ebx,DWORD PTR [rsp+0xbc]
+40032AC9  mov DWORD PTR [rsp+0x70],esi
+40032ACD  jge 0x140032b50 <Benchmark()+1328>
+40032AD3  mov rdx,QWORD PTR [rsp+0xb0]
+40032ADB  lea eax,[rbx+0x1]
+40032ADE  mov DWORD PTR [rsp+0xb8],eax
+40032AE5  movsxd rax,ebx
+40032AE8  mov DWORD PTR [rdx+rax*4],esi
+40032AEB  mov eax,DWORD PTR [rsp+0xd8]
+40032AF2  cmp DWORD PTR [rsp+0xb8],eax
+40032AF9  jle 0x140032a10 <Benchmark()+1008>
+40032AFF  lea rcx,[r15+0x18]
+40032B03  call 0x1400b2e40 <Upp::HashBase::Reindex()>
+40032B08  jmp 0x140032a74 <Benchmark()+1108>
+40032B0D  nop DWORD PTR [rax]
+40032B10  mov r8,QWORD PTR [rsp+0x28]
+40032B15  mov rcx,r15
+40032B18  mov ebx,DWORD PTR [rsp+0xb8]
+40032B1F  call 0x1400354c0 <New::Index<int>::AddS(int&, int const&, unsigned long)>
+40032B24  cmp ebx,esi
+40032B26  jne 0x140032960 <Benchmark()+832>
+40032B2C  add DWORD PTR [rip+0x11190d],0x1        # 0x140144440
+40032B33  add esi,0x1
+40032B36  cmp esi,0x1f4
+40032B3C  jne 0x1400328f5 <Benchmark()+725>
+40032B42  jmp 0x14003296b <Benchmark()+843>
+40032B47  nop WORD PTR [rax+rax*1+0x0]
+40032B50  mov rdx,QWORD PTR [rsp+0x48]
+40032B55  mov rcx,r13
+40032B58  call 0x140095bd0 <Upp::Vector<unsigned int>::GrowAddPick(unsigned int&&)>
+40032B5D  jmp 0x140032aeb <Benchmark()+1227>
+40032B5F  nop 
+40032B60  mov rdx,QWORD PTR [rsp+0x28]
+40032B65  mov rcx,r12
+40032B68  call 0x140095ac0 <Upp::Vector<int>::GrowAdd(int const&)>
+40032B6D  jmp 0x140032ab5 <Benchmark()+1173>
+40032B72  mov DWORD PTR [rax],ebx
+40032B74  mov DWORD PTR [rax+0x4],ebx
+40032B77  mov DWORD PTR [rdi],ebx
+40032B79  jmp 0x140032a74 <Benchmark()+1108>
+40032B7E  xchg ax,ax
+40032B80  lea rcx,[r15+0x30]
+40032B84  call 0x140095190 <Upp::Vector<Upp::HashBase::Link>::Grow()>
+40032B89  mov rcx,rsi
+40032B8C  call 0x14003b590 <Upp::MemoryFree(void*)>
+40032B91  mov rsi,QWORD PTR [rsp+0xc0]
+40032B99  movsxd rax,DWORD PTR [rsp+0xc8]
+40032BA1  jmp 0x140032a43 <Benchmark()+1059>
+40032BA6  mov eax,DWORD PTR [rbp+0x0]
+40032BA9  lea rcx,[rip+0x111cb0]        # 0x140144860
+40032BB0  mov edx,r14d
+40032BB3  lea r8d,[rax-0x1]
+40032BB7  mov DWORD PTR [rbp+0x0],r8d
+40032BBB  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40032BC0  movzx eax,BYTE PTR [rip+0x111bf9]        # 0x1401447c0
+40032BC7  test al,al
+40032BC9  jne 0x140032bdf <Benchmark()+1471>
+40032BCB  lea rcx,[rip+0x111bee]        # 0x1401447c0
+40032BD2  call 0x1400e95e0 <__cxa_guard_acquire>
+40032BD7  test eax,eax
+40032BD9  jne 0x140033e80 <Benchmark()+6240>
+40032BDF  lea rcx,[rip+0xfe4ba]        # 0x1401310a0 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting52>
+40032BE6  call 0x140002b00 <__emutls_get_address>
+40032BEB  mov rbx,rax
+40032BEE  call QWORD PTR [rip+0xe9d7c]        # 0x14011c970 <__imp_timeGetTime>
+40032BF4  mov r8d,DWORD PTR [rbx]
+40032BF7  xor ebp,ebp
+40032BF9  xor r10d,r10d
+40032BFC  mov r13,QWORD PTR [rsp+0xd0]
+40032C04  mov r12d,DWORD PTR [rsp+0xd8]
+40032C0C  mov rsi,QWORD PTR [rsp+0x98]
+40032C14  mov rdi,QWORD PTR [rsp+0xc0]
+40032C1C  lea edx,[r8+0x1]
+40032C20  mov DWORD PTR [rbx],edx
+40032C22  mov edx,ebp
+40032C24  bswap edx
+40032C26  and edx,r12d
+40032C29  mov r9d,DWORD PTR [r13+rdx*4+0x0]
+40032C2E  test r9d,r9d
+40032C31  js 0x140032c5d <Benchmark()+1597>
+40032C33  mov edx,r9d
+40032C36  jmp 0x140032c48 <Benchmark()+1576>
+40032C38  nop DWORD PTR [rax+rax*1+0x0]
+40032C40  mov edx,DWORD PTR [rdi+rcx*8]
+40032C43  cmp r9d,edx
+40032C46  je 0x140032c5d <Benchmark()+1597>
+40032C48  movsxd rcx,edx
+40032C4B  cmp r10d,DWORD PTR [rsi+rcx*4]
+40032C4F  jne 0x140032c40 <Benchmark()+1568>
+40032C51  cmp r10d,edx
+40032C54  jne 0x140032c5d <Benchmark()+1597>
+40032C56  add DWORD PTR [rip+0x1117e3],0x1        # 0x140144440
+40032C5D  add r10d,0x1
+40032C61  sub ebp,0x5c9ec3ea
+40032C67  cmp r10d,0x1f4
+40032C6E  jne 0x140032c22 <Benchmark()+1538>
+40032C70  mov DWORD PTR [rbx],r8d
+40032C73  lea rcx,[rip+0x111b66]        # 0x1401447e0
+40032C7A  mov edx,eax
+40032C7C  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40032C81  movzx eax,BYTE PTR [rip+0x111ab8]        # 0x140144740
+40032C88  test al,al
+40032C8A  jne 0x140032ca0 <Benchmark()+1664>
+40032C8C  lea rcx,[rip+0x111aad]        # 0x140144740
+40032C93  call 0x1400e95e0 <__cxa_guard_acquire>
+40032C98  test eax,eax
+40032C9A  jne 0x140033eb0 <Benchmark()+6288>
+40032CA0  lea rcx,[rip+0xfe419]        # 0x1401310c0 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting59>
+40032CA7  call 0x140002b00 <__emutls_get_address>
+40032CAC  mov rdi,rax
+40032CAF  mov QWORD PTR [rsp+0x40],rax
+40032CB4  call QWORD PTR [rip+0xe9cb6]        # 0x14011c970 <__imp_timeGetTime>
+40032CBA  mov rcx,QWORD PTR [rsp+0xb0]
+40032CC2  mov DWORD PTR [rsp+0x38],eax
+40032CC6  add DWORD PTR [rdi],0x1
+40032CC9  test rcx,rcx
+40032CCC  je 0x140032cd3 <Benchmark()+1715>
+40032CCE  call 0x14003b590 <Upp::MemoryFree(void*)>
+40032CD3  mov QWORD PTR [rsp+0xb0],0x0
+40032CDF  lea rcx,[r15+0x18]
+40032CE3  mov QWORD PTR [rsp+0xb8],0x0
+40032CEF  call 0x1400b2010 <Upp::HashBase::ClearIndex()>
+40032CF4  mov rcx,QWORD PTR [rsp+0x98]
+40032CFC  test rcx,rcx
+40032CFF  je 0x140032d06 <Benchmark()+1766>
+40032D01  call 0x14003b590 <Upp::MemoryFree(void*)>
+40032D06  lea rax,[r15+0x30]
+40032D0A  xor r12d,r12d
+40032D0D  xor esi,esi
+40032D0F  mov QWORD PTR [rsp+0x98],0x0
+40032D1B  mov QWORD PTR [rsp+0xa0],0x0
+40032D27  lea r13,[r15+0x18]
+40032D2B  mov QWORD PTR [rsp+0x30],rax
+40032D30  lea r14,[rsp+0x74]
+40032D35  mov edi,esi
+40032D37  mov rdx,QWORD PTR [rsp+0xd0]
+40032D3F  sar edi,0x2
+40032D42  imul ebp,edi,0xa3613c16
+40032D48  mov eax,ebp
+40032D4A  bswap eax
+40032D4C  and eax,DWORD PTR [rsp+0xd8]
+40032D53  mov eax,DWORD PTR [rdx+rax*4]
+40032D56  test eax,eax
+40032D58  js 0x140032da5 <Benchmark()+1925>
+40032D5A  mov rcx,QWORD PTR [rsp+0xc0]
+40032D62  mov ebx,eax
+40032D64  jmp 0x140032d77 <Benchmark()+1879>
+40032D66  nop WORD PTR cs:[rax+rax*1+0x0]
+40032D70  mov ebx,DWORD PTR [rcx+rdx*8]
+40032D73  cmp eax,ebx
+40032D75  je 0x140032da5 <Benchmark()+1925>
+40032D77  movsxd rdx,ebx
+40032D7A  cmp edi,DWORD PTR [r12+rdx*4]
+40032D7E  jne 0x140032d70 <Benchmark()+1872>
+40032D80  test ebx,ebx
+40032D82  js 0x140032da5 <Benchmark()+1925>
+40032D84  cmp esi,ebx
+40032D86  je 0x140032e80 <Benchmark()+2144>
+40032D8C  add esi,0x1
+40032D8F  cmp esi,0x1f4
+40032D95  je 0x140032e96 <Benchmark()+2166>
+40032D9B  mov r12,QWORD PTR [rsp+0x98]
+40032DA3  jmp 0x140032d35 <Benchmark()+1813>
+40032DA5  mov ebx,DWORD PTR [rsp+0xa0]
+40032DAC  cmp ebx,DWORD PTR [rsp+0xa4]
+40032DB3  jge 0x140032fd1 <Benchmark()+2481>
+40032DB9  lea eax,[rbx+0x1]
+40032DBC  mov DWORD PTR [rsp+0xa0],eax
+40032DC3  movsxd rax,ebx
+40032DC6  mov DWORD PTR [r12+rax*4],edi
+40032DCA  mov r12d,DWORD PTR [rsp+0xb8]
+40032DD2  mov DWORD PTR [rsp+0x74],edi
+40032DD6  cmp r12d,DWORD PTR [rsp+0xbc]
+40032DDE  jge 0x140032fc0 <Benchmark()+2464>
+40032DE4  mov rdx,QWORD PTR [rsp+0xb0]
+40032DEC  lea eax,[r12+0x1]
+40032DF1  mov DWORD PTR [rsp+0xb8],eax
+40032DF8  movsxd rax,r12d
+40032DFB  mov DWORD PTR [rdx+rax*4],edi
+40032DFE  mov eax,DWORD PTR [rsp+0xd8]
+40032E05  cmp DWORD PTR [rsp+0xb8],eax
+40032E0C  jg 0x140032fb2 <Benchmark()+2450>
+40032E12  bswap ebp
+40032E14  and ebp,eax
+40032E16  mov rax,QWORD PTR [rsp+0xd0]
+40032E1E  mov rdi,QWORD PTR [rsp+0xc0]
+40032E26  lea rbp,[rax+rbp*4]
+40032E2A  movsxd rax,DWORD PTR [rsp+0xc8]
+40032E32  cmp eax,DWORD PTR [rsp+0xcc]
+40032E39  jge 0x140033020 <Benchmark()+2560>
+40032E3F  lea edx,[rax+0x1]
+40032E42  mov DWORD PTR [rsp+0xc8],edx
+40032E49  mov edx,DWORD PTR [rbp+0x0]
+40032E4C  lea rax,[rdi+rax*8]
+40032E50  test edx,edx
+40032E52  js 0x140033010 <Benchmark()+2544>
+40032E58  movsxd rcx,edx
+40032E5B  mov DWORD PTR [rax],edx
+40032E5D  cmp esi,ebx
+40032E5F  lea rcx,[rdi+rcx*8]
+40032E63  mov edx,DWORD PTR [rcx+0x4]
+40032E66  mov DWORD PTR [rax+0x4],edx
+40032E69  mov DWORD PTR [rcx+0x4],r12d
+40032E6D  movsxd rax,DWORD PTR [rax+0x4]
+40032E71  mov DWORD PTR [rdi+rax*8],r12d
+40032E75  jne 0x140032d8c <Benchmark()+1900>
+40032E7B  nop DWORD PTR [rax+rax*1+0x0]
+40032E80  add DWORD PTR [rip+0x1115b9],0x1        # 0x140144440
+40032E87  add esi,0x1
+40032E8A  cmp esi,0x1f4
+40032E90  jne 0x140032d9b <Benchmark()+1915>
+40032E96  mov rax,QWORD PTR [rsp+0x40]
+40032E9B  lea rcx,[rip+0x1118be]        # 0x140144760
+40032EA2  mov edx,DWORD PTR [rsp+0x38]
+40032EA6  mov edi,DWORD PTR [rax]
+40032EA8  lea r8d,[rdi-0x1]
+40032EAC  mov DWORD PTR [rsp+0x30],edi
+40032EB0  mov DWORD PTR [rax],r8d
+40032EB3  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40032EB8  lea rcx,[r15+0x18]
+40032EBC  call 0x1400b33b0 <Upp::HashBase::~HashBase()>
+40032EC1  mov rcx,QWORD PTR [rsp+0x98]
+40032EC9  test rcx,rcx
+40032ECC  je 0x140032ed3 <Benchmark()+2227>
+40032ECE  call 0x14003b590 <Upp::MemoryFree(void*)>
+40032ED3  mov rcx,r15
+40032ED6  call 0x1400358d0 <New::HashBase::HashBase()>
+40032EDB  mov QWORD PTR [rsp+0xb0],0x0
+40032EE7  mov QWORD PTR [rsp+0xb8],0x0
+40032EF3  movzx eax,BYTE PTR [rip+0x1117c6]        # 0x1401446c0
+40032EFA  test al,al
+40032EFC  jne 0x140032f12 <Benchmark()+2290>
+40032EFE  lea rcx,[rip+0x1117bb]        # 0x1401446c0
+40032F05  call 0x1400e95e0 <__cxa_guard_acquire>
+40032F0A  test eax,eax
+40032F0C  jne 0x140033ee0 <Benchmark()+6336>
+40032F12  lea rcx,[rip+0xfe1c7]        # 0x1401310e0 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting70>
+40032F19  call 0x140002b00 <__emutls_get_address>
+40032F1E  mov rdi,rax
+40032F21  call QWORD PTR [rip+0xe9a49]        # 0x14011c970 <__imp_timeGetTime>
+40032F27  add DWORD PTR [rdi],0x1
+40032F2A  mov ebp,eax
+40032F2C  xor esi,esi
+40032F2E  jmp 0x140032f94 <Benchmark()+2420>
+40032F30  imul r9d,DWORD PTR [rbx],0xacf34ce7
+40032F37  xor r9d,DWORD PTR [rbx+0x4]
+40032F3B  imul r9d,r9d,0xacf34ce7
+40032F42  xor r9d,DWORD PTR [rbx+0x8]
+40032F46  imul r9d,r9d,0xacf34ce7
+40032F4D  xor r9d,DWORD PTR [rbx+0xc]
+40032F51  mov rax,QWORD PTR [rsp+0x90]
+40032F59  imul r9d,r9d,0xa3613c16
+40032F60  mov r8,rbx
+40032F63  bswap r9d
+40032F66  or r9d,0x80000000
+40032F6D  mov rcx,r15
+40032F70  mov edx,r9d
+40032F73  and edx,DWORD PTR [rsp+0xa8]
+40032F7A  lea rdx,[rax+rdx*4]
+40032F7E  call 0x140035300 <New::Index<Upp::String>::AddS(int&, Upp::String const&, unsigned long)>
+40032F83  add rsi,0x10
+40032F87  cmp rsi,0x1f40
+40032F8E  je 0x140033047 <Benchmark()+2599>
+40032F94  mov rbx,QWORD PTR [rsp+0x80]
+40032F9C  add rbx,rsi
+40032F9F  cmp BYTE PTR [rbx+0xe],0x0
+40032FA3  je 0x140032f30 <Benchmark()+2320>
+40032FA5  mov rcx,rbx
+40032FA8  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40032FAD  mov r9d,eax
+40032FB0  jmp 0x140032f51 <Benchmark()+2353>
+40032FB2  mov rcx,r13
+40032FB5  call 0x1400b2e40 <Upp::HashBase::Reindex()>
+40032FBA  jmp 0x140032d84 <Benchmark()+1892>
+40032FBF  nop 
+40032FC0  lea rcx,[r15+0x20]
+40032FC4  mov rdx,r14
+40032FC7  call 0x140095bd0 <Upp::Vector<unsigned int>::GrowAddPick(unsigned int&&)>
+40032FCC  jmp 0x140032dfe <Benchmark()+2014>
+40032FD1  lea rcx,[r15+0x8]
+40032FD5  call 0x1400959f0 <Upp::Vector<int>::Grow()>
+40032FDA  movsxd rax,DWORD PTR [rsp+0xa0]
+40032FE2  test r12,r12
+40032FE5  lea edx,[rax+0x1]
+40032FE8  mov DWORD PTR [rsp+0xa0],edx
+40032FEF  mov rdx,QWORD PTR [rsp+0x98]
+40032FF7  mov DWORD PTR [rdx+rax*4],edi
+40032FFA  je 0x140032dca <Benchmark()+1962>
+40033000  mov rcx,r12
+40033003  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033008  jmp 0x140032dca <Benchmark()+1962>
+4003300D  nop DWORD PTR [rax]
+40033010  mov DWORD PTR [rax],r12d
+40033013  mov DWORD PTR [rax+0x4],r12d
+40033017  mov DWORD PTR [rbp+0x0],r12d
+4003301B  jmp 0x140032d84 <Benchmark()+1892>
+40033020  mov rcx,QWORD PTR [rsp+0x30]
+40033025  call 0x140095190 <Upp::Vector<Upp::HashBase::Link>::Grow()>
+4003302A  mov rcx,rdi
+4003302D  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033032  mov rdi,QWORD PTR [rsp+0xc0]
+4003303A  movsxd rax,DWORD PTR [rsp+0xc8]
+40033042  jmp 0x140032e3f <Benchmark()+2079>
+40033047  mov eax,DWORD PTR [rdi]
+40033049  lea rcx,[rip+0x111690]        # 0x1401446e0
+40033050  mov edx,ebp
+40033052  lea r8d,[rax-0x1]
+40033056  mov DWORD PTR [rdi],r8d
+40033059  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+4003305E  movzx eax,BYTE PTR [rip+0x1115db]        # 0x140144640
+40033065  test al,al
+40033067  jne 0x14003307d <Benchmark()+2653>
+40033069  lea rcx,[rip+0x1115d0]        # 0x140144640
+40033070  call 0x1400e95e0 <__cxa_guard_acquire>
+40033075  test eax,eax
+40033077  jne 0x140033cd0 <Benchmark()+5808>
+4003307D  lea rcx,[rip+0xfe07c]        # 0x140131100 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting76>
+40033084  call 0x140002b00 <__emutls_get_address>
+40033089  mov r14,rax
+4003308C  call QWORD PTR [rip+0xe98de]        # 0x14011c970 <__imp_timeGetTime>
+40033092  add DWORD PTR [r14],0x1
+40033096  mov DWORD PTR [rsp+0x30],eax
+4003309A  xor edi,edi
+4003309C  mov r13d,0xffffffff
+400330A2  mov rbx,QWORD PTR [rsp+0x80]
+400330AA  mov rsi,QWORD PTR [rsp+0x90]
+400330B2  add rbx,rdi
+400330B5  cmp BYTE PTR [rbx+0xe],0x0
+400330B9  jne 0x140033950 <Benchmark()+4912>
+400330BF  imul eax,DWORD PTR [rbx],0xacf34ce7
+400330C5  xor eax,DWORD PTR [rbx+0x4]
+400330C8  imul eax,eax,0xacf34ce7
+400330CE  xor eax,DWORD PTR [rbx+0x8]
+400330D1  imul eax,eax,0xacf34ce7
+400330D7  xor eax,DWORD PTR [rbx+0xc]
+400330DA  imul eax,eax,0xa3613c16
+400330E0  bswap eax
+400330E2  or eax,0x80000000
+400330E7  and eax,DWORD PTR [rsp+0xa8]
+400330EE  mov ebp,DWORD PTR [rsi+rax*4]
+400330F1  test ebp,ebp
+400330F3  js 0x140033943 <Benchmark()+4899>
+400330F9  mov esi,ebp
+400330FB  jmp 0x14003312c <Benchmark()+2828>
+400330FD  nop DWORD PTR [rax]
+40033100  mov rdx,QWORD PTR [rcx]
+40033103  mov rax,QWORD PTR [rcx+0x8]
+40033107  xor rdx,QWORD PTR [rbx]
+4003310A  xor rax,QWORD PTR [rbx+0x8]
+4003310E  or rdx,rax
+40033111  sete al
+40033114  test al,al
+40033116  jne 0x140033160 <Benchmark()+2880>
+40033118  mov rax,QWORD PTR [rsp+0x98]
+40033120  mov esi,DWORD PTR [rax+r12*4]
+40033124  cmp ebp,esi
+40033126  je 0x140033943 <Benchmark()+4899>
+4003312C  movsxd r12,esi
+4003312F  mov rcx,r12
+40033132  shl rcx,0x4
+40033136  add rcx,QWORD PTR [rsp+0xb0]
+4003313E  movzx eax,BYTE PTR [rcx+0xe]
+40033142  or al,BYTE PTR [rbx+0xe]
+40033145  je 0x140033100 <Benchmark()+2784>
+40033147  mov rdx,rbx
+4003314A  call 0x1400dfbd0 <Upp::String0::LEqual(Upp::String0 const&) const>
+4003314F  test eax,eax
+40033151  sete al
+40033154  test al,al
+40033156  je 0x140033118 <Benchmark()+2808>
+40033158  nop DWORD PTR [rax+rax*1+0x0]
+40033160  add DWORD PTR [rip+0x1112da],esi        # 0x140144440
+40033166  add rdi,0x10
+4003316A  cmp rdi,0x1f40
+40033171  jne 0x1400330a2 <Benchmark()+2690>
+40033177  mov eax,DWORD PTR [r14]
+4003317A  lea rcx,[rip+0x1114df]        # 0x140144660
+40033181  mov edx,DWORD PTR [rsp+0x30]
+40033185  lea r8d,[rax-0x1]
+40033189  mov DWORD PTR [r14],r8d
+4003318C  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40033191  movzx eax,BYTE PTR [rip+0x111428]        # 0x1401445c0
+40033198  test al,al
+4003319A  jne 0x1400331b0 <Benchmark()+2960>
+4003319C  lea rcx,[rip+0x11141d]        # 0x1401445c0
+400331A3  call 0x1400e95e0 <__cxa_guard_acquire>
+400331A8  test eax,eax
+400331AA  jne 0x140033d00 <Benchmark()+5856>
+400331B0  lea rcx,[rip+0xfdf69]        # 0x140131120 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting82>
+400331B7  call 0x140002b00 <__emutls_get_address>
+400331BC  mov r14,rax
+400331BF  call QWORD PTR [rip+0xe97ab]        # 0x14011c970 <__imp_timeGetTime>
+400331C5  add DWORD PTR [r14],0x1
+400331C9  mov DWORD PTR [rsp+0x30],eax
+400331CD  xor ebp,ebp
+400331CF  nop 
+400331D0  mov rsi,rbp
+400331D3  shl rsi,0x4
+400331D7  add rsi,QWORD PTR [rsp+0x80]
+400331DF  cmp BYTE PTR [rsi+0xe],0x0
+400331E3  jne 0x140033970 <Benchmark()+4944>
+
+400331E9  imul ebx,DWORD PTR [rsi],0xacf34ce7
+400331EF  xor ebx,DWORD PTR [rsi+0x4]
+400331F2  imul ebx,ebx,0xacf34ce7
+400331F8  xor ebx,DWORD PTR [rsi+0x8]
+400331FB  imul ebx,ebx,0xacf34ce7
+40033201  xor ebx,DWORD PTR [rsi+0xc]
+40033204  imul ebx,ebx,0xa3613c16
+4003320A  mov rax,QWORD PTR [rsp+0x90]
+40033212  bswap ebx
+40033214  or ebx,0x80000000
+
+4003321A  mov edx,ebx
+4003321C  and edx,DWORD PTR [rsp+0xa8]
+40033223  lea r12,[rax+rdx*4]
+40033227  mov edi,DWORD PTR [r12]
+
+4003322B  test edi,edi
+4003322D  jns 0x140033262 <Benchmark()+3138>
+
+4003322F  jmp 0x1400334e0 <Benchmark()+3776>
+
+40033234  mov rdx,QWORD PTR [rcx]
+40033237  mov rax,QWORD PTR [rcx+0x8]
+4003323B  xor rdx,QWORD PTR [rsi]
+4003323E  xor rax,QWORD PTR [rsi+0x8]
+40033242  or rdx,rax
+40033245  sete al
+40033248  test al,al
+4003324A  jne 0x140033290 <Benchmark()+3184>
+
+4003324C  mov rax,QWORD PTR [rsp+0x98]
+40033254  mov edi,DWORD PTR [rax+r13*4]
+40033258  cmp edi,DWORD PTR [r12]
+4003325C  je 0x1400334e0 <Benchmark()+3776>
+
+40033262  movsxd r13,edi
+40033265  mov rcx,r13
+40033268  shl rcx,0x4
+4003326C  add rcx,QWORD PTR [rsp+0xb0]
+40033274  movzx eax,BYTE PTR [rcx+0xe]
+40033278  or al,BYTE PTR [rsi+0xe]
+4003327B  je 0x140033234 <Benchmark()+3092>
+
+4003327D  mov rdx,rsi
+40033280  call 0x1400dfbd0 <Upp::String0::LEqual(Upp::String0 const&) const>
+40033285  test eax,eax
+40033287  sete al
+4003328A  test al,al
+4003328C  je 0x14003324c <Benchmark()+3116>
+4003328E  xchg ax,ax
+
+40033290  cmp edi,ebp
+40033292  jne 0x14003329b <Benchmark()+3195>
+40033294  add DWORD PTR [rip+0x1111a5],0x1        # 0x140144440
+4003329B  add rbp,0x1
+4003329F  cmp rbp,0x1f4
+400332A6  jne 0x1400331d0 <Benchmark()+2992>
+400332AC  mov eax,DWORD PTR [r14]
+400332AF  lea rcx,[rip+0x11132a]        # 0x1401445e0
+400332B6  mov edx,DWORD PTR [rsp+0x30]
+400332BA  lea r8d,[rax-0x1]
+400332BE  mov DWORD PTR [r14],r8d
+400332C1  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400332C6  mov rbx,QWORD PTR [rsp+0xb0]
+400332CE  test rbx,rbx
+400332D1  je 0x140033318 <Benchmark()+3320>
+400332D3  movsxd rax,DWORD PTR [rsp+0xb8]
+400332DB  test eax,eax
+400332DD  js 0x140033310 <Benchmark()+3312>
+400332DF  shl rax,0x4
+400332E3  lea rsi,[rbx+rax*1]
+400332E7  cmp rbx,rsi
+400332EA  je 0x140033310 <Benchmark()+3312>
+400332EC  nop DWORD PTR [rax+0x0]
+400332F0  cmp BYTE PTR [rbx+0xe],0x0
+400332F4  jne 0x1400339e0 <Benchmark()+5056>
+400332FA  add rbx,0x10
+400332FE  cmp rsi,rbx
+40033301  jne 0x1400332f0 <Benchmark()+3280>
+40033303  mov rbx,QWORD PTR [rsp+0xb0]
+4003330B  test rbx,rbx
+4003330E  je 0x140033318 <Benchmark()+3320>
+40033310  mov rcx,rbx
+40033313  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033318  mov rcx,r15
+4003331B  call 0x140035900 <New::HashBase::~HashBase()>
+40033320  lea rcx,[r15+0x18]
+40033324  mov QWORD PTR [rsp+0x98],0x0
+40033330  mov QWORD PTR [rsp+0xa0],0x0
+4003333C  call 0x1400b3370 <Upp::HashBase::HashBase()>
+40033341  movzx eax,BYTE PTR [rip+0x1111f8]        # 0x140144540
+40033348  test al,al
+4003334A  jne 0x140033360 <Benchmark()+3392>
+4003334C  lea rcx,[rip+0x1111ed]        # 0x140144540
+40033353  call 0x1400e95e0 <__cxa_guard_acquire>
+40033358  test eax,eax
+4003335A  jne 0x140033d30 <Benchmark()+5904>
+40033360  lea rcx,[rip+0xfddd9]        # 0x140131140 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting92>
+40033367  call 0x140002b00 <__emutls_get_address>
+4003336C  mov rdi,rax
+4003336F  mov QWORD PTR [rsp+0x38],rax
+40033374  call QWORD PTR [rip+0xe95f6]        # 0x14011c970 <__imp_timeGetTime>
+4003337A  add DWORD PTR [rdi],0x1
+4003337D  mov DWORD PTR [rsp+0x30],eax
+40033381  lea r12,[r15+0x8]
+40033385  xor ebp,ebp
+40033387  lea r13,[rsp+0x78]
+4003338C  lea r14,[r15+0x20]
+40033390  jmp 0x14003348a <Benchmark()+3690>
+40033395  lea eax,[rdi+0x1]
+40033398  shl rdi,0x4
+4003339C  add rdi,QWORD PTR [rsp+0x98]
+400333A4  mov DWORD PTR [rsp+0xa0],eax
+400333AB  cmp BYTE PTR [rsi+0xe],0x0
+400333AF  jne 0x1400339d0 <Benchmark()+5040>
+400333B5  mov eax,DWORD PTR [rsi]
+400333B7  mov DWORD PTR [rdi],eax
+400333B9  mov eax,DWORD PTR [rsi+0x4]
+400333BC  mov DWORD PTR [rdi+0x4],eax
+400333BF  mov eax,DWORD PTR [rsi+0x8]
+400333C2  mov DWORD PTR [rdi+0x8],eax
+400333C5  mov eax,DWORD PTR [rsi+0xc]
+400333C8  mov DWORD PTR [rdi+0xc],eax
+400333CB  and ebx,0x7fffffff
+400333D1  mov esi,DWORD PTR [rsp+0xb8]
+400333D8  cmp esi,DWORD PTR [rsp+0xbc]
+400333DF  mov DWORD PTR [rsp+0x78],ebx
+400333E3  jge 0x140033980 <Benchmark()+4960>
+400333E9  mov rdx,QWORD PTR [rsp+0xb0]
+400333F1  lea eax,[rsi+0x1]
+400333F4  mov DWORD PTR [rsp+0xb8],eax
+400333FB  movsxd rax,esi
+400333FE  mov DWORD PTR [rdx+rax*4],ebx
+40033401  mov eax,DWORD PTR [rsp+0xd8]
+40033408  cmp DWORD PTR [rsp+0xb8],eax
+4003340F  jg 0x140033500 <Benchmark()+3808>
+40033415  imul ebx,ebx,0xa3613c16
+4003341B  bswap ebx
+4003341D  and ebx,eax
+4003341F  mov rax,QWORD PTR [rsp+0xd0]
+40033427  lea rdi,[rax+rbx*4]
+4003342B  movsxd rax,DWORD PTR [rsp+0xc8]
+40033433  cmp eax,DWORD PTR [rsp+0xcc]
+4003343A  mov rbx,QWORD PTR [rsp+0xc0]
+40033442  jge 0x1400339a0 <Benchmark()+4992>
+40033448  lea edx,[rax+0x1]
+4003344B  mov DWORD PTR [rsp+0xc8],edx
+40033452  mov edx,DWORD PTR [rdi]
+40033454  lea rax,[rbx+rax*8]
+40033458  test edx,edx
+4003345A  js 0x140033990 <Benchmark()+4976>
+40033460  movsxd rcx,edx
+40033463  mov DWORD PTR [rax],edx
+40033465  lea rcx,[rbx+rcx*8]
+40033469  mov edx,DWORD PTR [rcx+0x4]
+4003346C  mov DWORD PTR [rax+0x4],edx
+4003346F  mov DWORD PTR [rcx+0x4],esi
+40033472  movsxd rax,DWORD PTR [rax+0x4]
+40033476  mov DWORD PTR [rbx+rax*8],esi
+40033479  add rbp,0x10
+4003347D  cmp rbp,0x1f40
+40033484  je 0x14003351a <Benchmark()+3834>
+4003348A  mov rsi,QWORD PTR [rsp+0x80]
+40033492  add rsi,rbp
+40033495  cmp BYTE PTR [rsi+0xe],0x0
+40033499  jne 0x140033960 <Benchmark()+4928>
+4003349F  imul ebx,DWORD PTR [rsi],0xacf34ce7
+400334A5  xor ebx,DWORD PTR [rsi+0x4]
+400334A8  imul ebx,ebx,0xacf34ce7
+400334AE  xor ebx,DWORD PTR [rsi+0x8]
+400334B1  imul ebx,ebx,0xacf34ce7
+400334B7  xor ebx,DWORD PTR [rsi+0xc]
+400334BA  movsxd rdi,DWORD PTR [rsp+0xa0]
+400334C2  cmp edi,DWORD PTR [rsp+0xa4]
+400334C9  jl 0x140033395 <Benchmark()+3445>
+400334CF  mov rdx,rsi
+400334D2  mov rcx,r12
+400334D5  call 0x140094c80 <Upp::Vector<Upp::String>::GrowAdd(Upp::String const&)>
+400334DA  jmp 0x1400333cb <Benchmark()+3499>
+400334DF  nop 
+
+400334E0  mov r9d,ebx
+400334E3  mov r8,rsi
+400334E6  mov rdx,r12
+400334E9  mov edi,DWORD PTR [rsp+0xb8]
+400334F0  mov rcx,r15
+400334F3  call 0x140035300 <New::Index<Upp::String>::AddS(int&, Upp::String const&, unsigned long)>
+400334F8  jmp 0x140033290 <Benchmark()+3184>
+
+400334FD  nop DWORD PTR [rax]
+40033500  lea rcx,[r15+0x18]
+40033504  call 0x1400b2e40 <Upp::HashBase::Reindex()>
+40033509  add rbp,0x10
+4003350D  cmp rbp,0x1f40
+40033514  jne 0x14003348a <Benchmark()+3690>
+4003351A  mov rax,QWORD PTR [rsp+0x38]
+4003351F  lea rcx,[rip+0x11103a]        # 0x140144560
+40033526  mov edx,DWORD PTR [rsp+0x30]
+4003352A  mov edi,DWORD PTR [rax]
+4003352C  lea r8d,[rdi-0x1]
+40033530  mov DWORD PTR [rsp+0x38],edi
+40033534  mov DWORD PTR [rax],r8d
+40033537  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+4003353C  movzx eax,BYTE PTR [rip+0x110f7d]        # 0x1401444c0
+40033543  test al,al
+40033545  jne 0x14003355b <Benchmark()+3899>
+40033547  lea rcx,[rip+0x110f72]        # 0x1401444c0
+4003354E  call 0x1400e95e0 <__cxa_guard_acquire>
+40033553  test eax,eax
+40033555  jne 0x140033d60 <Benchmark()+5952>
+4003355B  lea rcx,[rip+0xfdbfe]        # 0x140131160 <__emutls_v._ZZ9BenchmarkvE16sTmStatNesting98>
+40033562  call 0x140002b00 <__emutls_get_address>
+40033567  mov r14,rax
+4003356A  call QWORD PTR [rip+0xe9400]        # 0x14011c970 <__imp_timeGetTime>
+40033570  add DWORD PTR [r14],0x1
+40033574  mov DWORD PTR [rsp+0x30],eax
+40033578  xor edi,edi
+4003357A  mov r13d,0xffffffff
+40033580  mov rbx,QWORD PTR [rsp+0x80]
+40033588  add rbx,rdi
+4003358B  cmp BYTE PTR [rbx+0xe],0x0
+4003358F  jne 0x140033b20 <Benchmark()+5376>
+40033595  imul eax,DWORD PTR [rbx],0xacf34ce7
+4003359B  xor eax,DWORD PTR [rbx+0x4]
+4003359E  imul eax,eax,0xacf34ce7
+400335A4  xor eax,DWORD PTR [rbx+0x8]
+400335A7  imul eax,eax,0xacf34ce7
+400335AD  xor eax,DWORD PTR [rbx+0xc]
+400335B0  and eax,0x7fffffff
+400335B5  mov rdx,QWORD PTR [rsp+0xd0]
+400335BD  imul eax,eax,0xa3613c16
+400335C3  bswap eax
+400335C5  and eax,DWORD PTR [rsp+0xd8]
+400335CC  mov ebp,DWORD PTR [rdx+rax*4]
+400335CF  test ebp,ebp
+400335D1  js 0x140033b00 <Benchmark()+5344>
+400335D7  mov esi,ebp
+400335D9  jmp 0x14003360c <Benchmark()+4076>
+400335DB  nop DWORD PTR [rax+rax*1+0x0]
+400335E0  mov rcx,QWORD PTR [rbx]
+400335E3  mov rax,QWORD PTR [rbx+0x8]
+400335E7  xor rcx,QWORD PTR [rdx]
+400335EA  xor rax,QWORD PTR [rdx+0x8]
+400335EE  or rcx,rax
+400335F1  sete al
+400335F4  test al,al
+400335F6  jne 0x140033640 <Benchmark()+4128>
+400335F8  mov rax,QWORD PTR [rsp+0xc0]
+40033600  mov esi,DWORD PTR [rax+r12*8]
+40033604  cmp ebp,esi
+40033606  je 0x140033b00 <Benchmark()+5344>
+4003360C  movsxd r12,esi
+4003360F  movzx eax,BYTE PTR [rbx+0xe]
+40033613  mov rdx,r12
+40033616  shl rdx,0x4
+4003361A  add rdx,QWORD PTR [rsp+0x98]
+40033622  or al,BYTE PTR [rdx+0xe]
+40033625  je 0x1400335e0 <Benchmark()+4032>
+40033627  mov rcx,rbx
+4003362A  call 0x1400dfbd0 <Upp::String0::LEqual(Upp::String0 const&) const>
+4003362F  test eax,eax
+40033631  sete al
+40033634  test al,al
+40033636  je 0x1400335f8 <Benchmark()+4056>
+40033638  nop DWORD PTR [rax+rax*1+0x0]
+40033640  add DWORD PTR [rip+0x110dfa],esi        # 0x140144440
+40033646  add rdi,0x10
+4003364A  cmp rdi,0x1f40
+40033651  jne 0x140033580 <Benchmark()+3936>
+40033657  mov eax,DWORD PTR [r14]
+4003365A  lea rcx,[rip+0x110e7f]        # 0x1401444e0
+40033661  mov edx,DWORD PTR [rsp+0x30]
+40033665  lea r8d,[rax-0x1]
+40033669  mov DWORD PTR [r14],r8d
+4003366C  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40033671  movzx eax,BYTE PTR [rip+0x110dd0]        # 0x140144448
+40033678  test al,al
+4003367A  jne 0x140033690 <Benchmark()+4208>
+4003367C  lea rcx,[rip+0x110dc5]        # 0x140144448
+40033683  call 0x1400e95e0 <__cxa_guard_acquire>
+40033688  test eax,eax
+4003368A  jne 0x140033d90 <Benchmark()+6000>
+40033690  lea rcx,[rip+0xfdae9]        # 0x140131180 <__emutls_v._ZZ9BenchmarkvE17sTmStatNesting104>
+40033697  call 0x140002b00 <__emutls_get_address>
+4003369C  mov rdi,rax
+4003369F  mov QWORD PTR [rsp+0x50],rax
+400336A4  call QWORD PTR [rip+0xe92c6]        # 0x14011c970 <__imp_timeGetTime>
+400336AA  add DWORD PTR [rdi],0x1
+400336AD  mov DWORD PTR [rsp+0x58],eax
+400336B1  lea rax,[r15+0x18]
+400336B5  xor ebp,ebp
+400336B7  mov QWORD PTR [rsp+0x30],rax
+400336BC  lea rax,[r15+0x30]
+400336C0  mov QWORD PTR [rsp+0x40],rax
+400336C5  lea rax,[r15+0x20]
+400336C9  mov QWORD PTR [rsp+0x38],rax
+400336CE  xchg ax,ax
+400336D0  mov rbx,rbp
+400336D3  shl rbx,0x4
+400336D7  add rbx,QWORD PTR [rsp+0x80]
+400336DF  cmp BYTE PTR [rbx+0xe],0x0
+400336E3  jne 0x140033b10 <Benchmark()+5360>
+400336E9  imul esi,DWORD PTR [rbx],0xacf34ce7
+400336EF  xor esi,DWORD PTR [rbx+0x4]
+400336F2  imul esi,esi,0xacf34ce7
+400336F8  xor esi,DWORD PTR [rbx+0x8]
+400336FB  imul esi,esi,0xacf34ce7
+40033701  xor esi,DWORD PTR [rbx+0xc]
+40033704  and esi,0x7fffffff
+4003370A  mov rdx,QWORD PTR [rsp+0xd0]
+40033712  imul r14d,esi,0xa3613c16
+40033719  mov eax,r14d
+4003371C  bswap eax
+4003371E  and eax,DWORD PTR [rsp+0xd8]
+40033725  mov r12d,DWORD PTR [rdx+rax*4]
+40033729  test r12d,r12d
+4003372C  js 0x140033a00 <Benchmark()+5088>
+40033732  mov edi,r12d
+40033735  jmp 0x14003376d <Benchmark()+4429>
+40033737  nop WORD PTR [rax+rax*1+0x0]
+40033740  mov rcx,QWORD PTR [rbx]
+40033743  mov rax,QWORD PTR [rbx+0x8]
+40033747  xor rcx,QWORD PTR [rdx]
+4003374A  xor rax,QWORD PTR [rdx+0x8]
+4003374E  or rcx,rax
+40033751  sete al
+40033754  test al,al
+40033756  jne 0x140033799 <Benchmark()+4473>
+40033758  mov rax,QWORD PTR [rsp+0xc0]
+40033760  mov edi,DWORD PTR [rax+r13*8]
+40033764  cmp r12d,edi
+40033767  je 0x140033a00 <Benchmark()+5088>
+4003376D  movsxd r13,edi
+40033770  movzx eax,BYTE PTR [rbx+0xe]
+40033774  mov rdx,r13
+40033777  shl rdx,0x4
+4003377B  add rdx,QWORD PTR [rsp+0x98]
+40033783  or al,BYTE PTR [rdx+0xe]
+40033786  je 0x140033740 <Benchmark()+4384>
+40033788  mov rcx,rbx
+4003378B  call 0x1400dfbd0 <Upp::String0::LEqual(Upp::String0 const&) const>
+40033790  test eax,eax
+40033792  sete al
+40033795  test al,al
+40033797  je 0x140033758 <Benchmark()+4408>
+40033799  test edi,edi
+4003379B  js 0x140033a00 <Benchmark()+5088>
+400337A1  cmp edi,ebp
+400337A3  jne 0x1400337ac <Benchmark()+4492>
+400337A5  add DWORD PTR [rip+0x110c94],0x1        # 0x140144440
+400337AC  add rbp,0x1
+400337B0  cmp rbp,0x1f4
+400337B7  jne 0x1400336d0 <Benchmark()+4272>
+400337BD  mov rax,QWORD PTR [rsp+0x50]
+400337C2  lea rcx,[rip+0x110c97]        # 0x140144460
+400337C9  mov edx,DWORD PTR [rsp+0x58]
+400337CD  mov edi,DWORD PTR [rax]
+400337CF  lea r8d,[rdi-0x1]
+400337D3  mov DWORD PTR [rsp+0x28],edi
+400337D7  mov DWORD PTR [rax],r8d
+400337DA  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400337DF  lea rcx,[r15+0x18]
+400337E3  call 0x1400b33b0 <Upp::HashBase::~HashBase()>
+400337E8  mov rbx,QWORD PTR [rsp+0x98]
+400337F0  test rbx,rbx
+400337F3  je 0x140033838 <Benchmark()+4632>
+400337F5  movsxd rax,DWORD PTR [rsp+0xa0]
+400337FD  test eax,eax
+400337FF  js 0x140033830 <Benchmark()+4624>
+40033801  shl rax,0x4
+40033805  lea rsi,[rbx+rax*1]
+40033809  cmp rbx,rsi
+4003380C  je 0x140033830 <Benchmark()+4624>
+4003380E  xchg ax,ax
+40033810  cmp BYTE PTR [rbx+0xe],0x0
+40033814  jne 0x140033c20 <Benchmark()+5632>
+4003381A  add rbx,0x10
+4003381E  cmp rsi,rbx
+40033821  jne 0x140033810 <Benchmark()+4592>
+40033823  mov rbx,QWORD PTR [rsp+0x98]
+4003382B  test rbx,rbx
+4003382E  je 0x140033838 <Benchmark()+4632>
+40033830  mov rcx,rbx
+40033833  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033838  sub DWORD PTR [rsp+0x5c],0x1
+4003383D  jne 0x1400326f0 <Benchmark()+208>
+40033843  call 0x140095f90 <Upp::VppLog()>
+40033848  lea rdx,[rip+0xcc914]        # 0x140100163
+4003384F  mov rcx,rax
+40033852  mov rbx,rax
+40033855  call 0x14008cfc0 <Upp::Stream::Put(char const*)>
+4003385A  lea rdx,[rip+0xcc906]        # 0x140100167
+40033861  mov rcx,rbx
+40033864  call 0x14008cfc0 <Upp::Stream::Put(char const*)>
+40033869  mov edx,DWORD PTR [rip+0x110bd1]        # 0x140144440
+4003386F  mov rcx,r15
+40033872  call 0x140055350 <Upp::FormatInteger(int)>
+40033877  cmp BYTE PTR [rsp+0x9e],0x0
+4003387F  je 0x140033f10 <Benchmark()+6384>
+40033885  mov r8d,DWORD PTR [rsp+0x98]
+4003388D  mov rdx,QWORD PTR [rsp+0x90]
+40033895  test r8d,r8d
+40033898  jne 0x140033f25 <Benchmark()+6405>
+4003389E  mov rcx,r15
+400338A1  call 0x1400aa5a0 <Upp::String0::LFree()>
+400338A6  mov rax,QWORD PTR [rbx+0x18]
+400338AA  mov r8d,0xa0d
+400338B0  mov rcx,QWORD PTR [rbx+0x28]
+400338B4  mov WORD PTR [rsp+0x6e],r8w
+400338BA  lea r8,[rax+0x1]
+400338BE  lea rdx,[rax+0x2]
+400338C2  cmp rcx,r8
+400338C5  jbe 0x140033f7d <Benchmark()+6493>
+400338CB  mov ecx,0xa0d
+400338D0  mov WORD PTR [rax],cx
+400338D3  mov QWORD PTR [rbx+0x18],rdx
+400338D7  mov rbx,QWORD PTR [rsp+0x80]
+400338DF  test rbx,rbx
+400338E2  je 0x140033927 <Benchmark()+4871>
+400338E4  mov eax,DWORD PTR [rsp+0x88]
+400338EB  test eax,eax
+400338ED  js 0x14003391e <Benchmark()+4862>
+400338EF  movsxd rsi,eax
+400338F2  shl rsi,0x4
+400338F6  add rsi,rbx
+400338F9  cmp rbx,rsi
+400338FC  je 0x14003391e <Benchmark()+4862>
+400338FE  cmp BYTE PTR [rbx+0xe],0x0
+40033902  jne 0x140033f52 <Benchmark()+6450>
+40033908  add rbx,0x10
+4003390C  cmp rsi,rbx
+4003390F  jne 0x1400338fe <Benchmark()+4830>
+40033911  mov rbx,QWORD PTR [rsp+0x80]
+40033919  test rbx,rbx
+4003391C  je 0x140033927 <Benchmark()+4871>
+4003391E  mov rcx,rbx
+40033921  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033926  nop 
+40033927  movaps xmm6,XMMWORD PTR [rsp+0xe0]
+4003392F  add rsp,0xf8
+40033936  pop rbx
+40033937  pop rsi
+40033938  pop rdi
+40033939  pop rbp
+4003393A  pop r12
+4003393C  pop r13
+4003393E  pop r14
+40033940  pop r15
+40033942  ret 
+40033943  mov esi,r13d
+40033946  jmp 0x140033160 <Benchmark()+2880>
+4003394B  nop DWORD PTR [rax+rax*1+0x0]
+40033950  mov rcx,rbx
+40033953  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40033958  jmp 0x1400330da <Benchmark()+2746>
+4003395D  nop DWORD PTR [rax]
+40033960  mov rcx,rsi
+40033963  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40033968  mov ebx,eax
+4003396A  jmp 0x1400334ba <Benchmark()+3738>
+4003396F  nop 
+40033970  mov rcx,rsi
+40033973  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40033978  mov ebx,eax
+4003397A  jmp 0x140033204 <Benchmark()+3044>
+4003397F  nop 
+40033980  mov rdx,r13
+40033983  mov rcx,r14
+40033986  call 0x140095bd0 <Upp::Vector<unsigned int>::GrowAddPick(unsigned int&&)>
+4003398B  jmp 0x140033401 <Benchmark()+3553>
+40033990  mov DWORD PTR [rax],esi
+40033992  mov DWORD PTR [rax+0x4],esi
+40033995  mov DWORD PTR [rdi],esi
+40033997  jmp 0x140033479 <Benchmark()+3673>
+4003399C  nop DWORD PTR [rax+0x0]
+400339A0  lea rcx,[r15+0x30]
+400339A4  call 0x140095190 <Upp::Vector<Upp::HashBase::Link>::Grow()>
+400339A9  mov rcx,rbx
+400339AC  call 0x14003b590 <Upp::MemoryFree(void*)>
+400339B1  mov rbx,QWORD PTR [rsp+0xc0]
+400339B9  movsxd rax,DWORD PTR [rsp+0xc8]
+400339C1  jmp 0x140033448 <Benchmark()+3624>
+400339C6  nop WORD PTR cs:[rax+rax*1+0x0]
+400339D0  mov rdx,rsi
+400339D3  mov rcx,rdi
+400339D6  call 0x1400aa230 <Upp::String0::LSet(Upp::String0 const&)>
+400339DB  jmp 0x1400333cb <Benchmark()+3499>
+400339E0  mov rcx,rbx
+400339E3  add rbx,0x10
+400339E7  call 0x1400aa5a0 <Upp::String0::LFree()>
+400339EC  cmp rsi,rbx
+400339EF  jne 0x1400332f0 <Benchmark()+3280>
+400339F5  jmp 0x140033303 <Benchmark()+3299>
+400339FA  nop WORD PTR [rax+rax*1+0x0]
+40033A00  mov edi,DWORD PTR [rsp+0xa0]
+40033A07  cmp edi,DWORD PTR [rsp+0xa4]
+40033A0E  mov r13,QWORD PTR [rsp+0x98]
+40033A16  jge 0x140033b40 <Benchmark()+5408>
+40033A1C  lea eax,[rdi+0x1]
+40033A1F  mov DWORD PTR [rsp+0xa0],eax
+40033A26  movsxd rax,edi
+40033A29  shl rax,0x4
+40033A2D  add r13,rax
+40033A30  cmp BYTE PTR [rbx+0xe],0x0
+40033A34  jne 0x140033c00 <Benchmark()+5600>
+40033A3A  mov eax,DWORD PTR [rbx]
+40033A3C  mov DWORD PTR [r13+0x0],eax
+40033A40  mov eax,DWORD PTR [rbx+0x4]
+40033A43  mov DWORD PTR [r13+0x4],eax
+40033A47  mov eax,DWORD PTR [rbx+0x8]
+40033A4A  mov DWORD PTR [r13+0x8],eax
+40033A4E  mov eax,DWORD PTR [rbx+0xc]
+40033A51  mov DWORD PTR [r13+0xc],eax
+40033A55  mov ebx,DWORD PTR [rsp+0xb8]
+40033A5C  mov DWORD PTR [rsp+0x7c],esi
+40033A60  cmp ebx,DWORD PTR [rsp+0xbc]
+40033A67  jge 0x140033bb0 <Benchmark()+5520>
+40033A6D  mov rdx,QWORD PTR [rsp+0xb0]
+40033A75  lea eax,[rbx+0x1]
+40033A78  mov DWORD PTR [rsp+0xb8],eax
+40033A7F  movsxd rax,ebx
+40033A82  mov DWORD PTR [rdx+rax*4],esi
+40033A85  mov eax,DWORD PTR [rsp+0xd8]
+40033A8C  cmp DWORD PTR [rsp+0xb8],eax
+40033A93  jg 0x140033b30 <Benchmark()+5392>
+40033A99  bswap r14d
+40033A9C  and r14d,eax
+40033A9F  mov rax,QWORD PTR [rsp+0xd0]
+40033AA7  mov rsi,QWORD PTR [rsp+0xc0]
+40033AAF  lea r12,[rax+r14*4]
+40033AB3  movsxd rax,DWORD PTR [rsp+0xc8]
+40033ABB  cmp eax,DWORD PTR [rsp+0xcc]
+40033AC2  jge 0x140033bd2 <Benchmark()+5554>
+40033AC8  lea edx,[rax+0x1]
+40033ACB  mov DWORD PTR [rsp+0xc8],edx
+40033AD2  mov edx,DWORD PTR [r12]
+40033AD6  lea rax,[rsi+rax*8]
+40033ADA  test edx,edx
+40033ADC  js 0x140033bc4 <Benchmark()+5540>
+40033AE2  movsxd rcx,edx
+40033AE5  mov DWORD PTR [rax],edx
+40033AE7  lea rcx,[rsi+rcx*8]
+40033AEB  mov edx,DWORD PTR [rcx+0x4]
+40033AEE  mov DWORD PTR [rax+0x4],edx
+40033AF1  mov DWORD PTR [rcx+0x4],ebx
+40033AF4  movsxd rax,DWORD PTR [rax+0x4]
+40033AF8  mov DWORD PTR [rsi+rax*8],ebx
+40033AFB  jmp 0x1400337a1 <Benchmark()+4481>
+40033B00  mov esi,r13d
+40033B03  jmp 0x140033640 <Benchmark()+4128>
+40033B08  nop DWORD PTR [rax+rax*1+0x0]
+40033B10  mov rcx,rbx
+40033B13  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40033B18  mov esi,eax
+40033B1A  jmp 0x140033704 <Benchmark()+4324>
+40033B1F  nop 
+40033B20  mov rcx,rbx
+40033B23  call 0x1400df9f0 <Upp::String0::LHashValue() const>
+40033B28  jmp 0x1400335b0 <Benchmark()+3984>
+40033B2D  nop DWORD PTR [rax]
+40033B30  mov rcx,QWORD PTR [rsp+0x30]
+40033B35  call 0x1400b2e40 <Upp::HashBase::Reindex()>
+40033B3A  jmp 0x1400337a1 <Benchmark()+4481>
+40033B3F  nop 
+40033B40  lea rcx,[r15+0x8]
+40033B44  call 0x140094a50 <Upp::Vector<Upp::String>::Grow()>
+40033B49  movsxd r12,DWORD PTR [rsp+0xa0]
+40033B51  lea eax,[r12+0x1]
+40033B56  shl r12,0x4
+40033B5A  add r12,QWORD PTR [rsp+0x98]
+40033B62  mov DWORD PTR [rsp+0xa0],eax
+40033B69  cmp BYTE PTR [rbx+0xe],0x0
+40033B6D  jne 0x140033c10 <Benchmark()+5616>
+40033B73  mov eax,DWORD PTR [rbx]
+40033B75  mov DWORD PTR [r12],eax
+40033B79  mov eax,DWORD PTR [rbx+0x4]
+40033B7C  mov DWORD PTR [r12+0x4],eax
+40033B81  mov eax,DWORD PTR [rbx+0x8]
+40033B84  mov DWORD PTR [r12+0x8],eax
+40033B89  mov eax,DWORD PTR [rbx+0xc]
+40033B8C  mov DWORD PTR [r12+0xc],eax
+40033B91  test r13,r13
+40033B94  je 0x140033a55 <Benchmark()+5173>
+40033B9A  mov rcx,r13
+40033B9D  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033BA2  jmp 0x140033a55 <Benchmark()+5173>
+40033BA7  nop WORD PTR [rax+rax*1+0x0]
+40033BB0  mov rdx,QWORD PTR [rsp+0x28]
+40033BB5  mov rcx,QWORD PTR [rsp+0x38]
+40033BBA  call 0x140095bd0 <Upp::Vector<unsigned int>::GrowAddPick(unsigned int&&)>
+40033BBF  jmp 0x140033a85 <Benchmark()+5221>
+40033BC4  mov DWORD PTR [rax],ebx
+40033BC6  mov DWORD PTR [rax+0x4],ebx
+40033BC9  mov DWORD PTR [r12],ebx
+40033BCD  jmp 0x1400337a1 <Benchmark()+4481>
+40033BD2  mov rcx,QWORD PTR [rsp+0x40]
+40033BD7  call 0x140095190 <Upp::Vector<Upp::HashBase::Link>::Grow()>
+40033BDC  mov rcx,rsi
+40033BDF  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033BE4  mov rsi,QWORD PTR [rsp+0xc0]
+40033BEC  movsxd rax,DWORD PTR [rsp+0xc8]
+40033BF4  jmp 0x140033ac8 <Benchmark()+5288>
+40033BF9  nop DWORD PTR [rax+0x0]
+40033C00  mov rdx,rbx
+40033C03  mov rcx,r13
+40033C06  call 0x1400aa230 <Upp::String0::LSet(Upp::String0 const&)>
+40033C0B  jmp 0x140033a55 <Benchmark()+5173>
+40033C10  mov rdx,rbx
+40033C13  mov rcx,r12
+40033C16  call 0x1400aa230 <Upp::String0::LSet(Upp::String0 const&)>
+40033C1B  jmp 0x140033b91 <Benchmark()+5489>
+40033C20  mov rcx,rbx
+40033C23  add rbx,0x10
+40033C27  call 0x1400aa5a0 <Upp::String0::LFree()>
+40033C2C  cmp rsi,rbx
+40033C2F  jne 0x140033810 <Benchmark()+4592>
+40033C35  jmp 0x140033823 <Benchmark()+4611>
+40033C3A  mov rcx,rsi
+40033C3D  mov rbp,rsi
+40033C40  call 0x140094a50 <Upp::Vector<Upp::String>::Grow()>
+40033C45  movsxd rax,DWORD PTR [rsp+0x88]
+40033C4D  lea edx,[rax+0x1]
+40033C50  shl rax,0x4
+40033C54  add rax,QWORD PTR [rsp+0x80]
+40033C5C  test rdi,rdi
+40033C5F  mov DWORD PTR [rsp+0x88],edx
+40033C66  mov edx,DWORD PTR [rsp+0x90]
+40033C6D  mov DWORD PTR [rax],edx
+40033C6F  mov edx,DWORD PTR [rsp+0x94]
+40033C76  mov DWORD PTR [rax+0x4],edx
+40033C79  mov edx,DWORD PTR [rsp+0x98]
+40033C80  mov DWORD PTR [rax+0x8],edx
+40033C83  mov edx,DWORD PTR [rsp+0x9c]
+40033C8A  mov DWORD PTR [rax+0xc],edx
+40033C8D  movaps XMMWORD PTR [rsp+0x90],xmm6
+40033C95  je 0x1400326d9 <Benchmark()+185>
+40033C9B  mov rcx,rdi
+40033C9E  call 0x14003b590 <Upp::MemoryFree(void*)>
+40033CA3  cmp BYTE PTR [rsp+0x9e],0x0
+40033CAB  je 0x1400326d9 <Benchmark()+185>
+40033CB1  mov rcx,r15
+40033CB4  call 0x1400aa5a0 <Upp::String0::LFree()>
+40033CB9  sub ebx,0x1
+40033CBC  jne 0x140032670 <Benchmark()+80>
+40033CC2  jmp 0x1400326de <Benchmark()+190>
+40033CC7  nop WORD PTR [rax+rax*1+0x0]
+40033CD0  lea rdx,[rip+0xcc437]        # 0x14010010e
+40033CD7  lea rcx,[rip+0x110982]        # 0x140144660
+40033CDE  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033CE3  lea rcx,[rip+0x110956]        # 0x140144640
+40033CEA  call 0x1400e96f0 <__cxa_guard_release>
+40033CEF  lea rcx,[rip+0xb78ba]        # 0x1400eb5b0 <__tcf_7()>
+40033CF6  call 0x140001510 <atexit>
+40033CFB  jmp 0x14003307d <Benchmark()+2653>
+40033D00  lea rdx,[rip+0xcc417]        # 0x14010011e
+40033D07  lea rcx,[rip+0x1108d2]        # 0x1401445e0
+40033D0E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033D13  lea rcx,[rip+0x1108a6]        # 0x1401445c0
+40033D1A  call 0x1400e96f0 <__cxa_guard_release>
+40033D1F  lea rcx,[rip+0xb7a3a]        # 0x1400eb760 <__tcf_8()>
+40033D26  call 0x140001510 <atexit>
+40033D2B  jmp 0x1400331b0 <Benchmark()+2960>
+40033D30  lea rdx,[rip+0xcc3fa]        # 0x140100131
+40033D37  lea rcx,[rip+0x110822]        # 0x140144560
+40033D3E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033D43  lea rcx,[rip+0x1107f6]        # 0x140144540
+40033D4A  call 0x1400e96f0 <__cxa_guard_release>
+40033D4F  lea rcx,[rip+0xb7a9a]        # 0x1400eb7f0 <__tcf_9()>
+40033D56  call 0x140001510 <atexit>
+40033D5B  jmp 0x140033360 <Benchmark()+3392>
+40033D60  lea rdx,[rip+0xcc3d9]        # 0x140100140
+40033D67  lea rcx,[rip+0x110772]        # 0x1401444e0
+40033D6E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033D73  lea rcx,[rip+0x110746]        # 0x1401444c0
+40033D7A  call 0x1400e96f0 <__cxa_guard_release>
+40033D7F  lea rcx,[rip+0xb697a]        # 0x1400ea700 <__tcf_10()>
+40033D86  call 0x140001510 <atexit>
+40033D8B  jmp 0x14003355b <Benchmark()+3899>
+40033D90  lea rdx,[rip+0xcc3b9]        # 0x140100150
+40033D97  lea rcx,[rip+0x1106c2]        # 0x140144460
+40033D9E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033DA3  lea rcx,[rip+0x11069e]        # 0x140144448
+40033DAA  call 0x1400e96f0 <__cxa_guard_release>
+40033DAF  lea rcx,[rip+0xb698a]        # 0x1400ea740 <__tcf_11()>
+40033DB6  call 0x140001510 <atexit>
+40033DBB  jmp 0x140033690 <Benchmark()+4208>
+40033DC0  lea rdx,[rip+0xcc2e6]        # 0x1401000ad
+40033DC7  lea rcx,[rip+0x110c12]        # 0x1401449e0
+40033DCE  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033DD3  lea rcx,[rip+0x110be6]        # 0x1401449c0
+40033DDA  call 0x1400e96f0 <__cxa_guard_release>
+40033DDF  lea rcx,[rip+0xb5c2a]        # 0x1400e9a10 <__tcf_0()>
+40033DE6  call 0x140001510 <atexit>
+40033DEB  jmp 0x14003272f <Benchmark()+271>
+40033DF0  lea rdx,[rip+0xcc2c2]        # 0x1401000b9
+40033DF7  lea rcx,[rip+0x110b62]        # 0x140144960
+40033DFE  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033E03  lea rcx,[rip+0x110b36]        # 0x140144940
+40033E0A  call 0x1400e96f0 <__cxa_guard_release>
+40033E0F  lea rcx,[rip+0xb654a]        # 0x1400ea360 <__tcf_1()>
+40033E16  call 0x140001510 <atexit>
+40033E1B  jmp 0x1400327dc <Benchmark()+444>
+40033E20  lea rdx,[rip+0xcc29f]        # 0x1401000c6
+40033E27  lea rcx,[rip+0x110ab2]        # 0x1401448e0
+40033E2E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033E33  lea rcx,[rip+0x110a86]        # 0x1401448c0
+40033E3A  call 0x1400e96f0 <__cxa_guard_release>
+40033E3F  lea rcx,[rip+0xb6a1a]        # 0x1400ea860 <__tcf_2()>
+40033E46  call 0x140001510 <atexit>
+40033E4B  jmp 0x1400328a7 <Benchmark()+647>
+40033E50  lea rdx,[rip+0xcc27f]        # 0x1401000d6
+40033E57  lea rcx,[rip+0x110a02]        # 0x140144860
+40033E5E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033E63  lea rcx,[rip+0x1109d6]        # 0x140144840
+40033E6A  call 0x1400e96f0 <__cxa_guard_release>
+40033E6F  lea rcx,[rip+0xb6b5a]        # 0x1400ea9d0 <__tcf_3()>
+40033E76  call 0x140001510 <atexit>
+40033E7B  jmp 0x1400329dc <Benchmark()+956>
+40033E80  lea rdx,[rip+0xcc25b]        # 0x1401000e2
+40033E87  lea rcx,[rip+0x110952]        # 0x1401447e0
+40033E8E  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033E93  lea rcx,[rip+0x110926]        # 0x1401447c0
+40033E9A  call 0x1400e96f0 <__cxa_guard_release>
+40033E9F  lea rcx,[rip+0xb6e7a]        # 0x1400ead20 <__tcf_4()>
+40033EA6  call 0x140001510 <atexit>
+40033EAB  jmp 0x140032bdf <Benchmark()+1471>
+40033EB0  lea rdx,[rip+0xcc238]        # 0x1401000ef
+40033EB7  lea rcx,[rip+0x1108a2]        # 0x140144760
+40033EBE  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033EC3  lea rcx,[rip+0x110876]        # 0x140144740
+40033ECA  call 0x1400e96f0 <__cxa_guard_release>
+40033ECF  lea rcx,[rip+0xb70ea]        # 0x1400eafc0 <__tcf_5()>
+40033ED6  call 0x140001510 <atexit>
+40033EDB  jmp 0x140032ca0 <Benchmark()+1664>
+40033EE0  lea rdx,[rip+0xcc218]        # 0x1401000ff
+40033EE7  lea rcx,[rip+0x1107f2]        # 0x1401446e0
+40033EEE  call 0x140064160 <Upp::TimingInspector::TimingInspector(char const*)>
+40033EF3  lea rcx,[rip+0x1107c6]        # 0x1401446c0
+40033EFA  call 0x1400e96f0 <__cxa_guard_release>
+40033EFF  lea rcx,[rip+0xb759a]        # 0x1400eb4a0 <__tcf_6()>
+40033F06  call 0x140001510 <atexit>
+40033F0B  jmp 0x140032f12 <Benchmark()+2290>
+40033F10  movsx r8d,BYTE PTR [rsp+0x9f]
+40033F19  test r8d,r8d
+40033F1C  je 0x1400338a6 <Benchmark()+4742>
+40033F22  mov rdx,r15
+40033F25  mov rcx,QWORD PTR [rbx+0x18]
+40033F29  movsxd rsi,r8d
+40033F2C  lea rax,[rcx+rsi*1]
+40033F30  cmp QWORD PTR [rbx+0x28],rax
+40033F34  jae 0x140033f9b <Benchmark()+6523>
+40033F36  mov rax,QWORD PTR [rbx]
+40033F39  mov rcx,rbx
+40033F3C  call QWORD PTR [rax+0x18]
+40033F3F  cmp BYTE PTR [rsp+0x9e],0x0
+40033F47  je 0x1400338a6 <Benchmark()+4742>
+40033F4D  jmp 0x14003389e <Benchmark()+4734>
+40033F52  mov rcx,rbx
+40033F55  add rbx,0x10
+40033F59  call 0x1400aa5a0 <Upp::String0::LFree()>
+40033F5E  cmp rbx,rsi
+40033F61  jne 0x1400338fe <Benchmark()+4830>
+40033F67  mov rbx,QWORD PTR [rsp+0x80]
+40033F6F  test rbx,rbx
+40033F72  jne 0x14003391e <Benchmark()+4862>
+40033F78  jmp 0x140033927 <Benchmark()+4871>
+40033F7D  cmp rcx,rdx
+40033F80  jae 0x140033fa9 <Benchmark()+6537>
+40033F82  mov rax,QWORD PTR [rbx]
+40033F85  lea rdx,[rsp+0x6e]
+40033F8A  mov r8d,0x2
+40033F90  mov rcx,rbx
+40033F93  call QWORD PTR [rax+0x18]
+40033F96  jmp 0x1400338d7 <Benchmark()+4791>
+40033F9B  mov r8,rsi
+40033F9E  call 0x140002d80 <memcpy>
+40033FA3  add QWORD PTR [rbx+0x18],rsi
+40033FA7  jmp 0x140033f3f <Benchmark()+6431>
+40033FA9  mov edx,0xa0d
+40033FAE  mov WORD PTR [rax],dx
+40033FB1  add QWORD PTR [rbx+0x18],0x2
+40033FB6  jmp 0x1400338d7 <Benchmark()+4791>
+40033FBB  cmp BYTE PTR [r12+0xe],0x0
+40033FC1  mov rbx,rax
+40033FC4  jne 0x14003405c <Benchmark()+6716>
+40033FCA  mov rax,QWORD PTR [rsp+0x50]
+40033FCF  lea rcx,[rip+0x11048a]        # 0x140144460
+40033FD6  mov edx,DWORD PTR [rsp+0x58]
+40033FDA  mov edi,DWORD PTR [rax]
+40033FDC  lea r8d,[rdi-0x1]
+40033FE0  mov DWORD PTR [rsp+0x28],edi
+40033FE4  mov DWORD PTR [rax],r8d
+40033FE7  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40033FEC  lea rcx,[r15+0x18]
+40033FF0  call 0x1400b33b0 <Upp::HashBase::~HashBase()>
+40033FF5  lea rdx,[r15+0x10]
+40033FF9  lea rcx,[r15+0x8]
+40033FFD  call 0x140094950 <Upp::Vector<Upp::String>::Free()>
+40034002  lea rbp,[rsp+0x80]
+4003400A  lea rdx,[rbp+0x8]
+4003400E  mov rcx,rbp
+40034011  call 0x140094950 <Upp::Vector<Upp::String>::Free()>
+40034016  mov rcx,rbx
+40034019  call 0x140002740 <_Unwind_Resume>
+4003401E  lea rcx,[rip+0x1108bb]        # 0x1401448e0
+40034025  mov rbx,rax
+40034028  mov eax,DWORD PTR [rdi]
+4003402A  mov edx,ebp
+4003402C  lea r8d,[rax-0x1]
+40034030  mov DWORD PTR [rdi],r8d
+40034033  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40034038  mov rcx,QWORD PTR [rsp+0xb0]
+40034040  test rcx,rcx
+40034043  je 0x14003404a <Benchmark()+6698>
+40034045  call 0x14003b590 <Upp::MemoryFree(void*)>
+4003404A  lea rbp,[rsp+0x80]
+40034052  mov rcx,r15
+40034055  call 0x140035900 <New::HashBase::~HashBase()>
+4003405A  jmp 0x14003400a <Benchmark()+6634>
+4003405C  mov rcx,r12
+4003405F  call 0x1400aa5a0 <Upp::String0::LFree()>
+40034064  jmp 0x140033fca <Benchmark()+6570>
+40034069  lea rcx,[rip+0x110970]        # 0x1401449e0
+40034070  mov rdi,rax
+40034073  mov eax,DWORD PTR [rbx]
+40034075  mov edx,esi
+40034077  lea r8d,[rax-0x1]
+4003407B  mov DWORD PTR [rbx],r8d
+4003407E  mov rbx,rdi
+40034081  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40034086  jmp 0x140034038 <Benchmark()+6680>
+40034088  mov rbx,rax
+4003408B  jmp 0x140034038 <Benchmark()+6680>
+4003408D  mov rbx,rax
+40034090  lea rbp,[rsp+0x80]
+40034098  jmp 0x14003400a <Benchmark()+6634>
+4003409D  lea rcx,[rip+0x11061c]        # 0x1401446c0
+400340A4  mov rbx,rax
+400340A7  call 0x1400e9590 <__cxa_guard_abort>
+400340AC  lea rdx,[r15+0x28]
+400340B0  lea rcx,[r15+0x20]
+400340B4  call 0x140094950 <Upp::Vector<Upp::String>::Free()>
+400340B9  jmp 0x14003404a <Benchmark()+6698>
+400340BB  lea rcx,[rip+0x11067e]        # 0x140144740
+400340C2  mov rbx,rax
+400340C5  call 0x1400e9590 <__cxa_guard_abort>
+400340CA  lea rcx,[r15+0x18]
+400340CE  call 0x1400b33b0 <Upp::HashBase::~HashBase()>
+400340D3  mov rcx,QWORD PTR [rsp+0x98]
+400340DB  test rcx,rcx
+400340DE  je 0x140034090 <Benchmark()+6768>
+400340E0  call 0x14003b590 <Upp::MemoryFree(void*)>
+400340E5  jmp 0x140034090 <Benchmark()+6768>
+400340E7  lea rcx,[rip+0x1106d2]        # 0x1401447c0
+400340EE  mov rbx,rax
+400340F1  call 0x1400e9590 <__cxa_guard_abort>
+400340F6  jmp 0x1400340ca <Benchmark()+6826>
+400340F8  lea rcx,[rip+0x110741]        # 0x140144840
+400340FF  mov rbx,rax
+40034102  call 0x1400e9590 <__cxa_guard_abort>
+40034107  jmp 0x1400340ca <Benchmark()+6826>
+40034109  lea rcx,[rip+0x1107b0]        # 0x1401448c0
+40034110  mov rbx,rax
+40034113  call 0x1400e9590 <__cxa_guard_abort>
+40034118  jmp 0x140034038 <Benchmark()+6680>
+4003411D  lea rcx,[rip+0x11081c]        # 0x140144940
+40034124  mov rbx,rax
+40034127  call 0x1400e9590 <__cxa_guard_abort>
+4003412C  jmp 0x140034038 <Benchmark()+6680>
+40034131  lea rcx,[rip+0x110888]        # 0x1401449c0
+40034138  mov rbx,rax
+4003413B  call 0x1400e9590 <__cxa_guard_abort>
+40034140  jmp 0x140034038 <Benchmark()+6680>
+40034145  lea rcx,[rip+0x1102fc]        # 0x140144448
+4003414C  mov rbx,rax
+4003414F  call 0x1400e9590 <__cxa_guard_abort>
+40034154  jmp 0x140033fec <Benchmark()+6604>
+40034159  lea rcx,[rip+0x110360]        # 0x1401444c0
+40034160  mov rbx,rax
+40034163  call 0x1400e9590 <__cxa_guard_abort>
+40034168  jmp 0x140033fec <Benchmark()+6604>
+4003416D  lea rcx,[rip+0x1103cc]        # 0x140144540
+40034174  mov rbx,rax
+40034177  call 0x1400e9590 <__cxa_guard_abort>
+4003417C  jmp 0x140033fec <Benchmark()+6604>
+40034181  lea rcx,[rip+0x110438]        # 0x1401445c0
+40034188  mov rbx,rax
+4003418B  call 0x1400e9590 <__cxa_guard_abort>
+40034190  jmp 0x1400340ac <Benchmark()+6796>
+40034195  lea rcx,[rip+0x1104a4]        # 0x140144640
+4003419C  mov rbx,rax
+4003419F  call 0x1400e9590 <__cxa_guard_abort>
+400341A4  jmp 0x1400340ac <Benchmark()+6796>
+400341A9  mov edx,DWORD PTR [rsp+0x30]
+400341AD  lea rcx,[rip+0x11042c]        # 0x1401445e0
+400341B4  mov rbx,rax
+400341B7  mov eax,DWORD PTR [r14]
+400341BA  lea r8d,[rax-0x1]
+400341BE  mov DWORD PTR [r14],r8d
+400341C1  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400341C6  jmp 0x1400340ac <Benchmark()+6796>
+400341CB  mov edx,DWORD PTR [rsp+0x30]
+400341CF  lea rcx,[rip+0x11048a]        # 0x140144660
+400341D6  mov rbx,rax
+400341D9  mov eax,DWORD PTR [r14]
+400341DC  lea r8d,[rax-0x1]
+400341E0  mov DWORD PTR [r14],r8d
+400341E3  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400341E8  jmp 0x1400340ac <Benchmark()+6796>
+400341ED  lea rcx,[rip+0x1104ec]        # 0x1401446e0
+400341F4  mov rbx,rax
+400341F7  mov eax,DWORD PTR [rdi]
+400341F9  mov edx,ebp
+400341FB  lea r8d,[rax-0x1]
+400341FF  mov DWORD PTR [rdi],r8d
+40034202  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40034207  jmp 0x1400340ac <Benchmark()+6796>
+4003420C  mov rbx,rax
+4003420F  jmp 0x1400340ac <Benchmark()+6796>
+40034214  mov edx,DWORD PTR [rsp+0x38]
+40034218  lea rcx,[rip+0x110541]        # 0x140144760
+4003421F  mov rbx,rax
+40034222  mov rax,QWORD PTR [rsp+0x40]
+40034227  mov edi,DWORD PTR [rax]
+40034229  lea r8d,[rdi-0x1]
+4003422D  mov DWORD PTR [rsp+0x28],edi
+40034231  mov DWORD PTR [rax],r8d
+40034234  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+40034239  jmp 0x1400340ca <Benchmark()+6826>
+4003423E  lea rcx,[rip+0x11061b]        # 0x140144860
+40034245  mov rbx,rax
+40034248  mov eax,DWORD PTR [rbp+0x0]
+4003424B  mov edx,r14d
+4003424E  lea r8d,[rax-0x1]
+40034252  mov DWORD PTR [rbp+0x0],r8d
+40034256  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+4003425B  jmp 0x1400340ca <Benchmark()+6826>
+40034260  mov rbx,rax
+40034263  jmp 0x1400340ca <Benchmark()+6826>
+40034268  mov rcx,QWORD PTR [rsp+0x98]
+40034270  mov rbx,rax
+40034273  test rcx,rcx
+40034276  je 0x140034090 <Benchmark()+6768>
+4003427C  call 0x14003b590 <Upp::MemoryFree(void*)>
+40034281  jmp 0x140034090 <Benchmark()+6768>
+40034286  cmp BYTE PTR [rdi+0xe],0x0
+4003428A  mov rbx,rax
+4003428D  je 0x140034297 <Benchmark()+7287>
+4003428F  mov rcx,rdi
+40034292  call 0x1400aa5a0 <Upp::String0::LFree()>
+40034297  mov rax,QWORD PTR [rsp+0x38]
+4003429C  lea rcx,[rip+0x1102bd]        # 0x140144560
+400342A3  mov edx,DWORD PTR [rsp+0x30]
+400342A7  mov edi,DWORD PTR [rax]
+400342A9  lea r8d,[rdi-0x1]
+400342AD  mov DWORD PTR [rsp+0x28],edi
+400342B1  mov DWORD PTR [rax],r8d
+400342B4  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+400342B9  jmp 0x140033fec <Benchmark()+6604>
+400342BE  mov rbx,rax
+400342C1  jmp 0x140034297 <Benchmark()+7287>
+400342C3  mov rbx,rax
+400342C6  jmp 0x140033fec <Benchmark()+6604>
+400342CB  lea rdx,[r15+0x10]
+400342CF  mov rbx,rax
+400342D2  lea rcx,[r15+0x8]
+400342D6  call 0x140094950 <Upp::Vector<Upp::String>::Free()>
+400342DB  lea rbp,[rsp+0x80]
+400342E3  jmp 0x14003400a <Benchmark()+6634>
+400342E8  mov rbx,rax
+400342EB  jmp 0x140033fca <Benchmark()+6570>
+400342F0  mov edx,DWORD PTR [rsp+0x30]
+400342F4  lea rcx,[rip+0x1101e5]        # 0x1401444e0
+400342FB  mov rbx,rax
+400342FE  mov eax,DWORD PTR [r14]
+40034301  lea r8d,[rax-0x1]
+40034305  mov DWORD PTR [r14],r8d
+40034308  call 0x140062fe0 <Upp::TimingInspector::Add(unsigned long, int)>
+4003430D  jmp 0x140033fec <Benchmark()+6604>
+40034312  cmp BYTE PTR [rsp+0x9e],0x0
+4003431A  mov rbx,rax
+4003431D  je 0x140034090 <Benchmark()+6768>
+40034323  mov rcx,r15
+40034326  call 0x1400aa5a0 <Upp::String0::LFree()>
+4003432B  jmp 0x140034090 <Benchmark()+6768>
+40034330  cmp BYTE PTR [r13+0xe],0x0
+40034335  mov rbx,rax
+40034338  je 0x140033fca <Benchmark()+6570>
+4003433E  mov rcx,r13
+40034341  call 0x1400aa5a0 <Upp::String0::LFree()>
+40034346  jmp 0x140033fca <Benchmark()+6570>
+4003434B  cmp BYTE PTR [rsp+0x9e],0x0
+40034353  mov rbx,rax
+40034356  je 0x14003400a <Benchmark()+6634>
+4003435C  mov rcx,r15
+4003435F  call 0x1400aa5a0 <Upp::String0::LFree()>
+40034364  jmp 0x14003400a <Benchmark()+6634>

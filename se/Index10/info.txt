@@ -1,0 +1,149 @@
+C4B2C480  push rdi 
+C4B2C482  push r14 
+C4B2C484  push r15 
+C4B2C486  sub rsp,byte +0x30 
+C4B2C48A  mov qword [rsp+0x20],0xfffffffe 
+C4B2C493  mov [rsp+0x58],rbx 
+C4B2C498  mov [rsp+0x60],rbp 
+C4B2C49D  mov [rsp+0x68],rsi 
+C4B2C4A2  mov rbx,rdx 
+C4B2C4A5  mov rdi,rcx 
+
+hash
+C4B2C4A8  cmp byte [rdx+0xe],0x0 
+C4B2C4AC  jz 0x7ff6c4b2c4b8 
+C4B2C4AE  mov rcx,rdx 
+C4B2C4B1  call dword 0x7ff6c4b1883c 
+C4B2C4B6  jmp short 0x7ff6c4b2c4d1 
+C4B2C4B8  mov eax,[rdx] 
+C4B2C4BA  xor eax,0xe2f62ff2 
+C4B2C4BF  imul eax,eax,byte +0x11 
+C4B2C4C2  xor eax,[rdx+0x4] 
+C4B2C4C5  imul ecx,eax,byte +0x11 
+C4B2C4C8  xor ecx,[rdx+0x8] 
+C4B2C4CB  imul eax,ecx,byte +0x11 
+C4B2C4CE  xor eax,[rdx+0xc] 
+
+smear
+C4B2C4D1  imul eax,eax,dword 0xa3613c16 
+C4B2C4D7  bswap eax 
+C4B2C4D9  bts eax,0x1f 
+
+map
+C4B2C4DD  mov ebp,eax 
+C4B2C4DF  mov ecx,eax 
+C4B2C4E1  mov eax,[rdi+0x10] 
+C4B2C4E4  and rcx,rax 
+C4B2C4E7  mov rax,[rdi] 
+C4B2C4EA  lea r15,[rax+rcx*4] 
+C4B2C4EE  movsxd rax,dword [r15] 
+C4B2C4F1  test eax,eax 
+C4B2C4F3  js 0x7ff6c4b2c550 
+C4B2C4F5  mov rcx,rax 
+C4B2C4F8  mov rax,[rdi+0x8] 
+C4B2C4FC  mov esi,[rax+rcx*8] 
+C4B2C4FF  nop 
+
+find
+C4B2C500  movsxd rcx,esi 
+C4B2C503  mov rax,[rdi+0x8] 
+C4B2C507  lea r14,[rax+rcx*8] 
+C4B2C50B  cmp ebp,[r14+0x4] 
+C4B2C50F  jnz 0x7ff6c4b2c548 
+C4B2C511  shl rcx,0x4 
+C4B2C515  add rcx,[rdi+0x18] 
+C4B2C519  movzx eax,byte [rcx+0xe] 
+C4B2C51D  or al,[rbx+0xe] 
+C4B2C520  jz 0x7ff6c4b2c52e 
+C4B2C522  mov rdx,rbx 
+C4B2C525  call dword 0x7ff6c4b13567 
+C4B2C52A  mov edx,eax 
+C4B2C52C  jmp short 0x7ff6c4b2c53f 
+C4B2C52E  mov rdx,[rcx+0x8] 
+C4B2C532  xor rdx,[rbx+0x8] 
+C4B2C536  mov rax,[rbx] 
+C4B2C539  xor rax,[rcx] 
+C4B2C53C  or rdx,rax 
+C4B2C53F  test rdx,rdx 
+C4B2C542  jz dword 0x7ff6c4b2c61d 
+C4B2C548  mov esi,[r14] 
+C4B2C54B  cmp esi,[r15] 
+C4B2C54E  jnz 0x7ff6c4b2c500 
+
+C4B2C550  movsxd rsi,dword [rdi+0x20] 
+C4B2C554  cmp esi,[rdi+0x24] 
+C4B2C557  jl 0x7ff6c4b2c59c 
+C4B2C559  lea rcx,[rdi+0x18] 
+C4B2C55D  mov rdx,rbx 
+C4B2C560  call dword 0x7ff6c4b15f97 
+C4B2C565  movsxd rcx,dword [rdi+0x24] 
+C4B2C569  shl rcx,0x3 
+C4B2C56D  call dword 0x7ff6c4b13f35 
+C4B2C572  mov rbx,rax 
+C4B2C575  mov rdx,[rdi+0x8] 
+C4B2C579  test rdx,rdx 
+C4B2C57C  jz 0x7ff6c4b2c596 
+C4B2C57E  mov r8,rsi 
+C4B2C581  shl r8,0x3 
+C4B2C585  mov rcx,rax 
+C4B2C588  call dword 0x7ff6c4b18355 
+C4B2C58D  mov rcx,[rdi+0x8] 
+C4B2C591  call dword 0x7ff6c4b1950c 
+C4B2C596  mov [rdi+0x8],rbx 
+C4B2C59A  jmp short 0x7ff6c4b2c5e0 
+C4B2C59C  movsxd rax,dword [rdi+0x20] 
+C4B2C5A0  mov rcx,rax 
+C4B2C5A3  shl rcx,0x4 
+C4B2C5A7  add rcx,[rdi+0x18] 
+C4B2C5AB  inc eax 
+C4B2C5AD  mov [rdi+0x20],eax 
+C4B2C5B0  mov [rsp+0x50],rcx 
+C4B2C5B5  cmp byte [rbx+0xe],0x0 
+C4B2C5B9  jnz 0x7ff6c4b2c5d3 
+C4B2C5BB  mov eax,[rbx] 
+C4B2C5BD  mov [rcx],eax 
+C4B2C5BF  mov eax,[rbx+0x4] 
+C4B2C5C2  mov [rcx+0x4],eax 
+C4B2C5C5  mov eax,[rbx+0x8] 
+C4B2C5C8  mov [rcx+0x8],eax 
+C4B2C5CB  mov eax,[rbx+0xc] 
+C4B2C5CE  mov [rcx+0xc],eax 
+C4B2C5D1  jmp short 0x7ff6c4b2c5dc 
+C4B2C5D3  mov rdx,rbx 
+C4B2C5D6  call dword 0x7ff6c4b181ed 
+C4B2C5DB  nop 
+C4B2C5DC  mov rbx,[rdi+0x8] 
+C4B2C5E0  lea r8,[rbx+rsi*8] 
+C4B2C5E4  mov [r8+0x4],ebp 
+C4B2C5E8  cmp esi,[rdi+0x10] 
+C4B2C5EB  jl 0x7ff6c4b2c5fa 
+C4B2C5ED  mov edx,[rdi+0x20] 
+C4B2C5F0  mov rcx,rdi 
+C4B2C5F3  call dword 0x7ff6c4b16bb3 
+C4B2C5F8  jmp short 0x7ff6c4b2c61d 
+
+link
+C4B2C5FA  movsxd rax,dword [r15] 
+C4B2C5FD  test eax,eax 
+C4B2C5FF  jns 0x7ff6c4b2c606 
+C4B2C601  mov [r8],esi 
+C4B2C604  jmp short 0x7ff6c4b2c61a 
+
+C4B2C606  mov rcx,[rdi+0x8] 
+C4B2C60A  mov edx,[rcx+rax*8] 
+C4B2C60D  mov [r8],edx 
+C4B2C610  movsxd rdx,dword [r15] 
+C4B2C613  mov rcx,[rdi+0x8] 
+C4B2C617  mov [rcx+rdx*8],esi 
+
+C4B2C61A  mov [r15],esi 
+C4B2C61D  mov eax,esi 
+
+C4B2C61F  mov rbx,[rsp+0x58] 
+C4B2C624  mov rbp,[rsp+0x60] 
+C4B2C629  mov rsi,[rsp+0x68] 
+C4B2C62E  add rsp,byte +0x30 
+C4B2C632  pop r15 
+C4B2C634  pop r14 
+C4B2C636  pop rdi 
+C4B2C637  ret 

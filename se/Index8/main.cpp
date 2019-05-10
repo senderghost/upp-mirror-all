@@ -5,7 +5,7 @@ int nnn = 200;
 int val = 0;
 int sum = 0;
 
-#define N 5000
+#define N 500
 
 void Benchmark()
 {
@@ -154,12 +154,28 @@ CONSOLE_APP_MAIN
 {
 	New::Index<int> x;
 	
+	RDUMP(sizeof(x));
+	
 	SeedRandom(0);
+	
+	int rnd = Random();
 
-#ifndef _DEBUG
+	x.Add(rnd);
+	x.Add(rnd);
+	x.Add(rnd);
+	LOG(AsString(x));
+	
+	RDUMP(FoldHash(rnd) & 3);
+	RDUMP(FoldHash(0) & 3);
+	
+	RDUMP(x.Find(0));
+	RDUMP(x.Find(rnd));
+	RDUMP(x.FindNext(1));
+	
+// #ifndef _DEBUG
 	Benchmark();
 	return;
-#endif
+// #endif
 	
 
 	x.Add(1);

@@ -1,0 +1,19 @@
+uses
+	Core;
+
+file
+	info.txt,
+	Index.h,
+	Index.hpp,
+	Index.cpp,
+	Benchmark.cpp,
+	main.cpp,
+	test.txt,
+	disas.txt,
+	disas2.txt,
+	disas4.txt,
+	disas3.txt;
+
+mainconfig
+	"" = "";
+

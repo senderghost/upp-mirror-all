@@ -3,6 +3,7 @@ namespace New {
 force_inline
 void HashBase::Del(int ii)
 { // remove ii from its bucket
+#if 0
 	Hash& h = hash[ii];
 	if(h.hash == 0)
 		return;
@@ -25,11 +26,13 @@ void HashBase::Del(int ii)
 			}
 			i = p.next;
 		}
+#endif
 }
 
 force_inline
 void HashBase::Ins(int ii, dword sh)
 { // insert ii into bucket
+#if 0
 	Hash& h = hash[ii];
 	h.hash = sh;
 	Bucket& m = map[sh & mask];
@@ -58,11 +61,13 @@ void HashBase::Ins(int ii, dword sh)
 			}
 			i = p.next;
 		}
+#endif
 }
 
 force_inline
 void HashBase::Set(int ii, dword h)
 {
+#if 0
 	if(IsUnlinked(ii)) { // this should not happen very often...
 		if(ii == unlinked)
 			unlinked = hash[ii].next;
@@ -78,33 +83,39 @@ void HashBase::Set(int ii, dword h)
 		Del(ii); // remove from original bucket list
 	Ins(ii, Smear(h)); // put to new bucket list
 	Check();
+#endif
 }
 
 force_inline
 int HashBase::PutUnlinked(dword h)
 {
+#if 0
 	int ii = unlinked;
 	ASSERT(ii >= 0 && IsUnlinked(ii));
 	unlinked = hash[ii].next;
 	Ins(ii, Smear(h)); // put to new bucket list
 	return ii;
+#endif
+	return -1;
 }
 
 force_inline
-void HashBase::Link(Bucket& m, int ii)
+void HashBase::Link(int& m, Hash& hh, int ii)
 {
-	if(m.first == -1)
-		m.first = m.last = ii;
+	if(m == -1)
+		m = hh.prev = hh.next = ii;
 	else {
-		hash[m.last].next = ii;
-		m.last = ii;
+		hh.next = m;
+		hh.prev = hash[m].prev;
+		hash[hh.prev].next = ii;
+		hash[m].prev = ii;
 	}
 }
-	
+
 force_inline
 void HashBase::Link(int ii, dword sh)
 {
-	Link(map[sh & mask], ii);
+	Link(map[sh & mask], hash[ii], ii);
 }
 
 force_inline
@@ -113,11 +124,10 @@ void HashBase::AddS(dword sh)
 	int ii = hash.GetCount();
 	Hash& hh = hash.Add();
 	hh.hash = sh;
-	hh.next = -1;
 	if(ii >= (int)mask)
 		GrowMap();
 	else
-		Link(ii, sh);
+		Link(map[sh & mask], hh, ii);
 }
 
 force_inline
@@ -130,6 +140,7 @@ template <class P>
 force_inline
 void HashBase::UnlinkKey(dword h, P pred)
 {
+#if 0
 	h = Smear(h);
 	Bucket& m = map[h & mask];
 	int i = m.first;
@@ -157,27 +168,33 @@ void HashBase::UnlinkKey(dword h, P pred)
 			pi = i;
 		i = ni;
 	}
+#endif
 }
 
 force_inline
 void HashBase::Unlink(int ii)
 {
+#if 0
 	Del(ii);
 	hash[ii].hash = 0;
 	hash[ii].next = unlinked;
 	unlinked = ii;
 	Check();
+#endif
 }
 
 template <typename T>
 force_inline
 int Index<T>::FindFrom(int i, dword sh, const T& k) const
 {
-	while(i >= 0) {
-		const Hash& ih = hash[i];
-		if((std::numeric_limits<T>::is_integer || sh == ih.hash) && key[i] == k)
-			break;
-		i = ih.next;
+	if(i >= 0) {
+		int i0 = i;
+		while(i > i0) {
+			const Hash& ih = hash[i];
+			if((std::numeric_limits<T>::is_integer || sh == ih.hash) && key[i] == k)
+				break;
+			i = ih.next;
+		}
 	}
 	return i;
 }
@@ -186,7 +203,7 @@ template <class T>
 int Index<T>::Find(const T& k) const
 {
 	dword sh = Smear(k);
-	return FindFrom(map[sh & mask].first, sh, k);
+	return FindFrom(map[sh & mask], sh, k);
 }
 
 template <class T>
@@ -198,51 +215,13 @@ int Index<T>::FindNext(int i) const
 template <class T>
 int  Index<T>::FindAdd(const T& k) {
 	dword sh = Smear(k);
-#if 0
-	int i = FindFrom(map[sh & mask].first, sh, k);
+	int i = FindFrom(map[sh & mask], sh, k);
 	if(i < 0) {
 		i = key.GetCount();
 		key.Add(k);
 		AddS(sh);
 	}
 	return i;
-#else
-	Bucket& m = map[sh & mask];
-	int i = m.first;
-	if(i < 0) { // bucket is empty, add first element
-		i = hash.GetCount();
-		Hash& hh = hash.Add();
-		key.Add(k);
-		hh.hash = sh;
-		hh.next = -1;
-		if(i)
-			m.first = m.last = i;
-		else // this is the first value in Index, map is empty
-			GrowMap();
-		return i;
-	}
-	
-	do { // try to find
-		const Hash& ih = hash[i];
-		if((std::numeric_limits<T>::is_integer || sh == ih.hash) && key[i] == k)
-			return i;
-		i = ih.next;
-	}
-	while(i >= 0);
-
-	i = hash.GetCount(); // add it
-	Hash& hh = hash.Add();
-	key.Add(k);
-	hh.hash = sh;
-	hh.next = -1;
-	if(i < (int)mask) { // no need to test if this is the first value in the bucket
-		hash[m.last].next = i;
-		m.last = i;
-	}
-	else
-		GrowMap();
-	return i;
-#endif
 }
 
 };

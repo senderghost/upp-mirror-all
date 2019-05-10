@@ -1,0 +1,169 @@
+BF25EA50  push rsi 
+BF25EA52  push rdi 
+BF25EA53  push r12 
+BF25EA55  push r14 
+BF25EA57  push r15 
+BF25EA59  sub rsp,byte +0x30 
+BF25EA5D  mov qword [rsp+0x20],0xfffffffe 
+BF25EA66  mov [rsp+0x68],rbx 
+BF25EA6B  mov [rsp+0x70],rbp 
+BF25EA70  mov rbx,rdx 
+BF25EA73  mov rdi,rcx 
+
+HASH
+BF25EA76  cmp byte [rdx+0xe],0x0 
+BF25EA7A  jz 0x7ff6bf25ea86 
+BF25EA7C  mov rcx,rdx 
+BF25EA7F  call dword 0x7ff6bf24884b 
+BF25EA84  jmp short 0x7ff6bf25ea9f 
+BF25EA86  mov eax,[rdx] 
+BF25EA88  xor eax,0xe2f62ff2 
+BF25EA8D  imul eax,eax,byte +0x11 
+BF25EA90  xor eax,[rdx+0x4] 
+BF25EA93  imul ecx,eax,byte +0x11 
+BF25EA96  xor ecx,[rdx+0x8] 
+BF25EA99  imul eax,ecx,byte +0x11 
+BF25EA9C  xor eax,[rdx+0xc] 
+
+SMEAR
+BF25EA9F  imul eax,eax,dword 0xa3613c16 
+BF25EAA5  bswap eax 
+BF25EAA7  bts eax,0x1f 
+
+MAP
+BF25EAAB  mov r15d,eax 
+BF25EAAE  mov ecx,eax 
+BF25EAB0  mov eax,[rdi+0x10] 
+BF25EAB3  and rcx,rax 
+BF25EAB6  mov rax,[rdi] 
+BF25EAB9  lea r12,[rax+rcx*4] 
+BF25EABD  mov r14d,[r12]
+BF25EAC1  mov esi,r14d 
+BF25EAC4  test r14d,r14d 
+BF25EAC7  js 0x7ff6bf25eb2e 
+
+BF25EAC9  nop dword [rax+0x0] 
+
+FINDFROM
+BF25EAD0  movsxd r8,esi 
+BF25EAD3  lea rcx,[r8+r8*2] 
+BF25EAD7  mov rax,[rdi+0x8] 
+BF25EADB  lea rbp,[rax+rcx*4] 
+BF25EADF  cmp r15d,[rbp+0x0] 
+BF25EAE3  jnz 0x7ff6bf25eb1c 
+BF25EAE5  shl r8,0x4 
+BF25EAE9  add r8,[rdi+0x18] 
+BF25EAED  movzx eax,byte [r8+0xe] 
+BF25EAF2  or al,[rbx+0xe] 
+BF25EAF5  jz 0x7ff6bf25eb06 
+BF25EAF7  mov rdx,rbx 
+BF25EAFA  mov rcx,r8 
+BF25EAFD  call dword 0x7ff6bf243567 ; COMPARE LONG STRING
+BF25EB02  mov ecx,eax 
+BF25EB04  jmp short 0x7ff6bf25eb17 
+
+COMPARE SHORT STRING:
+BF25EB06  mov rcx,[r8+0x8] 
+BF25EB0A  xor rcx,[rbx+0x8] 
+BF25EB0E  mov rax,[r8] 
+BF25EB11  xor rax,[rbx] 
+BF25EB14  or rcx,rax 
+
+BF25EB17  test rcx,rcx 
+BF25EB1A  jz 0x7ff6bf25eb26 
+BF25EB1C  mov esi,[rbp+0x4] 
+BF25EB1F  cmp esi,r14d 
+BF25EB22  jz 0x7ff6bf25eb2e 
+BF25EB24  jmp short 0x7ff6bf25ead0 
+
+BF25EB26  test esi,esi 
+BF25EB28  jns dword 0x7ff6bf25ec2b 
+
+ADDS
+BF25EB2E  movsxd rsi,dword [rdi+0x20] 
+BF25EB32  cmp esi,[rdi+0x24] 
+BF25EB35  jl 0x7ff6bf25eb7f 
+BF25EB37  lea rcx,[rdi+0x18] 
+BF25EB3B  mov rdx,rbx 
+BF25EB3E  call dword 0x7ff6bf245f9c 
+BF25EB43  movsxd rax,dword [rdi+0x24] 
+BF25EB47  lea rcx,[rax+rax*2] 
+BF25EB4B  shl rcx,0x2 
+BF25EB4F  call dword 0x7ff6bf243f35 
+BF25EB54  mov rbx,rax 
+BF25EB57  mov rdx,[rdi+0x8] 
+BF25EB5B  test rdx,rdx 
+BF25EB5E  jz 0x7ff6bf25eb79 
+BF25EB60  lea r8,[rsi+rsi*2] 
+BF25EB64  shl r8,0x2 
+BF25EB68  mov rcx,rax 
+BF25EB6B  call dword 0x7ff6bf248364 
+BF25EB70  mov rcx,[rdi+0x8] 
+BF25EB74  call dword 0x7ff6bf249525 
+BF25EB79  mov [rdi+0x8],rbx 
+BF25EB7D  jmp short 0x7ff6bf25ebc3 
+BF25EB7F  movsxd rax,dword [rdi+0x20] 
+BF25EB83  mov rcx,rax 
+BF25EB86  shl rcx,0x4 
+BF25EB8A  add rcx,[rdi+0x18] 
+BF25EB8E  inc eax 
+BF25EB90  mov [rdi+0x20],eax 
+BF25EB93  mov [rsp+0x60],rcx 
+BF25EB98  cmp byte [rbx+0xe],0x0 
+BF25EB9C  jnz 0x7ff6bf25ebb6 
+BF25EB9E  mov eax,[rbx] 
+BF25EBA0  mov [rcx],eax 
+BF25EBA2  mov eax,[rbx+0x4] 
+BF25EBA5  mov [rcx+0x4],eax 
+BF25EBA8  mov eax,[rbx+0x8] 
+BF25EBAB  mov [rcx+0x8],eax 
+BF25EBAE  mov eax,[rbx+0xc] 
+BF25EBB1  mov [rcx+0xc],eax 
+BF25EBB4  jmp short 0x7ff6bf25ebbf 
+BF25EBB6  mov rdx,rbx 
+BF25EBB9  call dword 0x7ff6bf2481fc 
+BF25EBBE  nop 
+BF25EBBF  mov rbx,[rdi+0x8] 
+BF25EBC3  lea rdx,[rsi+rsi*2] 
+BF25EBC7  lea r8,[rbx+rdx*4] 
+BF25EBCB  mov [r8],r15d 
+BF25EBCE  cmp esi,[rdi+0x10] 
+BF25EBD1  jl 0x7ff6bf25ebe0 
+BF25EBD3  mov edx,[rdi+0x20] 
+BF25EBD6  mov rcx,rdi 
+BF25EBD9  call dword 0x7ff6bf246bb8 
+BF25EBDE  jmp short 0x7ff6bf25ec2b 
+
+LINK
+BF25EBE0  mov eax,[r12] 
+BF25EBE4  test eax,eax 
+BF25EBE6  jns 0x7ff6bf25ebf6 
+BF25EBE8  mov [r8+0x4],esi 
+BF25EBEC  mov [r8+0x8],esi 
+BF25EBF0  mov [r12],esi 
+BF25EBF4  jmp short 0x7ff6bf25ec2b 
+
+BF25EBF6  mov [r8+0x4],eax 
+BF25EBFA  movsxd rax,dword [r12] 
+BF25EBFE  lea rcx,[rax+rax*2] 
+BF25EC02  mov rax,[rdi+0x8] 
+BF25EC06  movsxd rdx,dword [rax+rcx*4+0x8] 
+BF25EC0B  mov [r8+0x8],edx 
+BF25EC0F  lea rcx,[rdx+rdx*2] 
+BF25EC13  mov rax,[rdi+0x8] 
+BF25EC17  mov [rax+rcx*4+0x4],esi 
+BF25EC1B  movsxd rax,dword [r12] 
+BF25EC1F  lea rcx,[rax+rax*2] 
+BF25EC23  mov rax,[rdi+0x8] 
+BF25EC27  mov [rax+rcx*4+0x8],esi 
+
+BF25EC2B  mov eax,esi 
+BF25EC2D  mov rbx,[rsp+0x68] 
+BF25EC32  mov rbp,[rsp+0x70] 
+BF25EC37  add rsp,byte +0x30 
+BF25EC3B  pop r15 
+BF25EC3D  pop r14 
+BF25EC3F  pop r12 
+BF25EC41  pop rdi 
+BF25EC42  pop rsi 
+BF25EC43  ret 

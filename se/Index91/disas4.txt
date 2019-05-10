@@ -1,0 +1,283 @@
+6C81A6C0  mov rax,rsp 
+6C81A6C3  push rbp 
+6C81A6C4  push r14 
+6C81A6C6  push r15 
+6C81A6C8  lea rbp,[rax-0x148] 
+6C81A6CF  rex.w 
+6C81A6D0  sub esp,0x230 
+6C81A6D6  mov qword [rbp-0x70],0xfffffffe 
+6C81A6DE  mov [rax+0x8],rbx 
+6C81A6E2  mov [rax+0x10],rsi 
+6C81A6E6  mov [rax+0x18],rdi 
+6C81A6EA  mov [rax+0x20],r12 
+6C81A6EE  mov rax,[rel 0x6ca0c4f8] 
+6C81A6F5  xor rax,rsp 
+6C81A6F8  mov [rbp+0x120],rax 
+6C81A6FF  lea rcx,[rbp-0x50] 
+6C81A703  call dword 0x7ff76c8034e5 
+6C81A708  nop 
+6C81A709  lea rax,[rel 0x6c984828] 
+6C81A710  mov [rbp-0x50],rax 
+6C81A714  xor r12d,r12d 
+6C81A717  mov [rbp-0x8],r12 
+6C81A71B  mov [rbp-0x10],r12 
+6C81A71F  lea rax,[rbp+0x18] 
+6C81A723  mov [rbp+0x8],rax 
+6C81A727  lea rax,[rbp+0x18] 
+6C81A72B  mov [rbp+0x0],rax 
+6C81A72F  lea rax,[rbp+0x117] 
+6C81A736  mov [rbp+0x10],rax 
+6C81A73A  mov dword [rbp+0x11c],0x7fffffff 
+6C81A744  lea rdx,[rel 0x6ca0f320] 
+6C81A74B  lea rcx,[rbp-0x50] 
+6C81A74F  call dword 0x7ff76c805033 
+6C81A754  nop 
+6C81A755  lea rcx,[rsp+0x48] 
+6C81A75A  call dword 0x7ff76c804de0 
+6C81A75F  mov [rsp+0x60],r12 
+6C81A764  mov [rsp+0x68],r12 
+6C81A769  mov [rsp+0x70],r12 
+6C81A76E  mov [rsp+0x78],r12 
+6C81A773  mov rdx,[rbp-0x38] 
+6C81A777  cmp rdx,[rbp-0x30] 
+6C81A77B  jnc 0x7ff76c81a789 
+6C81A77D  movzx eax,byte [rdx] 
+6C81A780  inc rdx 
+6C81A783  mov [rbp-0x38],rdx 
+6C81A787  jmp short 0x7ff76c81a798 
+6C81A789  lea rcx,[rbp-0x50] 
+6C81A78D  mov rax,[rbp-0x50] 
+6C81A791  call qword [rax+0x20] 
+6C81A794  mov rdx,[rbp-0x38] 
+6C81A798  test eax,eax 
+6C81A79A  js dword 0x7ff76c81a9d1 
+6C81A7A0  lea ecx,[rax-0x41] 
+6C81A7A3  cmp ecx,byte +0x19 
+6C81A7A6  jna 0x7ff76c81a814 
+6C81A7A8  lea ecx,[rax-0x61] 
+6C81A7AB  cmp ecx,byte +0x19 
+6C81A7AE  jna 0x7ff76c81a814 
+6C81A7B0  cmp eax,byte +0x5f 
+6C81A7B3  jz 0x7ff76c81a814 
+6C81A7B5  add eax,byte -0x30 
+6C81A7B8  cmp eax,byte +0x9 
+6C81A7BB  ja 0x7ff76c81a777 
+6C81A7BD  nop dword [rax] 
+6C81A7C0  cmp rdx,[rbp-0x30] 
+6C81A7C4  jnc 0x7ff76c81a7d3 
+6C81A7C6  movzx r8d,byte [rdx] 
+6C81A7CA  inc rdx 
+6C81A7CD  mov [rbp-0x38],rdx 
+6C81A7D1  jmp short 0x7ff76c81a7e5 
+6C81A7D3  lea rcx,[rbp-0x50] 
+6C81A7D7  mov rax,[rbp-0x50] 
+6C81A7DB  call qword [rax+0x20] 
+6C81A7DE  mov r8d,eax 
+6C81A7E1  mov rdx,[rbp-0x38] 
+6C81A7E5  test r8d,r8d 
+6C81A7E8  js 0x7ff76c81a777 
+6C81A7EA  lea ecx,[r8-0x30] 
+6C81A7EE  cmp ecx,byte +0x9 
+6C81A7F1  jna 0x7ff76c81a7c0 
+6C81A7F3  cmp r8d,byte +0x41 
+6C81A7F7  jl 0x7ff76c81a7ff 
+6C81A7F9  cmp r8d,byte +0x5a 
+6C81A7FD  jng 0x7ff76c81a7c0 
+6C81A7FF  lea eax,[r8-0x61] 
+6C81A803  cmp eax,byte +0x19 
+6C81A806  jna 0x7ff76c81a7c0 
+6C81A808  cmp r8d,byte +0x2e 
+6C81A80C  jnz dword 0x7ff76c81a777 
+6C81A812  jmp short 0x7ff76c81a7c0 
+6C81A814  mov [rsp+0x38],r12 
+6C81A819  mov [rsp+0x30],r12 
+6C81A81E  mov [rsp+0x30],al 
+6C81A822  mov byte [rsp+0x3f],0x1 
+6C81A827  cmp rdx,[rbp-0x30] 
+6C81A82B  jnc 0x7ff76c81a839 
+6C81A82D  movzx eax,byte [rdx] 
+6C81A830  inc rdx 
+6C81A833  mov [rbp-0x38],rdx 
+6C81A837  jmp short 0x7ff76c81a848 
+6C81A839  lea rcx,[rbp-0x50] 
+6C81A83D  mov rax,[rbp-0x50] 
+6C81A841  call qword [rax+0x20] 
+6C81A844  mov rdx,[rbp-0x38] 
+6C81A848  test eax,eax 
+6C81A84A  js 0x7ff76c81a8ba 
+6C81A84C  nop dword [rax+0x0] 
+6C81A850  lea ecx,[rax-0x30] 
+6C81A853  cmp ecx,byte +0x9 
+6C81A856  jna 0x7ff76c81a86d 
+6C81A858  lea ecx,[rax-0x41] 
+6C81A85B  cmp ecx,byte +0x19 
+6C81A85E  jna 0x7ff76c81a86d 
+6C81A860  lea ecx,[rax-0x61] 
+6C81A863  cmp ecx,byte +0x19 
+6C81A866  jna 0x7ff76c81a86d 
+6C81A868  cmp eax,byte +0x5f 
+6C81A86B  jnz 0x7ff76c81a8ba 
+6C81A86D  movzx ecx,byte [rsp+0x3f] 
+6C81A872  cmp cl,0xe 
+6C81A875  jnl 0x7ff76c81a885 
+6C81A877  movsx rcx,cl 
+6C81A87B  mov [rsp+rcx+0x30],al 
+6C81A87F  inc byte [rsp+0x3f] 
+6C81A883  jmp short 0x7ff76c81a895 
+6C81A885  mov edx,eax 
+6C81A887  lea rcx,[rsp+0x30] 
+6C81A88C  call dword 0x7ff76c803a62 
+6C81A891  mov rdx,[rbp-0x38] 
+6C81A895  cmp rdx,[rbp-0x30] 
+6C81A899  jnc 0x7ff76c81a8a7 
+6C81A89B  movzx eax,byte [rdx] 
+6C81A89E  inc rdx 
+6C81A8A1  mov [rbp-0x38],rdx 
+6C81A8A5  jmp short 0x7ff76c81a8b6 
+6C81A8A7  lea rcx,[rbp-0x50] 
+6C81A8AB  mov rax,[rbp-0x50] 
+6C81A8AF  call qword [rax+0x20] 
+6C81A8B2  mov rdx,[rbp-0x38] 
+6C81A8B6  test eax,eax 
+6C81A8B8  jns 0x7ff76c81a850 
+6C81A8BA  mov [rsp+0x40],r12d 
+6C81A8BF  lea rax,[rsp+0x48] 
+6C81A8C4  mov [rbp-0x80],rax 
+6C81A8C8  lea rax,[rsp+0x40] 
+6C81A8CD  mov [rbp-0x78],rax 
+6C81A8D1  cmp byte [rsp+0x3e],0x0 
+6C81A8D6  jz 0x7ff76c81a8e4 
+6C81A8D8  lea rcx,[rsp+0x30] 
+6C81A8DD  call dword 0x7ff76c8088a5 
+6C81A8E2  jmp short 0x7ff76c81a904 
+
+6C81A8E4  imul eax,[rsp+0x30],dword 0xacf34ce7 
+6C81A8EC  xor eax,[rsp+0x34] 
+6C81A8F0  imul ecx,eax,dword 0xacf34ce7 
+6C81A8F6  xor ecx,[rsp+0x38] 
+6C81A8FA  imul eax,ecx,dword 0xacf34ce7 
+6C81A900  xor eax,[rsp+0x3c] 
+6C81A904  imul r14d,eax,dword 0xa3613c16 
+6C81A90B  bswap r14d 
+6C81A90E  bts r14d,0x1f 
+
+6C81A913  mov ecx,[rsp+0x58] 
+6C81A917  mov eax,r14d 
+6C81A91A  and rcx,rax 
+6C81A91D  mov rax,[rsp+0x48] 
+6C81A922  lea r15,[rax+rcx*4] 
+6C81A926  mov esi,[r15] 
+6C81A929  mov ebx,esi 
+6C81A92B  test esi,esi 
+6C81A92D  js 0x7ff76c81a986 
+
+6C81A92F  nop 
+6C81A930  movsxd rdi,ebx 
+6C81A933  mov rcx,rdi 
+6C81A936  shl rcx,0x4 
+6C81A93A  add rcx,[rsp+0x60] 
+6C81A93F  movzx eax,byte [rcx+0xe] 
+6C81A943  or al,[rsp+0x3e] 
+6C81A947  jz 0x7ff76c81a957 
+6C81A949  lea rdx,[rsp+0x30] 
+6C81A94E  call dword 0x7ff76c803567 
+6C81A953  mov edx,eax 
+6C81A955  jmp short 0x7ff76c81a96b 
+6C81A957  mov rdx,[rcx+0x8] 
+6C81A95B  xor rdx,[rsp+0x38] 
+6C81A960  mov rax,[rsp+0x30] 
+6C81A965  xor rax,[rcx] 
+6C81A968  or rdx,rax 
+6C81A96B  test rdx,rdx 
+6C81A96E  jz 0x7ff76c81a982 
+6C81A970  lea rcx,[rdi+rdi*2] 
+6C81A974  mov rax,[rsp+0x50] 
+6C81A979  mov ebx,[rax+rcx*4] 
+6C81A97C  cmp ebx,esi 
+6C81A97E  jz 0x7ff76c81a986 
+6C81A980  jmp short 0x7ff76c81a930 
+
+6C81A982  test ebx,ebx 
+6C81A984  jns 0x7ff76c81a9af 
+
+6C81A986  movaps xmm0,[rbp-0x80] 
+6C81A98A  movdqa [rbp-0x60],xmm0 
+
+6C81A98F  lea rax,[rbp-0x60] 
+6C81A993  mov [rsp+0x20],rax 
+6C81A998  mov r9d,r14d 
+6C81A99B  lea r8,[rsp+0x30] 
+6C81A9A0  mov rdx,r15 
+6C81A9A3  lea rcx,[rsp+0x48] 
+6C81A9A8  call dword 0x7ff76c80a565 
+6C81A9AD  mov ebx,eax 
+6C81A9AF  movsxd rcx,ebx 
+6C81A9B2  mov rax,[rsp+0x70] 
+
+6C81A9B7  inc dword [rax+rcx*4] 
+6C81A9BA  cmp byte [rsp+0x3e],0x0 
+6C81A9BF  jz 0x7ff76c81a9cc 
+
+6C81A9C1  lea rcx,[rsp+0x30] 
+6C81A9C6  call dword 0x7ff76c801dca 
+6C81A9CB  nop 
+6C81A9CC  jmp dword 0x7ff76c81a773 
+6C81A9D1  mov rcx,[rsp+0x70] 
+6C81A9D6  test rcx,rcx 
+6C81A9D9  jz 0x7ff76c81a9e1 
+6C81A9DB  call dword 0x7ff76c80958e 
+6C81A9E0  nop 
+6C81A9E1  mov rbx,[rsp+0x60] 
+6C81A9E6  test rbx,rbx 
+6C81A9E9  jz 0x7ff76c81aa2e 
+6C81A9EB  movsxd rax,dword [rsp+0x68] 
+6C81A9F0  test eax,eax 
+6C81A9F2  js 0x7ff76c81aa1b 
+6C81A9F4  mov rdi,rax 
+6C81A9F7  shl rdi,0x4 
+6C81A9FB  add rdi,rbx 
+6C81A9FE  cmp rbx,rdi 
+6C81AA01  jz 0x7ff76c81aa1b 
+6C81AA03  cmp byte [rbx+0xe],0x0 
+6C81AA07  jz 0x7ff76c81aa12 
+6C81AA09  mov rcx,rbx 
+6C81AA0C  call dword 0x7ff76c801dca 
+6C81AA11  nop 
+6C81AA12  add rbx,byte +0x10 
+6C81AA16  cmp rbx,rdi 
+6C81AA19  jnz 0x7ff76c81aa03 
+6C81AA1B  mov rbx,[rsp+0x60] 
+6C81AA20  test rbx,rbx 
+6C81AA23  jz 0x7ff76c81aa2e 
+6C81AA25  mov rcx,rbx 
+6C81AA28  call dword 0x7ff76c80958e 
+6C81AA2D  nop 
+6C81AA2E  lea rcx,[rsp+0x48] 
+6C81AA33  call dword 0x7ff76c8061f4 
+6C81AA38  nop 
+6C81AA39  lea rax,[rbp+0x18] 
+6C81AA3D  cmp [rbp+0x0],rax 
+6C81AA41  jz 0x7ff76c81aa4d 
+6C81AA43  lea rcx,[rbp+0x0] 
+6C81AA47  call dword 0x7ff76c809642 
+6C81AA4C  nop 
+6C81AA4D  cmp byte [rbp-0x2],0x0 
+6C81AA51  jz 0x7ff76c81aa5d 
+6C81AA53  lea rcx,[rbp-0x10] 
+6C81AA57  call dword 0x7ff76c801dca 
+6C81AA5C  nop 
+6C81AA5D  lea rcx,[rbp-0x50] 
+6C81AA61  call dword 0x7ff76c808d0f 
+6C81AA66  mov rcx,[rbp+0x120] 
+6C81AA6D  xor rcx,rsp 
+6C81AA70  call dword 0x7ff76c8031fc 
+6C81AA75  lea r11,[rsp+0x230] 
+6C81AA7D  mov rbx,[r11+0x20] 
+6C81AA81  mov rsi,[r11+0x28] 
+6C81AA85  mov rdi,[r11+0x30] 
+6C81AA89  mov r12,[r11+0x38] 
+6C81AA8D  mov rsp,r11 
+6C81AA90  pop r15 
+6C81AA92  pop r14 
+6C81AA94  pop rbp 
+6C81AA95  ret 

@@ -6,7 +6,7 @@ using namespace Upp;
 
 namespace New {
 
-HashBase::Bucket HashBase::empty[1] = { -1, -1 };
+int HashBase::empty[1] = { -1 };
 
 HashBase::HashBase()
 {
@@ -30,12 +30,11 @@ void HashBase::Reindex()
 {
 	LOG("== Reindex " << mask);
 	Free();
-	map = new Bucket[mask + 1];
-	for(int i = 0; i < hash.GetCount(); i++) {
-		hash[i].next = -1;
+	map = new int[mask + 1];
+	Fill(map, map + mask + 1, -1);
+	for(int i = 0; i < hash.GetCount(); i++) // todo: unlinked
 		if(hash[i].hash)
 			Link(i, hash[i].hash);
-	}
 }
 
 void HashBase::Clear()
@@ -94,6 +93,7 @@ void HashBase::Shrink()
 
 void HashBase::Trim(int n)
 {
+#if 0
 	if(n == 0) { // trim everything
 		hash.Trim(0);
 		for(int i = 0; i < int(mask + 1); i++)
@@ -120,11 +120,10 @@ void HashBase::Trim(int n)
 	hash.Trim(n);
 
 	Check();
+#endif
 }
 
 void HashBase::Check() {
-	for(int i = 0; i < mask + 1; i++)
-		ASSERT(map[i].first < hash.GetCount() && map[i].last < hash.GetCount());
 }
 
 };

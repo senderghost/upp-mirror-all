@@ -1,0 +1,301 @@
+400313F0  push r14
+400313F2  push r13
+400313F4  push r12
+400313F6  push rbp
+400313F7  push rdi
+400313F8  push rsi
+400313F9  push rbx
+400313FA  sub rsp,0x200
+40031401  movaps XMMWORD PTR [rsp+0x1f0],xmm6
+40031409  lea rbx,[rsp+0x80]
+40031411  lea rax,[rbx+0x60]
+40031415  mov rcx,rbx
+40031418  movq xmm6,rax
+4003141D  call 0x1400912b0 <Upp::Stream::Stream()>
+40031422  mov rcx,rbx
+40031425  mov r12,QWORD PTR [rip+0xde034]        # 0x14010f460 <.refptr._ZTVN3Upp12StringStreamE>
+4003142C  punpcklqdq xmm6,xmm6
+40031430  lea rdx,[rip+0x112fe9]        # 0x140144420
+40031437  pxor xmm0,xmm0
+4003143B  movups XMMWORD PTR [rsp+0xc8],xmm6
+40031443  movups XMMWORD PTR [rsp+0xb8],xmm0
+4003144B  mov DWORD PTR [rsp+0x1e4],0x7fffffff
+40031456  lea rax,[r12+0x10]
+4003145B  mov QWORD PTR [rsp+0x80],rax
+40031463  lea rax,[rbx+0x15f]
+4003146A  mov QWORD PTR [rsp+0xd8],rax
+40031472  call 0x140050e90 <Upp::StringStream::Open(Upp::String const&)>
+40031477  lea rdi,[rsp+0x40]
+4003147C  mov rcx,rdi
+4003147F  call 0x140035560 <New::HashBase::HashBase()>
+40031484  mov rcx,QWORD PTR [rsp+0xa0]
+4003148C  lea rsi,[rsp+0x30]
+40031491  mov QWORD PTR [rsp+0x58],0x0
+4003149A  mov rax,QWORD PTR [rsp+0x98]
+400314A2  lea rbp,[rsp+0x2f]
+400314A7  mov QWORD PTR [rsp+0x60],0x0
+400314B0  mov QWORD PTR [rsp+0x68],0x0
+400314B9  mov QWORD PTR [rsp+0x70],0x0
+400314C2  cmp rcx,rax
+400314C5  jbe 0x140031504 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+276>
+400314C7  lea rdx,[rax+0x1]
+400314CB  mov QWORD PTR [rsp+0x98],rdx
+400314D3  movzx eax,BYTE PTR [rax]
+400314D6  mov r8d,eax
+400314D9  and r8d,0xffffffdf
+400314DD  sub r8d,0x41
+400314E1  cmp r8d,0x19
+400314E5  jbe 0x140031590 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+416>
+400314EB  cmp eax,0x5f
+400314EE  je 0x140031590 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+416>
+400314F4  sub eax,0x30
+400314F7  cmp eax,0x9
+400314FA  jbe 0x140031530 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+320>
+400314FC  mov rax,rdx
+400314FF  cmp rcx,rax
+40031502  ja 0x1400314c7 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+215>
+40031504  mov rcx,rbx
+40031507  call 0x1400511c0 <Upp::StringStream::_Get()>
+4003150C  test eax,eax
+4003150E  js 0x1400316c0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+720>
+40031514  mov rdx,QWORD PTR [rsp+0x98]
+4003151C  mov rcx,QWORD PTR [rsp+0xa0]
+40031524  jmp 0x1400314d6 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+230>
+40031526  nop WORD PTR cs:[rax+rax*1+0x0]
+40031530  cmp rdx,rcx
+40031533  jae 0x14003156c <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+380>
+40031535  lea r8,[rdx+0x1]
+40031539  mov QWORD PTR [rsp+0x98],r8
+40031541  movzx eax,BYTE PTR [rdx]
+40031544  mov rdx,r8
+40031547  lea r8d,[rax-0x30]
+4003154B  cmp r8d,0x9
+4003154F  jbe 0x140031530 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+320>
+40031551  mov r8d,eax
+40031554  and r8d,0xffffffdf
+40031558  sub r8d,0x41
+4003155C  cmp r8d,0x19
+40031560  jbe 0x140031530 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+320>
+40031562  cmp eax,0x2e
+40031565  jne 0x1400314fc <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+268>
+40031567  cmp rdx,rcx
+4003156A  jb 0x140031535 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+325>
+4003156C  mov rcx,rbx
+4003156F  call 0x1400511c0 <Upp::StringStream::_Get()>
+40031574  test eax,eax
+40031576  mov rcx,QWORD PTR [rsp+0xa0]
+4003157E  mov rdx,QWORD PTR [rsp+0x98]
+40031586  jns 0x140031547 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+343>
+40031588  jmp 0x1400314fc <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+268>
+4003158D  nop DWORD PTR [rax]
+40031590  cmp rdx,rcx
+40031593  pxor xmm0,xmm0
+40031597  movaps XMMWORD PTR [rsp+0x30],xmm0
+4003159C  mov BYTE PTR [rsp+0x3f],0x1
+400315A1  mov BYTE PTR [rsp+0x30],al
+400315A5  jae 0x140031630 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+576>
+400315AB  lea rax,[rdx+0x1]
+400315AF  mov QWORD PTR [rsp+0x98],rax
+400315B7  movzx eax,BYTE PTR [rdx]
+400315BA  nop WORD PTR [rax+rax*1+0x0]
+400315C0  lea edx,[rax-0x30]
+400315C3  cmp edx,0x9
+400315C6  jbe 0x1400315da <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+490>
+400315C8  mov edx,eax
+400315CA  and edx,0xffffffdf
+400315CD  sub edx,0x41
+400315D0  cmp edx,0x19
+400315D3  jbe 0x1400315da <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+490>
+400315D5  cmp eax,0x5f
+400315D8  jne 0x14003163c <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+588>
+400315DA  movsx rcx,BYTE PTR [rsp+0x3f]
+400315E0  cmp cl,0xd
+400315E3  jg 0x140031624 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+564>
+400315E5  lea edx,[rcx+0x1]
+400315E8  mov BYTE PTR [rsp+0x3f],dl
+400315EC  mov BYTE PTR [rsp+rcx*1+0x30],al
+400315F0  mov rax,QWORD PTR [rsp+0x98]
+400315F8  cmp rax,QWORD PTR [rsp+0xa0]
+40031600  jae 0x140031630 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+576>
+40031602  lea rdx,[rax+0x1]
+40031606  mov QWORD PTR [rsp+0x98],rdx
+4003160E  movzx eax,BYTE PTR [rax]
+40031611  lea edx,[rax-0x30]
+40031614  cmp edx,0x9
+40031617  ja 0x1400315c8 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+472>
+40031619  movsx rcx,BYTE PTR [rsp+0x3f]
+4003161F  cmp cl,0xd
+40031622  jle 0x1400315e5 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+501>
+40031624  mov edx,eax
+40031626  mov rcx,rsi
+40031629  call 0x1400a9e10 <Upp::String0::LCat(int)>
+4003162E  jmp 0x1400315f0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+512>
+40031630  mov rcx,rbx
+40031633  call 0x1400511c0 <Upp::StringStream::_Get()>
+40031638  test eax,eax
+4003163A  jns 0x1400315c0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+464>
+4003163C  mov r8,rbp
+4003163F  mov rdx,rsi
+40031642  mov rcx,rdi
+40031645  call 0x140034f40 <New::Index<Upp::String>::FindAdd(Upp::String const&, bool&)>
+4003164A  cmp BYTE PTR [rsp+0x2f],0x0
+4003164F  mov r14,QWORD PTR [rsp+0x68]
+40031654  je 0x140031690 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+672>
+40031656  cdqe 
+40031658  lea r13,[r14+rax*4]
+4003165C  mov eax,DWORD PTR [r13+0x0]
+40031660  add eax,0x1
+40031663  mov DWORD PTR [r13+0x0],eax
+40031667  cmp BYTE PTR [rsp+0x3e],0x0
+4003166C  jne 0x140031683 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+659>
+4003166E  mov rcx,QWORD PTR [rsp+0xa0]
+40031676  mov rax,QWORD PTR [rsp+0x98]
+4003167E  jmp 0x1400314c2 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+210>
+40031683  mov rcx,rsi
+40031686  call 0x1400aa220 <Upp::String0::LFree()>
+4003168B  jmp 0x14003166e <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+638>
+4003168D  nop DWORD PTR [rax]
+40031690  movsxd rax,DWORD PTR [rsp+0x70]
+40031695  cmp eax,DWORD PTR [rsp+0x74]
+40031699  jge 0x140031771 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+897>
+4003169F  lea edx,[rax+0x1]
+400316A2  lea r13,[r14+rax*4]
+400316A6  mov DWORD PTR [rsp+0x70],edx
+400316AA  mov eax,0x1
+400316AF  mov DWORD PTR [r13+0x0],0x0
+400316B7  jmp 0x140031663 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+627>
+400316B9  nop DWORD PTR [rax+0x0]
+400316C0  mov rcx,QWORD PTR [rsp+0x68]
+400316C5  test rcx,rcx
+400316C8  je 0x1400316cf <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+735>
+400316CA  call 0x14003b210 <Upp::MemoryFree(void*)>
+400316CF  mov rsi,QWORD PTR [rsp+0x58]
+400316D4  test rsi,rsi
+400316D7  je 0x140031715 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+805>
+400316D9  movsxd rax,DWORD PTR [rsp+0x60]
+400316DE  test eax,eax
+400316E0  js 0x14003170d <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+797>
+400316E2  shl rax,0x4
+400316E6  lea rbp,[rsi+rax*1]
+400316EA  cmp rsi,rbp
+400316ED  je 0x14003170d <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+797>
+400316EF  nop 
+400316F0  cmp BYTE PTR [rsi+0xe],0x0
+400316F4  jne 0x1400317c0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+976>
+400316FA  add rsi,0x10
+400316FE  cmp rbp,rsi
+40031701  jne 0x1400316f0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+768>
+40031703  mov rsi,QWORD PTR [rsp+0x58]
+40031708  test rsi,rsi
+4003170B  je 0x140031715 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+805>
+4003170D  mov rcx,rsi
+40031710  call 0x14003b210 <Upp::MemoryFree(void*)>
+40031715  mov rcx,rdi
+40031718  add r12,0x10
+4003171C  call 0x140035590 <New::HashBase::~HashBase()>
+40031721  lea rax,[rbx+0x60]
+40031725  cmp QWORD PTR [rsp+0xc8],rax
+4003172D  mov QWORD PTR [rsp+0x80],r12
+40031735  je 0x140031740 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+848>
+40031737  lea rcx,[rbx+0x48]
+4003173B  call 0x140050770 <Upp::StringBuffer::Free()>
+40031740  cmp BYTE PTR [rsp+0xc6],0x0
+40031748  jne 0x1400317e8 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1016>
+4003174E  mov rcx,rbx
+40031751  call 0x140091300 <Upp::Stream::~Stream()>
+40031756  nop 
+40031757  movaps xmm6,XMMWORD PTR [rsp+0x1f0]
+4003175F  add rsp,0x200
+40031766  pop rbx
+40031767  pop rsi
+40031768  pop rdi
+40031769  pop rbp
+4003176A  pop r12
+4003176C  pop r13
+4003176E  pop r14
+40031770  ret 
+40031771  lea rcx,[rdi+0x28]
+40031775  call 0x140095670 <Upp::Vector<int>::Grow()>
+4003177A  movsxd r13,DWORD PTR [rsp+0x70]
+4003177F  test r14,r14
+40031782  mov rax,QWORD PTR [rsp+0x68]
+40031787  lea edx,[r13+0x1]
+4003178B  lea r13,[rax+r13*4]
+4003178F  mov DWORD PTR [rsp+0x70],edx
+40031793  mov DWORD PTR [r13+0x0],0x0
+4003179B  je 0x1400317b1 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+961>
+4003179D  mov rcx,r14
+400317A0  call 0x14003b210 <Upp::MemoryFree(void*)>
+400317A5  mov eax,DWORD PTR [r13+0x0]
+400317A9  add eax,0x1
+400317AC  jmp 0x140031663 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+627>
+400317B1  mov eax,0x1
+400317B6  jmp 0x140031663 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+627>
+400317BB  nop DWORD PTR [rax+rax*1+0x0]
+400317C0  mov rcx,rsi
+400317C3  add rsi,0x10
+400317C7  call 0x1400aa220 <Upp::String0::LFree()>
+400317CC  cmp rbp,rsi
+400317CF  jne 0x1400316f0 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+768>
+400317D5  mov rsi,QWORD PTR [rsp+0x58]
+400317DA  test rsi,rsi
+400317DD  jne 0x14003170d <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+797>
+400317E3  jmp 0x140031715 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+805>
+400317E8  lea rcx,[rbx+0x38]
+400317EC  call 0x1400aa220 <Upp::String0::LFree()>
+400317F1  jmp 0x14003174e <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+862>
+400317F6  mov rsi,rax
+400317F9  lea rax,[rbx+0x60]
+400317FD  cmp QWORD PTR [rsp+0xc8],rax
+40031805  je 0x140031810 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1056>
+40031807  lea rcx,[rbx+0x48]
+4003180B  call 0x140050770 <Upp::StringBuffer::Free()>
+40031810  cmp BYTE PTR [rsp+0xc6],0x0
+40031818  je 0x140031823 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1075>
+4003181A  lea rcx,[rbx+0x38]
+4003181E  call 0x1400aa220 <Upp::String0::LFree()>
+40031823  mov rcx,rbx
+40031826  call 0x140091300 <Upp::Stream::~Stream()>
+4003182B  mov rcx,rsi
+4003182E  call 0x140002740 <_Unwind_Resume>
+40031833  cmp BYTE PTR [rsp+0x3e],0x0
+40031838  mov r12,rax
+4003183B  je 0x140031847 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1111>
+4003183D  lea rcx,[rsp+0x30]
+40031842  call 0x1400aa220 <Upp::String0::LFree()>
+40031847  mov rcx,QWORD PTR [rsp+0x68]
+4003184C  test rcx,rcx
+4003184F  je 0x140031856 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1126>
+40031851  call 0x14003b210 <Upp::MemoryFree(void*)>
+40031856  mov rsi,QWORD PTR [rsp+0x58]
+4003185B  test rsi,rsi
+4003185E  je 0x140031889 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1177>
+40031860  mov edx,DWORD PTR [rsp+0x60]
+40031864  test edx,edx
+40031866  js 0x140031881 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1169>
+40031868  movsxd rbp,edx
+4003186B  shl rbp,0x4
+4003186F  add rbp,rsi
+40031872  cmp rbp,rsi
+40031875  jne 0x1400318ab <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1211>
+40031877  mov rsi,QWORD PTR [rsp+0x58]
+4003187C  test rsi,rsi
+4003187F  je 0x140031889 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1177>
+40031881  mov rcx,rsi
+40031884  call 0x14003b210 <Upp::MemoryFree(void*)>
+40031889  mov rcx,rdi
+4003188C  call 0x140035590 <New::HashBase::~HashBase()>
+40031891  mov rcx,rbx
+40031894  call 0x140051b70 <Upp::StringStream::~StringStream()>
+40031899  mov rcx,r12
+4003189C  call 0x140002740 <_Unwind_Resume>
+400318A1  mov r12,rax
+400318A4  jmp 0x140031847 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1111>
+400318A6  mov r12,rax
+400318A9  jmp 0x140031891 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1185>
+400318AB  cmp BYTE PTR [rsi+0xe],0x0
+400318AF  je 0x1400318b9 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1225>
+400318B1  mov rcx,rsi
+400318B4  call 0x1400aa220 <Upp::String0::LFree()>
+400318B9  add rsi,0x10
+400318BD  jmp 0x140031872 <RealBenchmarkT<New::VectorMap<Upp::String, int> >()+1154>

@@ -1,0 +1,303 @@
+ABADA1A0  mov rax,rsp 
+ABADA1A3  push rbp 
+ABADA1A4  push r14 
+ABADA1A6  push r15 
+ABADA1A8  lea rbp,[rax-0x118] 
+ABADA1AF  rex.w 
+ABADA1B0  sub esp,0x200 
+ABADA1B6  mov qword [rsp+0x70],0xfffffffe 
+ABADA1BF  mov [rax+0x8],rbx 
+ABADA1C3  mov [rax+0x10],rsi 
+ABADA1C7  mov [rax+0x18],rdi 
+ABADA1CB  mov [rax+0x20],r12 
+ABADA1CF  mov rax,[rel 0xffffffffabccc4f8] 
+ABADA1D6  xor rax,rsp 
+ABADA1D9  mov [rbp+0xf0],rax 
+ABADA1E0  lea rcx,[rbp-0x80] 
+ABADA1E4  call dword 0x7ff7abac34e5 
+ABADA1E9  nop 
+ABADA1EA  lea rax,[rel 0xffffffffabc44828] 
+ABADA1F1  mov [rbp-0x80],rax 
+ABADA1F5  xor r12d,r12d 
+ABADA1F8  mov [rbp-0x38],r12 
+ABADA1FC  mov [rbp-0x40],r12 
+ABADA200  lea rax,[rbp-0x18] 
+ABADA204  mov [rbp-0x28],rax 
+ABADA208  lea rax,[rbp-0x18] 
+ABADA20C  mov [rbp-0x30],rax 
+ABADA210  lea rax,[rbp+0xe7] 
+ABADA217  mov [rbp-0x20],rax 
+ABADA21B  mov dword [rbp+0xec],0x7fffffff 
+ABADA225  lea rdx,[rel 0xffffffffabccf320] 
+ABADA22C  lea rcx,[rbp-0x80] 
+ABADA230  call dword 0x7ff7abac5033 
+ABADA235  nop 
+ABADA236  lea rcx,[rsp+0x30] 
+ABADA23B  call dword 0x7ff7abac4de0 
+ABADA240  mov [rsp+0x48],r12 
+ABADA245  mov [rsp+0x50],r12 
+ABADA24A  mov [rsp+0x58],r12 
+ABADA24F  mov [rsp+0x60],r12 
+ABADA254  mov rdx,[rbp-0x68] 
+ABADA258  cmp rdx,[rbp-0x60] 
+ABADA25C  jnc 0x7ff7abada26a 
+ABADA25E  movzx eax,byte [rdx] 
+ABADA261  inc rdx 
+ABADA264  mov [rbp-0x68],rdx 
+ABADA268  jmp short 0x7ff7abada279 
+ABADA26A  lea rcx,[rbp-0x80] 
+ABADA26E  mov rax,[rbp-0x80] 
+ABADA272  call qword [rax+0x20] 
+ABADA275  mov rdx,[rbp-0x68] 
+ABADA279  test eax,eax 
+ABADA27B  js dword 0x7ff7abada4ef 
+ABADA281  lea ecx,[rax-0x41] 
+ABADA284  cmp ecx,byte +0x19 
+ABADA287  jna 0x7ff7abada2f4 
+ABADA289  lea ecx,[rax-0x61] 
+ABADA28C  cmp ecx,byte +0x19 
+ABADA28F  jna 0x7ff7abada2f4 
+ABADA291  cmp eax,byte +0x5f 
+ABADA294  jz 0x7ff7abada2f4 
+ABADA296  add eax,byte -0x30 
+ABADA299  cmp eax,byte +0x9 
+ABADA29C  ja 0x7ff7abada258 
+ABADA29E  xchg ax,ax 
+ABADA2A0  cmp rdx,[rbp-0x60] 
+ABADA2A4  jnc 0x7ff7abada2b3 
+ABADA2A6  movzx r8d,byte [rdx] 
+ABADA2AA  inc rdx 
+ABADA2AD  mov [rbp-0x68],rdx 
+ABADA2B1  jmp short 0x7ff7abada2c5 
+ABADA2B3  lea rcx,[rbp-0x80] 
+ABADA2B7  mov rax,[rbp-0x80] 
+ABADA2BB  call qword [rax+0x20] 
+ABADA2BE  mov r8d,eax 
+ABADA2C1  mov rdx,[rbp-0x68] 
+ABADA2C5  test r8d,r8d 
+ABADA2C8  js 0x7ff7abada258 
+ABADA2CA  lea ecx,[r8-0x30] 
+ABADA2CE  cmp ecx,byte +0x9 
+ABADA2D1  jna 0x7ff7abada2a0 
+ABADA2D3  cmp r8d,byte +0x41 
+ABADA2D7  jl 0x7ff7abada2df 
+ABADA2D9  cmp r8d,byte +0x5a 
+ABADA2DD  jng 0x7ff7abada2a0 
+ABADA2DF  lea eax,[r8-0x61] 
+ABADA2E3  cmp eax,byte +0x19 
+ABADA2E6  jna 0x7ff7abada2a0 
+ABADA2E8  cmp r8d,byte +0x2e 
+ABADA2EC  jnz dword 0x7ff7abada258 
+ABADA2F2  jmp short 0x7ff7abada2a0 
+ABADA2F4  mov [rsp+0x28],r12 
+ABADA2F9  mov [rsp+0x20],r12 
+ABADA2FE  mov [rsp+0x20],al 
+ABADA302  mov byte [rsp+0x2f],0x1 
+ABADA307  cmp rdx,[rbp-0x60] 
+ABADA30B  jnc 0x7ff7abada319 
+ABADA30D  movzx eax,byte [rdx] 
+ABADA310  inc rdx 
+ABADA313  mov [rbp-0x68],rdx 
+ABADA317  jmp short 0x7ff7abada328 
+ABADA319  lea rcx,[rbp-0x80] 
+ABADA31D  mov rax,[rbp-0x80] 
+ABADA321  call qword [rax+0x20] 
+ABADA324  mov rdx,[rbp-0x68] 
+ABADA328  test eax,eax 
+ABADA32A  js 0x7ff7abada39a 
+ABADA32C  nop dword [rax+0x0] 
+ABADA330  lea ecx,[rax-0x30] 
+ABADA333  cmp ecx,byte +0x9 
+ABADA336  jna 0x7ff7abada34d 
+ABADA338  lea ecx,[rax-0x41] 
+ABADA33B  cmp ecx,byte +0x19 
+ABADA33E  jna 0x7ff7abada34d 
+ABADA340  lea ecx,[rax-0x61] 
+ABADA343  cmp ecx,byte +0x19 
+ABADA346  jna 0x7ff7abada34d 
+ABADA348  cmp eax,byte +0x5f 
+ABADA34B  jnz 0x7ff7abada39a 
+ABADA34D  movzx ecx,byte [rsp+0x2f] 
+ABADA352  cmp cl,0xe 
+ABADA355  jnl 0x7ff7abada365 
+ABADA357  movsx rcx,cl 
+ABADA35B  mov [rsp+rcx+0x20],al 
+ABADA35F  inc byte [rsp+0x2f] 
+ABADA363  jmp short 0x7ff7abada375 
+ABADA365  mov edx,eax 
+ABADA367  lea rcx,[rsp+0x20] 
+ABADA36C  call dword 0x7ff7abac3a62 
+ABADA371  mov rdx,[rbp-0x68] 
+ABADA375  cmp rdx,[rbp-0x60] 
+ABADA379  jnc 0x7ff7abada387 
+ABADA37B  movzx eax,byte [rdx] 
+ABADA37E  inc rdx 
+ABADA381  mov [rbp-0x68],rdx 
+ABADA385  jmp short 0x7ff7abada396 
+ABADA387  lea rcx,[rbp-0x80] 
+ABADA38B  mov rax,[rbp-0x80] 
+ABADA38F  call qword [rax+0x20] 
+ABADA392  mov rdx,[rbp-0x68] 
+ABADA396  test eax,eax 
+ABADA398  jns 0x7ff7abada330 
+ABADA39A  mov [rsp+0x68],r12d 
+ABADA39F  cmp byte [rsp+0x2e],0x0 
+ABADA3A4  jz 0x7ff7abada3b2 
+ABADA3A6  lea rcx,[rsp+0x20] 
+ABADA3AB  call dword 0x7ff7abac88a5 
+ABADA3B0  jmp short 0x7ff7abada3d2 
+
+HASH
+ABADA3B2  imul eax,[rsp+0x20],dword 0xacf34ce7 
+ABADA3BA  xor eax,[rsp+0x24] 
+ABADA3BE  imul ecx,eax,dword 0xacf34ce7 
+ABADA3C4  xor ecx,[rsp+0x28] 
+ABADA3C8  imul eax,ecx,dword 0xacf34ce7 
+ABADA3CE  xor eax,[rsp+0x2c] 
+
+SMEAR
+ABADA3D2  imul r14d,eax,dword 0xa3613c16 
+ABADA3D9  bswap r14d 
+ABADA3DC  bts r14d,0x1f 
+
+MAP
+ABADA3E1  mov ecx,[rsp+0x40] 
+ABADA3E5  mov eax,r14d 
+ABADA3E8  and rcx,rax 
+ABADA3EB  mov rax,[rsp+0x30] 
+ABADA3F0  lea r15,[rax+rcx*4] 
+ABADA3F4  mov esi,[r15] 
+ABADA3F7  mov ebx,esi 
+ABADA3F9  test esi,esi 
+ABADA3FB  js 0x7ff7abada456 
+
+FIND LOOP
+ABADA400  movsxd rdi,ebx 
+ABADA403  mov rcx,rdi 
+ABADA406  shl rcx,0x4 
+ABADA40A  add rcx,[rsp+0x48] 
+ABADA40F  movzx eax,byte [rcx+0xe] 
+ABADA413  or al,[rsp+0x2e] 
+ABADA417  jz 0x7ff7abada427 
+ABADA419  lea rdx,[rsp+0x20] 
+ABADA41E  call dword 0x7ff7abac3567 
+ABADA423  mov edx,eax 
+ABADA425  jmp short 0x7ff7abada43b 
+ABADA427  mov rdx,[rcx+0x8] 
+ABADA42B  xor rdx,[rsp+0x28] 
+ABADA430  mov rax,[rsp+0x20] 
+ABADA435  xor rax,[rcx] 
+ABADA438  or rdx,rax 
+ABADA43B  test rdx,rdx 
+ABADA43E  jz 0x7ff7abada452 
+ABADA440  lea rcx,[rdi+rdi*2] 
+ABADA444  mov rax,[rsp+0x38] 
+ABADA449  mov ebx,[rax+rcx*4] 
+ABADA44C  cmp ebx,esi 
+ABADA44E  jz 0x7ff7abada456 
+ABADA450  jmp short 0x7ff7abada400 
+
+ABADA452  test ebx,ebx 
+ABADA454  jns 0x7ff7abada4cd 
+
+ABADA456  mov ebx,[rsp+0x50] 
+ABADA45A  mov r9d,r14d 
+ABADA45D  lea r8,[rsp+0x20] 
+ABADA462  mov rdx,r15 
+ABADA465  lea rcx,[rsp+0x30] 
+ABADA46A  call dword 0x7ff7abac9386 
+ABADA46F  movsxd r8,dword [rsp+0x60] 
+ABADA474  cmp r8d,[rsp+0x64] 
+ABADA479  jnl 0x7ff7abada494 
+ABADA47B  mov rax,[rsp+0x58] 
+ABADA480  lea rdx,[rax+r8*4] 
+ABADA484  inc r8d 
+ABADA487  mov [rsp+0x60],r8d 
+ABADA48C  mov eax,[rsp+0x68] 
+ABADA490  mov [rdx],eax 
+ABADA492  jmp short 0x7ff7abada4cd 
+ABADA494  mov rdi,[rsp+0x58] 
+ABADA499  lea rcx,[rsp+0x58] 
+ABADA49E  call dword 0x7ff7abac97aa 
+ABADA4A3  movsxd r9,dword [rsp+0x60] 
+ABADA4A8  mov rax,[rsp+0x58] 
+ABADA4AD  lea r8,[rax+r9*4] 
+ABADA4B1  inc r9d 
+ABADA4B4  mov [rsp+0x60],r9d 
+ABADA4B9  mov eax,[rsp+0x68] 
+ABADA4BD  mov [r8],eax 
+ABADA4C0  test rdi,rdi 
+ABADA4C3  jz 0x7ff7abada4cd 
+ABADA4C5  mov rcx,rdi 
+ABADA4C8  call dword 0x7ff7abac958e 
+
+ABADA4CD  movsxd rcx,ebx 
+ABADA4D0  mov rax,[rsp+0x58] 
+ABADA4D5  inc dword [rax+rcx*4] 
+
+ABADA4D8  cmp byte [rsp+0x2e],0x0 
+ABADA4DD  jz 0x7ff7abada4ea 
+
+ABADA4DF  lea rcx,[rsp+0x20] 
+ABADA4E4  call dword 0x7ff7abac1dca 
+ABADA4E9  nop 
+ABADA4EA  jmp dword 0x7ff7abada254 
+ABADA4EF  mov rcx,[rsp+0x58] 
+ABADA4F4  test rcx,rcx 
+ABADA4F7  jz 0x7ff7abada4ff 
+ABADA4F9  call dword 0x7ff7abac958e 
+ABADA4FE  nop 
+ABADA4FF  mov rbx,[rsp+0x48] 
+ABADA504  test rbx,rbx 
+ABADA507  jz 0x7ff7abada54c 
+ABADA509  movsxd rax,dword [rsp+0x50] 
+ABADA50E  test eax,eax 
+ABADA510  js 0x7ff7abada539 
+ABADA512  mov rdi,rax 
+ABADA515  shl rdi,0x4 
+ABADA519  add rdi,rbx 
+ABADA51C  cmp rbx,rdi 
+ABADA51F  jz 0x7ff7abada539 
+ABADA521  cmp byte [rbx+0xe],0x0 
+ABADA525  jz 0x7ff7abada530 
+ABADA527  mov rcx,rbx 
+ABADA52A  call dword 0x7ff7abac1dca 
+ABADA52F  nop 
+ABADA530  add rbx,byte +0x10 
+ABADA534  cmp rbx,rdi 
+ABADA537  jnz 0x7ff7abada521 
+ABADA539  mov rbx,[rsp+0x48] 
+ABADA53E  test rbx,rbx 
+ABADA541  jz 0x7ff7abada54c 
+ABADA543  mov rcx,rbx 
+ABADA546  call dword 0x7ff7abac958e 
+ABADA54B  nop 
+ABADA54C  lea rcx,[rsp+0x30] 
+ABADA551  call dword 0x7ff7abac61f4 
+ABADA556  nop 
+ABADA557  lea rax,[rbp-0x18] 
+ABADA55B  cmp [rbp-0x30],rax 
+ABADA55F  jz 0x7ff7abada56b 
+ABADA561  lea rcx,[rbp-0x30] 
+ABADA565  call dword 0x7ff7abac9642 
+ABADA56A  nop 
+ABADA56B  cmp byte [rbp-0x32],0x0 
+ABADA56F  jz 0x7ff7abada57b 
+ABADA571  lea rcx,[rbp-0x40] 
+ABADA575  call dword 0x7ff7abac1dca 
+ABADA57A  nop 
+ABADA57B  lea rcx,[rbp-0x80] 
+ABADA57F  call dword 0x7ff7abac8d0f 
+ABADA584  mov rcx,[rbp+0xf0] 
+ABADA58B  xor rcx,rsp 
+ABADA58E  call dword 0x7ff7abac31fc 
+ABADA593  lea r11,[rsp+0x200] 
+ABADA59B  mov rbx,[r11+0x20] 
+ABADA59F  mov rsi,[r11+0x28] 
+ABADA5A3  mov rdi,[r11+0x30] 
+ABADA5A7  mov r12,[r11+0x38] 
+ABADA5AB  mov rsp,r11 
+ABADA5AE  pop r15 
+ABADA5B0  pop r14 
+ABADA5B2  pop rbp 
+ABADA5B3  ret 

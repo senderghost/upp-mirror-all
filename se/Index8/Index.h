@@ -10,35 +10,33 @@ namespace New {
 struct HashBase {
 	enum { HIBIT = 0x80000000 };
 
-	struct Bucket {
-		int first = -1;
-		int last = -1;
-	};
-	
 	struct Hash : Moveable<Hash> {
 		dword hash; // also link for unlinked items...
 		int   next;
+		int   prev;
 	};
 	
-	Bucket      *map;
+	int         *map;
 	Vector<Hash> hash;
 	dword        mask;
 	int          unlinked;
 
 	void MakeMap();
 	
-	static Bucket empty[1];
+	static int empty[1];
 
 	static dword Smear(dword h)          { return FoldHash(h) | HIBIT; }
 
+	void Link(int& m, Hash& hh, int ii);
+	void Link(int ii, dword sh);
+
 	void Reindex();
 	void GrowMap();
-	void Link(Bucket& m, int ii);
-	void Link(int ii, dword h);
-	void Del(int ii);
-	void Ins(int ii, dword sh);
 	void AddS(dword sh);
 	void Free();
+
+	void Del(int ii);
+	void Ins(int ii, dword sh);
 	
 	dword operator[](int i) const        { return hash[i].hash; }
 	int   GetCount() const               { return hash.GetCount(); }
@@ -90,8 +88,6 @@ public:
 	bool IsUnlinked(int i) const     { return hash[i].hash == 0; }
 	void UnlinkKey(const T& k)       { HashBase::UnlinkKey(GetHashValue(k), [&](int i) { return key[i] == k; }); }
 	bool HasUnlinked() const         { return unlinked >= 0; }
-
-	void Link(Bucket& m, int ii);
 
 	const T& operator[](int i) const { return key[i]; }
 	int  GetCount() const            { return key.GetCount(); }

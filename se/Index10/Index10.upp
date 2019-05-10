@@ -1,0 +1,14 @@
+uses
+	Core;
+
+file
+	info.txt,
+	Index.h,
+	Index.hpp,
+	Index.cpp,
+	benchmark.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "";
+

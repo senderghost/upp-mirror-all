@@ -1,0 +1,13 @@
+uses
+	Core;
+
+file
+	info.txt,
+	Index.h,
+	Index.hpp,
+	Index.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "";
+
