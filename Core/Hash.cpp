@@ -7,6 +7,8 @@ namespace Upp {
 #pragma optimize("t", on)
 #endif
 
+unsigned hash_const1 = 31;
+
 unsigned Pow2Bound(unsigned i)
 {
 	unsigned n = 1;

@@ -152,7 +152,7 @@ T& Vector<T>::GrowAdd(const T& x) {
 }
 
 template <class T>
-T& Vector<T>::GrowAddPick(T&& x) {
+T& Vector<T>::GrowAdd(T&& x) {
 	T *prev = vector;
 	Grow();
 	T *q = ::new(Rdd()) T(pick(x));
