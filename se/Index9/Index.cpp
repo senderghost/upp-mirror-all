@@ -34,14 +34,19 @@ void HashBase::Free()
 	FreeMap();
 }
 
-void HashBase::Reindex(int count)
+void HashBase::Remap(int count)
 {
-	FreeMap();
-	map = (int *)MemoryAlloc((mask + 1) * sizeof(int));
 	Fill(map, map + mask + 1, -1);
 	for(int i = 0; i < count; i++) // todo: unlinked
 		if(hash[i].hash)
 			Link(i, hash[i].hash);
+}
+
+void HashBase::Reindex(int count)
+{
+	FreeMap();
+	map = (int *)MemoryAlloc((mask + 1) * sizeof(int));
+	Remap(count);
 }
 
 void HashBase::Clear()
@@ -74,64 +79,44 @@ Vector<int> HashBase::GetUnlinked() const
 	return r;
 }
 
-void HashBase::Sweep()
+void HashBase::AdjustMap(int count, int alloc)
 {
-	
+	dword msk = 0;
+	while(msk < (dword)alloc)
+		msk = (msk << 1) | 3;
+	if(msk != mask) {
+		mask = msk;
+		Reindex(count);
+	}
 }
 
-/*
-void HashBase::MakeMap(int)
+void HashBase::Trim(int n, int count)
 {
-	while(mask <= (dword)hash.GetCount())
-		mask = (mask << 1) | 3;
-	Reindex();
-}
-
-void HashBase::Reserve(int n)
-{
-	hash.Reserve(n);
-	MakeMap();
-}
-
-void HashBase::Shrink()
-{
-	hash.Shrink();
-	mask = 0;
-	MakeMap();
-}
-*/
-
-
-void HashBase::Trim(int n)
-{
-#if 0
-	if(n == 0) { // trim everything
-		hash.Trim(0);
-		for(int i = 0; i < int(mask + 1); i++)
-			map[i].first = map[i].last = -1;
+	if(n == 0) {
+		int n = (int)(mask + 1);
+		for(int i = 0; i < n; i++)
+			map[i] = -1;
 		unlinked = -1;
 		return;
 	}
 	
-	for(int i = n; i < GetCount(); i++) // remove items in trimmed area from buckets
-		if(!IsUnlinked(i))
-			Del(i);
-
-	int i = unlinked; // remove unlinked items in trimmed area
-	unlinked = -1;
-	while(i >= 0) {
-		int ni = hash[i].next;
-		if(i < n) {
-			hash[i].next = unlinked;
-			unlinked = i;
-		}
-		i = ni;
+	for(int i = n; i < count; i++) { // remove items in trimmed area from buckets / unlinked
+		Hash& hh = hash[i];
+		if(hh.hash)
+			Del(map[hh.hash & mask], hh, i);
+		else
+			Del(unlinked, hh, i);
 	}
+}
 
-	hash.Trim(n);
-
-	Check();
-#endif
+void HashBase::Sweep(int n)
+{
+	int ti = 0;
+	for(int i = 0; i < n; i++)
+		if(hash[i].hash)
+			hash[ti++].hash = hash[i].hash;
+	Remap(ti);
+	unlinked = -1;
 }
 
 };

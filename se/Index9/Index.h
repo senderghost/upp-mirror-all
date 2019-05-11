@@ -35,6 +35,7 @@ struct HashBase {
 	void Del(int& m, Hash& hh, int ii);
 	void Ins(int& m, Hash& hh, int ii);
 
+	void Remap(int count);
 	void Reindex(int count);
 	void GrowMap(int count);
 	void FreeMap();
@@ -42,15 +43,14 @@ struct HashBase {
 
 	void Set(int ii, dword h);
 	
-	void Sweep();
-	
-	void Reserve(int n);
-	void Shrink();
-	
 	Vector<int> GetUnlinked() const;
 	
 	void Clear();
-	void Trim(int n = 0);
+	void Trim(int n, int count);
+	void Sweep(int n);
+	void Reserve(int n);
+	void Shrink();
+	void AdjustMap(int count, int alloc);
 	
 	HashBase();
 	~HashBase();
@@ -68,6 +68,7 @@ class Index : HashBase {
 	int  FindBack(int i, dword sh, const T& k, int end) const;
 
 
+	void ReallocHash();
 	template <typename U> void GrowAdd(U&& k, dword sh);
 	template <typename U> void AddS(int& m, U&& k, dword sh);
 	template <typename U> void AddS(U&& k, dword sh);
@@ -102,8 +103,11 @@ public:
 	int  GetCount() const            { return key.GetCount(); }
 	
 	void  Clear()                    { key.Clear(); HashBase::Clear(); }
+	void  Trim(int n)                { HashBase::Trim(n, GetCount()); key.Trim(n); }
+	void  Sweep();
 	
-	void  Trim(int n)                { key.Trim(n); HashBase::Trim(n); }
+	void  Reserve(int n);
+	void  Shrink();
 	
 	String ToString() const;
 };

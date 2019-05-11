@@ -34,18 +34,31 @@ void HashBase::Del(int& m, Hash& hh, int ii)
 }
 
 template <typename T>
+never_inline
+void Index<T>::ReallocHash()
+{
+	int n = key.GetCount();
+	if(key.GetAlloc()) {
+		Hash *h = (Hash *)MemoryAlloc(key.GetAlloc() * sizeof(Hash));
+		if(hash) {
+			memcpy(h, hash, sizeof(Hash) * n);
+			MemoryFree(hash);
+		}
+		hash = h;
+	}
+	else {
+		MemoryFree(hash);
+		hash = NULL;
+	}
+}
+
+template <typename T>
 template <typename U>
 never_inline
 void Index<T>::GrowAdd(U&& k, dword sh)
 {
-	int n = key.GetCount();
 	key.GrowAdd(std::forward<U>(k));
-	Hash *h = (Hash *)MemoryAlloc(key.GetAlloc() * sizeof(Hash));
-	if(hash) {
-		memcpy(h, hash, sizeof(Hash) * n);
-		MemoryFree(hash);
-	}
-	hash = h;
+	ReallocHash();
 }
 
 template <typename T>
@@ -129,7 +142,7 @@ int Index<T>::FindPrev(int i) const
 {
 	const Hash& hh = hash[i];
 	int end = map[hash[i].hash & mask];
-	return hh.prev == end ? -1 : FindFrom(hh.prev, hh.hash, key[i], end);
+	return hh.prev == hash[end].prev ? -1 : FindBack(hh.prev, hh.hash, key[i], end);
 }
 
 template <class T>
@@ -220,6 +233,39 @@ void Index<T>::Set(int ii, const T& k)
 	hh.hash = sh;
 	Link(map[sh & mask], hh, ii);
 	key[ii] = k;
+}
+
+template <typename T>
+never_inline
+void Index<T>::Sweep()
+{
+	int n = key.GetCount();
+	key.RemoveIf([&](int i) { return hash[i].hash == 0; });
+	HashBase::Sweep(n);
+}
+
+template <typename T>
+never_inline
+void Index<T>::Reserve(int n)
+{
+	int a = key.GetAlloc();
+	key.Reserve(n);
+	if(a != key.GetAlloc()) {
+		ReallocHash();
+		AdjustMap(key.GetCount(), n);
+	}
+}
+
+template <typename T>
+never_inline
+void Index<T>::Shrink()
+{
+	int a = key.GetAlloc();
+	key.Shrink();
+	if(a != key.GetAlloc()) {
+		ReallocHash();
+		AdjustMap(key.GetCount(), key.GetCount());
+	}
 }
 
 template <typename T>

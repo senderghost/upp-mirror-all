@@ -3,116 +3,7 @@
 #include <set>
 
 
-int nnn = 200;
-int val = 0;
-int sum = 0;
-
-#define N 500
-
-void Benchmark()
-{
-	Vector<String> data;
-	for(int i = 0; i < N; i++)
-		data.Add(AsString(i));
-	int rep = max(100000000 / N, 1);
-	for(int n = 0; n < rep; n++) {
-		{
-			New::Index<int> test;
-			{
-				RTIMING("New int add");
-				for(int i = 0; i < N; i++) {
-					test.Add(i);
-				}
-			}
-			{
-				RTIMING("New int find");
-				for(int i = 0; i < N; i++) {
-					if(test.Find(i) == i)
-						sum++;
-				}
-			}
-			{
-				RTIMING("New int findadd");
-				test.Clear();
-				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(i >> 2) == i)
-						sum++;
-				}
-			}
-		}
-		{
-			Index<int> test;
-			{
-				RTIMING("Old int add");
-				for(int i = 0; i < N; i++) {
-					test.Add(i);
-				}
-			}
-			{
-				RTIMING("Old int find");
-				for(int i = 0; i < N; i++) {
-					if(test.Find(i) == i)
-						sum++;
-				}
-			}
-			{
-				RTIMING("Old int findadd");
-				test.Clear();
-				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(i >> 2) == i)
-						sum++;
-				}
-			}
-		}
-		{
-			New::Index<String> test;
-			{
-				RTIMING("New string add");
-				for(int i = 0; i < N; i++) {
-					test.Add(data[i]);
-				}
-			}
-			{
-				RTIMING("New string find");
-				for(int i = 0; i < N; i++) {
-					sum += test.Find(data[i]);
-				}
-			}
-			{
-				RTIMING("New string findadd");
-				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(data[i >> 5]) == i)
-						sum++;
-				}
-			}
-		}
-		{
-			Index<String> test;
-			{
-				RTIMING("Old string add");
-				for(int i = 0; i < N; i++) {
-					test.Add(data[i]);
-				}
-			}
-			{
-				RTIMING("Old string find");
-				for(int i = 0; i < N; i++) {
-					sum += test.Find(data[i]);
-				}
-			}
-			{
-				RTIMING("Old string findadd");
-				for(int i = 0; i < N; i++) {
-					if(test.FindAdd(data[i >> 5]) == i)
-						sum++;
-				}
-			}
-		}
-	}
-	RDUMP(sum);
-}
-
-void Check(const New::Index<int>& x, bool ordered = true)
+void Check(const New::Index<int>& x, bool ordered = false)
 {
 	int un = 0;
 	Vector<int> uns = x.GetUnlinked();
@@ -176,6 +67,8 @@ void PickTests()
 	ASSERT(h == "2");
 }
 
+#define TEST(op, result) { op; String s = AsString(x); LOG("TEST(" << #op << ", " << AsCString(s) << ")"); if(strlen(result)) ASSERT(s == result); Check(x);; }
+
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
@@ -202,20 +95,28 @@ CONSOLE_APP_MAIN
 	
 	int rnd = Random(100);
 
-	x.Add(0);
-	x.Add(0);
-	x.Add(0);
+	TEST(x.Add(0), "");
+	TEST(x.Add(0), "");
+	TEST(x.Add(0), "");
 
-	x.Add(1);
-	x.Add(1);
-	x.Add(1);
-	DUMP(x);
+	TEST(x.Add(1), "");
+	TEST(x.Add(1), "");
+	TEST(x.Add(1), "");
 
 	ASSERT(x.Find(10) < 0);
 	ASSERT(x.Find(1) == 3);
-	ASSERT(x.FindNext(3) == 4);
 
-	x.Unlink(0);
+	ASSERT(x.FindNext(3) == 4);
+	ASSERT(x.FindNext(4) == 5);
+	ASSERT(x.FindNext(5) == -1);
+
+	ASSERT(x.FindLast(1) == 5);
+	ASSERT(x.FindPrev(5) == 4);
+	DDUMP(x.FindPrev(4));
+	ASSERT(x.FindPrev(4) == 3);
+	ASSERT(x.FindPrev(3) == -1);
+
+	TEST(x.Unlink(0), "");
 	DUMP(x);
 	DUMP(x.GetUnlinked());
 	x.Unlink(1);
@@ -248,10 +149,20 @@ CONSOLE_APP_MAIN
 	DUMP(x);
 	
 	DLOG("----- Set");
-	x.Set(1, 5);
-	DUMP(x);
-	x.Set(2, 5);
-	DUMP(x);
+	TEST(x.Set(1, 5), "");
+	TEST(x.Set(2, 5), "");
+	
+	DLOG("----- Unlink");
+	TEST(x.Unlink(5), "");
+	TEST(x.Trim(4), "");
+	
+	DLOG("----- Sweep");
+	TEST(x.Unlink(1), "");
+	TEST(x.Sweep(), "");
+
+	DLOG("----- Reserve");
+	TEST(x.Reserve(1000), "");
+	TEST(x.Shrink(), "");
 	
 	return;
 	
@@ -345,25 +256,5 @@ CONSOLE_APP_MAIN
 
 	RDUMP(sizeof(Index<int>));
 	RDUMP(sizeof(New::Index<int>));
-	return;
 
-	New::Index<int> test;
-	for(int i = 0; i < 10000; i++) {
-		test.Add(i);
-		if(test.Find(i) == i)
-			sum++;
-		ASSERT(test.Find(i) == i);
-	}
-
-	DUMP(sum);
-
-#if 0
-	New::HashBase h;
-	for(int i = 0; i < nnn; i++) {
-		val = Random(20);
-		RLOG("--- " << val);
-		h.Add(val);
-		h.Find(val, [&](int i) { LOG(i << " " << h[i]); sum += i; return false; });
-	}
-#endif
 }
