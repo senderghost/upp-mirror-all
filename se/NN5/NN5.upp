@@ -1,0 +1,14 @@
+uses
+	Core;
+
+file
+	SearchPoints.h,
+	Util.cpp,
+	Finish.cpp,
+	SearchPoints.cpp,
+	MastModel.cpp,
+	info.txt;
+
+mainconfig
+	"" = "";
+
