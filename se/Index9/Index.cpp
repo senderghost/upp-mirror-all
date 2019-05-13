@@ -6,9 +6,9 @@ using namespace Upp;
 
 namespace New {
 
-int HashBase::empty[1] = { -1 };
+int IndexCommon::empty[1] = { -1 };
 
-HashBase::HashBase()
+IndexCommon::IndexCommon()
 {
 	hash = NULL;
 	map = empty;
@@ -16,25 +16,57 @@ HashBase::HashBase()
 	unlinked = -1;
 }
 
-HashBase::~HashBase()
+void IndexCommon::Pick(IndexCommon& b)
+{
+	hash = b.hash;
+	map = b.map;
+	mask = b.mask;
+	unlinked = b.unlinked;
+	
+	b.hash = NULL;
+	b.map = empty;
+	b.mask = 0;
+	b.unlinked = -1;
+}
+
+void IndexCommon::Copy(const IndexCommon& b, int count)
+{
+	memcpy(hash, b.hash, sizeof(Hash) * count);
+	mask = b.mask;
+	unlinked = b.unlinked;
+
+	FreeMap();
+	map = (int *)MemoryAlloc((mask + 1) * sizeof(int));
+	memcpy(map, b.map, (mask + 1) * sizeof(int));
+}
+
+void IndexCommon::Swap(IndexCommon& b)
+{
+	UPP::Swap(hash, b.hash);
+	UPP::Swap(map, b.map);
+	UPP::Swap(mask, b.mask);
+	UPP::Swap(unlinked, b.unlinked);
+}
+
+IndexCommon::~IndexCommon()
 {
 	Free();
 }
 
-void HashBase::FreeMap()
+void IndexCommon::FreeMap()
 {
 	if(map != empty)
 		MemoryFree(map);
 }
 
-void HashBase::Free()
+void IndexCommon::Free()
 {
 	if(hash)
 		MemoryFree(hash);
 	FreeMap();
 }
 
-void HashBase::Remap(int count)
+void IndexCommon::Remap(int count)
 {
 	Fill(map, map + mask + 1, -1);
 	for(int i = 0; i < count; i++) // todo: unlinked
@@ -42,14 +74,14 @@ void HashBase::Remap(int count)
 			Link(i, hash[i].hash);
 }
 
-void HashBase::Reindex(int count)
+void IndexCommon::Reindex(int count)
 {
 	FreeMap();
 	map = (int *)MemoryAlloc((mask + 1) * sizeof(int));
 	Remap(count);
 }
 
-void HashBase::Clear()
+void IndexCommon::Clear()
 {
 	Free();
 	hash = NULL;
@@ -58,14 +90,14 @@ void HashBase::Clear()
 	unlinked = -1;
 }
 
-void HashBase::GrowMap(int count)
+void IndexCommon::GrowMap(int count)
 {
 	LLOG("== GrowMap");
 	mask = (mask << 1) | 3;
 	Reindex(count);
 }
 
-Vector<int> HashBase::GetUnlinked() const
+Vector<int> IndexCommon::GetUnlinked() const
 {
 	Vector<int> r;
 	int i = unlinked;
@@ -79,7 +111,7 @@ Vector<int> HashBase::GetUnlinked() const
 	return r;
 }
 
-void HashBase::AdjustMap(int count, int alloc)
+void IndexCommon::AdjustMap(int count, int alloc)
 {
 	dword msk = 0;
 	while(msk < (dword)alloc)
@@ -90,7 +122,13 @@ void HashBase::AdjustMap(int count, int alloc)
 	}
 }
 
-void HashBase::Trim(int n, int count)
+void IndexCommon::MakeMap(int count)
+{
+	mask = 0;
+	AdjustMap(count, count);
+}
+
+void IndexCommon::Trim(int n, int count)
 {
 	if(n == 0) {
 		int n = (int)(mask + 1);
@@ -109,7 +147,7 @@ void HashBase::Trim(int n, int count)
 	}
 }
 
-void HashBase::Sweep(int n)
+void IndexCommon::Sweep(int n)
 {
 	int ti = 0;
 	for(int i = 0; i < n; i++)

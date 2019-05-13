@@ -1,7 +1,7 @@
 namespace New {
 
 force_inline
-void HashBase::Link(int& m, Hash& hh, int ii)
+void IndexCommon::Link(int& m, Hash& hh, int ii)
 {
 	if(m < 0)
 		m = hh.prev = hh.next = ii;
@@ -14,13 +14,13 @@ void HashBase::Link(int& m, Hash& hh, int ii)
 }
 
 force_inline
-void HashBase::Link(int ii, dword sh)
+void IndexCommon::Link(int ii, dword sh)
 {
 	Link(map[sh & mask], hash[ii], ii);
 }
 
 force_inline
-void HashBase::Del(int& m, Hash& hh, int ii)
+void IndexCommon::Del(int& m, Hash& hh, int ii)
 { // unlink from m
 	if(ii == m) { // this is item pointed by map
 		if(hh.next == ii) { // this is the only item in the bucket
@@ -50,6 +50,17 @@ void Index<T>::ReallocHash()
 		MemoryFree(hash);
 		hash = NULL;
 	}
+}
+
+template <typename T>
+never_inline
+void Index<T>::FixHash()
+{
+	ReallocHash();
+	unlinked = -1;
+	for(int i = 0; i < key.GetCount(); i++)
+		hash[i].hash = Smear(key[i]);
+	MakeMap(key.GetCount());
 }
 
 template <typename T>
@@ -134,7 +145,7 @@ int Index<T>::FindLast(const T& k) const
 {
 	dword sh = Smear(k);
 	int& m = map[sh & mask];
-	return m < 0 ? -1 : FindBack(hash[m].prev, sh, k, m);
+	return m < 0 ? -1 : FindBack(hash[m].prev, sh, k, hash[m].prev);
 }
 
 template <class T>
@@ -142,7 +153,7 @@ int Index<T>::FindPrev(int i) const
 {
 	const Hash& hh = hash[i];
 	int end = map[hash[i].hash & mask];
-	return hh.prev == hash[end].prev ? -1 : FindBack(hh.prev, hh.hash, key[i], end);
+	return hh.prev == hash[end].prev ? -1 : FindBack(hh.prev, hh.hash, key[i], hash[end].prev);
 }
 
 template <class T>
@@ -201,9 +212,9 @@ void Index<T>::UnlinkKey(const T& k)
 }
 
 template <typename T>
-int Index<T>::Put(const T& k)
+template <typename U>
+int Index<T>::Put0(U&& k, dword sh)
 {
-	dword sh = Smear(k);
 	int i;
 	if(HasUnlinked()) {
 		i = hash[unlinked].prev;
@@ -211,17 +222,35 @@ int Index<T>::Put(const T& k)
 		Del(unlinked, hh, i);
 		Link(map[sh & mask], hh, i);
 		hh.hash = sh;
-		key[i] = k;
+		key[i] = std::forward<U>(k);
 	}
 	else {
 		i = GetCount();
-		AddS(k, sh);
+		AddS(std::forward<U>(k), sh);
 	}
 	return i;
 }
 
+template <class T>
+template <class U>
+force_inline
+int Index<T>::FindPut0(U&& k) {
+	dword sh = Smear(k);
+	int& m = map[sh & mask];
+	int i = m;
+	if(i >= 0)
+		do {
+			if(key[i] == k)
+				return i;
+			i = hash[i].next;
+		}
+		while(i != m);
+	return Put0(std::forward<U>(k), sh);
+}
+
 template <typename T>
-void Index<T>::Set(int ii, const T& k)
+template <typename U>
+void Index<T>::Set0(int ii, U&& k)
 {
 	Hash& hh = hash[ii];
 	if(IsUnlinked(ii))
@@ -232,7 +261,7 @@ void Index<T>::Set(int ii, const T& k)
 	dword sh = Smear(k);
 	hh.hash = sh;
 	Link(map[sh & mask], hh, ii);
-	key[ii] = k;
+	key[ii] = std::forward<U>(k);
 }
 
 template <typename T>
@@ -241,7 +270,7 @@ void Index<T>::Sweep()
 {
 	int n = key.GetCount();
 	key.RemoveIf([&](int i) { return hash[i].hash == 0; });
-	HashBase::Sweep(n);
+	IndexCommon::Sweep(n);
 }
 
 template <typename T>
@@ -269,7 +298,52 @@ void Index<T>::Shrink()
 }
 
 template <typename T>
+never_inline
+void Index<T>::Serialize(Stream& s)
+{
+	key.Serialize(s);
+	if(s.IsLoading())
+		FixHash();
+
+	int version = 1;
+	s / version;
+	if(version == 0) { // support previous version
+		Vector<unsigned> h;
+		h.Serialize(s);
+		if(s.IsLoading())
+			for(int i = 0; i < h.GetCount(); i++)
+				if(h[i] & 0x80000000)
+					Unlink(i);
+	}
+	else {
+		Vector<int> u = GetUnlinked();
+		u.Serialize(s);
+		if(s.IsLoading())
+			for(int i : ReverseRange(u)) // Reverse range to ensure the correct order of Put
+				Unlink(i);
+	}
+}
+
+template <class T>
+void Index<T>::Xmlize(XmlIO& xio, const char *itemtag)
+{
+	XmlizeIndex<T, Index<T> >(xio, itemtag, *this);
+}
+
+template <class T>
+void Index<T>::Jsonize(JsonIO& jio)
+{
+	JsonizeIndex<Index<T>, T>(jio, *this);
+}
+
+template <class T>
 String Index<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
+template <typename T>
+String Index<T>::Dump() const
 {
 	String h;
 	for(int i = 0; i < key.GetCount(); i++) {
@@ -277,7 +351,7 @@ String Index<T>::ToString() const
 			h << "; ";
 		if(IsUnlinked(i))
 			h << "#";
-		h << i << ": " << key[i] << '/' << (hash[i].hash & 255) << " -> " << hash[i].prev << ":" << hash[i].next;
+		h << i << ": " << key[i] << '/' << (hash[i].hash & mask) << " -> " << hash[i].prev << ":" << hash[i].next;
 	}
 	return h;
 }
