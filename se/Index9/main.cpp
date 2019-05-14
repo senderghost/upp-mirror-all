@@ -1,6 +1,6 @@
-#include "Index.h"
+#include <Core/Core.h>
 
-#include <set>
+using namespace Upp;
 
 template <class T>
 void Check(const Index<T>& x, bool ordered = false)
@@ -55,8 +55,13 @@ void CheckIn(const Index<int>& x, int v, int ii)
 void RealBenchmark();
 void RealBenchmarkCollisions();
 
+#ifdef _DEBUG
 #define TEST(op, result) { op; String s = x.Dump(); LOG("TEST(" << #op << ", " << AsCString(s) << ");"); if(*result) ASSERT(s == result); Check(x); }
 #define UTST(result)     { String s = AsString(x.GetUnlinked()); LOG("UTST(" << AsCString(s) << ");"); if(*result) ASSERT(s == result); }
+#else
+#define TEST(op, result)
+#define UTST(result)
+#endif
 
 void PickTests()
 {
@@ -318,7 +323,6 @@ CONSOLE_APP_MAIN
 	RDUMP(sizeof(VectorMap<String, int>));
 	RDUMP(sizeof(Index<int>));
 	RDUMP(sizeof(VectorMap<String, int>));
-	RDUMP(sizeof(std::set<int>));
 
 #ifndef _DEBUG
 	RealBenchmark();

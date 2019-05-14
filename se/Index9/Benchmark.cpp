@@ -1,4 +1,6 @@
-#include "Index.h"
+#include <Core/Core.h>
+
+using namespace Upp;
 
 String data = LoadFile("C:/u/upp.src/benchmarks/idmapBench/alice30.txt");
 
@@ -75,32 +77,17 @@ void RealBenchmark()
 	StdLogSetup(LOG_FILE|LOG_COUT);
 
 	const int N = 10000;
-	int bh = hash_const1;
-
-#if 0
-	for(;;) {
-		dword th = Random();
-		NumberInfo(th);
-#else
-	int th = 0;
 	{
-#endif
-		{
-			TimeStop tm;
-			hash_const1 = th;
-			for(int i = 0; i < N; i++)
-				RealBenchmarkT<VectorMap<String, int>>();
-			hash_const1 = bh;
-			RLOG("New " << tm);
-		}
-		{
-			TimeStop tm;
-			hash_const1 = th;
-			for(int i = 0; i < N; i++)
-				RealBenchmarkT<VectorMap<String, int>>();
-			hash_const1 = bh;
-			RLOG("Old " << tm);
-		}
+		TimeStop tm;
+		for(int i = 0; i < N; i++)
+			RealBenchmarkT<VectorMap<String, int>>();
+		RLOG("New " << tm);
+	}
+	{
+		TimeStop tm;
+		for(int i = 0; i < N; i++)
+			RealBenchmarkT<VectorMap<String, int>>();
+		RLOG("Old " << tm);
 	}
 #endif
 }

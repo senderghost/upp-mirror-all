@@ -3,9 +3,6 @@ uses
 
 file
 	info.txt,
-	Index.h,
-	Index.hpp,
-	Index.cpp,
 	Benchmark.cpp,
 	main.cpp,
 	test.txt,
