@@ -63,14 +63,14 @@ int find_counter, loop_counter;
 
 void RealBenchmarkCollisions()
 {
-	RealBenchmarkT<New::VectorMap<String, int>>();
+	RealBenchmarkT<VectorMap<String, int>>();
 	DUMP(find_counter);
 	DUMP(loop_counter);
 }
 
 void RealBenchmark()
 {
-	RealBenchmarkT<New::VectorMap<String, int>>();
+	RealBenchmarkT<VectorMap<String, int>>();
 #ifndef _DEBUG
 	StdLogSetup(LOG_FILE|LOG_COUT);
 
@@ -89,7 +89,7 @@ void RealBenchmark()
 			TimeStop tm;
 			hash_const1 = th;
 			for(int i = 0; i < N; i++)
-				RealBenchmarkT<New::VectorMap<String, int>>();
+				RealBenchmarkT<VectorMap<String, int>>();
 			hash_const1 = bh;
 			RLOG("New " << tm);
 		}
@@ -119,7 +119,7 @@ void Benchmark()
 	int rep = max(100000000 / N, 1);
 	for(int n = 0; n < rep; n++) {
 		{
-			New::Index<int> test;
+			Index<int> test;
 			{
 				RTIMING("New int add");
 				for(int i = 0; i < N; i++) {
@@ -167,7 +167,7 @@ void Benchmark()
 			}
 		}
 		{
-			New::Index<String> test;
+			Index<String> test;
 			{
 				RTIMING("New string add");
 				for(int i = 0; i < N; i++) {

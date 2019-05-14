@@ -3,7 +3,7 @@
 #include <set>
 
 template <class T>
-void Check(const New::Index<T>& x, bool ordered = false)
+void Check(const Index<T>& x, bool ordered = false)
 {
 	int un = 0;
 	Vector<int> uns = x.GetUnlinked();
@@ -44,7 +44,7 @@ void Check(const New::Index<T>& x, bool ordered = false)
 	ASSERT(un == uns.GetCount());
 }
 
-void CheckIn(const New::Index<int>& x, int v, int ii)
+void CheckIn(const Index<int>& x, int v, int ii)
 {
 	for(int q = x.Find(v); q >= 0; q = x.FindNext(q))
 		if(q == ii)
@@ -60,7 +60,7 @@ void RealBenchmarkCollisions();
 
 void PickTests()
 {
-	New::Index<String> x;
+	Index<String> x;
 	LOG("------------- PICK TESTS");
 	String h = "Hello!";
 	x.Add(h);
@@ -103,7 +103,7 @@ void PickTests()
 
 void BasicTests()
 {
-	New::Index<int> x;
+	Index<int> x;
 	LOG("=========== ADD");
 	TEST(x.Add(0), "0: 0/0 -> 0:0");
 	TEST(x.Add(0), "0: 0/0 -> 1:1; 1: 0/0 -> 0:0");
@@ -190,23 +190,30 @@ void BasicTests()
 	String s = StoreAsXML(x);
 	LOG(s);
 	{
-		New::Index<int> x;
+		Index<int> x;
 		TEST(LoadFromXML(x, s), "0: 1/3 -> 0:0; 1: 3/2 -> 1:1; 2: 4/1 -> 2:2");
 	}
 
 	s = StoreAsJson(x);
 	LOG(s);
 	{
-		New::Index<int> x;
+		Index<int> x;
 		TEST(LoadFromJson(x, s), "0: 1/3 -> 0:0; 1: 3/2 -> 1:1; 2: 4/1 -> 2:2");
 	}
 	
 	LOG("============== Pick & Clone");
 
 	{
-		New::Index<int> x2(clone(x));
-		TEST(New::Index<int> x(clone(x2)), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
-		TEST(New::Index<int> x(pick(x2)), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
+		Index<int> x2(clone(x));
+		TEST(Index<int> x(clone(x2)), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
+		TEST(Index<int> x(pick(x2)), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
+		ASSERT(x2.GetCount() == 0);
+	}
+
+	{
+		Index<int> x2(clone(x));
+		TEST(x = clone(x2), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
+		TEST(x = pick(x2), "0: 1/3 -> 0:0; #1: 2/0 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
 		ASSERT(x2.GetCount() == 0);
 	}
 
@@ -218,12 +225,12 @@ void BasicTests()
 	ASSERT(h.GetCount() == 0);
 
 	Vector<int> h2{ 21, 22, 23 };
-	TEST(New::Index<int> x(clone(h2)), "0: 21/2 -> 1:1; 1: 22/2 -> 0:0; 2: 23/1 -> 2:2");
-	TEST(New::Index<int> x(pick(h2)), "0: 21/2 -> 1:1; 1: 22/2 -> 0:0; 2: 23/1 -> 2:2");
+	TEST(Index<int> x(clone(h2)), "0: 21/2 -> 1:1; 1: 22/2 -> 0:0; 2: 23/1 -> 2:2");
+	TEST(Index<int> x(pick(h2)), "0: 21/2 -> 1:1; 1: 22/2 -> 0:0; 2: 23/1 -> 2:2");
 	ASSERT(h2.GetCount() == 0);
 
 	{
-		New::Index<int> x{1, 2, 3};
+		Index<int> x{1, 2, 3};
 		TEST(x, "0: 1/3 -> 0:0; 1: 2/2 -> 2:2; 2: 3/2 -> 1:1");
 	}
 	
@@ -232,7 +239,7 @@ void BasicTests()
 	ASSERT(x.ToString() == "[12, 13, 14, 15]");
 
 	LOG("============== SWAP");
-	New::Index<int> x2{ 1, 2, 3, 4 };
+	Index<int> x2{ 1, 2, 3, 4 };
 	TEST(Swap(x, x2), "0: 1/3 -> 0:0; 1: 2/6 -> 1:1; 2: 3/2 -> 2:2; 3: 4/5 -> 3:3");
 	TEST(Swap(x, x2), "0: 12/0 -> 0:0; 1: 13/3 -> 1:1; 2: 14/7 -> 2:2; 3: 15/2 -> 3:3");
 	
@@ -244,7 +251,7 @@ void BasicTests()
 void CarpetBombing()
 {
 	SeedRandom(0);
-	New::Index<int> x;
+	Index<int> x;
 
 	int Q = 20;
 	int COUNT = 10000000;
@@ -307,8 +314,8 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
 
-	RDUMP(sizeof(New::Index<int>));
-	RDUMP(sizeof(New::VectorMap<String, int>));
+	RDUMP(sizeof(Index<int>));
+	RDUMP(sizeof(VectorMap<String, int>));
 	RDUMP(sizeof(Index<int>));
 	RDUMP(sizeof(VectorMap<String, int>));
 	RDUMP(sizeof(std::set<int>));
