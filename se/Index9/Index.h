@@ -166,6 +166,7 @@ public:
 	friend void Swap(Index& a, Index& b)                    { a.IndexCommon::Swap(b); UPP::Swap(a.key, b.key); }
 
 // deprecated:
+#ifdef DEPRECATED
 	T&       Insert(int i, const T& k)                      { key.Insert(i, k); FixHash(); return key[i]; }
 	void     Remove(int i, int count)                       { key.Remove(i, count); FixHash(); }
 	void     Remove(int i)                                  { Remove(i, 1); }
@@ -175,11 +176,31 @@ public:
 
 	unsigned GetHash(int i) const                           { return hash[i]; }
 
+	Index& operator<<=(const Vector<T>& s)                { *this = clone(s); return *this; }
+	typedef T                ValueType;
+	typedef Vector<T>        ValueContainer;
+	ConstIterator  GetIter(int pos) const                 { return key.GetIter(pos); }
+
+	void     ClearIndex()                    { hash.ClearIndex(); }
+	void     Reindex(int n)                  { hash.Reindex(n); }
+	void     Reindex()                       { hash.Reindex(); }
+
+	typedef T             value_type;
+	typedef ConstIterator const_iterator;
+	typedef const T&      const_reference;
+	typedef int           size_type;
+	typedef int           difference_type;
+	const_iterator        Begin() const          { return begin(); }
+	const_iterator        End() const            { return end(); }
+	void                  clear()                { Clear(); }
+	size_type             size()                 { return GetCount(); }
+	bool                  empty() const          { return IsEmpty(); }
+#endif
+
 #ifdef _DEBUG
 	String Dump() const;
 #endif
 };
-
 
 template <class K, class T>
 class VectorMap {
