@@ -350,6 +350,7 @@ class JsonIO;
 #include "Win32Util.h"
 
 #include "Vcont.hpp"
+#include "Index.hpp"
 #include "Map.hpp"
 #include "InVector.hpp"
 #include "InMap.hpp"
