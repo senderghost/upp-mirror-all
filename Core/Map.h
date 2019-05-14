@@ -55,10 +55,8 @@ public:
 	T&       Add(K&& k, T&& x)                      { key.Add(pick(k)); return value.Add(pick(x)); }
 	T&       Add(K&& k)                             { key.Add(pick(k)); return value.Add(); }
 
-	int      Find(const K& k, unsigned h) const     { return key.Find(k, h); }
 	int      Find(const K& k) const                 { return key.Find(k); }
 	int      FindNext(int i) const                  { return key.FindNext(i); }
-	int      FindLast(const K& k, unsigned h) const { return key.FindLast(k, h); }
 	int      FindLast(const K& k) const             { return key.FindLast(k); }
 	int      FindPrev(int i) const                  { return key.FindPrev(i); }
 

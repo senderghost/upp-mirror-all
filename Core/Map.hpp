@@ -17,7 +17,7 @@ template <class K, class T, class V>
 template <class KK>
 T&  AMap<K, T, V>::Put_(KK&& k)
 {
-	int i = key.Put(std::forward(k));
+	int i = key.Put(std::forward<KK>(k));
 	if(i < value.GetCount()) {
 		Destroy(&value[i], &value[i] + 1);
 		Construct(&value[i], &value[i] + 1);
