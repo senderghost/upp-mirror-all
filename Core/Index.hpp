@@ -340,6 +340,7 @@ String Index<T>::ToString() const
 	return AsStringArray(*this);
 }
 
+#ifdef _DEBUG
 template <typename T>
 String Index<T>::Dump() const
 {
@@ -353,3 +354,4 @@ String Index<T>::Dump() const
 	}
 	return h;
 }
+#endif
