@@ -60,8 +60,13 @@ void CheckIn(const Index<int>& x, int v, int ii)
 #define UTST(result)
 #endif
 
-void PickTests()
+CONSOLE_APP_MAIN
 {
+	StdLogSetup(LOG_FILE|LOG_COUT);
+
+	RDUMP(sizeof(Index<int>));
+	RDUMP(sizeof(VectorMap<String, int>));
+
 	LOG("=============== Add");
 	{
 		String k = "A"; String v = "B";
@@ -253,51 +258,195 @@ void PickTests()
 		ASSERT(x.FindNext(0) == 1);
 		ASSERT(x.FindNext(1) == -1);
 	}
+	{
+		String k = "A";
+		VectorMap<String, String> x;
+		x.Add("", "x");
+		x.Unlink(0);
+		TEST(x.PutDefault(k), "{A: }");
+		ASSERT(!IsNull(k));
+		TEST(x.PutDefault(pick(k)), "{A: , A: }");
+		ASSERT(IsNull(k));
+	}
 
-
-	
-#if 0
-	int      PutDefault(const K& k)                 { return PutDefault_(k); }
-	int      PutDefault(K&& k)                      { return PutDefault_(pick(k)); }
-
-	int      FindPut(const K& k)                    { return FindPut_(k); }
-	int      FindPut(const K& k, const T& init)     { return FindPut_(k, init); }
-	int      FindPut(const K& k, T&& init)          { return FindPut_(k, pick(init)); }
-	int      FindPut(K&& k)                         { return FindPut_(pick(k)); }
-	int      FindPut(K&& k, const T& init)          { return FindPut_(pick(k), init); }
-	int      FindPut(K&& k, T&& init)               { return FindPut_(pick(k), pick(init)); }
-
-	T&       Get(const K& k)                        { return value[Find(k)]; }
-	const T& Get(const K& k) const                  { return value[Find(k)]; }
-	const T& Get(const K& k, const T& d) const      { int i = Find(k); return i >= 0 ? value[i] : d; }
-
-	T&       GetAdd(const K& k)                     { return GetAdd_(k); }
-	T&       GetAdd(const K& k, const T& x)         { return GetAdd_(k, x); }
-	T&       GetAdd(const K& k, T&& x)              { return GetAdd_(k, pick(x)); }
-	T&       GetAdd(K&& k)                          { return GetAdd_(pick(k)); }
-	T&       GetAdd(K&& k, const T& x)              { return GetAdd_(pick(k), x); }
-	T&       GetAdd(K&& k, T&& x)                   { return GetAdd_(pick(k), pick(x)); }
-
-	T&       GetPut(const K& k)                     { return GetPut_(k); }
-	T&       GetPut(const K& k, const T& x)         { return GetPut_(k, x); }
-	T&       GetPut(const K& k, T&& x)              { return GetPut_(k, pick(x)); }
-	T&       GetPut(K&& k)                          { return GetPut_(pick(k)); }
-	T&       GetPut(K&& k, const T& x)              { return GetPut_(pick(k), x); }
-	T&       GetPut(K&& k, T&& x)                   { return GetPut_(pick(k), pick(x)); }
-
-	void     SetKey(int i, const K& k)              { key.Set(i, k); }
-	void     SetKey(int i, K&& k)                   { key.Set(i, pick(k)); }
-#endif
-}
-CONSOLE_APP_MAIN
-{
-	StdLogSetup(LOG_FILE|LOG_COUT);
-
-	RDUMP(sizeof(Index<int>));
-	RDUMP(sizeof(VectorMap<String, int>));
-
-//	RealBenchmarkCollisions();
-	PickTests();
+	LOG("================= FINDPUT");
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		x.Add("1", "1");
+		x.Unlink(0);
+		TEST(ASSERT(x.FindPut(k) == 0), "{A: }");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+		TEST(ASSERT(x.FindPut(k) == 0), "{A: }");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+		TEST(ASSERT(x.FindPut("2") == 1), "{A: , 2: }");
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.FindPut(k, v) == 0), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.FindPut(k, pick(v)) == 0), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.FindPut(pick(k)) == 0), "{A: }");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.FindPut(pick(k), v) == 0), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.FindPut(pick(k), pick(v)) == 0), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	LOG("================= GET");
+	{
+		VectorMap<String, String> x{ { "A", "B" } };
+		TEST(x, "{A: B}");
+		ASSERT(x.Get("A") == "B");
+		ASSERT(x.Get("x", "y") == "y");
+	}
+	LOG("================= GETADD");
+	{
+		VectorMap<String, String> x;
+		TEST(x.GetAdd("A") = "1", "{A: 1}");
+		TEST(x.GetAdd("A") == "1", "{A: 1}");
+		TEST(x.GetAdd("B") = "2", "{A: 1, B: 2}");
+		TEST(x.GetAdd("B") == "2", "{A: 1, B: 2}");
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(x.GetAdd(k) = "B", "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetAdd(k, v) == "B"), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetAdd(k, pick(v)) == "B"), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(x.GetAdd(pick(k)) = "B", "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetAdd(pick(k), v) == "B"), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetAdd(pick(k), pick(v)) == "B"), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	LOG("================= GETPUT");
+	{
+		VectorMap<String, String> x;
+		x.Add("", "");
+		x.Unlink(0);
+		TEST(x.GetPut("A") = "1", "{A: 1}");
+		TEST(x.GetPut("A") == "1", "{A: 1}");
+		TEST(x.GetPut("B") = "2", "{A: 1, B: 2}");
+		TEST(x.GetPut("B") == "2", "{A: 1, B: 2}");
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(x.GetPut(k) = "B", "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetPut(k, v) == "B"), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetPut(k, pick(v)) == "B"), "{A: B}");
+		ASSERT(!IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(x.GetPut(pick(k)) = "B", "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetPut(pick(k), v) == "B"), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(!IsNull(v));
+	}
+	{
+		String k = "A"; String v = "B";
+		VectorMap<String, String> x;
+		TEST(ASSERT(x.GetPut(pick(k), pick(v)) == "B"), "{A: B}");
+		ASSERT(IsNull(k));
+		ASSERT(IsNull(v));
+	}
+	LOG("================= PICK(MAP)");
+	{
+		VectorMap<String, String> map, map2;
+		map.Add("Test1", "Test2");
+		map2 = pick(map);
+		map.Add("Test3", "Test4");
+		map2 = pick(map);
+	}
+	LOG("================= SETKEY");
+	{
+		VectorMap<String, String> x;
+		x.Add("A", "1");
+		x.Add("B", "2");
+		x.Unlink(0);
+		String k = "X";
+		TEST(x.SetKey(0, k), "");
+		ASSERT(!IsNull(k));
+		TEST(x.SetKey(1, pick(k)), "");
+		ASSERT(IsNull(k));
+	}
 
 	LOG("================= OK");
 }
