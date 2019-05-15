@@ -60,7 +60,7 @@ class Index : MoveableAndDeepCopyOption<Index<T>, IndexCommon> {
 	int  FindBack(int i, dword sh, const T& k, int end) const;
 
 
-	void ReallocHash();
+	void ReallocHash(int n);
 	template <typename U> void GrowAdd(U&& k, dword sh);
 	template <typename U> void AddS(int& m, U&& k, dword sh);
 	template <typename U> void AddS(U&& k, dword sh);
@@ -95,7 +95,7 @@ public:
 	int         FindPut(T&& k)              { return FindPut0(pick(k)); }
 
 	void        Unlink(int i);
-	void        UnlinkKey(const T& k);
+	int         UnlinkKey(const T& k);
 	bool        IsUnlinked(int i) const      { return hash[i].hash == 0; }
 	bool        HasUnlinked() const          { return unlinked >= 0; }
 	Vector<int> GetUnlinked() const          { return IndexCommon::GetUnlinked(); }
@@ -125,7 +125,7 @@ public:
 	
 	Index()                                                 {}
 	Index(Index&& s) : key(pick(s.key))                     { IndexCommon::Pick(s); }
-	Index(const Index& s, int) : key(s.key, 0)              { ReallocHash(); IndexCommon::Copy(s, key.GetCount()); }
+	Index(const Index& s, int) : key(s.key, 0)              { ReallocHash(0); IndexCommon::Copy(s, key.GetCount()); }
 	explicit Index(Vector<T>&& s) : key(pick(s))            { FixHash(); }
 	Index(const Vector<T>& s, int) : key(s, 0)              { FixHash(); }
 
@@ -160,7 +160,7 @@ public:
 	void     Remove(int i)                                  { Remove(i, 1); }
 	void     Remove(const int *sorted_list, int count)      { key.Remove(sorted_list, count); FixHash(); }
 	void     Remove(const Vector<int>& sorted_list)         { key.Remove(sorted_list); FixHash(); }
-	int      RemoveKey(const T& k)                          { UnlinkKey(k); Sweep(); }
+	int      RemoveKey(const T& k)                          { int i = Find(k); if(i >= 0) Remove(i); return i; }
 
 	unsigned GetHash(int i) const                           { return hash[i]; }
 

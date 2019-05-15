@@ -33,13 +33,13 @@ void IndexCommon::Del(int& m, Hash& hh, int ii)
 
 template <typename T>
 never_inline
-void Index<T>::ReallocHash()
-{
-	int n = key.GetCount();
+void Index<T>::ReallocHash(int n)
+{ // realloc hash to have the same capacity as key, copy n elements from previous alloc
 	if(key.GetAlloc()) {
 		Hash *h = (Hash *)MemoryAlloc(key.GetAlloc() * sizeof(Hash));
 		if(hash) {
-			memcpy(h, hash, sizeof(Hash) * n);
+			if(n)
+				memcpy(h, hash, sizeof(Hash) * n);
 			MemoryFree(hash);
 		}
 		hash = h;
@@ -54,7 +54,7 @@ template <typename T>
 never_inline
 void Index<T>::FixHash()
 {
-	ReallocHash();
+	ReallocHash(0);
 	unlinked = -1;
 	for(int i = 0; i < key.GetCount(); i++)
 		hash[i].hash = Smear(key[i]);
@@ -66,8 +66,9 @@ template <typename U>
 never_inline
 void Index<T>::GrowAdd(U&& k, dword sh)
 {
+	int n = key.GetCount();
 	key.GrowAdd(std::forward<U>(k));
-	ReallocHash();
+	ReallocHash(n);
 }
 
 template <typename T>
@@ -184,11 +185,12 @@ void Index<T>::Unlink(int ii)
 }
 
 template <typename T>
-void Index<T>::UnlinkKey(const T& k)
+int Index<T>::UnlinkKey(const T& k)
 {
 	dword sh = Smear(k);
 	int& m = map[sh & mask];
 	int i = m;
+	int n = 0;
 	if(i >= 0)
 		for(;;) {
 			Hash& hh = hash[i];
@@ -196,6 +198,7 @@ void Index<T>::UnlinkKey(const T& k)
 			if(key[i] == k) {
 				Del(m, hh, i);
 				Link(unlinked, hh, i);
+				n++;
 				hh.hash = 0;
 				if(ni == i) // last item removed
 					break;
@@ -207,6 +210,7 @@ void Index<T>::UnlinkKey(const T& k)
 					break;
 			}
 		}
+	return n;
 }
 
 template <typename T>
@@ -278,7 +282,7 @@ void Index<T>::Reserve(int n)
 	int a = key.GetAlloc();
 	key.Reserve(n);
 	if(a != key.GetAlloc()) {
-		ReallocHash();
+		ReallocHash(key.GetCount());
 		AdjustMap(key.GetCount(), n);
 	}
 }
@@ -290,7 +294,7 @@ void Index<T>::Shrink()
 	int a = key.GetAlloc();
 	key.Shrink();
 	if(a != key.GetAlloc()) {
-		ReallocHash();
+		ReallocHash(key.GetCount());
 		AdjustMap(key.GetCount(), key.GetCount());
 	}
 }

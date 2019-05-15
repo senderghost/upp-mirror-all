@@ -14,6 +14,8 @@ IndexCommon::IndexCommon()
 
 void IndexCommon::Pick(IndexCommon& b)
 {
+	Free();
+
 	hash = b.hash;
 	map = b.map;
 	mask = b.mask;

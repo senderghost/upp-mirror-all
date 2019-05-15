@@ -66,6 +66,10 @@ int AMap<K, T, V>::FindPut_(KK&& k)
 	int i = key.FindPut(std::forward<KK>(k));
 	if(i >= value.GetCount())
 		value.Add();
+	else {
+		Destroy(&value[i], &value[i] + 1);
+		Construct(&value[i], &value[i] + 1);
+	}
 	return i;
 }
 
@@ -75,7 +79,7 @@ int AMap<K, T, V>::FindPut_(KK&& k, TT&& init)
 {
 	int i = key.FindPut(std::forward<KK>(k));
 	if(i >= value.GetCount())
-		value.Add(std::forward<TT>(k));
+		value.Add(std::forward<TT>(init));
 	return i;
 }
 
@@ -95,14 +99,18 @@ T&  AMap<K, T, V>::GetAdd_(KK&& k, TT&& x)
 
 template <class K, class T, class V>
 template <class KK>
-T&  AMap<K, T, V>::GetPut_(KK&& k) {
-	return value[FindPut(std::forward<KK>(k))];
+T&  AMap<K, T, V>::GetPut_(KK&& k)
+{
+	int i = key.FindPut(std::forward<KK>(k));
+	return i < value.GetCount() ? value[i] : value.Add();
 }
 
 template <class K, class T, class V>
 template <class KK, class TT>
-T&  AMap<K, T, V>::GetPut_(KK&& k, TT&& x) {
-	return value[FindPut(std::forward<KK>(k), std::forward<TT>(x))];
+T&  AMap<K, T, V>::GetPut_(KK&& k, TT&& x)
+{
+	int i = key.FindPut(std::forward<KK>(k));
+	return i < value.GetCount() ? value[i] : value.Add(std::forward<TT>(x));
 }
 
 template <class K, class T, class V>
