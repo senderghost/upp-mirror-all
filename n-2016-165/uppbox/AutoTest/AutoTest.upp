@@ -1,0 +1,12 @@
+uses
+	Core,
+	Core/SMTP,
+	Core/SSL;
+
+file
+	AutoTest.upp,
+	AutoTest.cpp;
+
+mainconfig
+	"" = "";
+
