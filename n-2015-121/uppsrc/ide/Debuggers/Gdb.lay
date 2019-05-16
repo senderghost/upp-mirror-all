@@ -1,0 +1,7 @@
+LAYOUT(QuickwatchLayout, 400, 200)
+	ITEM(WithDropChoice<EditString>, expression, HSizePosZ(4, 72).TopPosZ(4, 19))
+	ITEM(Button, ok, SetLabel(t_("Evaluate")).RightPosZ(4, 64).TopPosZ(4, 20))
+	ITEM(LineEdit, value, HSizePosZ(4, 4).VSizePosZ(28, 4))
+	ITEM(Button, cancel, RightPosZ(4, 28).BottomPosZ(-32, 16))
+END_LAYOUT
+
