@@ -85,9 +85,7 @@ void *MemoryAlloc(size_t size)
 {
 	if(PanicMode)
 		return malloc(size);
-#ifdef _MULTITHREADED
 	sHeapLock2.Enter();
-#endif
 	static dword serial_number = 0;
 	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc_(sizeof(DbgBlkHeader) + size + sizeof(dword));
 #if (defined(TESTLEAKS) || defined(HEAPDBG)) && defined(COMPILER_GCC) && defined(UPP_HEAP)
@@ -100,9 +98,7 @@ void *MemoryAlloc(size_t size)
 		__BREAK__;
 	dbg_live.Insert(p);
 	Poke32le((byte *)(p + 1) + p->size, p->serial);
-#ifdef _MULTITHREADED
 	sHeapLock2.Leave();
-#endif
 #ifdef LOGAF
 	char h[200];
 	sprintf(h, "ALLOCATED %d at %p - %p", size, p + 1, (byte *)(p + 1) + size);
@@ -129,9 +125,7 @@ void MemoryFree(void *ptr)
 	if(PanicMode)
 		return;
 	if(!ptr) return;
-#ifdef _MULTITHREADED
 	Mutex::Lock __(sHeapLock2);
-#endif
 	DbgBlkHeader *p = (DbgBlkHeader *)ptr - 1;
 	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
 		sHeapLock2.Leave();

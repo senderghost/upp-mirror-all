@@ -30,7 +30,6 @@ void Heap::Init()
 	for(int i = 0; i < LBINS; i++)
 		freebin[i]->LinkSelf();
 	large->LinkSelf();
-	lcount = 0;
 	if(this != &aux && !aux.initialized) {
 		Mutex::Lock __(mutex);
 		aux.Init();
@@ -90,7 +89,7 @@ void Heap::Shutdown()
 		Header *bh = (Header *)((byte *)large->next + LARGEHDRSZ);
 		LLOG("Orphan large block " << (void *)large->next << " size: " << bh->size);
 		if(bh->size == MAXBLOCK && bh->IsFree())
-			MoveToEmpty(large->next, bh);
+			Free64KB(large->next, bh);
 		else
 			MoveLarge(&aux, large->next);
 	}

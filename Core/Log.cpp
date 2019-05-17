@@ -316,42 +316,28 @@ String AsString(const MemoryProfile& mem)
 	for(int i = 0; i < 1024; i++)
 		if(mem.allocated[i]) {
 			int sz = 4 * i;
-			text << Format("%4d B, %6d allocated (%5d KB), %6d fragmented (%5d KB)\n",
+			text << Format("%4d B, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
 			              sz, mem.allocated[i], (mem.allocated[i] * sz) >> 10,
-			              mem.fragmented[i], (mem.fragmented[i] * sz) >> 10);
+			              mem.fragments[i], (mem.fragments[i] * sz) >> 10);
 			acount += mem.allocated[i];
 			asize += mem.allocated[i] * sz;
-			fcount += mem.fragmented[i];
-			fsize += mem.fragmented[i] * sz;
+			fcount += mem.fragments[i];
+			fsize += mem.fragments[i] * sz;
 		}
-	text << Format(" TOTAL, %6d allocated (%5d KB), %6d fragmented (%5d KB)\n",
+	text << Format(" TOTAL, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
 	              acount, int(asize >> 10), fcount, int(fsize >> 10));
-	text << "Free 4KB pages " << mem.freepages << " (" << mem.freepages * 4 << " KB)\n";
+	text << "Empty 4KB pages " << mem.freepages << " (" << mem.freepages * 4 << " KB)\n";
 	text << "Large block count " << mem.large_count
 	     << ", total size " << (mem.large_total >> 10) << " KB\n";
-	text << "Large fragments count " << mem.large_free_count
-	     << ", total size " << (mem.large_free_total >> 10) << " KB\n";
-	text << "Large free 64KB pages " << mem.large_empty
-	     << ", total size " << 64 * mem.large_empty << " KB\n";
-	text << "Big block count " << mem.big_count
-	     << ", total size " << int(mem.big_size >> 10) << " KB\n";
+	text << "Large fragments count " << mem.large_fragments_count
+	     << ", total size " << (mem.large_fragments_total >> 10) << " KB\n";
+	text << "Huge block count " << mem.huge_count
+	     << ", total size " << int(mem.huge_total >> 10) << " KB\n";
+	text << "Sys block count " << mem.sys_count
+	     << ", total size " << int(mem.sys_total >> 10) << " KB\n";
+	text << "32MB master blocks " << mem.chunks32MB << "\n";
 #endif
 	return text;
-}
-
-int64 GetAllocatedBytes(const MemoryProfile& mem)
-{
-	int64 asize = 0;
-#ifdef UPP_HEAP
-	for(int i = 0; i < 1024; i++)
-		if(mem.allocated[i]) {
-			int sz = 4 * i;
-			asize += mem.allocated[i] * sz;
-		}
-	asize += mem.large_total;
-	asize += mem.big_size;
-#endif
-	return asize;
 }
 
 #ifdef flagCHECKINIT

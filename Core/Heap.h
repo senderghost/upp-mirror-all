@@ -27,14 +27,6 @@ void  MemoryBreakpoint(dword serial);
 void  MemoryInitDiagnostics();
 void  MemoryDumpLeaks();
 
-enum MemoryProbeFlags {
-	MEMORY_PROBE_FULL    = 1,
-	MEMORY_PROBE_FREE    = 2,
-	MEMORY_PROBE_MIXED   = 4,
-	MEMORY_PROBE_LARGE   = 8,
-	MEMORY_PROBE_SUMMARY = 16,
-};
-
 #ifdef HEAPDBG
 void  MemoryIgnoreLeaksBegin();
 void  MemoryIgnoreLeaksEnd();
@@ -48,18 +40,18 @@ inline void  MemoryCheckDebug() {}
 #endif
 
 struct MemoryProfile {
-	int    allocated[1024];
-	int    fragmented[1024];
-	int    freepages;
-	int    large_count;
-	size_t large_size[1024];
-	size_t large_total;
-	int    large_free_count;
-	size_t large_free_size[1024];
-	int    large_free_total;
-	int    large_empty;
-	int    big_count;
-	size_t big_size;
+	int    allocated[1024]; // active small blocks (index is size in bytes)
+	int    fragments[1024]; // unallocated small blocks (index is size in bytes)
+	int    freepages; // empty 4KB pages (can be recycled)
+	int    large_count; // count of large (~ 1 - 64KB) active blocks
+	size_t large_total; // ^ total size
+	int    large_fragments_count; // count of unused large blocks
+	int    large_fragments_total; // ^ total size
+	int    huge_count; // bigger blocks managed by U++ heap (<= 32MB)
+	size_t huge_total; // ^total size
+	int    sys_count; // blocks directly allocated from the system (>32MB
+	size_t sys_total; // ^total size
+	int    chunks32MB; // 32MB master blocks
 
 	MemoryProfile();
 };

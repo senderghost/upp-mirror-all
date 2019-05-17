@@ -12,8 +12,6 @@ word  Heap::BinSz[LBINS];
 byte  Heap::SzBin[MAXBLOCK / 8 + 1]; // Minimal bin for size (request -> bin)
 byte  Heap::BlBin[MAXBLOCK / 8 + 1]; // Largest bin less or equal to size (free -> bin)
 
-Heap::DLink Heap::lempty[1];
-
 const char *asString(int i)
 {
 	static thread_local char h[4][1024];
@@ -48,7 +46,6 @@ void Heap::GlobalLInit()
 		}
 		BlBin[0] = 0;
 		big->LinkSelf();
-		lempty->LinkSelf();
 	}
 }
 
@@ -58,36 +55,6 @@ void Heap::LinkFree(DLink *b, int size)
 	int q = BlBin[size >> 3];
 	b->Link(freebin[q]);
 	LLOG("Linked " << asString(size) << " to freebin " << asString(q));
-}
-
-Heap::DLink *Heap::AddChunk(int reqsize)
-{ // gets a free chunk, returns pointer to heap block
-	DLink *ml;
-	if(lempty->next != lempty) {
-		ml = lempty->next;
-		ml->Unlink();
-		LLOG("Retrieved empty large " << (void *)ml);
-	}
-	else {
-		ml = (DLink *)AllocRaw64KB(reqsize);
-		LLOG("AllocRaw64KB " << (void *)ml);
-	}
-	lcount++;
-	LLOG("lcount = " << lcount);
-	if(!ml) return NULL;
-	ml->Link(large);
-	Header *bh = (Header *)((byte *)ml + LARGEHDRSZ);
-	bh->size = MAXBLOCK;
-	bh->prev = 0;
-	bh->SetHeap(this, true);
-	DLink *b = bh->GetBlock();
-	LinkFree(b, MAXBLOCK);
-	DbgFreeFill(b + 1, MAXBLOCK - sizeof(DLink));
-	bh = bh->Next();
-	bh->prev = MAXBLOCK;
-	bh->size = 0;
-	bh->SetHeap(this, false);
-	return b;
 }
 
 inline
@@ -111,8 +78,7 @@ void *Heap::DivideBlock(DLink *b, int size)
 }
 
 void Heap::MoveLarge(Heap *dest, DLink *l)
-{ // move large block page (64KB) current heap (aux) to dest
-	dest->lcount++;
+{ // move large block page l (64KB) (always aux) to dest Heap
 	LLOG("Moving large " << (void *)l << " to " << (void *)dest << " lcount " << dest->lcount);
 	Mutex::Lock __(mutex);
 	l->Unlink();
@@ -127,17 +93,6 @@ void Heap::MoveLarge(Heap *dest, DLink *l)
 		}
 		h = h->Next();
 	}
-	aux.lcount = 10000;
-}
-
-void Heap::MoveToEmpty(DLink *l, Header *bh)
-{
-	LLOG("Moving empty large " << (void *)l << " to global empty storage, lcount " << lcount);
-	bh->GetBlock()->Unlink();
-	l->Unlink();
-	Mutex::Lock __(mutex);
-	l->Link(lempty);
-	aux.lcount = 10000;
 }
 
 inline
@@ -156,6 +111,31 @@ void *Heap::TryLAlloc(int ii, size_t size)
 	return NULL;
 }
 
+Heap::DLink *Heap::Add64KB()
+{ // gets a free chunk, returns pointer to heap block
+	DLink *ml;
+	{
+		Mutex::Lock __(mutex);
+		ml = (DLink *)HugeAlloc(16);
+		LLOG("HugeAlloc 64KB " << (void *)ml);
+		LLOG("lcount = " << lcount);
+	}
+	if(!ml) return NULL;
+	ml->Link(large);
+	Header *bh = (Header *)((byte *)ml + LARGEHDRSZ);
+	bh->size = MAXBLOCK;
+	bh->prev = 0;
+	bh->SetHeap(this, true);
+	DLink *b = bh->GetBlock();
+	LinkFree(b, MAXBLOCK);
+	DbgFreeFill(b + 1, MAXBLOCK - sizeof(DLink));
+	bh = bh->Next();
+	bh->prev = MAXBLOCK;
+	bh->size = 0;
+	bh->SetHeap(this, false);
+	return b;
+}
+
 void *Heap::LAlloc(size_t& size)
 { // allocate large or big block
 	LLOG("+++ LAlloc " << size);
@@ -164,12 +144,15 @@ void *Heap::LAlloc(size_t& size)
 		Init();
 	if(size > MAXBLOCK) { // big block allocation
 		Mutex::Lock __(mutex);
-		BigHdr *h = (BigHdr *)SysAllocRaw(size + BIGHDRSZ, size);
+		size_t count = (size + BIGHDRSZ + 4095) >> 12;
+		BigHdr *h = (BigHdr *)HugeAlloc(count);
 		h->Link(big);
-		h->size = size = ((size + BIGHDRSZ + 4095) & ~4095) - BIGHDRSZ;
+		h->size = size = (count << 12) - BIGHDRSZ;
 		Header *b = (Header *)((byte *)h + BIGHDRSZ - sizeof(Header));
 		b->size = 0; // header contains large header with size = 0, to detect big during free
 		b->SetHeap(NULL, false);
+		big_size += size;
+		big_count++;
 		LLOG("Big alloc " << size << ": " << (void *)b->GetBlock());
 		return b->GetBlock();
 	}
@@ -189,11 +172,10 @@ void *Heap::LAlloc(size_t& size)
 	while(aux.large->next != aux.large) {
 		LLOG("Adopting large block " << (void *)aux.large->next);
 		MoveLarge(this, aux.large->next);
-		lcount++;
 		ptr = TryLAlloc(bini, size);
 		if(ptr) return ptr;
 	}
-	DLink *n = AddChunk((int)size);
+	DLink *n = Add64KB();
 	if(!n)
 		Panic("Out of memory!");
 	ptr = DivideBlock(n, (int)size);
@@ -210,9 +192,11 @@ void Heap::LFree(void *ptr)
 		Mutex::Lock __(mutex);
 		ASSERT(((dword)(uintptr_t)bh & 4095) == BIGHDRSZ - sizeof(Header));
 		BigHdr *h = (BigHdr *)((byte *)ptr - BIGHDRSZ);
+		big_size -= h->size;
+		big_count--;
 		h->Unlink();
 		LLOG("Big free " << (void *) ptr << " size " << h->size);
-		SysFreeRaw(h, h->size);
+		HugeFree(h);
 		return;
 	}
 	if(bh->GetHeap() != this) {
@@ -244,11 +228,17 @@ void Heap::LFree(void *ptr)
 	LinkFree(b, bh->size);
 	DbgFreeFill(b + 1, bh->size - sizeof(DLink));
 	LLOG("Freed, joined size " << asString(bh->size) << " lcount " << asString(lcount));
-	if(bh->size == MAXBLOCK && lcount > 1) {
-		DLink *l = (DLink *)((byte *)bh - LARGEHDRSZ);
-		lcount--;
-		MoveToEmpty(l, bh);
-	}
+	if(bh->size == MAXBLOCK) // the block is empty, return it to huge storage
+		Free64KB((DLink *)((byte *)bh - LARGEHDRSZ), bh);
+}
+
+void Heap::Free64KB(DLink *l, Header *bh)
+{
+	LLOG("Moving empty large " << (void *)l << " to global storage, lcount " << lcount);
+	bh->GetBlock()->Unlink();
+	l->Unlink();
+	Mutex::Lock __(mutex);
+	HugeFree(l);
 }
 
 bool   Heap::LTryRealloc(void *ptr, size_t newsize)

@@ -270,9 +270,11 @@ template <typename T>
 never_inline
 void Index<T>::Sweep()
 {
-	int n = key.GetCount();
-	key.RemoveIf([&](int i) { return hash[i].hash == 0; });
-	IndexCommon::Sweep(n);
+	if(unlinked >= 0) {
+		int n = key.GetCount();
+		key.RemoveIf([&](int i) { return hash[i].hash == 0; });
+		IndexCommon::Sweep(n);
+	}
 }
 
 template <typename T>

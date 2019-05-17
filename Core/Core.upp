@@ -51,6 +51,7 @@ file
 	Heap.h,
 	HeapImp.h,
 	heaputil.cpp,
+	hheap.cpp,
 	sheap.cpp,
 	lheap.cpp,
 	heap.cpp,

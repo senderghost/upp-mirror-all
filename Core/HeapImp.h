@@ -3,23 +3,40 @@ void  OutOfMemoryPanic(size_t size);
 void *SysAllocRaw(size_t size, size_t reqsize);
 void  SysFreeRaw(void *ptr, size_t size);
 
-void *AllocRaw4KB(int reqsize);
-void *AllocRaw64KB(int reqsize);
-void *LAlloc(size_t& size);
-void  LFree(void *ptr);
-
-#ifdef MEMORY_SHRINK
-#if 0
-void  FreeRaw4KB(void *ptr); // Win32 does not allow simple support here
-#endif
-void  FreeRaw64KB(void *ptr);
-#endif
-
 struct Heap {
-	struct HugePrefix { // this part is at the start of huge allocated block
+	struct HugePrefix { // this part is at the start of Huge allocated block, client must not touch it
 		word        prev_size; // top bit: free, rest: size of previous block in 4KB blocks
-		word        size; // top bit: last block, rest: size of this block in 4KB blocks
+		word        size; // top bit: last block, rest: size of this block in 4KB blocks, 0 - sys
 	};
+	
+	struct HugeHeader : HugePrefix {
+		HugeHeader *prev; // linked list of free blocks
+		HugeHeader *next; // linked list of free blocks
+	
+		void  SetSize(word sz)           { size = (size & 0x8000) | sz; }
+		void  SetPrevSize(word sz)       { prev_size = (prev_size & 0x8000) | sz; }
+		void  SetFree(bool b)            { prev_size = b ? prev_size | 0x8000 : prev_size & ~0x8000; }
+		void  SetLast(bool b)            { size = b ? size | 0x8000 : size & ~0x8000; }
+	
+		word  GetSize()                  { return size & 0x7fff; }
+		word  GetPrevSize()              { return prev_size & 0x7fff; }
+		bool  IsFirst()                  { return GetPrevSize() == 0; }
+		bool  IsFree()                   { return prev_size & 0x8000; }
+		bool  IsLast()                   { return size & 0x8000; }
+	
+		HugeHeader *GetPrevHeader()      { return (HugeHeader *)((byte *)this - 4096 * GetPrevSize()); }
+		HugeHeader *GetNextHeader()      { return (HugeHeader *)((byte *)this + 4096 * GetSize()); }
+	
+		void  UnlinkFree();
+		void  LinkFree();
+	
+		void  SetNextPrevSz()            { if(!IsLast()) GetNextHeader()->SetPrevSize(GetSize()); }
+	};
+
+	static HugeHeader hsmall[1], hlarge[1];
+
+	static void *HugeAlloc(size_t count); // count in 4KB, client needs to not touch HugePrefix
+	static int   HugeFree(void *ptr);
 
 	enum {
 		NKLASS = 23, // number of small size classes
@@ -127,9 +144,7 @@ struct Heap {
 	static byte  BlBin[MAXBLOCK / 8 + 1]; // Largest bin less or equal to size/8 (free -> bin)
 
 	DLink  large[1]; // all large chunks that belong to this heap
-	int    lcount; // count of large chunks
 	DLink  freebin[LBINS][1]; // all free blocks by bin
-	static DLink lempty[1]; // shared global list of all empty large blocks
 	
 	void     *out[REMOTE_OUT_SZ / 8 + 1];
 	void    **out_ptr;
@@ -142,6 +157,14 @@ struct Heap {
 
 	static DLink big[1]; // List of all big blocks
 	static Heap  aux;    // Single global auxiliary heap to store orphans and global list of free pages
+
+	static size_t huge_4KB_count; // total number of 4KB pages in small/large/huge blocks
+	static size_t free_4KB; // empty 4KB pages
+	static size_t big_size; // blocks >~64KB
+	static size_t big_count;
+	static size_t sys_size;  // blocks allocated directly from system (included in big too)
+	static size_t sys_count;
+	static size_t huge_chunks; // 32MB master pages
 
 #ifdef HEAPDBG
 	static void  DbgFreeFill(void *ptr, size_t size);
@@ -178,14 +201,16 @@ struct Heap {
 	void *Allok(int k);
 	void  Free(void *ptr, Page *page, int k);
 	void  Free(void *ptr, int k);
-	void  MoveLarge(Heap *dest, DLink *l);
-	void  MoveToEmpty(DLink *l, Header *bh);
+
+	static bool FreeSmallEmpty(int count4KB);
 
 	static void GlobalLInit();
 	static int  SizeToBin(int n) { return SzBin[(n - 1) >> 3]; }
 
+	static void MoveLarge(Heap *dest, DLink *l);
+	DLink *Add64KB();
+	void   Free64KB(DLink *l, Header *bh);
 	void   LinkFree(DLink *b, int size);
-	DLink *AddChunk(int reqsize);
 	void  *DivideBlock(DLink *b, int size);
 	void  *TryLAlloc(int ii, size_t size);
 	void  *LAlloc(size_t& size);

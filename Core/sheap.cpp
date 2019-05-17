@@ -60,6 +60,7 @@ Heap::Page *Heap::WorkPage(int k) // get a new workpage with empty blocks
 		if(!page && aux.empty[k]) { // Try hot empty page of the same klass
 			page = aux.empty[k];
 			aux.empty[k] = page->next;
+			free_4KB--;
 			LLOG("AllocK - empty aux page available of the same format " << k << " page: " << (void *)page << ", free " << (void *)page->freelist);
 		}
 		if(!page)
@@ -67,12 +68,13 @@ Heap::Page *Heap::WorkPage(int k) // get a new workpage with empty blocks
 				if(aux.empty[i]) {
 					page = aux.empty[i];
 					aux.empty[i] = page->next;
+					free_4KB--;
 					page->Format(k);
 					LLOG("AllocK - empty aux page available for reformatting " << k << " page: " << (void *)page << ", free " << (void *)page->freelist);
 					break;
 				}
-		if(!page) { // No free memory was found, ask system for the new page
-			page = (Page *)AllocRaw4KB(Ksz(k));
+		if(!page) { // No free memory was found, ask huge for the new page
+			page = (Page *)HugeAlloc(1);
 			LLOG("AllocK - allocated new system page " << (void *)page << " " << k);
 			page->Format(k);
 		}
@@ -185,6 +187,7 @@ void Heap::FreeK(void *ptr, Page *page, int k)
 				empty[k]->heap = &aux;
 				empty[k]->next = aux.empty[k];
 				aux.empty[k] = empty[k];
+				free_4KB++;
 			}
 			empty[k] = page;
 		}
@@ -196,12 +199,10 @@ void Heap::Free(void *ptr, Page *page, int k)
 {
 	LLOG("Small free page: " << (void *)page << ", k: " << k << ", ksz: " << Ksz(k));
 	ASSERT((4096 - ((uintptr_t)ptr & (uintptr_t)4095)) % Ksz(k) == 0);
-#ifdef _MULTITHREADED
 	if(page->heap != this) { // freeing page allocated in different thread
 		RemoteFree(ptr, Ksz(k)); // add to originating heap's list of free pages to be properly freed later
 		return;
 	}
-#endif
 	DbgFreeFillK(ptr, k);
 	if(cachen[k]) {
 		cachen[k]--;
@@ -262,6 +263,19 @@ void Heap::SmallFreeDirect(void *ptr)
 	FreeK(ptr, page, k);
 }
 
+bool Heap::FreeSmallEmpty(int count4KB)
+{ // attempt to release small 4KB pages to gain count4KB space
+	for(int i = 0; i < NKLASS; i++)
+		while(aux.empty[i]) {
+			Page *q = aux.empty[i];
+			aux.empty[i] = q->next;
+			free_4KB--;
+			if(HugeFree(q) >= count4KB)
+				return true;
+		}
+	return false;
+}
+
 force_inline
 void *Heap::Alloc32()
 {
@@ -294,7 +308,7 @@ void Heap::Free48(void *ptr)
 	Free(ptr, KLASS_48);
 }
 
-#if defined(COMPILER_GCC) && defined(PLATFORM_WIN32)  // Workaround for MINGW bug
+#if defined(COMPILER_GCC) && defined(PLATFORM_WIN32)  // Workaround for MINGW inneficient storage
 struct TEB_ {
   PVOID Reserved1[12];
   PVOID ProcessEnvironmentBlock;
