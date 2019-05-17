@@ -253,94 +253,6 @@ void BasicTests()
 	TEST(x.Remove(1, 2), "0: 12/0 -> 0:0; 1: 14/3 -> 1:1; 2: 15/2 -> 2:2");
 }
 
-#ifdef _DEBUG
-#define TEST(op, result) { op; String s = x.; LOG("TEST(" << #op << ", " << AsCString(s) << ");"); if(*result) ASSERT(s == result); Check(x); }
-#define UTST(result)     { String s = AsString(x.GetUnlinked()); LOG("UTST(" << AsCString(s) << ");"); if(*result) ASSERT(s == result); }
-#else
-#define TEST(op, result)
-#define UTST(result)
-#endif
-
-void MapTests()
-{
-	LOG("=============== MAP TESTS
-	{
-		String k = "A"; String v = "B";
-		VectorMap<String, String> map;
-		map.Add(k, v);
-		ASSERT(!IsNull(k));
-		ASSERT(!IsNull(v));
-	}
-	{
-		String k = "A"; String v = "B";
-		VectorMap<String, String> map;
-		map.Add(k, pick(v));
-		ASSERT(!IsNull(k));
-		ASSERT(IsNull(v));
-	}
-	
-#if 0
-	T&       Add(const K& k, const T& x)            { key.Add(k); return value.Add(x); }
-	T&       Add(const K& k, T&& x)                 { key.Add(k); return value.Add(pick(x)); }
-	T&       Add(const K& k)                        { key.Add(k); return value.Add(); }
-	T&       Add(K&& k, const T& x)                 { key.Add(pick(k)); return value.Add(x); }
-	T&       Add(K&& k, T&& x)                      { key.Add(pick(k)); return value.Add(pick(x)); }
-	T&       Add(K&& k)                             { key.Add(pick(k)); return value.Add(); }
-
-	int      Find(const K& k, unsigned h) const     { return key.Find(k, h); }
-	int      Find(const K& k) const                 { return key.Find(k); }
-	int      FindNext(int i) const                  { return key.FindNext(i); }
-	int      FindLast(const K& k, unsigned h) const { return key.FindLast(k, h); }
-	int      FindLast(const K& k) const             { return key.FindLast(k); }
-	int      FindPrev(int i) const                  { return key.FindPrev(i); }
-
-	int      FindAdd(const K& k)                    { return FindAdd_(k); }
-	int      FindAdd(const K& k, const T& init)     { return FindAdd_(k, init); }
-	int      FindAdd(const K& k, T&& init)          { return FindAdd_(k, pick(init)); }
-	int      FindAdd(K&& k)                         { return FindAdd_(pick(k)); }
-	int      FindAdd(K&& k, const T& init)          { return FindAdd_(pick(k), init); }
-	int      FindAdd(K&& k, T&& init)               { return FindAdd_(pick(k), pick(init)); }
-
-	T&       Put(const K& k)                        { return Put_(k); }
-	int      Put(const K& k, const T& x)            { return Put_(k, x); }
-	int      Put(const K& k, T&& x)                 { return Put_(k, pick(x)); }
-	T&       Put(K&& k)                             { return Put_(pick(k)); }
-	int      Put(K&& k, const T& x)                 { return Put_(pick(k), x); }
-	int      Put(K&& k, T&& x)                      { return Put_(pick(k), pick(x)); }
-
-	int      PutDefault(const K& k)                 { return PutDefault_(k); }
-	int      PutDefault(K&& k)                      { return PutDefault_(pick(k)); }
-
-	int      FindPut(const K& k)                    { return FindPut_(k); }
-	int      FindPut(const K& k, const T& init)     { return FindPut_(k, init); }
-	int      FindPut(const K& k, T&& init)          { return FindPut_(k, pick(init)); }
-	int      FindPut(K&& k)                         { return FindPut_(pick(k)); }
-	int      FindPut(K&& k, const T& init)          { return FindPut_(pick(k), init); }
-	int      FindPut(K&& k, T&& init)               { return FindPut_(pick(k), pick(init)); }
-
-	T&       Get(const K& k)                        { return value[Find(k)]; }
-	const T& Get(const K& k) const                  { return value[Find(k)]; }
-	const T& Get(const K& k, const T& d) const      { int i = Find(k); return i >= 0 ? value[i] : d; }
-
-	T&       GetAdd(const K& k)                     { return GetAdd_(k); }
-	T&       GetAdd(const K& k, const T& x)         { return GetAdd_(k, x); }
-	T&       GetAdd(const K& k, T&& x)              { return GetAdd_(k, pick(x)); }
-	T&       GetAdd(K&& k)                          { return GetAdd_(pick(k)); }
-	T&       GetAdd(K&& k, const T& x)              { return GetAdd_(pick(k), x); }
-	T&       GetAdd(K&& k, T&& x)                   { return GetAdd_(pick(k), pick(x)); }
-
-	T&       GetPut(const K& k)                     { return GetPut_(k); }
-	T&       GetPut(const K& k, const T& x)         { return GetPut_(k, x); }
-	T&       GetPut(const K& k, T&& x)              { return GetPut_(k, pick(x)); }
-	T&       GetPut(K&& k)                          { return GetPut_(pick(k)); }
-	T&       GetPut(K&& k, const T& x)              { return GetPut_(pick(k), x); }
-	T&       GetPut(K&& k, T&& x)                   { return GetPut_(pick(k), pick(x)); }
-
-	void     SetKey(int i, const K& k)              { key.Set(i, k); }
-	void     SetKey(int i, K&& k)                   { key.Set(i, pick(k)); }
-#endif
-}
-
 void CarpetBombing()
 {
 	SeedRandom(0);
@@ -401,14 +313,10 @@ void CarpetBombing()
 	}
 }
 
-void Benchmark();
-
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_FILE|LOG_COUT);
 
-	RDUMP(sizeof(Index<int>));
-	RDUMP(sizeof(VectorMap<String, int>));
 	RDUMP(sizeof(Index<int>));
 	RDUMP(sizeof(VectorMap<String, int>));
 

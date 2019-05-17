@@ -4,22 +4,15 @@ using namespace Upp;
 
 namespace Upp {
 void *SysAllocRaw(size_t size, size_t reqsize);
+void  SysFreeRaw(void *ptr, size_t size);
 };
 
 #define LLOG(x)  // LOG(x)
 #define LDUMP(x) // DUMP(x)
 
-#ifdef COMPILER_MSC
-inline int BSR(dword x) { dword r; _BitScanReverse(&r, x); return r; }
-#else
-inline int BSR(dword x) { return 31 - __builtin_clz(x); }
-#endif
-
-//	xT = 1 << (31 - __builtin_clz(xT));
-
 struct HugePrefix { // this part is at the start of allocated block, client must not touch it
 	word        prev_size; // top bit: free, rest: size of previous block in 4KB blocks
-	word        size; // top bit: last block, rest: size of this block in 4KB blocks
+	word        size; // top bit: last block, rest: size of this block in 4KB blocks, 0 - sys
 };
 
 struct HugeHeader : HugePrefix {
@@ -43,32 +36,16 @@ struct HugeHeader : HugePrefix {
 	void  UnlinkFree();
 	void  LinkFree();
 
-	void  SetNextPrev()              { if(!IsLast()) GetNextHeader()->SetPrevSize(GetSize()); }
+	void  SetNextPrevSz()            { if(!IsLast()) GetNextHeader()->SetPrevSize(GetSize()); }
 };
 
-/*
-inline
-int HugeCv(int count) {
-	return count < 17 ? count : count < 512 ? (count >> 4) + 17 : (count >> 6) + 17 + (512 >> 4);
-}
-
-const int BUCKETS = 17 + (512 >> 4) + (8192 >> 6) + 1;
-*/
-
-inline
-int HugeCv(int count) {
-	return count < 17 ? count : count < 512 ? (count >> 4) + 17 : (count >> 7) + 17 + (512 >> 4);
-}
-
-const int BUCKETS = 17 + (512 >> 4) + (8192 >> 7) + 1;
-
-static HugeHeader freelist[BUCKETS];
+static HugeHeader hsmall[4], hlarge[4];
 int freecount;
 
 inline
 void HugeHeader::LinkFree()
 {
-	Dbl_LinkAfter(this, &freelist[HugeCv(GetSize())]);
+	Dbl_LinkAfter(this, GetSize() < 16 ? hsmall : hlarge);
 	freecount++;
 }
 
@@ -78,53 +55,43 @@ void HugeHeader::UnlinkFree()
 	Dbl_Unlink(this);
 	freecount--;
 }
-               
-void HugeMore()
-{
-	RTIMING("HugeMore");
 
-	HugeHeader *h = (HugeHeader *)SysAllocRaw(8192 * 4096, 0); // 8192 pages
-	h->SetSize(8192);
-	h->SetPrevSize(0); // is first
-	h->SetLast(true);
-	h->SetFree(true);
-	h->LinkFree();
-
-	LLOG("HugeMore " << h);
-}
-
-int failed_pass;
-int failed_list;
-
-void *HugeAlloc(int count) // count in 4kb pages
+void *HugeAlloc(size_t count) // count in 4kb pages
 {
 	ASSERT(count);
-	if(!freelist[0].next) { // initialization
-		for(int i = 0; i < BUCKETS; i++)
-			freelist[i].next = freelist[i].prev = &freelist[i];
+	
+	if(!hsmall->next) { // initialization
+		hsmall->next = hsmall->prev = hsmall;
+		hlarge->next = hlarge->next = hlarge;
 	}
+		
+	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
+		byte *sysblk = (byte *)SysAllocRaw((count + 1) * 4096, 0);
+		HugeHeader *h = (HugeHeader *)(sysblk + 4096);
+		h->size = 0;
+		*((size_t *)sysblk) = count;
+		return h;
+	}
+	
+	word wcount = (word)count;
+	
 	for(int pass = 0; pass < 2; pass++) {
-		for(int q = HugeCv(count); q < BUCKETS; q++) {
-			HugeHeader *l = &freelist[q];
+		HugeHeader *l = count < 16 ? hsmall : hlarge;
+		for(;;) {
 			HugeHeader *h = l->next;
 			if(h != l) {
-	//			RTIMING("Scan");
 				word sz = h->GetSize();
 				if(sz >= count) {
-					LDUMP(sz);
 					h->UnlinkFree();
 					h->SetFree(false);
 					if(sz > count) { // split the block
 						HugeHeader *h2 = (HugeHeader *)((byte *)h + 4096 * count);
-						LDUMP(h);
-						LDUMP(h2);
-						LDUMP(sz - count);
-						word nsz = sz - count;
+						word nsz = sz - wcount;
 						h2->SetFree(true);
 						h2->SetLast(h->IsLast());
 						h2->SetSize(nsz);
-						h2->SetPrevSize(count);
-						h2->SetNextPrev();
+						h2->SetPrevSize(wcount);
+						h2->SetNextPrevSz();
 						h2->LinkFree();
 	
 						h->SetSize(count);
@@ -132,66 +99,62 @@ void *HugeAlloc(int count) // count in 4kb pages
 					}
 					return h;
 				}
-				failed_pass++;
 			}
-			else
-				failed_list++;
+			if(l == hlarge)
+				break;
+			l = hlarge;
 		}
-		HugeMore();
+
+		HugeHeader *h = (HugeHeader *)SysAllocRaw(8192 * 4096, 0); // 8192 pages
+		h->SetSize(8192);
+		h->SetPrevSize(0); // is first
+		h->SetLast(true);
+		h->SetFree(true);
+		h->LinkFree();
 	}
 	Panic("Out of memory");
 	return NULL;
 }
 
-void HugeFree(void *ptr)
+int HugeFree(void *ptr)
 {
 	LLOG("Free ---------------");
 	HugeHeader *h = (HugeHeader *)ptr;
-	LDUMP(h);
-	LDUMP(h->GetPrevSize());
-	LDUMP(h->GetSize());
+	if(h->size == 0) {
+		byte *sysblk = (byte *)h - 4096;
+		SysFreeRaw(sysblk, *((size_t *)sysblk));
+		return 0;
+	}
 	if(!h->IsLast()) { // try to join with next header if it is free
 		HugeHeader *nh = h->GetNextHeader();
-		LDUMP(nh);
-		LDUMP(nh->IsFree());
 		if(nh->IsFree()) {
-			LDUMP(h->GetSize());
-			LDUMP(nh->GetSize());
-			LDUMP(h->GetSize() + nh->GetSize());
 			h->SetLast(nh->IsLast());
 			nh->UnlinkFree();
 			word nsz = h->GetSize() + nh->GetSize();
-			LDUMP(nsz);
 			ASSERT(nsz <= 8192);
 			h->SetSize(nsz);
-			h->SetNextPrev();
+			h->SetNextPrevSz();
 		}
 	}
 	if(!h->IsFirst()) { // try to join with previous header if it is free
 		HugeHeader *ph = h->GetPrevHeader();
-		LDUMP(ph);
-		LDUMP(ph->IsFree());
 		if(ph->IsFree()) {
-			LDUMP(ph->GetSize());
-			LDUMP(h->GetSize());
-			LDUMP(ph->GetSize() + h->GetSize());
 			word nsz = ph->GetSize() + h->GetSize();
-			LDUMP(nsz);
 			ASSERT(nsz <= 8192);
 			ph->SetSize(nsz);
 			ph->SetLast(h->IsLast());
-			ph->SetNextPrev();
-			return;
+			ph->SetNextPrevSz();
+			return nsz;
 		}
 	}
-	LDUMP(h->GetSize());
 	h->SetFree(true);
-	LDUMP(h->IsFree());
 	h->LinkFree(); // was not joined with previous header
+	return h->GetSize();
 }
 
 void DumpFreeList(bool check = false)
 {
+	#if 0
 	LOG("FreeList ------------");
 	HugeHeader *h = freelist->next;
 	while(h != freelist) {
@@ -200,6 +163,7 @@ void DumpFreeList(bool check = false)
 			ASSERT(h->GetSize() == 8192);
 		h = h->next;
 	}
+	#endif
 }
 
 int xT = 123;
@@ -210,9 +174,10 @@ CONSOLE_APP_MAIN
 	for(int i = 1; i < 512; i++)
 		DLOG(i << " " << Bsr(i));
 	return;*/
-	RDUMP(BUCKETS);
-
-	void *ptr = HugeAlloc(16);
+	void *ptr = HugeAlloc(10000);
+	HugeFree(ptr);
+	
+	ptr = HugeAlloc(16);
 	DumpFreeList();
 	HugeFree(ptr);
 	DumpFreeList();
@@ -239,6 +204,9 @@ CONSOLE_APP_MAIN
 				ptr[ii] = HugeAlloc(1);
 			}
 		}
+	}
+
+#if 0
 		for(int i = 0; i < 1000; i++)
 			if(ptr[i]) {
 				HugeFree(ptr[i]);
@@ -321,4 +289,5 @@ CONSOLE_APP_MAIN
 
 		DumpFreeList(true);
 	}
+#endif
 }
