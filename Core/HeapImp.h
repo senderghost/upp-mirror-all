@@ -16,6 +16,11 @@ void  FreeRaw64KB(void *ptr);
 #endif
 
 struct Heap {
+	struct HugePrefix { // this part is at the start of huge allocated block
+		word        prev_size; // top bit: free, rest: size of previous block in 4KB blocks
+		word        size; // top bit: last block, rest: size of this block in 4KB blocks
+	};
+
 	enum {
 		NKLASS = 23, // number of small size classes
 	};
@@ -37,6 +42,7 @@ struct Heap {
 	};
 
 	struct Page { // small block Page
+		HugePrefix   reserved; // this is reserved for huge block management
 		Heap        *heap;     // pointer to Heap
 		byte         klass;    // size class
 		word         active;   // number of used (active) blocks in this page
@@ -58,6 +64,7 @@ struct Heap {
 	struct Header;
 
 	struct DLink {
+		HugePrefix   reserved;   // this is reserved for huge block management, 0-0 for sys block
 		DLink       *next;
 		DLink       *prev;
 
@@ -93,7 +100,7 @@ struct Heap {
 	};
 
 	enum {
-		LARGEHDRSZ = 32, // size of large block header, causes 16 byte disalignment
+		LARGEHDRSZ = 32, // size of large block header, + sizeof(Header) causes 16 byte disalignment
 		BIGHDRSZ = 48, // size of huge block header
 		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
 
@@ -102,8 +109,8 @@ struct Heap {
 	};
 
 	static_assert(sizeof(Header) == 16, "Wrong sizeof(Header)");
-	static_assert(sizeof(DLink) <= 16, "Wrong sizeof(DLink)");
-	static_assert(sizeof(BigHdr) + sizeof(Header) < BIGHDRSZ, "Big header sizeof issue");
+	static_assert(sizeof(DLink) < 64, "Wrong sizeof(DLink)");
+	static_assert(sizeof(BigHdr) + sizeof(Header) <= BIGHDRSZ, "Big header sizeof issue");
 
 	static StaticMutex mutex;
 

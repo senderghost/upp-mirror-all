@@ -164,10 +164,10 @@ public:
 
 	unsigned GetHash(int i) const                           { return hash[i]; }
 
-	Index& operator<<=(const Vector<T>& s)                { *this = clone(s); return *this; }
+	Index& operator<<=(const Vector<T>& s)                  { *this = clone(s); return *this; }
 	typedef T                ValueType;
 	typedef Vector<T>        ValueContainer;
-	ConstIterator  GetIter(int pos) const                 { return key.GetIter(pos); }
+	ConstIterator  GetIter(int pos) const                   { return key.GetIter(pos); }
 
 	void     ClearIndex()                    { hash.ClearIndex(); }
 	void     Reindex(int n)                  { hash.Reindex(n); }
