@@ -387,6 +387,11 @@ void  MemoryFree_(void *ptr)
 	ThreadHeap()->Free(ptr);
 }
 
+bool   TryRealloc_(void *ptr, size_t size)
+{
+	return ThreadHeap()->TryRealloc(ptr, size);
+}
+
 size_t GetMemoryBlockSize_(void *ptr)
 {
 	return ThreadHeap()->GetBlockSize(ptr);

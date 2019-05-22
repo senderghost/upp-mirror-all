@@ -35,8 +35,11 @@ struct Heap {
 
 	static HugeHeader hsmall[1], hlarge[1];
 
+	static bool  HugeJoinNext(HugeHeader *h, word needs_count = 0);
+	static void  HugeSplit(HugeHeader *h, word wcount);
 	static void *HugeAlloc(size_t count); // count in 4KB, client needs to not touch HugePrefix
 	static int   HugeFree(void *ptr);
+	static bool  HugeTryRealloc(void *ptr, size_t count);
 
 	enum {
 		NKLASS = 23, // number of small size classes

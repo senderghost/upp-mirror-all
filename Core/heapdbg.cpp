@@ -143,9 +143,11 @@ size_t GetMemoryBlockSize(void *ptr)
 	return ((DbgBlkHeader *)ptr - 1)->size;
 }
 
+bool TryRealloc_(void *ptr, size_t size);
+
 bool TryRealloc(void *ptr, size_t newsize)
 {
-	return false;
+	return TryRealloc_((DbgBlkHeader *)ptr - 1, sizeof(DbgBlkHeader) + newsize + sizeof(dword));
 }
 
 void *MemoryAlloc32()             { return MemoryAlloc(32); }

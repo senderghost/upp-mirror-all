@@ -1,4 +1,5 @@
 #include "Core.h"
+#include "Core.h"
 
 namespace Upp {
 
@@ -248,8 +249,8 @@ bool   Heap::LTryRealloc(void *ptr, size_t newsize)
 	if(bh->size == 0) {
 		Mutex::Lock __(mutex);
 		ASSERT(((dword)(uintptr_t)bh & 4095) == BIGHDRSZ - sizeof(Header));
-		BigHdr *h = (BigHdr *)((byte *)ptr - BIGHDRSZ);
-		return newsize <= h->size;
+		size_t count = (newsize + BIGHDRSZ + 4095) >> 12;
+		return HugeTryRealloc((byte *)ptr - BIGHDRSZ, count);
 	}
 	if(bh->GetHeap() != this) // if another thread's heap, do not bother to be smart
 		return newsize <= bh->size;
@@ -258,7 +259,7 @@ bool   Heap::LTryRealloc(void *ptr, size_t newsize)
 	LLOG("--- TryRealloc " << asString(bh->size));
 	Header *n = bh->Next();
 	if(n->IsFree() && newsize <= (size_t)n->size + (size_t)bh->size) {
-		DivideBlock(n->GetBlock(), int(newsize - n->size));
+		DivideBlock(n->GetBlock(), int(bh->size + n->size - newsize));
 		bh->size += n->size + sizeof(Header);
 		n->Next()->prev = bh->size;
 		return true;
