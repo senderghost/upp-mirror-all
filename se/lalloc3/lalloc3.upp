@@ -2,6 +2,9 @@ uses
 	Core;
 
 file
+	BlkHeap.h,
+	HugeHeap.h,
+	LargeHeap.h,
 	lalloc.cpp;
 
 mainconfig
