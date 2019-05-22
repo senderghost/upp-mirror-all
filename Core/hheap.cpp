@@ -130,9 +130,9 @@ bool Heap::HugeTryRealloc(void *ptr, size_t count)
 	
 	word sz = h->GetSize();
 	if(sz != count) {
-		if(!HugeJoinNext(h, count))
+		if(!HugeJoinNext(h, (word)count))
 			return false;
-		HugeSplit(h, count);
+		HugeSplit(h, (word)count);
 	}
 	return true;
 }

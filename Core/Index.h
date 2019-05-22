@@ -51,7 +51,7 @@ struct IndexCommon {
 template <class K, class T, class V> class AMap;
 
 template <class T>
-class Index : MoveableAndDeepCopyOption<Index<T>, IndexCommon> {
+class Index : MoveableAndDeepCopyOption<Index<T>>, IndexCommon {
 	Vector<T> key;
 
 	static dword Smear(const T& k)   { return IndexCommon::Smear(GetHashValue(k)); }
@@ -162,16 +162,16 @@ public:
 	void     Remove(const Vector<int>& sorted_list)         { key.Remove(sorted_list); FixHash(); }
 	int      RemoveKey(const T& k)                          { int i = Find(k); if(i >= 0) Remove(i); return i; }
 
-	unsigned GetHash(int i) const                           { return hash[i]; }
+	unsigned GetHash(int i) const                           { return hash[i].hash; }
 
 	Index& operator<<=(const Vector<T>& s)                  { *this = clone(s); return *this; }
 	typedef T                ValueType;
 	typedef Vector<T>        ValueContainer;
 	ConstIterator  GetIter(int pos) const                   { return key.GetIter(pos); }
 
-	void     ClearIndex()                    { hash.ClearIndex(); }
-	void     Reindex(int n)                  { hash.Reindex(n); }
-	void     Reindex()                       { hash.Reindex(); }
+	void     ClearIndex()                    {}
+	void     Reindex(int n)                  {}
+	void     Reindex()                       {}
 
 	typedef T             value_type;
 	typedef ConstIterator const_iterator;
