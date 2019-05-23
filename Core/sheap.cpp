@@ -270,7 +270,7 @@ bool Heap::FreeSmallEmpty(int count4KB)
 			Page *q = aux.empty[i];
 			aux.empty[i] = q->next;
 			free_4KB--;
-			if(HugeFree(q) >= count4KB)
+			if(aux.HugeFree(q) >= count4KB) // HugeFree is really static, aux needed just to compile
 				return true;
 		}
 	return false;

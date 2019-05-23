@@ -18,7 +18,7 @@ void *MemoryAllocPermanentRaw(size_t size)
 	static byte *limit = NULL;
 	ASSERT(size < INT_MAX);
 	if(ptr + size >= limit) {
-		ptr = (byte *)Heap::HugeAlloc(1);
+		ptr = (byte *)Heap::aux.HugeAlloc(1);
 		limit = ptr + 4096;
 	}
 	void *p = ptr;

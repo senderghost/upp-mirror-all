@@ -10,56 +10,7 @@ namespace Upp {
 // used as manager of large memory blocks. 4KB and 64KB blocks are allocated from here too
 // also able to deal with blocks >32MB, those are directly allocated / freed from system
 
-Heap::HugeHeader Heap::hsmall[1]; // blocks smaller than 64KB (16 * 4KB)
-Heap::HugeHeader Heap::hlarge[1]; // blocks >= 16 * 4 KB
-
-inline
-void Heap::HugeHeader::UnlinkFree()
-{
-	Dbl_Unlink(this);
-}
-
-inline
-void Heap::HugeHeader::LinkFree()
-{
-	Dbl_LinkAfter(this, GetSize() < 16 ? hsmall : hlarge);
-}
-
-force_inline
-bool Heap::HugeJoinNext(HugeHeader *h, word needs_count)
-{ // try to join with next header if it is free, does not link to free
-	if(h->IsLast())
-		return false;
-	HugeHeader *nh = h->GetNextHeader();
-	if(!nh->IsFree() || h->GetSize() + nh->GetSize() < needs_count)
-		return false;
-	h->SetLast(nh->IsLast());
-	nh->UnlinkFree();
-	word nsz = h->GetSize() + nh->GetSize();
-	ASSERT(nsz <= 8192);
-	h->SetSize(nsz);
-	h->SetNextPrevSz();
-	return true;
-}
-
-force_inline
-void Heap::HugeSplit(HugeHeader *h, word wcount)
-{ // splits the block if bigger, links new block to free
-	HugeHeader *h2 = (HugeHeader *)((byte *)h + 4096 * (int)wcount);
-	word nsz = h->GetSize() - wcount;
-	if(nsz == 0) // nothing to split
-		return;
-
-	h2->SetFree(true);
-	h2->SetLast(h->IsLast());
-	h2->SetSize(nsz);
-	h2->SetPrevSize(wcount);
-	h2->SetNextPrevSz();
-	h2->LinkFree();
-
-	h->SetSize(wcount);
-	h->SetLast(false);
-}
+BlkHeader_<4096> HugeHeapDetail::freelist[2]; // only single global Huge heap...
 
 void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 {
@@ -67,14 +18,14 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 
 	huge_4KB_count += count;
 	
-	if(!hsmall->next) { // initialization
-		hsmall->next = hsmall->prev = hsmall;
-		hlarge->next = hlarge->next = hlarge;
+	if(!D::freelist[0].next) { // initialization
+		for(int i = 0; i < 2; i++)
+			Dbl_Self(&D::freelist[i]);
 	}
 		
 	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
 		byte *sysblk = (byte *)SysAllocRaw((count + 1) * 4096, 0);
-		HugeHeader *h = (HugeHeader *)(sysblk + 4096);
+		BlkHeader *h = (BlkHeader *)(sysblk + 4096);
 		h->size = 0;
 		*((size_t *)sysblk) = count;
 		sys_count++;
@@ -85,31 +36,19 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 	word wcount = (word)count;
 	
 	for(int pass = 0; pass < 2; pass++) {
-		HugeHeader *l = count < 16 ? hsmall : hlarge;
-		for(;;) {
-			HugeHeader *h = l->next;
+		for(int i = count >= 16; i < 2; i++) {
+			BlkHeader *l = &D::freelist[i];
+			BlkHeader *h = l->next;
 			while(h != l) {
 				word sz = h->GetSize();
-				if(sz >= count) {
-					h->UnlinkFree();
-					h->SetFree(false);
-					HugeSplit(h, wcount);
-					return h;
-				}
+				if(sz >= count)
+					return MakeAlloc(h, wcount);
 				h = h->next;
 			}
-			if(l == hlarge)
-				break;
-			l = hlarge;
 		}
 
 		if(!FreeSmallEmpty(wcount)) { // try to coalesce 4KB small free blocks back to huge storage
-			HugeHeader *h = (HugeHeader *)SysAllocRaw(8192 * 4096, 0); // failed, get 32MB from the system
-			h->SetSize(8192);
-			h->SetPrevSize(0); // is first
-			h->SetLast(true);
-			h->SetFree(true);
-			h->LinkFree();
+			AddChunk((BlkHeader *)SysAllocRaw(8192 * 4096, 0), 8192); // failed, add 32MB from the system
 			huge_chunks++;
 		}
 	}
@@ -117,29 +56,9 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 	return NULL;
 }
 
-bool Heap::HugeTryRealloc(void *ptr, size_t count)
-{
-	ASSERT(count);
-	
-	if(count > 8192)
-		return false;
-	
-	HugeHeader *h = (HugeHeader *)ptr;
-	if(h->size == 0)
-		return false;
-	
-	word sz = h->GetSize();
-	if(sz != count) {
-		if(!HugeJoinNext(h, (word)count))
-			return false;
-		HugeSplit(h, (word)count);
-	}
-	return true;
-}
-
 int Heap::HugeFree(void *ptr)
 {
-	HugeHeader *h = (HugeHeader *)ptr;
+	BlkHeader *h = (BlkHeader *)ptr;
 	if(h->size == 0) {
 		byte *sysblk = (byte *)h - 4096;
 		size_t count = *((size_t *)sysblk);
@@ -150,21 +69,12 @@ int Heap::HugeFree(void *ptr)
 		return 0;
 	}
 	huge_4KB_count -= h->GetSize();
-	HugeJoinNext(h);
-	if(!h->IsFirst()) { // try to join with previous header if it is free
-		HugeHeader *ph = h->GetPrevHeader();
-		if(ph->IsFree()) {
-			word nsz = ph->GetSize() + h->GetSize();
-			ASSERT(nsz <= 8192);
-			ph->SetSize(nsz);
-			ph->SetLast(h->IsLast());
-			ph->SetNextPrevSz();
-			return nsz;
-		}
-	}
-	h->SetFree(true);
-	h->LinkFree(); // was not joined with previous header
-	return h->GetSize();
+	return BlkHeap::Free(h);
+}
+
+bool Heap::HugeTryRealloc(void *ptr, size_t count)
+{
+	return BlkHeap::TryRealloc(ptr, count);
 }
 
 #endif
