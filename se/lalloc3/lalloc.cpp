@@ -36,9 +36,13 @@ CONSOLE_APP_MAIN
 	LargeHeap l;
 	l.Init();
 	void *lptr = l.Alloc(50);
+	l.Free(lptr);
+
+	lptr = l.Alloc(50);
 	l.TryRealloc(lptr, 60);
 	l.TryRealloc(lptr, 40);
 	l.Free(lptr);
+
 	lptr = l.Alloc(100);
 	l.Free(lptr);
 }

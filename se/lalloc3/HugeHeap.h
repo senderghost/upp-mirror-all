@@ -35,9 +35,9 @@ void *HugeHeap::Alloc(size_t count) // count in 4kb pages
 
 	huge_4KB_count += count;
 	
-	if(!d.freelist[0].next) { // initialization
+	if(!D::freelist[0].next) { // initialization
 		for(int i = 0; i < 2; i++)
-			Dbl_Self(&d.freelist[i]);
+			Dbl_Self(&D::freelist[i]);
 	}
 		
 	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
@@ -54,7 +54,7 @@ void *HugeHeap::Alloc(size_t count) // count in 4kb pages
 	
 	for(int pass = 0; pass < 2; pass++) {
 		for(int i = count >= 16; i < 2; i++) {
-			BlkHeader *l = &d.freelist[i];
+			BlkHeader *l = &D::freelist[i];
 			BlkHeader *h = l->next;
 			while(h != l) {
 				word sz = h->GetSize();

@@ -1,3 +1,5 @@
+// This is used internally by U++ to manage large (64KB) and huge (32MB) blocks
+
 struct BlkPrefix { // this part is at the start of Blk allocated block, client must not touch it
 	word        prev_size; // top bit: free, rest: size of previous block in 4KB blocks
 	word        size; // top bit: last block, rest: size of this block in 4KB blocks, 0 - sys
@@ -28,10 +30,9 @@ struct BlkHeader_ : BlkPrefix {
 };
 
 template <typename Detail, int BlkSize>
-struct BlkHeap {
-	Detail d;
-	
+struct BlkHeap : Detail {
 	typedef BlkHeader_<BlkSize> BlkHeader;
+	typedef Detail D;
 	
 	bool  JoinNext(BlkHeader *h, word needs_count = 0);
 	void  Split(BlkHeader *h, word wcount);
@@ -72,7 +73,7 @@ void BlkHeap<Detail, BlkSize>::Split(BlkHeader *h, word wcount)
 	h2->SetSize(nsz);
 	h2->SetPrevSize(wcount);
 	h2->SetNextPrevSz();
-	d.LinkFree(h2);
+	D::LinkFree(h2);
 
 	h->SetSize(wcount);
 	h->SetLast(false);
@@ -85,7 +86,7 @@ void BlkHeap<Detail, BlkSize>::AddChunk(BlkHeader *h, int count)
 	h->SetPrevSize(0); // is first
 	h->SetLast(true);
 	h->SetFree(true);
-	d.LinkFree(h);
+	D::LinkFree(h);
 }
 
 template <typename Detail, int BlkSize>
@@ -127,12 +128,12 @@ int BlkHeap<Detail, BlkSize>::Free(BlkHeader *h)
 			ph->SetSize(nsz);
 			ph->SetLast(h->IsLast());
 			ph->SetNextPrevSz();
-			d.NewFreeSize(ph);
+			D::NewFreeSize(ph);
 			return nsz;
 		}
 	}
 	h->SetFree(true);
-	d.LinkFree(h); // was not joined with previous header
-	d.NewFreeSize(h);
+	D::LinkFree(h); // was not joined with previous header
+	D::NewFreeSize(h);
 	return h->GetSize();
 }

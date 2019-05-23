@@ -16,7 +16,7 @@ struct LargeHeap : BlkHeap<LargeHeapDetail, 256> {
 void LargeHeap::Init()
 {
 	for(int i = 0; i < 65; i++)
-		Dbl_Self(&d.freelist[i]);
+		Dbl_Self(&D::freelist[i]);
 }
 
 void *LargeHeap::Alloc(int count)
@@ -26,7 +26,7 @@ void *LargeHeap::Alloc(int count)
 	int i0 = min(count, 64);
 	for(int pass = 0; pass < 2; pass++) {
 		for(int i = i0; i < 65; i++) {
-			BlkHeader *l = &d.freelist[i];
+			BlkHeader *l = &D::freelist[i];
 			BlkHeader *h = l->next;
 			while(h != l) {
 				word sz = h->GetSize();
