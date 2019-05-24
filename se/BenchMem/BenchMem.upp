@@ -1,0 +1,11 @@
+uses
+	Core,
+	RichText;
+
+file
+	help.txt,
+	BenchOps2.cpp;
+
+mainconfig
+	"" = "";
+

@@ -112,10 +112,10 @@ CONSOLE_APP_MAIN
 	{
 		Bench _("memcpy 64 bytes", 10);
 		for(int i = 0; i < 10 * N; i++) {
-			memcpy(&data[0], &data2[one_val], val64);
-			memcpy(&data[1], &data2[one_val], val64);
-			memcpy(&data[2], &data2[one_val], val64);
-			memcpy(&data[3], &data2[one_val], val64);
+			memcpy(&data1[0], &data2[one_val], val64);
+			memcpy(&data1[1], &data2[one_val], val64);
+			memcpy(&data1[2], &data2[one_val], val64);
+			memcpy(&data1[3], &data2[one_val], val64);
 		}
 	}
 

@@ -29,20 +29,6 @@ int xT = 123;
 
 CONSOLE_APP_MAIN
 {
-//	HugeHeap h;
-//	void *ptr = h.Alloc(50);
-//	h.Free(ptr);
-	
-	LargeHeap l;
-	l.Init();
-	void *lptr = l.Alloc(50);
-	l.Free(lptr);
-
-	lptr = l.Alloc(50);
-	l.TryRealloc(lptr, 60);
-	l.TryRealloc(lptr, 40);
-	l.Free(lptr);
-
-	lptr = l.Alloc(100);
-	l.Free(lptr);
+	void *ptr = MemoryAlloc(2000);
+	MemoryFree(ptr);
 }
