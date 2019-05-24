@@ -10,7 +10,8 @@ namespace Upp {
 // used as manager of large memory blocks. 4KB and 64KB blocks are allocated from here too
 // also able to deal with blocks >32MB, those are directly allocated / freed from system
 
-BlkHeader_<4096> HugeHeapDetail::freelist[2]; // only single global Huge heap...
+BlkHeader_<4096> HugeHeapDetail::freelist[2][1]; // only single global Huge heap...
+Heap::HugePage *Heap::huge_pages;
 
 void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 {
@@ -18,9 +19,9 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 
 	huge_4KB_count += count;
 	
-	if(!D::freelist[0].next) { // initialization
+	if(!D::freelist[0]->next) { // initialization
 		for(int i = 0; i < 2; i++)
-			Dbl_Self(&D::freelist[i]);
+			Dbl_Self(D::freelist[i]);
 	}
 		
 	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
@@ -37,7 +38,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 	
 	for(int pass = 0; pass < 2; pass++) {
 		for(int i = count >= 16; i < 2; i++) {
-			BlkHeader *l = &D::freelist[i];
+			BlkHeader *l = D::freelist[i];
 			BlkHeader *h = l->next;
 			while(h != l) {
 				word sz = h->GetSize();
@@ -48,7 +49,12 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 		}
 
 		if(!FreeSmallEmpty(wcount)) { // try to coalesce 4KB small free blocks back to huge storage
-			AddChunk((BlkHeader *)SysAllocRaw(8192 * 4096, 0), 8192); // failed, add 32MB from the system
+			void *ptr = SysAllocRaw(8192 * 4096, 0);
+			HugePage *pg = (HugePage *)MemoryAllocPermanent(sizeof(HugePage));
+			pg->page = ptr;
+			pg->next = huge_pages;
+			huge_pages = pg;
+			AddChunk((BlkHeader *)ptr, 8192); // failed, add 32MB from the system
 			huge_chunks++;
 		}
 	}
@@ -69,7 +75,7 @@ int Heap::HugeFree(void *ptr)
 		return 0;
 	}
 	huge_4KB_count -= h->GetSize();
-	return BlkHeap::Free(h);
+	return BlkHeap::Free(h)->GetSize();
 }
 
 bool Heap::HugeTryRealloc(void *ptr, size_t count)

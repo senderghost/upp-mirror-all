@@ -10,28 +10,6 @@ namespace Upp {
 
 #include "HeapImp.h"
 
-void *MemoryAllocPermanentRaw(size_t size)
-{
-	if(size >= 256)
-		return malloc(size);
-	static byte *ptr = NULL;
-	static byte *limit = NULL;
-	ASSERT(size < INT_MAX);
-	if(ptr + size >= limit) {
-		ptr = (byte *)Heap::aux.HugeAlloc(1);
-		limit = ptr + 4096;
-	}
-	void *p = ptr;
-	ptr += size;
-	return p;
-}
-
-void *MemoryAllocPermanent(size_t size)
-{
-	Mutex::Lock __(Heap::mutex);
-	return MemoryAllocPermanentRaw(size);
-}
-
 void OutOfMemoryPanic(size_t size)
 {
 	char h[200];
@@ -89,6 +67,23 @@ void  SysFreeRaw(void *ptr, size_t size)
 #else
 	munmap(ptr, size);
 #endif
+}
+
+void *MemoryAllocPermanent(size_t size)
+{
+	Mutex::Lock __(Heap::mutex);
+	if(size > 10000)
+		return SysAllocRaw(size, size);
+	static byte *ptr = NULL;
+	static byte *limit = NULL;
+	ASSERT(size < INT_MAX);
+	if(ptr + size >= limit) {
+		ptr = (byte *)SysAllocRaw(16384, 16384);
+		limit = ptr + 16384;
+	}
+	void *p = ptr;
+	ptr += size;
+	return p;
 }
 
 void HeapPanic(const char *text, void *pos, int size)
@@ -164,8 +159,8 @@ void Heap::Make(MemoryProfile& f)
 	int fi = 0;
 	DLink *m = large->next;
 	while(m != large) {
-		Header *h = (Header *)((byte *)m + LARGEHDRSZ);
-		while(h->size) {
+		LargeHeap::BlkHeader *h = m->GetFirst();
+		for(;;) {
 			if(h->IsFree()) {
 				f.large_fragments_count++;
 				f.large_fragments_total += h->size;
@@ -174,7 +169,9 @@ void Heap::Make(MemoryProfile& f)
 				f.large_count++;
 				f.large_total += h->size;
 			}
-			h = h->Next();
+			if(h->IsLast())
+				break;
+			h = h->GetNextHeader();
 		}
 		m = m->next;
 	}
