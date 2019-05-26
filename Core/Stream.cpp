@@ -837,6 +837,7 @@ void StringStream::SetWriteMode()
 void   StringStream::SetReadMode()
 {
 	if(!writemode) return;
+	RTIMING("SetReadMode");
 	wdata.SetLength((dword)GetSize());
 	dword p = (dword)(uintptr_t)(ptr - buffer);
 	data = wdata;

@@ -48,6 +48,7 @@ void *Heap::LAlloc(size_t& size)
 		Init();
 
 	if(size > LUNIT * LPAGE - sizeof(BlkPrefix)) { // big block allocation
+		RTIMING("Huge alloc");
 		Mutex::Lock __(mutex);
 		size_t count = (size + sizeof(DLink) + sizeof(BlkPrefix) + 4095) >> 12;
 		DLink *d = (DLink *)HugeAlloc(count);
@@ -60,8 +61,10 @@ void *Heap::LAlloc(size_t& size)
 		LLOG("Big alloc " << size << ": " << h + 1);
 		return h + 1;
 	}
+
+	RTIMING("Alloc");
 	
-	word wcount = word((size + sizeof(BlkPrefix) + 255) >> 8);
+	word wcount = word((size + sizeof(BlkPrefix) + LUNIT - 1) >> 8);
 	size = ((int)wcount << 8) - sizeof(BlkPrefix);
 	int i0 = min((int)wcount, 64);
 
@@ -85,10 +88,10 @@ void *Heap::LAlloc(size_t& size)
 			return ptr;
 	}
 
-	DLink *ml = (DLink *)HugeAlloc(16); // 16 x 4KB = 64KB
+	DLink *ml = (DLink *)HugeAlloc(((LPAGE + 1) * LUNIT) / 4096);
 	ml->Link(large);
 	LBlkHeader *h = ml->GetFirst();
-	lheap.AddChunk(h, 255);
+	lheap.AddChunk(h, LPAGE);
 	lheap.MakeAlloc(h, wcount);
 	h->heap = this;
 	return (BlkPrefix *)h + 1;
@@ -107,8 +110,9 @@ void Heap::LFree(void *ptr)
 	BlkPrefix *h = (BlkPrefix *)ptr - 1;
 
 	if(h->heap == this) {
+		RTIMING("Free");
 		LBlkHeader *fh = lheap.Free((LBlkHeader *)h);
-		if(fh->GetSize() == 255) {
+		if(fh->GetSize() == LPAGE) {
 			fh->UnlinkFree();
 			FreeLargePage((DLink *)((byte *)fh - LOFFSET));
 		}
@@ -117,6 +121,7 @@ void Heap::LFree(void *ptr)
 
 	Mutex::Lock __(mutex);
 	if(h->heap == NULL) { // this is huge block
+		RTIMING("Huge Free");
 		Mutex::Lock __(mutex);
 		DLink *d = (DLink *)h - 1;
 		big_size -= h->size;
@@ -127,6 +132,7 @@ void Heap::LFree(void *ptr)
 		return;
 	}
 
+	RTIMING("Remote Free");
 	// this is remote heap
 	FreeLink *f = (FreeLink *)ptr;
 	f->next = h->heap->large_remote_list;

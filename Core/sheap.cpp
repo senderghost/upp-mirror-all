@@ -265,13 +265,14 @@ void Heap::SmallFreeDirect(void *ptr)
 
 bool Heap::FreeSmallEmpty(int count4KB)
 { // attempt to release small 4KB pages to gain count4KB space
+	// FIXME
 	for(int i = 0; i < NKLASS; i++)
 		while(aux.empty[i]) {
 			Page *q = aux.empty[i];
 			aux.empty[i] = q->next;
 			free_4KB--;
 			if(aux.HugeFree(q) >= count4KB) // HugeFree is really static, aux needed just to compile
-				return true;
+				return false;
 		}
 	return false;
 }

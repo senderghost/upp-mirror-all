@@ -52,7 +52,7 @@ template <typename Detail, int BlkSize>
 struct BlkHeap : Detail {
 	typedef BlkHeader_<BlkSize> BlkHeader;
 	typedef Detail D;
-	
+
 	bool       JoinNext(BlkHeader *h, word needs_count = 0);
 	void       Split(BlkHeader *h, word wcount);
 	void       AddChunk(BlkHeader *h, int count);
@@ -60,31 +60,88 @@ struct BlkHeap : Detail {
 	BlkHeader *Free(BlkHeader *h); // returns final joined block
 	bool       TryRealloc(void *ptr, size_t count);
 	void       BlkCheck(void *page, int size, bool check_heap = false);
+
+	static void  Assert(bool b);
+#ifdef HEAPDBG
+	static void  DbgFreeFill(void *ptr, size_t size);
+	static void  DbgFreeCheck(void *ptr, size_t size);
+	static void  FillFree(BlkHeader *h);
+	static void  CheckFree(BlkHeader *h);
+#else
+	static void  DbgFreeFill(void *ptr, size_t size) {}
+	static void  DbgFreeCheck(void *ptr, size_t size) {}
+	static void  FillFree(BlkHeader *h) {}
+	static void  CheckFree(BlkHeader *h) {}
+#endif
 };
 
-#define CLOG(x) // LOG(x)
+template <typename Detail, int BlkSize>
+void BlkHeap<Detail, BlkSize>::Assert(bool b)
+{
+	if(!b)
+		Panic("Heap is corrupted!");
+}
+
+#ifdef HEAPDBG
+
+template <typename Detail, int BlkSize>
+void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
+{
+	size_t count = size >> 2;
+	dword *ptr = (dword *)p;
+	while(count--)
+		*ptr++ = 0x65657246;
+}
+
+template <typename Detail, int BlkSize>
+void BlkHeap<Detail, BlkSize>::DbgFreeCheck(void *p, size_t size)
+{
+	size_t count = size >> 2;
+	dword *ptr = (dword *)p;
+	while(count--)
+		if(*ptr++ != 0x65657246)
+			Panic("Writes to freed blocks detected");
+}
+
+template <typename Detail, int BlkSize>
+void BlkHeap<Detail, BlkSize>::FillFree(BlkHeader *h)
+{
+	DbgFreeFill(h + 1, h->GetSize() * BlkSize - sizeof(BlkHeader));
+}
+
+template <typename Detail, int BlkSize>
+void BlkHeap<Detail, BlkSize>::CheckFree(BlkHeader *h)
+{
+	DbgFreeCheck(h + 1, h->GetSize() * BlkSize - sizeof(BlkHeader));
+}
+
+#endif
 
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::BlkCheck(void *page, int page_size, bool check_heap)
 {
+	#define CLOG(x) // LOG(x)
 	CLOG("=== " << asString(page_size) << " " << AsString(page));
 	BlkPrefix *h = (BlkPrefix *)page;
 	int size = 0;
 	int psize = 0;
-	ASSERT(h->IsFirst());
+	Assert(h->IsFirst());
 	for(;;) {
 		size += h->GetSize();
 		CLOG("h: " << AsString(h) << ", GetSize: " << asString(h->GetSize())
 		     << ", size: " << asString(size) << ", islast: " << asString(h->IsLast()));
-		ASSERT(h->GetSize());
-		ASSERT(h->GetPrevSize() == psize);
-		ASSERT(!check_heap || h->IsFree() || h->heap);
+		Assert(h->GetSize());
+		Assert(h->GetPrevSize() == psize);
+		Assert(!check_heap || h->IsFree() || h->heap);
+		if(h->IsFree())
+			CheckFree((BlkHeader *)h);
 		psize = h->GetSize();
 		if(h->IsLast() && size == page_size)
 			return;
-		ASSERT(size < page_size);
+		Assert(size < page_size);
 		h = h->GetNextHeader(BlkSize);
 	}
+	#undef CLOG
 }
 
 template <typename Detail, int BlkSize>
@@ -96,6 +153,7 @@ bool BlkHeap<Detail, BlkSize>::JoinNext(BlkHeader *h, word needs_count)
 	BlkHeader *nh = h->GetNextHeader();
 	if(!nh->IsFree() || h->GetSize() + nh->GetSize() < needs_count)
 		return false;
+	CheckFree(nh);
 	h->SetLast(nh->IsLast());
 	nh->UnlinkFree();
 	word nsz = h->GetSize() + nh->GetSize();
@@ -108,7 +166,7 @@ template <typename Detail, int BlkSize>
 force_inline
 void BlkHeap<Detail, BlkSize>::Split(BlkHeader *h, word wcount)
 { // splits the block if bigger, links new block to free
-	ASSERT(BlkSize != 4096 || ((dword)h & 4095) == 0);
+	ASSERT(BlkSize != 4096 || ((dword)(uintptr_t)h & 4095) == 0);
 	BlkHeader *h2 = (BlkHeader *)((byte *)h + BlkSize * (int)wcount);
 	word nsz = h->GetSize() - wcount;
 	if(nsz == 0) // nothing to split
@@ -133,12 +191,14 @@ void BlkHeap<Detail, BlkSize>::AddChunk(BlkHeader *h, int count)
 	h->SetLast(true);
 	h->SetFree(true);
 	D::LinkFree(h);
+	FillFree(h);
 }
 
 template <typename Detail, int BlkSize>
 force_inline
 void *BlkHeap<Detail, BlkSize>::MakeAlloc(BlkHeader *h, word wcount)
 {
+	CheckFree(h);
 	h->UnlinkFree();
 	h->SetFree(false);
 	Split(h, wcount);
@@ -167,7 +227,7 @@ template <typename Detail, int BlkSize>
 force_inline
 typename BlkHeap<Detail, BlkSize>::BlkHeader *BlkHeap<Detail, BlkSize>::Free(BlkHeader *h)
 {
-	ASSERT(BlkSize != 4096 || ((dword)h & 4095) == 0);
+	ASSERT(BlkSize != 4096 || ((dword)(uintptr_t)h & 4095) == 0);
 	JoinNext(h);
 	if(!h->IsFirst()) { // try to join with previous header if it is free
 		BlkHeader *ph = h->GetPrevHeader();
@@ -176,17 +236,19 @@ typename BlkHeap<Detail, BlkSize>::BlkHeader *BlkHeap<Detail, BlkSize>::Free(Blk
 			ph->SetSize(nsz);
 			ph->SetLast(h->IsLast());
 			ph->SetNextPrevSz();
+			FillFree(ph);
 			return ph;
 		}
 	}
 	h->SetFree(true);
 	D::LinkFree(h); // was not joined with previous header
+	FillFree(h);
 	return h;
 }
 
 struct HugeHeapDetail {
 	static BlkHeader_<4096> freelist[2][1];
-	
+
 	static void LinkFree(BlkHeader_<4096> *h)     { Dbl_LinkAfter(h, freelist[h->GetSize() >= 16]); }
 	static void NewFreeSize(BlkHeader_<4096> *h)  {}
 };
@@ -235,9 +297,11 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	};
 	
 	enum {
-		LUNIT = 256,
-		LPAGE = 255,
+		LUNIT = 256, // granularity of large blocks (size always a multiple of this)
+	//	LPAGE = 255, // number of LUNITs in large page
+		LPAGE = 1247, // number of LUNITs in large page
 		LOFFSET = 64, // offset from 64KB start to the first block header
+
 		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
 	};
 
@@ -245,15 +309,15 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 		BlkHeader_<LUNIT> freelist[65][1]; // all blocks >16KB are in freelist[64]
 		int               mini; // there are no blocks smaller than this
 		
-		void Free64KB(BlkHeader_<256> *h);
-		void LinkFree(BlkHeader_<256> *h) {
+		void Free64KB(BlkHeader_<LUNIT> *h);
+		void LinkFree(BlkHeader_<LUNIT> *h) {
 			int i = min((int)h->GetSize(), 64);
 			mini = min(i, mini);
 			Dbl_LinkAfter(h, freelist[i]);
 		}
 	};
 	
-	struct LargeHeap : BlkHeap<LargeHeapDetail, 256> {};
+	struct LargeHeap : BlkHeap<LargeHeapDetail, LUNIT> {};
 	
 	typedef LargeHeap::BlkHeader LBlkHeader;
 	
@@ -318,13 +382,9 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	static size_t huge_chunks; // 32MB master pages
 
 #ifdef HEAPDBG
-	static void  DbgFreeFill(void *ptr, size_t size);
-	static void  DbgFreeCheck(void *ptr, size_t size);
 	static void  DbgFreeFillK(void *ptr, int k);
 	static void *DbgFreeCheckK(void *p, int k);
 #else
-	static void  DbgFreeFill(void *ptr, size_t size) {}
-	static void  DbgFreeCheck(void *ptr, size_t size) {}
 	static void  DbgFreeFillK(void *ptr, int k) {}
 	static void *DbgFreeCheckK(void *p, int k) { return p; }
 #endif
@@ -339,7 +399,6 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 
 	static int   CheckFree(FreeLink *l, int k);
 	void  Check();
-	static void  Assert(bool b);
 	static void  DblCheck(Page *p);
 	static void  AssertLeaks(bool b);
 	

@@ -48,6 +48,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 			}
 		}
 
+// FIXME:
 		if(!FreeSmallEmpty(wcount)) { // try to coalesce 4KB small free blocks back to huge storage
 			void *ptr = SysAllocRaw(8192 * 4096, 0);
 			HugePage *pg = (HugePage *)MemoryAllocPermanent(sizeof(HugePage));
@@ -66,14 +67,17 @@ int Heap::HugeFree(void *ptr)
 {
 	BlkHeader *h = (BlkHeader *)ptr;
 	if(h->size == 0) {
+		RTIMING("Sys Free");
 		byte *sysblk = (byte *)h - 4096;
 		size_t count = *((size_t *)sysblk);
 		SysFreeRaw(sysblk, count);
 		huge_4KB_count -= count;
 		sys_count--;
 		sys_size -= 4096 * count;
+		RDUMP(4096 * count);
 		return 0;
 	}
+	RTIMING("Blk Free");
 	huge_4KB_count -= h->GetSize();
 	return BlkHeap::Free(h)->GetSize();
 }

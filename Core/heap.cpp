@@ -109,12 +109,6 @@ void Heap::Shutdown()
 	memset(this, 0, sizeof(Heap));
 }
 
-void Heap::Assert(bool b)
-{
-	if(!b)
-		Panic("Heap is corrupted!");
-}
-
 void Heap::DblCheck(Page *p)
 {
 	Page *l = p;

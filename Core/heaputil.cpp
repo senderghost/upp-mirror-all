@@ -95,23 +95,6 @@ void HeapPanic(const char *text, void *pos, int size)
 
 #ifdef HEAPDBG
 
-void Heap::DbgFreeFill(void *p, size_t size)
-{
-	size_t count = size >> 2;
-	dword *ptr = (dword *)p;
-	while(count--)
-		*ptr++ = 0x65657246;
-}
-
-void Heap::DbgFreeCheck(void *p, size_t size)
-{
-	size_t count = size >> 2;
-	dword *ptr = (dword *)p;
-	while(count--)
-		if(*ptr++ != 0x65657246)
-			HeapPanic("Writes to freed blocks detected", p, (int)(uintptr_t)size);
-}
-
 void *Heap::DbgFreeCheckK(void *p, int k)
 {
 	Page *page = GetPage(p);
