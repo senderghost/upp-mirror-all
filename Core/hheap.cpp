@@ -1,5 +1,7 @@
 #include <Core/Core.h>
 
+#define LTIMING(x) // RTIMING(x)
+
 namespace Upp {
 
 #ifdef UPP_HEAP
@@ -25,6 +27,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 	}
 		
 	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
+		LTIMING("SysAlloc");
 		byte *sysblk = (byte *)SysAllocRaw((count + 1) * 4096, 0);
 		BlkHeader *h = (BlkHeader *)(sysblk + 4096);
 		h->size = 0;
@@ -34,6 +37,8 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 		return h;
 	}
 	
+	LTIMING("Huge Alloc");
+
 	word wcount = (word)count;
 	
 	for(int pass = 0; pass < 2; pass++) {
@@ -67,7 +72,7 @@ int Heap::HugeFree(void *ptr)
 {
 	BlkHeader *h = (BlkHeader *)ptr;
 	if(h->size == 0) {
-		RTIMING("Sys Free");
+		LTIMING("Sys Free");
 		byte *sysblk = (byte *)h - 4096;
 		size_t count = *((size_t *)sysblk);
 		SysFreeRaw(sysblk, count);
@@ -77,7 +82,7 @@ int Heap::HugeFree(void *ptr)
 		RDUMP(4096 * count);
 		return 0;
 	}
-	RTIMING("Blk Free");
+	LTIMING("Huge Free");
 	huge_4KB_count -= h->GetSize();
 	return BlkHeap::Free(h)->GetSize();
 }

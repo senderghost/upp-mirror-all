@@ -46,7 +46,8 @@ struct MemoryProfile {
 	int    large_count; // count of large (~ 1 - 64KB) active blocks
 	size_t large_total; // ^ total size
 	int    large_fragments_count; // count of unused large blocks
-	int    large_fragments_total; // ^ total size
+	size_t large_fragments_total; // ^ total size
+	int    large_fragments[2048]; // * 256
 	int    huge_count; // bigger blocks managed by U++ heap (<= 32MB)
 	size_t huge_total; // ^total size
 	int    sys_count; // blocks directly allocated from the system (>32MB

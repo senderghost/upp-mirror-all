@@ -1,6 +1,8 @@
 #include "Core.h"
 #include "Core.h"
 
+#define LTIMING(x)  // RTIMING(x)
+
 namespace Upp {
 
 #ifdef UPP_HEAP
@@ -11,27 +13,23 @@ namespace Upp {
 
 void Heap::LInit()
 {
-	for(int i = 0; i < 65; i++)
+	for(int i = 0; i <= __countof(lheap.freelist); i++)
 		Dbl_Self(lheap.freelist[i]);
-	lheap.mini = 64;
 	big->LinkSelf();
 }
 
 void *Heap::TryLAlloc(int i0, word wcount)
 {
-	LOG("i0: " << asString(i0) << ", mini: " << lheap.mini);
-	for(int i = max(i0, lheap.mini); i < 65; i++) {
+//	LTIMING("Large Try");
+	for(int i = i0; i < __countof(lheap.freelist); i++) {
 		LBlkHeader *l = lheap.freelist[i];
 		LBlkHeader *h = l->next;
+//		RHITCOUNT("for");
 		while(h != l) {
+//			LTIMING("while");
 			word sz = h->GetSize();
 			if(sz >= wcount) {
-				LOG("found: " << i);
-				
-				if(lheap.mini >= i0) {
-					LOG("New " << i);
-					lheap.mini = i;
-				}
+//				RHITCOUNT("makealloc");
 				lheap.MakeAlloc(h, wcount);
 				h->heap = this;
 				return (BlkPrefix *)h + 1;
@@ -42,13 +40,26 @@ void *Heap::TryLAlloc(int i0, word wcount)
 	return NULL;
 }
 
+#if 0
+int stat[65536];
+
+EXITBLOCK {
+	int cnt = 0;
+	for(int i = 0; i < 65536; i++) {
+		cnt += stat[i];
+		if(stat[i])
+			RLOG(i * 256 << ": " << stat[i] << " / " << cnt);
+	}
+}
+#endif
+
 void *Heap::LAlloc(size_t& size)
 {
 	if(!initialized)
 		Init();
 
 	if(size > LUNIT * LPAGE - sizeof(BlkPrefix)) { // big block allocation
-		RTIMING("Huge alloc");
+		LTIMING("Big alloc");
 		Mutex::Lock __(mutex);
 		size_t count = (size + sizeof(DLink) + sizeof(BlkPrefix) + 4095) >> 12;
 		DLink *d = (DLink *)HugeAlloc(count);
@@ -62,11 +73,16 @@ void *Heap::LAlloc(size_t& size)
 		return h + 1;
 	}
 
-	RTIMING("Alloc");
+	LTIMING("Large Alloc");
 	
 	word wcount = word((size + sizeof(BlkPrefix) + LUNIT - 1) >> 8);
+
+#if 0
+	stat[wcount]++;
+#endif
+
 	size = ((int)wcount << 8) - sizeof(BlkPrefix);
-	int i0 = min((int)wcount, 64);
+	int i0 = lheap.Cv(wcount);
 
 	if(large_remote_list)  // there might be blocks of this heap freed in other threads
 		LargeFreeRemote(); // free them first
@@ -88,6 +104,7 @@ void *Heap::LAlloc(size_t& size)
 			return ptr;
 	}
 
+	LTIMING("Large More");
 	DLink *ml = (DLink *)HugeAlloc(((LPAGE + 1) * LUNIT) / 4096);
 	ml->Link(large);
 	LBlkHeader *h = ml->GetFirst();
@@ -110,9 +127,10 @@ void Heap::LFree(void *ptr)
 	BlkPrefix *h = (BlkPrefix *)ptr - 1;
 
 	if(h->heap == this) {
-		RTIMING("Free");
+		LTIMING("Large Free");
 		LBlkHeader *fh = lheap.Free((LBlkHeader *)h);
 		if(fh->GetSize() == LPAGE) {
+			LTIMING("FreeLargePage");
 			fh->UnlinkFree();
 			FreeLargePage((DLink *)((byte *)fh - LOFFSET));
 		}
@@ -120,8 +138,8 @@ void Heap::LFree(void *ptr)
 	}
 
 	Mutex::Lock __(mutex);
-	if(h->heap == NULL) { // this is huge block
-		RTIMING("Huge Free");
+	if(h->heap == NULL) { // this is big block
+		LTIMING("Big Free");
 		Mutex::Lock __(mutex);
 		DLink *d = (DLink *)h - 1;
 		big_size -= h->size;
@@ -132,7 +150,7 @@ void Heap::LFree(void *ptr)
 		return;
 	}
 
-	RTIMING("Remote Free");
+	LTIMING("Remote Free");
 	// this is remote heap
 	FreeLink *f = (FreeLink *)ptr;
 	f->next = h->heap->large_remote_list;

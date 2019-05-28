@@ -336,6 +336,13 @@ String AsString(const MemoryProfile& mem)
 	text << "Sys block count " << mem.sys_count
 	     << ", total size " << int(mem.sys_total >> 10) << " KB\n";
 	text << "32MB master blocks " << mem.chunks32MB << "\n";
+	text << "\nLarge fragments:\n";
+	int count = 0;
+	for(int i = 0; i < 2048; i++)
+		if(mem.large_fragments[i]) {
+			count += mem.large_fragments[i];
+			text << 256.0 * i / 1024 << " KB: " << mem.large_fragments[i] << " / " << count << "\n";
+		}
 #endif
 	return text;
 }

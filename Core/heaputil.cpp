@@ -146,11 +146,14 @@ void Heap::Make(MemoryProfile& f)
 		for(;;) {
 			if(h->IsFree()) {
 				f.large_fragments_count++;
-				f.large_fragments_total += h->size;
+				int sz = LUNIT * h->GetSize();
+				f.large_fragments_total += sz;
+				if(h->size < 2048)
+					f.large_fragments[sz >> 8]++;
 			}
 			else {
 				f.large_count++;
-				f.large_total += h->size;
+				f.large_total += LUNIT * h->size;
 			}
 			if(h->IsLast())
 				break;
@@ -163,7 +166,7 @@ void Heap::Make(MemoryProfile& f)
 	f.sys_total = sys_size;
 	
 	f.huge_count = int(big_count - sys_count);
-	f.huge_total = max((int)big_size - (int)sys_size, 0); // this is not 100% correct, by approximate
+	f.huge_total = 4096 * max((int)big_size - (int)sys_size, 0); // this is not 100% correct, but approximate
 	
 	f.chunks32MB = (int)huge_chunks;
 }

@@ -87,6 +87,7 @@ void BlkHeap<Detail, BlkSize>::Assert(bool b)
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
 {
+	RTIMING("FreeFill");
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -96,6 +97,7 @@ void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeCheck(void *p, size_t size)
 {
+	RTIMING("FreeCheck");
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -198,10 +200,10 @@ template <typename Detail, int BlkSize>
 force_inline
 void *BlkHeap<Detail, BlkSize>::MakeAlloc(BlkHeader *h, word wcount)
 {
-	CheckFree(h);
 	h->UnlinkFree();
 	h->SetFree(false);
 	Split(h, wcount);
+	CheckFree(h);
 	return h;
 }
 
@@ -298,22 +300,24 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	
 	enum {
 		LUNIT = 256, // granularity of large blocks (size always a multiple of this)
-	//	LPAGE = 255, // number of LUNITs in large page
-		LPAGE = 1247, // number of LUNITs in large page
+		LPAGE = 255, // number of LUNITs in large page
+	//	LPAGE = 1247, // number of LUNITs in large page
 		LOFFSET = 64, // offset from 64KB start to the first block header
 
 		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
 	};
 
 	struct LargeHeapDetail {
-		BlkHeader_<LUNIT> freelist[65][1]; // all blocks >16KB are in freelist[64]
-		int               mini; // there are no blocks smaller than this
-		
+		BlkHeader_<LUNIT> freelist[6][1]; // <1KB, <2KB, <4KB, <8KB, >= 8KB
+		static int Cv(int n) { return min(n >> 2, 4); }
+//		BlkHeader_<LUNIT> freelist[5][1]; // <1KB, <2KB, <4KB, <8KB, >= 8KB
+//		static int Cv(int n) { return n < 1*4 ? 0 : n < 2*4 ? 1 : n < 4*4 ? 2 : n < 8*4 ? 3 : 4; }
+//		BlkHeader_<LUNIT> freelist[3][1]; // <1KB, <4KB, >= 4KB
+//		static int Cv(int n) { return n < 1*4 ? 0 : n < 4*4 ? 1 : 2; }
+
 		void Free64KB(BlkHeader_<LUNIT> *h);
 		void LinkFree(BlkHeader_<LUNIT> *h) {
-			int i = min((int)h->GetSize(), 64);
-			mini = min(i, mini);
-			Dbl_LinkAfter(h, freelist[i]);
+			Dbl_LinkAfter(h, freelist[Cv(h->GetSize())]);
 		}
 	};
 	
