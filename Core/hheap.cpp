@@ -1,6 +1,6 @@
 #include <Core/Core.h>
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  RTIMING(x)
 
 namespace Upp {
 
@@ -26,7 +26,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 			Dbl_Self(D::freelist[i]);
 	}
 		
-	if(count > 8192) { // we are wasting whole 4KB page to store just 4 bytes, but this is >32MB after all..
+	if(count > 8192) { // we are wasting 4KB to store just 4 bytes here, but this is >32MB after all..
 		LTIMING("SysAlloc");
 		byte *sysblk = (byte *)SysAllocRaw((count + 1) * 4096, 0);
 		BlkHeader *h = (BlkHeader *)(sysblk + 4096);
@@ -79,7 +79,6 @@ int Heap::HugeFree(void *ptr)
 		huge_4KB_count -= count;
 		sys_count--;
 		sys_size -= 4096 * count;
-		RDUMP(4096 * count);
 		return 0;
 	}
 	LTIMING("Huge Free");

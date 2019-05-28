@@ -122,10 +122,13 @@ public:
 
 	Vector<T>        PickKeys()              { Vector<T> r = pick(key); Clear(); return r; }
 	const Vector<T>& GetKeys() const         { return key; }
+
+	void     Remove(const int *sorted_list, int count)      { key.Remove(sorted_list, count); FixHash(); } // TODO: Unlinked!
+	void     Remove(const Vector<int>& sorted_list)         { key.Remove(sorted_list); FixHash(); } // TODO: Unlinked!
 	
 	Index()                                                 {}
 	Index(Index&& s) : key(pick(s.key))                     { IndexCommon::Pick(s); }
-	Index(const Index& s, int) : key(s.key, 0)              { ReallocHash(0); IndexCommon::Copy(s, key.GetCount()); }
+	Index(const Index& s, int) : key(s.key, 0)              { ReallocHash(0); IndexCommon::Copy(s, key.GetCount()); } // TODO: Unlinked!
 	explicit Index(Vector<T>&& s) : key(pick(s))            { FixHash(); }
 	Index(const Vector<T>& s, int) : key(s, 0)              { FixHash(); }
 
@@ -158,8 +161,6 @@ public:
 	T&       Insert(int i, const T& k)                      { key.Insert(i, k); FixHash(); return key[i]; }
 	void     Remove(int i, int count)                       { key.Remove(i, count); FixHash(); }
 	void     Remove(int i)                                  { Remove(i, 1); }
-	void     Remove(const int *sorted_list, int count)      { key.Remove(sorted_list, count); FixHash(); }
-	void     Remove(const Vector<int>& sorted_list)         { key.Remove(sorted_list); FixHash(); }
 	int      RemoveKey(const T& k)                          { int i = Find(k); if(i >= 0) Remove(i); return i; }
 
 	unsigned GetHash(int i) const                           { return hash[i].hash; }

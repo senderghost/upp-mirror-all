@@ -110,6 +110,12 @@ Vector<int> IndexCommon::GetUnlinked() const
 
 void IndexCommon::AdjustMap(int count, int alloc)
 {
+	if(alloc == 0) {
+		FreeMap();
+		map = empty;
+		mask = 0;
+		return;
+	}
 	dword msk = 0;
 	while(msk < (dword)alloc)
 		msk = (msk << 1) | 3;

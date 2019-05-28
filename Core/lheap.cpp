@@ -1,7 +1,7 @@
 #include "Core.h"
 #include "Core.h"
 
-#define LTIMING(x)  // RTIMING(x)
+#define LTIMING(x)   RTIMING(x)
 
 namespace Upp {
 
