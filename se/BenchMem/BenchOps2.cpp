@@ -88,8 +88,8 @@ CONSOLE_APP_MAIN
 		}
 	}
 	{
-		Bench _("delete new byte[1000] (U++)", 4);
-		for(int i = 0; i < 4 * N; i++) {
+		Bench _("delete new byte[1000] (U++)", 10);
+		for(int i = 0; i < 10 * N; i++) {
 			delete new byte[1000];
 			delete new byte[1000];
 			delete new byte[1000];
@@ -97,8 +97,26 @@ CONSOLE_APP_MAIN
 		}
 	}
 	{
-		Bench _("delete new byte[30000] (U++)", 0.1);
-		for(int i = 0; i < N / 10; i++) {
+		Bench _("delete new byte[2000] (U++)", 10);
+		for(int i = 0; i < 10 * N; i++) {
+			delete new byte[2000];
+			delete new byte[2000];
+			delete new byte[2000];
+			delete new byte[2000];
+		}
+	}
+	{
+		Bench _("delete new byte[8000] (U++)", 10);
+		for(int i = 0; i < 10 * N; i++) {
+			delete new byte[8000];
+			delete new byte[8000];
+			delete new byte[8000];
+			delete new byte[8000];
+		}
+	}
+	{
+		Bench _("delete new byte[30000] (U++)", 1);
+		for(int i = 0; i < 1 * N; i++) {
 			delete new byte[30000];
 			delete new byte[30000];
 			delete new byte[30000];
@@ -106,6 +124,15 @@ CONSOLE_APP_MAIN
 		}
 	}
 
+	{
+		Bench _("delete new byte[320000] (U++)", 1);
+		for(int i = 0; i < 1 * N; i++) {
+			delete new byte[320000];
+			delete new byte[320000];
+			delete new byte[320000];
+			delete new byte[320000];
+		}
+	}
 	RDUMP(data);
 	
 	double n0 = data[0].b;
