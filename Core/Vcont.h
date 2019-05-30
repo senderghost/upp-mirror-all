@@ -68,8 +68,8 @@ public:
 	Buffer(std::initializer_list<T> init) : Buffer(init.size(), init) {}
 };
 
-template <class T> // TODO: Friend of Index, ->class
-struct Vector : public MoveableAndDeepCopyOption< Vector<T> > {
+template <class T>
+class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	T       *vector;
 	int      items;
 	int      alloc;
@@ -92,6 +92,8 @@ struct Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	T&       GrowAdd(const T& x);
 	T&       GrowAdd(T&& x);
 	void     RawInsert(int q, int count);
+
+	template <class U> friend class Index;
 
 public:
 	T&       Add()                           { if(items >= alloc) GrowF(); return *(::new(Rdd()) T); }

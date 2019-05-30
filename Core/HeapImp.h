@@ -88,8 +88,6 @@ template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
 {
 	RTIMING("FreeFill");
-	if(BlkSize == 4096) // it is too slow to check huge blocks
-		return;
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -100,8 +98,6 @@ template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeCheck(void *p, size_t size)
 {
 	RTIMING("FreeCheck");
-	if(BlkSize == 4096) // it is too slow to check huge blocks
-		return;
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -112,12 +108,16 @@ void BlkHeap<Detail, BlkSize>::DbgFreeCheck(void *p, size_t size)
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::FillFree(BlkHeader *h)
 {
+	if(BlkSize == 4096) // it is too slow to check huge blocks
+		return;
 	DbgFreeFill(h + 1, h->GetSize() * BlkSize - sizeof(BlkHeader));
 }
 
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::CheckFree(BlkHeader *h)
 {
+	if(BlkSize == 4096) // it is too slow to check huge blocks
+		return;
 	DbgFreeCheck(h + 1, h->GetSize() * BlkSize - sizeof(BlkHeader));
 }
 
