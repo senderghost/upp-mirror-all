@@ -105,7 +105,6 @@ void *MemoryAllocSz(size_t& size)
 	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAllocSz_(size);
 	size -= sizeof(DbgBlkHeader) + sizeof(dword);
 	DbgSet(p, size);
-	sHeapLock2.Leave();
 #ifdef LOGAF
 	char h[200];
 	sprintf(h, "ALLOCATED %d at %p - %p", size, p + 1, (byte *)(p + 1) + size);
@@ -123,10 +122,8 @@ void MemoryFree_(void *ptr);
 
 void DbgCheck(DbgBlkHeader *p)
 {
-	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
-		sHeapLock2.Leave();
+	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial)
 		DbgHeapPanic("Heap is corrupted ", p);
-	}
 }
 
 void MemoryFree(void *ptr)
@@ -184,10 +181,8 @@ void MemoryCheckDebug()
 	Mutex::Lock __(sHeapLock2);
 	DbgBlkHeader *p = dbg_live.next;
 	while(p != &dbg_live) {
-		if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
-			sHeapLock2.Leave();
+		if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial)
 			DbgHeapPanic("HEAP CHECK: Heap is corrupted ", p);
-		}
 		p = p->next;
 	}
 	while(p != &dbg_live);

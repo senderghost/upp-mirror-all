@@ -140,7 +140,6 @@ void Heap::LFree(void *ptr)
 	Mutex::Lock __(mutex);
 	if(h->heap == NULL) { // this is big block
 		LTIMING("Big Free");
-		Mutex::Lock __(mutex);
 		DLink *d = (DLink *)h - 1;
 		big_size -= h->size;
 		big_count--;
@@ -181,7 +180,6 @@ bool   Heap::TryRealloc(void *ptr, size_t& newsize)
 	Mutex::Lock __(mutex);
 	if(h->heap == NULL) { // this is big block
 		LTIMING("Big Free");
-		Mutex::Lock __(mutex);
 
 		DLink *d = (DLink *)h - 1;
 		BlkPrefix *h = (BlkPrefix *)(d + 1);

@@ -102,9 +102,16 @@ void Heap::Shutdown()
 		}
 	}
 	while(large != large->next) { // Move all large pages to aux (some heap will pick them later)
-		DLink *ml = aux.large->next;
+		DLink *ml = large->next;
 		ml->Unlink();
 		ml->Link(aux.large);
+		LBlkHeader *h = ml->GetFirst();
+		for(;;) {
+			h->heap = &aux;
+			if(h->IsLast())
+				break;
+			h = h->GetNextHeader();
+		}
 	}
 	memset(this, 0, sizeof(Heap));
 }
