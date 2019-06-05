@@ -1,6 +1,7 @@
 #include <Core/Core.h>
 
-#define LTIMING(x)  RTIMING(x)
+#define LTIMING(x)  // RTIMING(x)
+// #define LSTAT
 
 namespace Upp {
 
@@ -15,9 +16,27 @@ namespace Upp {
 BlkHeader_<4096> HugeHeapDetail::freelist[2][1]; // only single global Huge heap...
 Heap::HugePage *Heap::huge_pages;
 
+#ifdef LSTAT
+static int hstat[65536];
+
+EXITBLOCK {
+	int cnt = 0;
+	for(int i = 0; i < 65536; i++) {
+		cnt += hstat[i];
+		if(hstat[i])
+			RLOG(i * 4 << " KB: " << hstat[i] << " / " << cnt);
+	}
+}
+#endif
+
 void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 {
 	ASSERT(count);
+
+#ifdef LSTAT
+	if(count < 65536)
+		hstat[count]++;
+#endif
 
 	huge_4KB_count += count;
 	
@@ -26,7 +45,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 			Dbl_Self(D::freelist[i]);
 	}
 		
-	if(count > 8192) { // we are wasting 4KB to store just 4 bytes here, but this is >32MB after all..
+	if(count > HPAGE) { // we are wasting 4KB to store just 4 bytes here, but this is >32MB after all..
 		LTIMING("SysAlloc");
 		byte *sysblk = (byte *)SysAllocRaw((count + 1) * 4096, 0);
 		BlkHeader *h = (BlkHeader *)(sysblk + 4096);
@@ -53,14 +72,13 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 			}
 		}
 
-// FIXME:
 		if(!FreeSmallEmpty(wcount)) { // try to coalesce 4KB small free blocks back to huge storage
-			void *ptr = SysAllocRaw(8192 * 4096, 0);
+			void *ptr = SysAllocRaw(HPAGE * 4096, 0);
 			HugePage *pg = (HugePage *)MemoryAllocPermanent(sizeof(HugePage));
 			pg->page = ptr;
 			pg->next = huge_pages;
 			huge_pages = pg;
-			AddChunk((BlkHeader *)ptr, 8192); // failed, add 32MB from the system
+			AddChunk((BlkHeader *)ptr, HPAGE); // failed, add 32MB from the system
 			huge_chunks++;
 		}
 	}
@@ -88,7 +106,7 @@ int Heap::HugeFree(void *ptr)
 
 bool Heap::HugeTryRealloc(void *ptr, size_t count)
 {
-	return BlkHeap::TryRealloc(ptr, count);
+	return count <= HPAGE && BlkHeap::TryRealloc(ptr, count);
 }
 
 #endif

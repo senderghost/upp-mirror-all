@@ -1,7 +1,7 @@
 #include "Core.h"
 #include "Core.h"
 
-#define LTIMING(x)   RTIMING(x)
+#define LTIMING(x)  // RTIMING(x)
 
 namespace Upp {
 
@@ -81,7 +81,7 @@ void *Heap::LAlloc(size_t& size)
 	stat[wcount]++;
 #endif
 
-	size = ((int)wcount << 8) - sizeof(BlkPrefix);
+	size = ((int)wcount * LUNIT) - sizeof(BlkPrefix);
 	int i0 = lheap.Cv(wcount);
 
 	if(large_remote_list)  // there might be blocks of this heap freed in other threads
@@ -157,8 +157,45 @@ void Heap::LFree(void *ptr)
 	h->heap->large_remote_list = f;
 }
 
-bool   Heap::LTryRealloc(void *ptr, size_t newsize)
+bool   Heap::TryRealloc(void *ptr, size_t& newsize)
 {
+	ASSERT(ptr);
+
+#ifdef _DEBUG
+	if(IsSmall(ptr))
+		return false;
+#endif
+
+	BlkPrefix *h = (BlkPrefix *)ptr - 1;
+
+	if(h->heap == this) {
+		if(newsize > LUNIT * LPAGE - sizeof(BlkPrefix))
+			return false;
+		word wcount = word(((newsize ? newsize : 1) + sizeof(BlkPrefix) + LUNIT - 1) >> 8);
+		if(wcount == h->GetSize() || lheap.TryRealloc(h, wcount)) {
+			newsize = ((int)wcount * LUNIT) - sizeof(BlkPrefix);
+			return true;
+		}
+	}
+	
+	Mutex::Lock __(mutex);
+	if(h->heap == NULL) { // this is big block
+		LTIMING("Big Free");
+		Mutex::Lock __(mutex);
+
+		DLink *d = (DLink *)h - 1;
+		BlkPrefix *h = (BlkPrefix *)(d + 1);
+
+		size_t count = (newsize + sizeof(DLink) + sizeof(BlkPrefix) + 4095) >> 12;
+		
+		if(HugeTryRealloc(d, count)) {
+			big_size -= h->size;
+			d->size = newsize = (count << 12) - sizeof(DLink) - sizeof(BlkPrefix);
+			big_size += h->size;
+			return true;
+		}
+	}
+
 	return false;
 }
 

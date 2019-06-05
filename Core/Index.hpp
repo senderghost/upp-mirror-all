@@ -36,13 +36,16 @@ never_inline
 void Index<T>::ReallocHash(int n)
 { // realloc hash to have the same capacity as key, copy n elements from previous alloc
 	if(key.GetAlloc()) {
-		Hash *h = (Hash *)MemoryAlloc(key.GetAlloc() * sizeof(Hash));
-		if(hash) {
-			if(n)
-				memcpy(h, hash, sizeof(Hash) * n);
-			MemoryFree(hash);
+		size_t sz = key.GetAlloc() * sizeof(Hash);
+		if(!MemoryTryRealloc(hash, sz)) {
+			Hash *h = (Hash *)MemoryAlloc(sz);
+			if(hash) {
+				if(n)
+					memcpy(h, hash, sizeof(Hash) * n);
+				MemoryFree(hash);
+			}
+			hash = h;
 		}
-		hash = h;
 	}
 	else {
 		MemoryFree(hash);
@@ -52,13 +55,16 @@ void Index<T>::ReallocHash(int n)
 
 template <typename T>
 never_inline
-void Index<T>::FixHash()
+void Index<T>::FixHash(bool makemap)
 {
 	ReallocHash(0);
 	unlinked = -1;
 	for(int i = 0; i < key.GetCount(); i++)
 		hash[i].hash = Smear(key[i]);
-	MakeMap(key.GetCount());
+	if(makemap)
+		MakeMap(key.GetCount());
+	else
+		Remap(key.GetCount());
 }
 
 template <typename T>
@@ -298,6 +304,27 @@ void Index<T>::Shrink()
 	if(a != key.GetAlloc()) {
 		ReallocHash(key.GetCount());
 		AdjustMap(key.GetCount(), key.GetCount());
+	}
+}
+
+template <typename T>
+void Index<T>::Remove(const int *sorted_list, int count)
+{
+	if(HasUnlinked()) {
+		Vector<bool> u;
+		u.SetCount(GetCount());
+		for(int i = 0; i < GetCount(); i++)
+			u[i] = IsUnlinked(i);
+		key.Remove(sorted_list, count);
+		u.Remove(sorted_list, count);
+		FixHash(false);
+		for(int i = 0; i < GetCount(); i++)
+			if(u[i])
+				Unlink(i);
+	}
+	else {
+		key.Remove(sorted_list, count);
+		FixHash(false);
 	}
 }
 

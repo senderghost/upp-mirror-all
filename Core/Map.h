@@ -139,6 +139,10 @@ public:
 
 	const K& GetKey(int i) const                    { return key[i]; }
 
+	void     Remove(const int *sl, int n)           { key.Remove(sl, n); value.Remove(sl, n); }
+	void     Remove(const Vector<int>& sl)          { Remove(sl, sl.GetCount()); }
+	template <typename P> void RemoveIf(P p)        { Remove(FindAlli(p)); }
+
 	void     Serialize(Stream& s);
 	void     Xmlize(XmlIO& xio);
 	void     Jsonize(JsonIO& jio);
@@ -214,8 +218,6 @@ public:
 
 	void     Remove(int i)                         { key.Remove(i); value.Remove(i); }
 	void     Remove(int i, int count)              { key.Remove(i, count); value.Remove(i, count); }
-	void     Remove(const int *sl, int n)          { key.Remove(sl, n); value.Remove(sl, n); }
-	void     Remove(const Vector<int>& sl)         { Remove(sl, sl.GetCount()); }
 	int      RemoveKey(const K& k);
 #endif
 };

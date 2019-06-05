@@ -79,15 +79,11 @@ void MemoryBreakpoint(dword serial)
 	s_allocbreakpoint = serial;
 }
 
-void *MemoryAlloc_(size_t size);
+void *MemoryAllocSz_(size_t& size);
 
-void *MemoryAlloc(size_t size)
+void  DbgSet(DbgBlkHeader *p, size_t size)
 {
-	if(PanicMode)
-		return malloc(size);
-	sHeapLock2.Enter();
 	static dword serial_number = 0;
-	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAlloc_(sizeof(DbgBlkHeader) + size + sizeof(dword));
 #if (defined(TESTLEAKS) || defined(HEAPDBG)) && defined(COMPILER_GCC) && defined(UPP_HEAP)
 	p->serial = sMemDiagInitCount == 0 || s_ignoreleaks ? 0 : ~ ++serial_number ^ (dword)(uintptr_t) p;
 #else
@@ -98,6 +94,17 @@ void *MemoryAlloc(size_t size)
 		__BREAK__;
 	dbg_live.Insert(p);
 	Poke32le((byte *)(p + 1) + p->size, p->serial);
+}
+
+void *MemoryAllocSz(size_t& size)
+{
+	if(PanicMode)
+		return malloc(size);
+	Mutex::Lock __(sHeapLock2);
+	size += sizeof(DbgBlkHeader) + sizeof(dword);
+	DbgBlkHeader *p = (DbgBlkHeader *)MemoryAllocSz_(size);
+	size -= sizeof(DbgBlkHeader) + sizeof(dword);
+	DbgSet(p, size);
 	sHeapLock2.Leave();
 #ifdef LOGAF
 	char h[200];
@@ -107,13 +114,20 @@ void *MemoryAlloc(size_t size)
 	return p + 1;
 }
 
-void *MemoryAllocSz(size_t& size)
+void *MemoryAlloc(size_t size)
 {
-	size = (size + 15) & ~((size_t)15);
-	return MemoryAlloc(size);
+	return MemoryAllocSz(size);
 }
 
 void MemoryFree_(void *ptr);
+
+void DbgCheck(DbgBlkHeader *p)
+{
+	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
+		sHeapLock2.Leave();
+		DbgHeapPanic("Heap is corrupted ", p);
+	}
+}
 
 void MemoryFree(void *ptr)
 {
@@ -127,12 +141,28 @@ void MemoryFree(void *ptr)
 	if(!ptr) return;
 	Mutex::Lock __(sHeapLock2);
 	DbgBlkHeader *p = (DbgBlkHeader *)ptr - 1;
-	if((dword)Peek32le((byte *)(p + 1) + p->size) != p->serial) {
-		sHeapLock2.Leave();
-		DbgHeapPanic("Heap is corrupted ", p);
-	}
+	DbgCheck(p);
 	p->Unlink();
 	MemoryFree_(p);
+}
+
+bool MemoryTryRealloc_(void *ptr, size_t& newsize);
+
+bool MemoryTryRealloc__(void *ptr, size_t& newsize)
+{
+	if(!ptr) return false;
+	Mutex::Lock __(sHeapLock2);
+	DbgBlkHeader *p = (DbgBlkHeader *)ptr - 1;
+	DbgCheck(p);
+	size_t sz = newsize;
+	sz += sizeof(DbgBlkHeader) + sizeof(dword);
+	if(MemoryTryRealloc_((DbgBlkHeader *)ptr - 1, sz)) {
+		newsize = sz - sizeof(DbgBlkHeader) - sizeof(dword);
+		p->Unlink();
+		DbgSet(p, newsize);
+		return true;
+	}
+	return false;
 }
 
 size_t GetMemoryBlockSize_(void *ptr);
@@ -141,13 +171,6 @@ size_t GetMemoryBlockSize(void *ptr)
 {
 	if(!ptr) return 0;
 	return ((DbgBlkHeader *)ptr - 1)->size;
-}
-
-bool TryRealloc_(void *ptr, size_t size);
-
-bool TryRealloc(void *ptr, size_t newsize)
-{
-	return TryRealloc_((DbgBlkHeader *)ptr - 1, sizeof(DbgBlkHeader) + newsize + sizeof(dword));
 }
 
 void *MemoryAlloc32()             { return MemoryAlloc(32); }

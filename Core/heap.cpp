@@ -172,7 +172,7 @@ void Heap::Check() {
 
 	HugePage *pg = huge_pages;
 	while(pg) {
-		BlkCheck(pg->page, 8192);
+		BlkCheck(pg->page, HPAGE);
 		pg = pg->next;
 	}
 

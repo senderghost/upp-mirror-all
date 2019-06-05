@@ -239,17 +239,6 @@ size_t Heap::GetBlockSize(void *ptr)
 	return LGetBlockSize(ptr);
 }
 
-bool Heap::TryRealloc(void *ptr, size_t newsize)
-{
-	if(!ptr) return 0;
-	LLOG("GetBlockSize " << ptr);
-	if(IsSmall(ptr)) {
-		Page *page = GetPage(ptr);
-		int k = page->klass;
-		return newsize <= (size_t)Ksz(k);
-	}
-	return LTryRealloc(ptr, newsize);
-}
 
 void Heap::SmallFreeDirect(void *ptr)
 { // does not need to check for target heap or small vs large
@@ -265,14 +254,13 @@ void Heap::SmallFreeDirect(void *ptr)
 
 bool Heap::FreeSmallEmpty(int count4KB)
 { // attempt to release small 4KB pages to gain count4KB space
-	// FIXME
 	for(int i = 0; i < NKLASS; i++)
 		while(aux.empty[i]) {
 			Page *q = aux.empty[i];
 			aux.empty[i] = q->next;
 			free_4KB--;
 			if(aux.HugeFree(q) >= count4KB) // HugeFree is really static, aux needed just to compile
-				return false;
+				return true;
 		}
 	return false;
 }
@@ -378,7 +366,7 @@ void *MemoryAllok__(int klass)
 
 #if defined(HEAPDBG)
 
-void *MemoryAlloc_(size_t sz)
+void *MemoryAllocSz_(size_t& sz)
 {
 	return ThreadHeap()->AllocSz(sz);
 }
@@ -388,7 +376,7 @@ void  MemoryFree_(void *ptr)
 	ThreadHeap()->Free(ptr);
 }
 
-bool   TryRealloc_(void *ptr, size_t size)
+bool  MemoryTryRealloc_(void *ptr, size_t& size)
 {
 	return ThreadHeap()->TryRealloc(ptr, size);
 }
@@ -425,7 +413,7 @@ size_t GetMemoryBlockSize(void *ptr)
 	return ThreadHeap()->GetBlockSize(ptr);
 }
 
-bool   TryRealloc(void *ptr, size_t size)
+bool MemoryTryRealloc__(void *ptr, size_t& size)
 {
 	return ThreadHeap()->TryRealloc(ptr, size);
 }

@@ -73,7 +73,7 @@ class Index : MoveableAndDeepCopyOption<Index<T>>, IndexCommon {
 
 	template <typename, typename, typename> friend class AMap;
 	
-	void        FixHash();
+	void        FixHash(bool makemap = true);
 
 public:
 	void        Add(const T& k)             { AddS(k, Smear(k)); }
@@ -123,8 +123,9 @@ public:
 	Vector<T>        PickKeys()              { Vector<T> r = pick(key); Clear(); return r; }
 	const Vector<T>& GetKeys() const         { return key; }
 
-	void     Remove(const int *sorted_list, int count)      { key.Remove(sorted_list, count); FixHash(); } // TODO: Unlinked!
-	void     Remove(const Vector<int>& sorted_list)         { key.Remove(sorted_list); FixHash(); } // TODO: Unlinked!
+	void     Remove(const int *sorted_list, int count);
+	void     Remove(const Vector<int>& sorted_list)         { Remove(sorted_list, sorted_list.GetCount()); }
+	template <typename Pred> void RemoveIf(Pred p)          { Remove(FindAlli(key, p)); }
 	
 	Index()                                                 {}
 	Index(Index&& s) : key(pick(s.key))                     { IndexCommon::Pick(s); }

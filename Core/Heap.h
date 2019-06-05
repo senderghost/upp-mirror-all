@@ -16,7 +16,20 @@ int   MemoryUsedKb();
 void  MemoryLimitKb(int kb);
 
 size_t GetMemoryBlockSize(void *ptr);
-bool   TryRealloc(void *ptr, size_t newsize);
+
+bool MemoryTryRealloc__(void *ptr, size_t& newsize);
+
+#ifdef _DEBUG
+inline // in DEBUG test for small block is moved inside, because debug adds diagnostics header
+bool  MemoryTryRealloc(void *ptr, size_t& newsize) {
+	return MemoryTryRealloc__(ptr, newsize);
+}
+#else
+inline
+bool  MemoryTryRealloc(void *ptr, size_t& newsize) {
+	return (((dword)(uintptr_t)ptr) & 16) && MemoryTryRealloc__(ptr, newsize);
+}
+#endif
 
 #ifdef MEMORY_SHRINK
 void  MemoryShrink();

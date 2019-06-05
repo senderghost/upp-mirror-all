@@ -54,7 +54,7 @@ struct BlkHeap : Detail {
 	typedef Detail D;
 
 	bool       JoinNext(BlkHeader *h, word needs_count = 0);
-	void       Split(BlkHeader *h, word wcount);
+	void       Split(BlkHeader *h, word wcount, bool fill = false);
 	void       AddChunk(BlkHeader *h, int count);
 	void      *MakeAlloc(BlkHeader *h, word wcount);
 	BlkHeader *Free(BlkHeader *h); // returns final joined block
@@ -87,7 +87,6 @@ void BlkHeap<Detail, BlkSize>::Assert(bool b)
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
 {
-	RTIMING("FreeFill");
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -97,7 +96,6 @@ void BlkHeap<Detail, BlkSize>::DbgFreeFill(void *p, size_t size)
 template <typename Detail, int BlkSize>
 void BlkHeap<Detail, BlkSize>::DbgFreeCheck(void *p, size_t size)
 {
-	RTIMING("FreeCheck");
 	size_t count = size >> 2;
 	dword *ptr = (dword *)p;
 	while(count--)
@@ -170,7 +168,7 @@ bool BlkHeap<Detail, BlkSize>::JoinNext(BlkHeader *h, word needs_count)
 
 template <typename Detail, int BlkSize>
 force_inline
-void BlkHeap<Detail, BlkSize>::Split(BlkHeader *h, word wcount)
+void BlkHeap<Detail, BlkSize>::Split(BlkHeader *h, word wcount, bool fill)
 { // splits the block if bigger, links new block to free
 	ASSERT(BlkSize != 4096 || ((dword)(uintptr_t)h & 4095) == 0);
 	BlkHeader *h2 = (BlkHeader *)((byte *)h + BlkSize * (int)wcount);
@@ -184,6 +182,8 @@ void BlkHeap<Detail, BlkSize>::Split(BlkHeader *h, word wcount)
 	h2->SetPrevSize(wcount);
 	h2->SetNextPrevSz();
 	D::LinkFree(h2);
+	if(fill)
+		FillFree(h2);
 
 	h->SetSize(wcount);
 	h->SetLast(false);
@@ -222,9 +222,9 @@ bool BlkHeap<Detail, BlkSize>::TryRealloc(void *ptr, size_t count)
 	
 	word sz = h->GetSize();
 	if(sz != count) {
-		if(!JoinNext(h, (word)count))
+		if(!JoinNext(h, (word)count) && count > sz)
 			return false;
-		Split(h, (word)count);
+		Split(h, (word)count, true);
 	}
 	return true;
 }
@@ -238,12 +238,12 @@ typename BlkHeap<Detail, BlkSize>::BlkHeader *BlkHeap<Detail, BlkSize>::Free(Blk
 	if(!h->IsFirst()) { // try to join with previous header if it is free
 		BlkHeader *ph = h->GetPrevHeader();
 		if(ph->IsFree()) {
+			ph->UnlinkFree(); // remove because size will change, might end in another bucket then
 			word nsz = ph->GetSize() + h->GetSize();
 			ph->SetSize(nsz);
 			ph->SetLast(h->IsLast());
 			ph->SetNextPrevSz();
-			FillFree(ph);
-			return ph;
+			h = ph;
 		}
 	}
 	h->SetFree(true);
@@ -260,13 +260,24 @@ struct HugeHeapDetail {
 };
 
 struct Heap : BlkHeap<HugeHeapDetail, 4096> {
+	enum {
+	#ifdef CPU_64
+		HPAGE = 7 * 8192, // number of 4KB pages in huge page (also limit for sys allocation)
+	#else
+		HPAGE = 8192, // number of 4KB pages in huge page (also limit for sys allocation)
+	#endif
+		LUNIT = 256, // granularity of large blocks (size always a multiple of this)
+		LPAGE = LUNIT - 1, // number of LUNITs in large page
+		LOFFSET = 64, // offset from 64KB start to the first block header
+
+		NKLASS = 23, // number of small size classes
+
+		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
+	};
+
 	void *HugeAlloc(size_t count); // count in 4KB, client needs to not touch HugePrefix
 	int   HugeFree(void *ptr);
 	bool  HugeTryRealloc(void *ptr, size_t count);
-
-	enum {
-		NKLASS = 23, // number of small size classes
-	};
 
 	static int Ksz(int k) {
 		static int sz[] = {
@@ -302,15 +313,6 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 		int   Count()                      { return (int)(uintptr_t)(End() - Begin()) / Ksz(klass); }
 	};
 	
-	enum {
-		LUNIT = 256, // granularity of large blocks (size always a multiple of this)
-		LPAGE = 255, // number of LUNITs in large page
-	//	LPAGE = 1247, // number of LUNITs in large page
-		LOFFSET = 64, // offset from 64KB start to the first block header
-
-		REMOTE_OUT_SZ = 2000, // maximum size of remote frees to be buffered to flush at once
-	};
-
 	struct LargeHeapDetail {
 		BlkHeader_<LUNIT> freelist[6][1]; // <1KB, <2KB, <4KB, <8KB, >= 8KB
 		static int Cv(int n) { return min(n >> 2, 4); }
@@ -427,7 +429,7 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	void  *LAlloc(size_t& size);
 	void   FreeLargePage(DLink *l);
 	void   LFree(void *ptr);
-	bool   LTryRealloc(void *ptr, size_t newsize);
+	bool   LTryRealloc(void *ptr, size_t& newsize);
 	size_t LGetBlockSize(void *ptr);
 
 	void   Make(MemoryProfile& f);
@@ -458,7 +460,7 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	void  *Alloc48();
 	void   Free48(void *ptr);
 
-	bool   TryRealloc(void *ptr, size_t newsize);
+	bool   TryRealloc(void *ptr, size_t& newsize);
 };
 
 force_inline

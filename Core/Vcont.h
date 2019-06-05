@@ -85,9 +85,9 @@ class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	void     Free();
 	void     __DeepCopy(const Vector& src);
 	T&       Get(int i) const                { ASSERT(i >= 0 && i < items); return vector[i]; }
-	void     ReAlloc(int alloc);
+	bool     ReSize(int alloc);
 	void     ReAllocF(int alloc);
-	void     Grow();
+	bool     GrowSz();
 	void     GrowF();
 	T&       GrowAdd(const T& x);
 	T&       GrowAdd(T&& x);
