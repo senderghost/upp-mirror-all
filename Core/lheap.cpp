@@ -69,7 +69,7 @@ void *Heap::LAlloc(size_t& size)
 		return h + 1;
 	}
 
-	LTIMING("Large Alloc");
+	RTIMING("Large Alloc");
 	
 	word wcount = word((size + sizeof(BlkPrefix) + LUNIT - 1) >> 8);
 
@@ -87,6 +87,7 @@ void *Heap::LAlloc(size_t& size)
 	if(ptr)
 		return ptr;
 
+	RTIMING("Large Alloc 2");
 	Mutex::Lock __(mutex);
 	aux.LargeFreeRemoteRaw();
 	if(aux.large->next != aux.large) {

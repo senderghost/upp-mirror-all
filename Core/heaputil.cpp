@@ -26,10 +26,10 @@ size_t Heap::sys_size;
 size_t Heap::sys_count;
 size_t Heap::huge_chunks;
 
-int MemoryUsedKb() {
-	RDUMP(Heap::huge_4KB_count);
-	RDUMP(Heap::free_4KB);
- return int(4 * (Heap::huge_4KB_count - Heap::free_4KB)); }
+int MemoryUsedKb()
+{
+	return int(4 * (Heap::huge_4KB_count - Heap::free_4KB));
+}
 
 int sKBLimit = INT_MAX;
 
@@ -172,6 +172,66 @@ void Heap::Make(MemoryProfile& f)
 	f.huge_total = 4096 * max((int)big_size - (int)sys_size, 0); // this is not 100% correct, but approximate
 	
 	f.master_chunks = (int)huge_chunks;
+
+	HugePage *pg = huge_pages;
+	while(pg) {
+		BlkPrefix *h = (BlkPrefix *)pg->page;
+		for(;;) {
+			if(h->IsFree()) {
+				word sz = h->GetSize();
+				f.huge_fragments[sz]++;
+				f.huge_fragments_count++;
+				f.huge_fragments_total += sz;
+			}
+			if(h->IsLast())
+				break;
+			h = h->GetNextHeader(4096);
+		}
+		pg = pg->next;
+	}
+}
+
+String AsString(const MemoryProfile& mem)
+{
+	String text;
+#ifdef UPP_HEAP
+	int acount = 0;
+	size_t asize = 0;
+	int fcount = 0;
+	size_t fsize = 0;
+	for(int i = 0; i < 1024; i++)
+		if(mem.allocated[i]) {
+			int sz = 4 * i;
+			text << Format("%4d B, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
+			              sz, mem.allocated[i], (mem.allocated[i] * sz) >> 10,
+			              mem.fragments[i], (mem.fragments[i] * sz) >> 10);
+			acount += mem.allocated[i];
+			asize += mem.allocated[i] * sz;
+			fcount += mem.fragments[i];
+			fsize += mem.fragments[i] * sz;
+		}
+	text << Format(" TOTAL, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
+	              acount, int(asize >> 10), fcount, int(fsize >> 10));
+	text << "Empty 4KB pages " << mem.freepages << " (" << mem.freepages * 4 << " KB)\n";
+	text << "Large block count " << mem.large_count
+	     << ", total size " << (mem.large_total >> 10) << " KB\n";
+	text << "Large fragments count " << mem.large_fragments_count
+	     << ", total size " << (mem.large_fragments_total >> 10) << " KB\n";
+	text << "Huge block count " << mem.huge_count
+	     << ", total size " << int(mem.huge_total >> 10) << " KB\n";
+	text << "Sys block count " << mem.sys_count
+	     << ", total size " << int(mem.sys_total >> 10) << " KB\n";
+	text << Heap::HPAGE * 4 / 1024 << "MB master blocks " << mem.master_chunks << "\n";
+	text << "\nLarge fragments:\n";
+	for(int i = 0; i < 2048; i++)
+		if(mem.large_fragments[i])
+			text << 256.0 * i / 1024 << " KB: " << mem.large_fragments[i] << "\n";
+	text << "\nHuge fragments:\n";
+	for(int i = 0; i < 65535; i++)
+		if(mem.huge_fragments[i])
+			text << i * 4 << " KB: " << mem.huge_fragments[i] << "\n";
+#endif
+	return text;
 }
 
 #ifdef flagHEAPSTAT
