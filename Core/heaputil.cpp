@@ -26,7 +26,10 @@ size_t Heap::sys_size;
 size_t Heap::sys_count;
 size_t Heap::huge_chunks;
 
-int MemoryUsedKb() { return int(4 * (Heap::huge_4KB_count - Heap::free_4KB)); }
+int MemoryUsedKb() {
+	RDUMP(Heap::huge_4KB_count);
+	RDUMP(Heap::free_4KB);
+ return int(4 * (Heap::huge_4KB_count - Heap::free_4KB)); }
 
 int sKBLimit = INT_MAX;
 
@@ -168,7 +171,7 @@ void Heap::Make(MemoryProfile& f)
 	f.huge_count = int(big_count - sys_count);
 	f.huge_total = 4096 * max((int)big_size - (int)sys_size, 0); // this is not 100% correct, but approximate
 	
-	f.chunks32MB = (int)huge_chunks;
+	f.master_chunks = (int)huge_chunks;
 }
 
 #ifdef flagHEAPSTAT

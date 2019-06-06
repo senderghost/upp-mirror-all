@@ -219,6 +219,48 @@ void Heap::AuxFinalCheck()
 	AssertLeaks(big == big->next);
 }
 
+String AsString(const MemoryProfile& mem)
+{
+	String text;
+#ifdef UPP_HEAP
+	int acount = 0;
+	size_t asize = 0;
+	int fcount = 0;
+	size_t fsize = 0;
+	for(int i = 0; i < 1024; i++)
+		if(mem.allocated[i]) {
+			int sz = 4 * i;
+			text << Format("%4d B, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
+			              sz, mem.allocated[i], (mem.allocated[i] * sz) >> 10,
+			              mem.fragments[i], (mem.fragments[i] * sz) >> 10);
+			acount += mem.allocated[i];
+			asize += mem.allocated[i] * sz;
+			fcount += mem.fragments[i];
+			fsize += mem.fragments[i] * sz;
+		}
+	text << Format(" TOTAL, %7d allocated (%6d KB), %6d fragments (%6d KB)\n",
+	              acount, int(asize >> 10), fcount, int(fsize >> 10));
+	text << "Empty 4KB pages " << mem.freepages << " (" << mem.freepages * 4 << " KB)\n";
+	text << "Large block count " << mem.large_count
+	     << ", total size " << (mem.large_total >> 10) << " KB\n";
+	text << "Large fragments count " << mem.large_fragments_count
+	     << ", total size " << (mem.large_fragments_total >> 10) << " KB\n";
+	text << "Huge block count " << mem.huge_count
+	     << ", total size " << int(mem.huge_total >> 10) << " KB\n";
+	text << "Sys block count " << mem.sys_count
+	     << ", total size " << int(mem.sys_total >> 10) << " KB\n";
+	text << Heap::HPAGE * 4 / 1024 << "MB master blocks " << mem.master_chunks << "\n";
+	text << "\nLarge fragments:\n";
+	int count = 0;
+	for(int i = 0; i < 2048; i++)
+		if(mem.large_fragments[i]) {
+			count += mem.large_fragments[i];
+			text << 256.0 * i / 1024 << " KB: " << mem.large_fragments[i] << " / " << count << "\n";
+		}
+#endif
+	return text;
+}
+
 #ifdef MEMORY_SHRINK
 void Heap::Shrink()
 {

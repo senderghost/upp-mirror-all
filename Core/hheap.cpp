@@ -39,7 +39,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 #endif
 
 	huge_4KB_count += count;
-	
+
 	if(!D::freelist[0]->next) { // initialization
 		for(int i = 0; i < 2; i++)
 			Dbl_Self(D::freelist[i]);
@@ -60,6 +60,9 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 
 	word wcount = (word)count;
 	
+	if(16 * free_4KB > huge_4KB_count) // keep number of free 4KB blocks in check
+		FreeSmallEmpty(INT_MAX, int(free_4KB - huge_4KB_count / 32));
+	
 	for(int pass = 0; pass < 2; pass++) {
 		for(int i = count >= 16; i < 2; i++) {
 			BlkHeader *l = D::freelist[i];
@@ -72,7 +75,7 @@ void *Heap::HugeAlloc(size_t count) // count in 4kb pages
 			}
 		}
 
-		if(!FreeSmallEmpty(wcount)) { // try to coalesce 4KB small free blocks back to huge storage
+		if(!FreeSmallEmpty(wcount, INT_MAX)) { // try to coalesce 4KB small free blocks back to huge storage
 			void *ptr = SysAllocRaw(HPAGE * 4096, 0);
 			HugePage *pg = (HugePage *)MemoryAllocPermanent(sizeof(HugePage));
 			pg->page = ptr;
@@ -106,7 +109,7 @@ int Heap::HugeFree(void *ptr)
 
 bool Heap::HugeTryRealloc(void *ptr, size_t count)
 {
-	return count <= HPAGE && BlkHeap::TryRealloc(ptr, count);
+	return count <= HPAGE && BlkHeap::TryRealloc(ptr, count, huge_4KB_count);
 }
 
 #endif

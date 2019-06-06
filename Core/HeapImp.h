@@ -3,12 +3,12 @@ void  OutOfMemoryPanic(size_t size);
 void *SysAllocRaw(size_t size, size_t reqsize);
 void  SysFreeRaw(void *ptr, size_t size);
 
-// This is used internally by U++ to manage large (64KB) and huge (32MB) blocks
-
 const char *asString(int i);
 const char *asString(void *ptr);
 
 struct Heap;
+
+// This is used internally by U++ to manage large (64KB) and huge (up to 256MB) blocks
 
 struct BlkPrefix { // this part is at the start of Blk allocated block, client must not touch it
 	word        prev_size;
@@ -58,7 +58,7 @@ struct BlkHeap : Detail {
 	void       AddChunk(BlkHeader *h, int count);
 	void      *MakeAlloc(BlkHeader *h, word wcount);
 	BlkHeader *Free(BlkHeader *h); // returns final joined block
-	bool       TryRealloc(void *ptr, size_t count);
+	bool       TryRealloc(void *ptr, size_t count, size_t& n);
 	void       BlkCheck(void *page, int size, bool check_heap = false);
 
 	static void  Assert(bool b);
@@ -212,7 +212,7 @@ void *BlkHeap<Detail, BlkSize>::MakeAlloc(BlkHeader *h, word wcount)
 }
 
 template <typename Detail, int BlkSize>
-bool BlkHeap<Detail, BlkSize>::TryRealloc(void *ptr, size_t count)
+bool BlkHeap<Detail, BlkSize>::TryRealloc(void *ptr, size_t count, size_t& n)
 {
 	ASSERT(count);
 	
@@ -225,6 +225,7 @@ bool BlkHeap<Detail, BlkSize>::TryRealloc(void *ptr, size_t count)
 		if(!JoinNext(h, (word)count) && count > sz)
 			return false;
 		Split(h, (word)count, true);
+		n = n - sz + count;
 	}
 	return true;
 }
@@ -316,10 +317,6 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	struct LargeHeapDetail {
 		BlkHeader_<LUNIT> freelist[6][1]; // <1KB, <2KB, <4KB, <8KB, >= 8KB
 		static int Cv(int n) { return min(n >> 2, 4); }
-//		BlkHeader_<LUNIT> freelist[5][1]; // <1KB, <2KB, <4KB, <8KB, >= 8KB
-//		static int Cv(int n) { return n < 1*4 ? 0 : n < 2*4 ? 1 : n < 4*4 ? 2 : n < 8*4 ? 3 : 4; }
-//		BlkHeader_<LUNIT> freelist[3][1]; // <1KB, <4KB, >= 4KB
-//		static int Cv(int n) { return n < 1*4 ? 0 : n < 4*4 ? 1 : 2; }
 
 		void Free64KB(BlkHeader_<LUNIT> *h);
 		void LinkFree(BlkHeader_<LUNIT> *h) {
@@ -422,7 +419,7 @@ struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	void  Free(void *ptr, Page *page, int k);
 	void  Free(void *ptr, int k);
 
-	static bool FreeSmallEmpty(int count4KB);
+	static bool FreeSmallEmpty(int size4KB, int count = INT_MAX);
 
 	void   LInit();
 	void  *TryLAlloc(int i0, word wcount);

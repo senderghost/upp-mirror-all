@@ -252,16 +252,22 @@ void Heap::SmallFreeDirect(void *ptr)
 	FreeK(ptr, page, k);
 }
 
-bool Heap::FreeSmallEmpty(int count4KB)
-{ // attempt to release small 4KB pages to gain count4KB space
-	for(int i = 0; i < NKLASS; i++)
-		while(aux.empty[i]) {
-			Page *q = aux.empty[i];
-			aux.empty[i] = q->next;
-			free_4KB--;
-			if(aux.HugeFree(q) >= count4KB) // HugeFree is really static, aux needed just to compile
-				return true;
-		}
+bool Heap::FreeSmallEmpty(int size4KB, int count)
+{ // attempt to release small 4KB pages to gain count4KB space or count of releases
+	bool released;
+	do {
+		released = false;
+		for(int i = 0; i < NKLASS; i++)
+			if(aux.empty[i]) {
+				Page *q = aux.empty[i];
+				aux.empty[i] = q->next;
+				free_4KB--;
+				if(aux.HugeFree(q) >= size4KB || --count <= 0) // HugeFree is really static, aux needed just to compile
+					return true;
+				released = true;
+			}
+	}
+	while(released);
 	return false;
 }
 

@@ -65,7 +65,7 @@ struct MemoryProfile {
 	size_t huge_total; // ^total size
 	int    sys_count; // blocks directly allocated from the system (>32MB
 	size_t sys_total; // ^total size
-	int    chunks32MB; // 32MB master blocks
+	int    master_chunks; // master blocks
 
 	MemoryProfile();
 };

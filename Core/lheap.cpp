@@ -20,16 +20,12 @@ void Heap::LInit()
 
 void *Heap::TryLAlloc(int i0, word wcount)
 {
-//	LTIMING("Large Try");
 	for(int i = i0; i < __countof(lheap.freelist); i++) {
 		LBlkHeader *l = lheap.freelist[i];
 		LBlkHeader *h = l->next;
-//		RHITCOUNT("for");
 		while(h != l) {
-//			LTIMING("while");
 			word sz = h->GetSize();
 			if(sz >= wcount) {
-//				RHITCOUNT("makealloc");
 				lheap.MakeAlloc(h, wcount);
 				h->heap = this;
 				return (BlkPrefix *)h + 1;
@@ -171,7 +167,8 @@ bool   Heap::TryRealloc(void *ptr, size_t& newsize)
 		if(newsize > LUNIT * LPAGE - sizeof(BlkPrefix))
 			return false;
 		word wcount = word(((newsize ? newsize : 1) + sizeof(BlkPrefix) + LUNIT - 1) >> 8);
-		if(wcount == h->GetSize() || lheap.TryRealloc(h, wcount)) {
+		size_t dummy;
+		if(wcount == h->GetSize() || lheap.TryRealloc(h, wcount, dummy)) {
 			newsize = ((int)wcount * LUNIT) - sizeof(BlkPrefix);
 			return true;
 		}
