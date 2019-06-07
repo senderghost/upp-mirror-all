@@ -50,7 +50,7 @@ T * Vector<T>::RawAlloc(int& n)
 }
 
 template <class T>
-bool Vector<T>::ReSize(int newalloc)
+bool Vector<T>::ReAlloc(int newalloc)
 {
 	ASSERT(newalloc >= items);
 	size_t sz0 = (size_t)newalloc * sizeof(T);
@@ -76,7 +76,7 @@ template <class T>
 void Vector<T>::ReAllocF(int newalloc)
 {
 	void *prev = vector;
-	if(ReSize(newalloc))
+	if(ReAlloc(newalloc))
 		MemoryFree(prev);
 }
 
@@ -86,9 +86,9 @@ bool Vector<T>::GrowSz()
 	if(alloc == INT_MAX)
 		Panic("Too many items in container!");
 #ifdef _DEBUG
-	return ReSize(max(alloc + 1, alloc >= INT_MAX / 2 ? INT_MAX : 2 * alloc));
+	return ReAlloc(max(alloc + 1, alloc >= INT_MAX / 2 ? INT_MAX : 2 * alloc));
 #else
-	return ReSize(max(alloc + 1, alloc >= int((int64)2 * INT_MAX / 3) ? INT_MAX : alloc + (alloc >> 1)));
+	return ReAlloc(max(alloc + 1, alloc >= int((int64)2 * INT_MAX / 3) ? INT_MAX : alloc + (alloc >> 1)));
 #endif
 }
 
@@ -211,7 +211,7 @@ void Vector<T>::SetCount(int n, const T& init) {
 	else {
 		if(n > alloc) {
 			T *prev = vector;
-			bool b = ReSize(n); // because init can be in original vector
+			bool b = ReAlloc(n); // because init can be in original vector
 			DeepCopyConstructFill(vector + items, vector + n, init);
 			if(b) RawFree(prev);
 		}
@@ -237,7 +237,7 @@ void Vector<T>::SetCountR(int n, const T& init) {
 	else
 		if(n > alloc) {
 			T *prev = vector;
-			bool b = ReSize(alloc + max(alloc, n - items));  // because init can be in original vector
+			bool b = ReAlloc(alloc + max(alloc, n - items));  // because init can be in original vector
 			DeepCopyConstructFill(vector + items, vector + n, init);
 			if(b) RawFree(prev);
 		}

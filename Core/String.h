@@ -268,7 +268,6 @@ protected:
 	}
 	void  Set0(const char *s, int len);
 	void  SetL(const char *s, int len);
-	bool  TryRealloc(int count);
 	char *Insert(int pos, int count, const char *str);
 
 	typedef char         tchar;

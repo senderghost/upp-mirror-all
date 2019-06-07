@@ -263,9 +263,9 @@ struct HugeHeapDetail {
 struct Heap : BlkHeap<HugeHeapDetail, 4096> {
 	enum {
 	#ifdef CPU_64
-		HPAGE = 7 * 8192, // number of 4KB pages in huge page (also limit for sys allocation)
+		HPAGE = 7 * 8192, // number of 4KB pages in huge page (also limit for sys allocation) (224MB)
 	#else
-		HPAGE = 8192, // number of 4KB pages in huge page (also limit for sys allocation)
+		HPAGE = 8192, // number of 4KB pages in huge page (also limit for sys allocation) (32MB)
 	#endif
 		LUNIT = 256, // granularity of large blocks (size always a multiple of this)
 		LPAGE = LUNIT - 1, // number of LUNITs in large page

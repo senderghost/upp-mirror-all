@@ -110,37 +110,15 @@ char *String0::Alloc(int count, char& kind)
 	return rc->GetPtr();
 }
 
-#if 0
-bool String0::TryRealloc(int count)
-{
-	if(!IsRef() || IsShared())
-		return false;
-	size_t sz = sizeof(Rc) + count + 1;
-	Rc *rc = Ref();
-	RHITCOUNT("String try realloc");
-	if(!MemoryTryRealloc(rc, sz))
-		return false;
-	RHITCOUNT("String realloc success");
-	rc->alloc = count == INT_MAX ? INT_MAX : (int)sz - sizeof(Rc) - 1;
-	chr[KIND] = min(rc->alloc, 255);
-	return true;
-}
-#endif
-
 char *String0::Insert(int pos, int count, const char *s)
 {
 	ASSERT(pos >= 0 && count >= 0 && pos <= GetCount());
 	int len = GetCount();
 	int newlen = len + count;
 	if(newlen < len) // overflow, string >2GB
-		Panic("String is too big (>2GB)!");
+		Panic("String is too big!");
 	char *str = (char *)Begin();
-	auto GrownCount = [&] { return max(len >= int((int64)2 * INT_MAX / 3) ? INT_MAX : len + (len >> 1), newlen); };
-	if(!IsSharedRef() && (!s || s < str || s > str + len) && (newlen < GetAlloc()
-#if 0
-	|| TryRealloc(GrownCount())
-#endif
-	)) {
+	if(newlen < GetAlloc() && !IsSharedRef() && (!s || s < str || s > str + len)) {
 		if(pos < len)
 			memmove(str + pos + count, str + pos, len - pos);
 		if(IsSmall())
@@ -154,7 +132,8 @@ char *String0::Insert(int pos, int count, const char *s)
 		return str + pos;
 	}
 	char kind;
-	char *p = Alloc(GrownCount(), kind);
+	char *p = Alloc(max(len >= int((int64)2 * INT_MAX / 3) ? INT_MAX : len + (len >> 1), newlen),
+	                kind);
 	if(pos > 0)
 		SVO_MEMCPY(p, str, pos);
 	if(pos < len)

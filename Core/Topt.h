@@ -422,16 +422,12 @@ unsigned memhash(const void *ptr, size_t size);
 template <class T>
 inline unsigned GetHashValue(const T& x)                            { return x.GetHashValue(); }
 
-extern unsigned hash_const1;
-
 struct CombineHash {
 	unsigned hash;
 
 	template <class T> CombineHash& Do(const T& x)                  { Put(GetHashValue(x)); return *this; }
 
 public:
-//	CombineHash& Put(unsigned h)                                    { hash = ((hash << 4) + hash) ^ h; return *this; }
-//	CombineHash& Put(unsigned h)                                    { hash = (hash_const1 * hash) ^ h; return *this; }
 	CombineHash& Put(unsigned h)                                    { hash = (0xacf34ce7 * hash) ^ h; return *this; }
 
 	operator unsigned() const                                       { return hash; }

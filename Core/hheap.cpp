@@ -9,9 +9,10 @@ namespace Upp {
 
 #include "HeapImp.h"
 
-// this part reserves 32 MB chunks form the system and then serves as 4KB rounded allocator
-// used as manager of large memory blocks. 4KB and 64KB blocks are allocated from here too
-// also able to deal with blocks >32MB, those are directly allocated / freed from system
+// this part reserves very large (224MB for 64bit CPUs, 32MB otherwise)
+// chunks form the system and then serves as 4KB rounded allocator
+// used as manager of huge memory blocks. 4KB and 64KB blocks are allocated from here too
+// also able to deal with bigger blocks, those are directly allocated / freed from system
 
 BlkHeader_<4096> HugeHeapDetail::freelist[2][1]; // only single global Huge heap...
 Heap::HugePage *Heap::huge_pages;
