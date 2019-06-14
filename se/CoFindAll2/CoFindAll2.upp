@@ -2,8 +2,7 @@ uses
 	Core;
 
 file
-	Random.cpp,
-	info.txt;
+	CoFindAll2.cpp;
 
 mainconfig
 	"" = "";
