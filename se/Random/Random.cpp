@@ -4,5 +4,5 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	DUMP(Random());
+	
 }
