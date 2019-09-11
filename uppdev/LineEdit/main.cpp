@@ -19,17 +19,9 @@ GUI_APP_MAIN
 #endif
 */
 //	FileIn in("C:\\xxx\\belogs\\local2 (2).info");
-	FileIn in("C:\\xxx\\log\\local1.info");
+	FileIn in(GetDataFile("bench.txt"));
 
-	if(1)
-		edit.View(in);
-	else
-	{
-		RTIMESTOP("LOAD");
-		edit.Load(in);
-	}
-
-	LoadFromFile([&](Stream& s) { edit.SerializeViewMap(s); });
+	edit.Load(in);
 	
 	RDUMP(edit.GetLineCount());
 	RDUMP(edit.GetLength());
@@ -42,10 +34,9 @@ GUI_APP_MAIN
 	win.Open();
 	edit.ShowLineEndings();
 	edit.ShowCurrentLine(LtCyan());
+	edit.ShowCurrentColumn(WhiteGray());
 	edit <<= callback2(ShowLen, &edit, &win);
 	Ctrl::EventLoop();
-
-	StoreToFile([&](Stream& s) { edit.SerializeViewMap(s); });
 }
 
 // 156 0x9c ""

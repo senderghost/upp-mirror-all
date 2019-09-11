@@ -29,7 +29,7 @@ ArrayCtrlSort::ArrayCtrlSort()
 	a.AddColumnAt("first", "Sum")
 	 .Add("second")
 	 .SetConvert(Single<CvSum>());
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 100000; i++)
 		a.Add(rand() % 20, rand() % 10);
 	Add(a.SizePos());
 //	a.ColumnSort(3, StdValueOrder());

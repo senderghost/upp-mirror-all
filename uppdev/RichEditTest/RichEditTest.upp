@@ -5,6 +5,7 @@ uses
 
 file
 	C:\\upp\\out\\uppdev\\MSC9.Debug.Debug_Full.Gui\RichEditTest.log,
+	test.txt,
 	main.cpp,
 	todo.txt,
 	test.tpp,

@@ -38,6 +38,9 @@ struct App : TopWindow {
 
         tree.SetRoot(dir);
         tree.Set(0, dir);
+        
+        for(int i = 0; i < 10000; i++)
+            tree.Add(0, "test " + AsString(i));
 
         Sizeable();
     }

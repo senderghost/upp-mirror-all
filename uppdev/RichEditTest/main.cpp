@@ -3,7 +3,7 @@
 using namespace Upp;
 
 String FileName() {
-	return GetHomeDirFile("test.qtf");
+	return GetDataFile("test.txt");
 }
 
 GUI_APP_MAIN
@@ -23,8 +23,8 @@ GUI_APP_MAIN
 	w.Add(e.SizePos());
 
 	w.Run();
-	String x = e.GetQTF();
-	SaveFile(FileName(), x);
+//	String x = e.GetQTF();
+//	SaveFile(FileName(), x);
 	
 	LOG("Exit");
 }
