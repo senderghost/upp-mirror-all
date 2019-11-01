@@ -2,11 +2,7 @@
 
 #define PLATFORM_X11 // To keep legacy code happy
 
-#ifdef GDK_KEY_Delete
 #define GDKEY(x) GDK_KEY_##x
-#else
-#define GDKEY(x) GDK_##x
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -21,6 +17,10 @@
 #endif
 
 namespace Upp {
+	
+#if GTK_CHECK_VERSION(3,10,0) // Gtk 3.10 is critical for HiDPI support
+#define GTK310
+#endif
 
 class SystemDraw : public Draw {
 	virtual dword GetInfo() const;
@@ -62,8 +62,9 @@ private:
 	Vector<Rect>  clip;
 
 	cairo_t      *cr;
-	GdkDrawable  *drawable;
-	GdkRegion    *invalid;
+_DBG_
+//	GdkDrawable  *drawable;
+//	GdkRegion    *invalid;
 	
 	struct TextGlyph : Moveable<TextGlyph> {
 		int x;
@@ -91,12 +92,13 @@ public:
 	void  SetColor(Color c);
 	operator cairo_t*()               { return cr; }
 
-	void     SetInvalid(GdkRegion *r) { invalid = r; }
+//	void     SetInvalid(GdkRegion *r) { invalid = r; }
 	Point    GetOffset() const;
 	bool     CanSetSurface()          { return true; }
 	static void Flush()               {} // TODO?
 
-	SystemDraw(cairo_t *cr, GdkDrawable *dw/* = NULL*/) : cr(cr), drawable(dw) { (void)drawable; invalid = NULL; }
+//	SystemDraw(cairo_t *cr, GdkDrawable *dw/* = NULL*/) : cr(cr), drawable(dw) { (void)drawable; invalid = NULL; }
+	SystemDraw(cairo_t *cr) : cr(cr) {}
 	~SystemDraw();
 };
 
@@ -147,9 +149,15 @@ public:
 	~BackDraw();
 };
 
+inline double IPD(int x) { return IsUHDMode() ? 0.5 * x : (double)x; }
+
 struct GdkRect : GdkRectangle {
 	operator GdkRectangle *() { return this; }
 	GdkRect(const Rect& r);
+};
+
+struct GdkRectIPD : GdkRect {
+	GdkRectIPD(const Rect& r) : GdkRect(RectC(IPD(r.left), IPD(r.top), IPD(r.Width()), IPD(r.Height()))) {}
 };
 
 class ImageGdk {

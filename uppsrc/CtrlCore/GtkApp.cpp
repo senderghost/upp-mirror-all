@@ -70,6 +70,10 @@ void InitGtkApp(int argc, char **argv, const char **envptr)
 	EnterGuiMutex();
 #endif
 	gtk_init(&argc, &argv);
+#ifdef GTK310
+	Ctrl::SetUHDEnabled(true);
+	SetUHDMode(gdk_window_get_scale_factor(gdk_screen_get_root_window(gdk_screen_get_default())) > 1);
+#endif
 	Ctrl::GlobalBackBuffer();
 	Ctrl::ReSkin();
 	g_timeout_add(20, (GSourceFunc) Ctrl::TimeHandler, NULL);

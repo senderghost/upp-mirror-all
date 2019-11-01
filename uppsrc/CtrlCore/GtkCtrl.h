@@ -26,10 +26,14 @@ _DBG_
 	static void CaptureSync();
 
 	static gboolean GtkEvent(GtkWidget *widget, GdkEvent *key, gpointer user_data);
+	static gboolean GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer data);
+
+	static Point GetMouseInfo(GdkWindow *win, GdkModifierType& mod);
 
 	enum {
 		EVENT_NONE = -15321,
 		EVENT_TEXT,
+		EVENT_FOCUS_CHANGE,
 	};
 	
 	struct GEvent0 {
@@ -180,7 +184,7 @@ public:
 	static guint32   CurrentTime;
 	static GEvent    CurrentEvent;
 
-	GdkWindow *gdk() const { return top ? top->window->window : NULL; }
+	GdkWindow *gdk() const { return top ? gtk_widget_get_window(top->window) : NULL; }
 	GtkWindow *gtk() const { return top ? (GtkWindow *)top->window : NULL; }
 
 	static GdkFilterReturn RootKeyFilter(GdkXEvent *xevent, GdkEvent *event, gpointer data);

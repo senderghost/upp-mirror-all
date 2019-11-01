@@ -191,14 +191,9 @@ Rect Ctrl::GetWndScreenRect() const
 	if(IsOpen()) {
 		gint x, y;
 		gdk_window_get_position(gdk(), &x, &y);
-	#if GTK_CHECK_VERSION(2, 24, 0)
 		gint width = gdk_window_get_width(gdk());
 		gint height = gdk_window_get_height(gdk());
-	#else
-		gint width, height;
-		gdk_drawable_get_size(gdk(), &width, &height);
-	#endif
-		return RectC(x, y, width, height);
+		return DPI(x, y, width, height);
 	}
 	return Null;
 }
@@ -218,7 +213,7 @@ void Ctrl::WndShow(bool b)
 
 bool Ctrl::IsWndOpen() const {
 	GuiLock __;
-	return top && top->window && top->window->window;
+	return top && top->window && gtk_widget_get_window(top->window);
 }
 
 void Ctrl::SetAlpha(byte alpha)
@@ -249,22 +244,8 @@ void Ctrl::GetWorkArea(Array<Rect>& rc)
 	Vector<int> netwa;
 	for(int i = 0; i < n; i++) {
 		GdkRectangle rr;
-		Rect r;
-#if GTK_CHECK_VERSION (3, 3, 5) // U++ does not work with gtk3 yet, but be prepared
 		gdk_screen_get_monitor_workarea(s, i, &rr);
-		r = RectC(r.x, r.y, r.width, r.height);
-#else
-		gdk_screen_get_monitor_geometry (s, i, &rr);
-		r = RectC(rr.x, rr.y, rr.width, rr.height);
-	#ifdef GDK_WINDOWING_X11
-		if(i == 0)
-			netwa = GetPropertyInts(gdk_screen_get_root_window(gdk_screen_get_default()),
-			                        "_NET_WORKAREA");
-		if(netwa.GetCount())
-			r = r & RectC(netwa[0], netwa[1], netwa[2], netwa[3]);
-	#endif
-#endif
-		rc.Add(r);
+		rc.Add(DPI(rr.x, rr.y, rr.width, rr.height));
 	}
 }
 
@@ -289,8 +270,8 @@ Rect Ctrl::GetVirtualScreenArea()
 	if(r.right == 0) {
 		gint x, y, width, height;
 		gdk_window_get_geometry(gdk_screen_get_root_window(gdk_screen_get_default()),
-	                            &x, &y, &width, &height, NULL);
-	    r = RectC(x, y, width, height);
+	                            &x, &y, &width, &height);
+	    r = DPI(x, y, width, height);
 	}
 	return r;
 }
@@ -307,7 +288,10 @@ Rect Ctrl::GetPrimaryWorkArea()
 #else
 		int primary = 0;
 #endif
-		primary >= 0 && primary < rc.GetCount() ? r = rc[primary] : r = GetVirtualScreenArea();
+		if(primary >= 0 && primary < rc.GetCount())
+			r = rc[primary];
+		else
+			r = GetVirtualScreenArea();
 	}
 	return r;
 }
@@ -352,10 +336,12 @@ bool Ctrl::HasWndFocus() const
 void Ctrl::FocusSync()
 {
 	GuiLock __;
-	if(focusCtrlWnd && focusCtrlWnd->IsOpen() && gtk_window_is_active(focusCtrlWnd->gtk()))
-		return;
-	Ptr<Ctrl> focus = NULL;
 	static Ptr<Ctrl> ctrl;
+	if(focusCtrlWnd && focusCtrlWnd->IsOpen() && gtk_window_is_active(focusCtrlWnd->gtk())) {
+		ctrl = focusCtrlWnd;
+		return;
+	}
+	Ptr<Ctrl> focus = NULL;
 	for(int i = 0; i < wins.GetCount(); i++)
 		if(gtk_window_is_active((GtkWindow *)wins[i].gtk)) {
 			focus = wins[i].ctrl;
@@ -390,8 +376,9 @@ void Ctrl::WndInvalidateRect(const Rect& r)
 {
 	GuiLock __;
 	LLOG("WndInvalidateRect " << r);
-	gdk_window_invalidate_rect(gdk(), GdkRect(r), TRUE);
-//	gtk_widget_queue_draw_area(top->window, r.left, r.top, r.GetWidth(), r.GetHeight());
+	DDUMP(r);
+	DDUMP(GetRect());
+	gdk_window_invalidate_rect(gdk(), GdkRectIPD(r), TRUE);
 }
 
 void  Ctrl::WndScrollView(const Rect& r, int dx, int dy)
@@ -432,7 +419,7 @@ void Ctrl::WndSetPos(const Rect& rect)
 		return;
 //	gtk_window_move(gtk(), rect.left, rect.top);
 //	gtk_window_resize(gtk(), rect.GetWidth(), rect.GetHeight());
-	gdk_window_move_resize(gdk(), rect.left, rect.top, rect.GetWidth(), rect.GetHeight());
+	gdk_window_move_resize(gdk(), IPD(rect.left), IPD(rect.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
 	int t0 = msecs();
 	do { // Wait up to 500ms for corresponding GDK_CONFIGURE to arrive
 		if(SweepConfigure(true))

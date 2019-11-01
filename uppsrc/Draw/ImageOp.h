@@ -230,6 +230,9 @@ inline double DPI(double a)       { return IsUHDMode() ? 2 * a : a; }
 inline Size   DPI(Size sz)        { return IsUHDMode() ? 2 * sz : sz; }
 inline Size   DPI(int cx, int cy) { return Size(DPI(cx), DPI(cy)); }
 
+inline Rect   DPI(int x, int y, int cx, int cy) { return RectC(DPI(x), DPI(y), DPI(cx), DPI(cy)); }
+inline Rect   DPI(const Rect& r)                { return DPI(r.left, r.top, r.Width(), r.Height()); }
+
 inline Image DPI(const Image& a, const Image& b) { return IsUHDMode() ? b : a; }
 
 // Obsolete, replace with RescaleFilter!
