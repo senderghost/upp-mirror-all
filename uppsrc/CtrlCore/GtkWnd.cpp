@@ -409,7 +409,7 @@ bool Ctrl::SweepConfigure(bool wait)
 
 void Ctrl::WndSetPos(const Rect& rect)
 {
-	LLOG("WndSetPos0 " << rect);
+	DLOG("WndSetPos0 " << rect);
 	GuiLock __;
 	if(!IsOpen())
 		return;
@@ -417,9 +417,14 @@ void Ctrl::WndSetPos(const Rect& rect)
 	SweepConfigure(false); // Remove any previous GDK_CONFIGURE for this window
 	if(!this_ || !IsOpen())
 		return;
-//	gtk_window_move(gtk(), rect.left, rect.top);
-//	gtk_window_resize(gtk(), rect.GetWidth(), rect.GetHeight());
-	gdk_window_move_resize(gdk(), IPD(rect.left), IPD(rect.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
+	DDUMP(IPD(rect.GetHeight()));
+
+	Rect m(0, 0, 0, 0);
+	if(dynamic_cast<TopWindow *>(this))
+		m = GetFrameMargins();
+	gdk_window_move_resize(gdk(), IPD(rect.left - m.left), IPD(rect.top - m.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
+
+//	gdk_window_move_resize(gdk(), IPD(rect.left), IPD(rect.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
 	int t0 = msecs();
 	do { // Wait up to 500ms for corresponding GDK_CONFIGURE to arrive
 		if(SweepConfigure(true))

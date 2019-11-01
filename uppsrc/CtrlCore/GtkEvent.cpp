@@ -84,18 +84,20 @@ gboolean Ctrl::GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	Ctrl *p = GetTopCtrlFromId(user_data);
 	if(p) {
 		p->fullrefresh = false;
-		if(IsUHDMode())
+		if(IsUHDMode()) _DBG_ // TODO: Disconnect UHDMode from Scale
 			cairo_scale(cr, 0.5, 0.5);
 		SystemDraw w(cr);
 		painting = true;
 		double x1, y1, x2, y2;
 		cairo_clip_extents (cr, &x1, &y1, &x2, &y2);
-		Rect r = RectC((int)x1, (int)y1, (int)(x2 - x1), int(y2 - y1));
+		Rect r = RectC((int)x1, (int)y1, (int)ceil(x2 - x1), (int)ceil(y2 - y1));
 		DLOG("Clip extents " << r);
 		DDUMP(p->GetRect());
 		DDUMP(p->GetView());
-		w.Clip(r);
-		p->UpdateArea(w, p->GetSize());
+		DDUMP(p->GetScreenView());
+		DDUMP(p->GetScreenRect());
+		w.Clip(r); // Because of IsPainting
+		p->UpdateArea(w, r);
 		w.End();
 		if(p->top->dr)
 			DrawDragRect(*p, *p->top->dr);
@@ -121,9 +123,11 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 
 	switch(event->type) {
+/*
 	case GDK_EXPOSE:
 	case GDK_DAMAGE:
 		if(p) {
+			DLOG("Expose");
 #ifdef LOG_EVENTS
 			TimeStop tm;
 #endif
@@ -132,6 +136,7 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 			SystemDraw w(gdk_cairo_create(p->gdk()));
 			painting = true;
 			Rect r = RectC(e->area.x, e->area.y, e->area.width, e->area.height);
+			DDUMP(r);
 			_DBG_ // w.SetInvalid(e->region);
 			w.Clip(r);
 			p->UpdateArea(w, r);
@@ -144,7 +149,9 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 			LOG("* " << ev << " elapsed " << tm);
 #endif
 		}
+
 		return true;
+*/ _DBG_ // remove
 	case GDK_DELETE:
 		break;
 	case GDK_FOCUS_CHANGE:
@@ -194,7 +201,7 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 		retval = false;
 		GdkEventConfigure *e = (GdkEventConfigure *)event;
 		value = DPI(e->x, e->y, e->width, e->height);
-		LLOG("GDK_CONFIGURE " << value);
+		DLOG("GDK_CONFIGURE " << value);
 		break;
 	}
 	default:

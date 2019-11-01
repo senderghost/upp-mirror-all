@@ -353,7 +353,7 @@ void Ctrl::CtrlPaint(SystemDraw& w, const Rect& clip) {
 	GuiLock __;
 	LEVELCHECK(w, this);
 	LTIMING("CtrlPaint");
-	DLOG("=== CtrlPaint " << UPP::Name(this) << ", clip: " << clip << ", rect: " << GetRect());
+	DLOG("=== CtrlPaint " << UPP::Name(this) << ", clip: " << clip << ", rect: " << GetRect() << ", view: " << GetView());
 	Rect rect = GetRect().GetSize();
 	Rect orect = rect.Inflated(overpaint);
 	if(!IsShown() || orect.IsEmpty() || clip.IsEmpty() || !clip.Intersects(orect))
@@ -698,8 +698,10 @@ void  Ctrl::DoSync(Ctrl *q, Rect r, bool inframe)
 	ASSERT(q);
 	LLOG("DoSync " << UPP::Name(q) << " " << r);
 	Ctrl *top = q->GetTopRect(r, inframe);
-	top->SyncScroll();
-	top->WndUpdate(r);
+	if(top && top->IsOpen()) {
+		top->SyncScroll();
+		top->WndUpdate(r);
+	}
 }
 
 void  Ctrl::Sync()

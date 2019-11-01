@@ -1,0 +1,12 @@
+- Test grip resize
+- Fix IsPainting
+- Test & Fix filesel & fileselector
+- Scale should not be same as UHD
+- Resizing fix black
+- cxZ  Uword - wrong caret
+
+
+DONE:
+
+- Resizing delay
+- Refresh issue

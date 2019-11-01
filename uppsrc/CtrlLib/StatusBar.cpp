@@ -65,6 +65,7 @@ InfoCtrl::InfoCtrl()
 
 void InfoCtrl::Paint(Draw& w)
 {
+	DLOG("InfoCtrl::Paint");
 	Size sz = GetSize();
 	Rect r = sz;
 	if(temp) {

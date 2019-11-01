@@ -100,6 +100,7 @@ file
 	X11DHCtrl.cpp,
 	X11Event.i,
 	Gtk readonly separator,
+	gtk3-todo.txt,
 	Gtk.h,
 	GtkAfter.h,
 	GtkKeys.h,
