@@ -183,7 +183,13 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 		break;
 	case GDK_SCROLL: {
 		GdkEventScroll *e = (GdkEventScroll *)event;
-		value = findarg(e->direction, GDK_SCROLL_UP, GDK_SCROLL_LEFT) < 0 ? -120 : 120;
+		if(findarg(e->direction, GDK_SCROLL_UP, GDK_SCROLL_LEFT) >= 0)
+			value = 120;
+		else
+		if(findarg(e->direction, GDK_SCROLL_DOWN, GDK_SCROLL_RIGHT) >= 0)
+			value = -120;
+		else
+			return false;
 		break;
 	}
 	case GDK_KEY_PRESS:
