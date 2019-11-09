@@ -244,6 +244,8 @@ void Ctrl::GetWorkArea(Array<Rect>& rc)
 	Vector<int> netwa;
 	for(int i = 0; i < n; i++) {
 		GdkRectangle rr;
+		// 3.22
+		// gdk_monitor_get_workarea(gdk_display_get_monitor(s, i), i, &rr);
 		gdk_screen_get_monitor_workarea(s, i, &rr);
 		rc.Add(DPI(rr.x, rr.y, rr.width, rr.height));
 	}
