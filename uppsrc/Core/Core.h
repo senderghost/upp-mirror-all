@@ -346,7 +346,7 @@ static const MemDiagCls sMemDiagHelper__upp__;
 inline UPP::int64  abs(UPP::int64 x)          { return x < 0 ? -x : x; }
 #endif
 
-#ifdef COMPILER_GCC
+#if defined(COMPILER_GCC) && GCC_VERSION < 60000
 inline double abs(double x)                   { return fabs(x); }
 #endif
 
