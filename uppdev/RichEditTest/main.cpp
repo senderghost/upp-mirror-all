@@ -23,8 +23,8 @@ GUI_APP_MAIN
 	w.Add(e.SizePos());
 
 	w.Run();
-//	String x = e.GetQTF();
-//	SaveFile(FileName(), x);
+	String x = e.GetQTF();
+	SaveFile(FileName(), x);
 	
 	LOG("Exit");
 }

@@ -1,4 +1,4 @@
-TOPIC("test$en-us")
-#include "test$en-us.tppi"
+TOPIC("test_en-us")
+#include "test_en-us.tppi"
 END_TOPIC
 
