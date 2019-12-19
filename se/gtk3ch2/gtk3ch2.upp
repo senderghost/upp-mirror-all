@@ -2,7 +2,6 @@ uses
 	CtrlLib;
 
 file
-	foreign.cpp,
 	main.cpp;
 
 mainconfig
