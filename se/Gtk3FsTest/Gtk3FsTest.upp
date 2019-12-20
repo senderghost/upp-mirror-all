@@ -1,0 +1,11 @@
+uses
+	CtrlLib;
+
+file
+	Gtk3FsTest.h,
+	main.cpp,
+	Gtk3FsTest.lay;
+
+mainconfig
+	"" = "GUI";
+

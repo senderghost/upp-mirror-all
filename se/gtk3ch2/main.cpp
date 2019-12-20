@@ -234,6 +234,47 @@ create_context_for_path (GtkWidgetPath   *path,
   return context;
 }
 
+static GtkStyleContext *
+get_style (GtkStyleContext *parent,
+           const char      *selector)
+{
+  GtkWidgetPath *path;
+
+  if (parent)
+    path = gtk_widget_path_copy (gtk_style_context_get_path (parent));
+  else
+    path = gtk_widget_path_new ();
+
+  append_element (path, selector);
+
+  return create_context_for_path (path, parent);
+}
+
+GtkStyleContext *Gtk_Style(const char *name)
+{
+	GtkStyleContext *context = NULL;
+	for(const String& element : Split(name, ' ')) {
+		GtkWidgetPath *path = gtk_widget_path_new();
+		Vector<String> s = Split(element, '.');
+		if(s.GetCount()) {
+			gtk_widget_path_append_type (path, G_TYPE_NONE);
+			gtk_widget_path_iter_set_object_name (path, -1, s[0]);
+		}
+		for(int i = 1; i < s.GetCount(); i++)
+			gtk_widget_path_iter_add_class(path, -1, s[i]);
+
+		GtkStyleContext *context2 = gtk_style_context_new();
+		gtk_style_context_set_path(context2, path);
+		gtk_style_context_set_parent(context2, context);
+		gtk_widget_path_unref(path);
+		g_object_unref (context);
+		context = context2;
+	}
+	ASSERT(context);
+	gtk_style_context_set_scale(context, DPI(1));
+	return context;
+}
+
 static void
 draw_style_common (GtkStyleContext *context,
                    cairo_t         *cr,
@@ -263,22 +304,6 @@ draw_style_common (GtkStyleContext *context,
 
   gtk_render_background (context, cr, x, y, width, height);
   gtk_render_frame (context, cr, x, y, width, height);
-}
-
-static GtkStyleContext *
-get_style (GtkStyleContext *parent,
-           const char      *selector)
-{
-  GtkWidgetPath *path;
-
-  if (parent)
-    path = gtk_widget_path_copy (gtk_style_context_get_path (parent));
-  else
-    path = gtk_widget_path_new ();
-
-  append_element (path, selector);
-
-  return create_context_for_path (path, parent);
 }
 
 static void
@@ -351,36 +376,6 @@ draw_style_common (GtkStyleContext *context,
     *contents_height = height - border.top - border.bottom - padding.top - padding.bottom;
 }
 
-static void
-draw_menu (GtkWidget *widget,
-           cairo_t   *cr,
-           gint       x,
-           gint       y,
-           gint       width,
-           gint      *height)
-{
-  GtkStyleContext *menu_context;
-  GtkStyleContext *menuitem_context;
-  GtkStyleContext *hovermenuitem_context;
-  gint menuitem1_height, menuitem2_height, menuitem3_height, menuitem4_height, menuitem5_height;
-  gint contents_x, contents_y, contents_width, contents_height;
-  gint menu_x, menu_y, menu_width, menu_height;
-  gint arrow_width, arrow_height, arrow_size;
-  gint toggle_x, toggle_y, toggle_width, toggle_height;
-
-  /* This information is taken from the GtkMenu docs, see "CSS nodes" */
-  menu_context = get_style (NULL /*gtk_widget_get_style_context(widget)*/, "menu");
-  hovermenuitem_context = get_style (menu_context, "menuitem:hover");
-  draw_style_common (menu_context, cr, x, y, width, *height);
-
-  /* Hovered with right arrow */
-  draw_style_common (hovermenuitem_context, cr, 10, 10, 200, 40);
-
-  g_object_unref (menu_context);
-  g_object_unref (hovermenuitem_context);
-}
-
-
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 void MyApp::Paint(Draw& w)
@@ -443,7 +438,9 @@ void MyApp::Paint(Draw& w)
 				
 				/* This information is taken from the GtkCheckButton docs, see "CSS nodes" */
 				button_context = get_style (NULL, "checkbutton");
-				check_context = get_style (button_context, "check");
+//				check_context = get_style (button_context, "check");
+				
+				check_context = Gtk_Style("checkbutton check");
 				
 				gtk_style_context_set_scale(check_context, DPI(1));
 
@@ -516,7 +513,7 @@ void MyApp::Paint(Draw& w)
 			gint contents_x, contents_y, contents_width, contents_height;
 			
 			/* This information is taken from the GtkCheckButton docs, see "CSS nodes" */
-			button_context = get_style (NULL, "button");
+			button_context = get_style (NULL, "button.suggested-action");
 
 			gtk_style_context_set_scale(button_context, DPI(1));
 			
@@ -661,8 +658,6 @@ void MyApp::Paint(Draw& w)
 	{
 		GtkStyleContext *menu_context;
 		GtkStyleContext *menuitem_context;
-		GtkStyleContext *disablemenuitem_context;
-		GtkStyleContext *separatormenuitem_context;
 		gint menuitem1_height, menuitem2_height, menuitem3_height, menuitem4_height, menuitem5_height;
 		gint contents_x, contents_y, contents_width, contents_height;
 		gint menu_x, menu_y, menu_width, menu_height;
@@ -672,10 +667,7 @@ void MyApp::Paint(Draw& w)
 
 		/* This information is taken from the GtkMenu docs, see "CSS nodes" */
 		menu_context = get_style (gtk_widget_get_style_context((GtkWidget *)gtk()), "menu"); // TODO: TopWindow?
-		GtkStyleContext *hovermenuitem_context = get_style (menu_context, "menuitem:hover");
-		hovermenuitem_context = get_style (menu_context, "menuitem:hover");
 		menuitem_context = get_style (menu_context, "menuitem");
-		disablemenuitem_context = get_style (menu_context, "menuitem");
 
 		int x = 50;
 		auto Do = [&](GtkStyleContext *st, int state) {
@@ -696,8 +688,6 @@ void MyApp::Paint(Draw& w)
 
 		  g_object_unref (menu_context);
 		  g_object_unref (menuitem_context);
-		  g_object_unref (hovermenuitem_context);
-		  g_object_unref (disablemenuitem_context);
 	}
 	yy += DPI(32);
 	{
@@ -715,6 +705,52 @@ void MyApp::Paint(Draw& w)
 		
 		w.DrawRect(50, yy, 100, 30, GetBackgroundColor(dialog));
 //		w.DrawRect(150, yy, 500, 30, GetInkColor(get_style(NULL, "label"), 0));
+	}
+	yy += DPI(32);
+	
+	{
+		GList *list = gtk_icon_theme_list_icons (gtk_icon_theme_get_default(), NULL);
+		while(list) {
+			DDUMP((char *)list->data);
+			list = g_list_next (list);
+		}
+		g_list_free_full (list, g_free);
+	/*
+		String icon_name = "gtk-dialog-info";
+					icon = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), icon_name,
+			                                state, (GtkIconLookupFlags)0, NULL);
+	*/
+	}
+	
+	{
+		String icon_name = "gtk-ok";
+		GdkPixbuf *pixbuf = gtk_icon_theme_load_icon_for_scale(gtk_icon_theme_get_default(), icon_name,
+			                                         16, 2, (GtkIconLookupFlags)0, NULL);
+		int cx = gdk_pixbuf_get_width(pixbuf);
+		int cy = gdk_pixbuf_get_height(pixbuf);
+
+		Image img = CairoImage(cx, cy, [&](cairo_t *cr) {
+			gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+			cairo_paint(cr);
+		});
+		int x = 0;
+		w.DrawImage(x, yy, Rescale(img, DPI(16), DPI(16)));
+	}
+	yy += DPI(32);
+
+	{
+		String icon_name = "gtk-dialog-info";
+		GdkPixbuf *pixbuf = gtk_icon_theme_load_icon_for_scale(gtk_icon_theme_get_default(), icon_name,
+			                                         64, 2, (GtkIconLookupFlags)0, NULL);
+		int cx = gdk_pixbuf_get_width(pixbuf);
+		int cy = gdk_pixbuf_get_height(pixbuf);
+
+		Image img = CairoImage(cx, cy, [&](cairo_t *cr) {
+			gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+			cairo_paint(cr);
+		});
+		int x = 0;
+		w.DrawImage(x, yy, Rescale(img, DPI(32), DPI(32)));
 	}
 	yy += DPI(32);
 
