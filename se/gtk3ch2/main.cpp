@@ -513,7 +513,7 @@ void MyApp::Paint(Draw& w)
 			gint contents_x, contents_y, contents_width, contents_height;
 			
 			/* This information is taken from the GtkCheckButton docs, see "CSS nodes" */
-			button_context = get_style (NULL, "button.suggested-action");
+			button_context = get_style (NULL, "button.");
 
 			gtk_style_context_set_scale(button_context, DPI(1));
 			
@@ -558,6 +558,8 @@ void MyApp::Paint(Draw& w)
 			gtk_style_context_set_state (contents_context, state);
 			gtk_style_context_set_state (trough_context, state);
 			gtk_style_context_set_state (slider_context, state);
+
+			DDUMP(gtk_widget_path_to_string(gtk_style_context_get_path(slider_context)));
 			
 			gtk_style_context_get (slider_context, gtk_style_context_get_state (slider_context),
 			                       "min-width", &slider_width, NULL);

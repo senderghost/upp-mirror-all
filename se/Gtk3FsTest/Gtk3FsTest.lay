@@ -1,7 +1,9 @@
 LAYOUT(Gtk3FsTestLayout, 400, 284)
 	ITEM(Button, ok, SetLabel(t_("OK")).LeftPosZ(276, 56).TopPosZ(252, 24))
 	ITEM(Button, cancel, SetLabel(t_("Cancel")).LeftPosZ(336, 56).TopPosZ(252, 24))
-	ITEM(Option, dv___2, ThreeState(true).SetLabel(t_("CheckBox")).LeftPosZ(12, 56).TopPosZ(20, 16))
+	ITEM(Option, dv___2, ThreeState(true).SetLabel(t_("CheckBox")).LeftPosZ(12, 96).TopPosZ(20, 16))
 	ITEM(Switch, dv___3, SetLabel(t_("One\nTwo\nThree")).LeftPosZ(12, 56).TopPosZ(40, 56))
+	ITEM(DropList, droplist, LeftPosZ(136, 148).TopPosZ(20, 19))
+	ITEM(Label, dv___5, SetLabel(t_("Label")).LeftPosZ(16, 104).TopPosZ(116, 19))
 END_LAYOUT
 
