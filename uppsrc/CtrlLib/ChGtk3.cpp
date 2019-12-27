@@ -2,11 +2,17 @@
 
 #ifdef GUI_GTK
 
+/*
+
+TODO: overpaint
+
+*/
+
 namespace Upp {
 
 int GtkStyleInt(const char *name)
 {
-	int h = Null;
+	gint h = Null;
 	g_object_get(gtk_settings_get_default(), name, &h, NULL);
 	return h;
 }
@@ -67,7 +73,6 @@ void SetupFont()
 	}
 	
 	Font gui_font = Font(fontface, fround(DPI(fontheight) * xdpi + 512*72.0) / (1024*72)).Bold(bold).Italic(italic);
-	DDUMP(gui_font);
 	Font::SetDefaultFont(gui_font);
 }
 
@@ -80,12 +85,22 @@ void Gtk_Free()
 		g_object_unref(sCtx);
 }
 
-void Gtk_New(const char *name)
+void Gtk_State(int state, dword flags = 0)
+{
+	sFlags = static_cast<GtkStateFlags>(decode(state, CTRL_HOT, GTK_STATE_FLAG_PRELIGHT,
+	                                                  CTRL_PRESSED, GTK_STATE_FLAG_ACTIVE,
+	                                                  CTRL_DISABLED, GTK_STATE_FLAG_INSENSITIVE,
+	                                                  GTK_STATE_FLAG_NORMAL) | flags) ;
+	gtk_style_context_set_state(sCtx, sFlags);
+}
+
+void Gtk_New(const char *name, int state = 0, dword flags = 0)
 {
 	Gtk_Free();
 	sCtx = NULL;
 	for(const String& element : Split(name, ' ')) {
-		GtkWidgetPath *path = gtk_widget_path_new();
+		GtkWidgetPath *path = sCtx ? gtk_widget_path_copy(gtk_style_context_get_path(sCtx))
+		                           : gtk_widget_path_new();
 		Vector<String> s = Split(element, '.');
 		if(s.GetCount()) {
 			gtk_widget_path_append_type (path, G_TYPE_NONE);
@@ -103,15 +118,8 @@ void Gtk_New(const char *name)
 	}
 	ASSERT(sCtx);
 	gtk_style_context_set_scale(sCtx, DPI(1));
-}
-
-void Gtk_State(int state, dword flags = 0)
-{
-	sFlags = static_cast<GtkStateFlags>(decode(state, CTRL_HOT, GTK_STATE_FLAG_PRELIGHT,
-	                                                  CTRL_PRESSED, GTK_STATE_FLAG_ACTIVE,
-	                                                  CTRL_DISABLED, GTK_STATE_FLAG_INSENSITIVE,
-	                                                  GTK_STATE_FLAG_NORMAL) | flags) ;
-	gtk_style_context_set_state(sCtx, sFlags);
+	Gtk_State(state, flags);
+	DLOG("Current style " << gtk_widget_path_to_string(gtk_style_context_get_path(sCtx)));
 }
 
 Color GetInkColor()
@@ -119,6 +127,36 @@ Color GetInkColor()
 	GdkRGBA color;
 	gtk_style_context_get_color(sCtx, sFlags, &color);
 	return Color(int(255 * color.red), int(255 * color.green), int(255 * color.blue));
+}
+
+Color AvgColor(const Image& m, const Rect& rr)
+{
+	int n = rr.GetWidth() * rr.GetHeight();
+	if(n <= 0)
+		return White();
+	int r = 0;
+	int g = 0;
+	int b = 0;
+	for(int y = rr.top; y < rr.bottom; y++)
+		for(int x = rr.left; x < rr.right; x++) {
+			RGBA c = m[y][x];
+			r += c.r;
+			g += c.g;
+			b += c.b;
+		}
+	return Color(r / n, g / n, b / n);
+}
+
+Color AvgColor(const Image& m, int margin = 0)
+{
+	return AvgColor(m, Rect(m.GetSize()).Deflated(margin));
+}
+
+Color GetBackgroundColor()
+{
+    ImageDraw iw(16, 16);
+    gtk_render_background(sCtx, iw, 0, 0, 16, 16);
+	return AvgColor(iw);
 }
 
 Image CairoImage(int cx, int cy, Event<cairo_t *> draw)
@@ -156,14 +194,64 @@ Image CairoImage(int cx = 40, int cy = 32)
 Image Hot3(const Image& m)
 {
 	Size sz = m.GetSize();
+	DDUMP(sz);
+	Image q = WithHotSpots(m, sz.cx / 3, sz.cy / 3, sz.cx - sz.cx / 3, sz.cy - sz.cy / 3);
+	DDUMP(q);
+	DDUMP(q.GetHotSpot());
+	DDUMP(q.Get2ndSpot());
 	return WithHotSpots(m, sz.cx / 3, sz.cy / 3, sz.cx - sz.cx / 3, sz.cy - sz.cy / 3);
+}
+
+Image Gtk_Icon(const char *icon_name, int size)
+{
+	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon_for_scale(gtk_icon_theme_get_default(), icon_name,
+		                                                   size, 2, (GtkIconLookupFlags)0, NULL);
+	int cx = gdk_pixbuf_get_width(pixbuf);
+	int cy = gdk_pixbuf_get_height(pixbuf);
+
+	Image m = CairoImage(cx, cy, [&](cairo_t *cr) {
+		gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+		cairo_paint(cr);
+	});
+	
+	Size sz = m.GetSize();
+
+	return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
 }
 
 void ChHostSkin()
 {
 	SetupFont();
 	
-	// TODO: resolve colors first
+	Gtk_New("label.view");
+		SColorText_Write(GetInkColor());
+		SColorPaper_Write(GetBackgroundColor());
+		Gtk_State(CTRL_DISABLED);
+		SColorDisabled_Write(GetInkColor());
+	Gtk_New("window.background");
+		SColorFace_Write(GetBackgroundColor());
+	Gtk_New("entry.selection");
+		SColorHighlight_Write(GetBackgroundColor());
+		SColorHighlightText_Write(GetInkColor());
+	Gtk_New("label.view");
+		SColorLabel_Write(GetInkColor());
+	Gtk_New("tooltip.background");
+		SColorInfo_Write(GetBackgroundColor());
+		SColorInfoText_Write(GetInkColor());
+
+	
+#if 0 // TODO (?)
+		{ SColorPaper_Write, 6*5 + 0 },
+		{ SColorFace_Write, 1*5 + 0 },
+		{ SColorText_Write, 5*5 + 0 },
+		{ SColorMenu_Write, 6*5 + 0 },
+		{ SColorMenuText_Write, 5*5 + 0 },
+		{ SColorLight_Write, 2*5 + 0 },
+		{ SColorShadow_Write, 3*5 + 0 },
+	};
+	for(int i = 0; i < __countof(col); i++)
+		(*col[i].set)(ChGtkColor(col[i].ii, gtk__parent()));
+#endif
 
 	Gtk_New("radiobutton radio");
 	SOImages(CtrlsImg::I_S0, GTK_STATE_FLAG_NORMAL);
@@ -182,9 +270,47 @@ void ChHostSkin()
 				s.look[i] = Hot3(CairoImage());
 				s.monocolor[i] = s.textcolor[i] = GetInkColor();
 			}
-			Gtk_New("button.suggested-action");
+			s.ok = Gtk_Icon("gtk-ok", DPI(16));
+			s.cancel = Gtk_Icon("gtk-cancel", DPI(16));
+			s.exit = Gtk_Icon("gtk-quit", DPI(16));
 		}
 	}
+
+	{
+		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+		s.arrowsize = 0; // no arrows
+		s.through = true;
+		s.barsize = s.thumbwidth = DPI(16);
+		s.thumbmin = 3 * s.barsize / 2;
+		for(int status = CTRL_NORMAL; status <= CTRL_DISABLED; status++) {
+			Gtk_New("scrollbar.right.vertical", status);
+			Image m = CairoImage(16, 100);
+			Gtk_New("scrollbar.right.vertical contents", status);
+			Over(m, CairoImage(16, 100));
+			Gtk_New("scrollbar.right.vertical contents trough", status);
+			Over(m, CairoImage(16, 100));
+			DLOG("----- >>>");
+			s.vupper[status] = s.vlower[status] = Hot3(m);
+			ONCELOCK {
+				ClearClipboard();
+				AppendClipboardImage(Hot3(m));
+			}
+			Gtk_New("scrollbar.right.vertical contents trough slider", status);
+			s.vthumb[status] = Hot3(CairoImage(16, 100));
+
+			Gtk_New("scrollbar.horizontal.bottom", status);
+			m = CairoImage(100, 16);
+			Gtk_New("scrollbar.horizontal.bottom contents", status);
+			Over(m, CairoImage(100, 16));
+			Gtk_New("scrollbar.horizontal.bottom contents trough", status);
+			Over(m, CairoImage(100, 16));
+			s.hupper[status] = s.hlower[status] = Hot3(m);
+			Gtk_New("scrollbar.horizontal.bottom contents trough slider", status);
+			s.hthumb[status] = Hot3(CairoImage(100, 16));
+		}
+	}
+
+	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 
 	Gtk_Free();
 }

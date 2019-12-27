@@ -4,6 +4,9 @@
 - Scale should not be same as UHD
 - Resizing fix black
 - cxZ  Uword - wrong caret
+- .iml cursors in UHD are wrong (e.g. header <-|->)
+- Scrollbar margins (better fit for slider)
+- Scrollbar Correct minsize, barsize...
 
 
 DONE:
