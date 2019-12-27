@@ -129,29 +129,6 @@ Color GetInkColor()
 	return Color(int(255 * color.red), int(255 * color.green), int(255 * color.blue));
 }
 
-Color AvgColor(const Image& m, const Rect& rr)
-{
-	int n = rr.GetWidth() * rr.GetHeight();
-	if(n <= 0)
-		return White();
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	for(int y = rr.top; y < rr.bottom; y++)
-		for(int x = rr.left; x < rr.right; x++) {
-			RGBA c = m[y][x];
-			r += c.r;
-			g += c.g;
-			b += c.b;
-		}
-	return Color(r / n, g / n, b / n);
-}
-
-Color AvgColor(const Image& m, int margin = 0)
-{
-	return AvgColor(m, Rect(m.GetSize()).Deflated(margin));
-}
-
 Color GetBackgroundColor()
 {
     ImageDraw iw(16, 16);
@@ -189,17 +166,6 @@ Image CairoImage(int cx = 40, int cy = 32)
 		gtk_render_background(sCtx, cr, 0, 0, cx, cy);
 		gtk_render_frame(sCtx, cr,  0, 0, cx, cy);
 	});
-}
-
-Image Hot3(const Image& m)
-{
-	Size sz = m.GetSize();
-	DDUMP(sz);
-	Image q = WithHotSpots(m, sz.cx / 3, sz.cy / 3, sz.cx - sz.cx / 3, sz.cy - sz.cy / 3);
-	DDUMP(q);
-	DDUMP(q.GetHotSpot());
-	DDUMP(q.Get2ndSpot());
-	return WithHotSpots(m, sz.cx / 3, sz.cy / 3, sz.cx - sz.cx / 3, sz.cy - sz.cy / 3);
 }
 
 Image Gtk_Icon(const char *icon_name, int size)
@@ -269,6 +235,7 @@ void ChHostSkin()
 				Gtk_State(i);
 				s.look[i] = Hot3(CairoImage());
 				s.monocolor[i] = s.textcolor[i] = GetInkColor();
+				DDUMP(GetInk(s.look[i]));
 			}
 			s.ok = Gtk_Icon("gtk-ok", DPI(16));
 			s.cancel = Gtk_Icon("gtk-cancel", DPI(16));
@@ -308,6 +275,73 @@ void ChHostSkin()
 			Gtk_New("scrollbar.horizontal.bottom contents trough slider", status);
 			s.hthumb[status] = Hot3(CairoImage(100, 16));
 		}
+	}
+	
+	{
+		MenuBar::Style& s = MenuBar::StyleDefault().Write();
+		s.pullshift.y = 0;
+
+		Gtk_New("menu");
+		Image m = CairoImage(32, 32);
+		s.pullshift.y = 0;
+		int mg = DPI(2); // TODO: Use values from GTK
+		s.popupframe = WithHotSpot(m, mg, mg);
+		Size sz = m.GetSize();
+		s.popupbody = Crop(m, mg, mg, sz.cx - 2 * mg, sz.cy - 2 * mg);
+		s.leftgap = DPI(16) + Zx(6);
+		
+		Gtk_New("menuitem");
+		s.itemtext = GetInkColor();
+		s.menutext = SColorMenuText();
+		Color c = AvgColor(m);
+		if(Diff(c, s.menutext) < 200) // menutext color too close to background color, fix it
+			s.menutext = IsDark(c) ? White() : Black();
+		Gtk_State(CTRL_HOT);
+		s.item = Hot3(CairoImage(32, 16));
+
+/*
+		ChGtkNew(menu_item, "menuitem", GTK_BOX);
+		int sw = GTK_SHADOW_OUT;
+		if(gtk_check_version(2, 1, 0))
+			sw = GtkInt("selected_shadow_type");
+		GtkCh(s.item, sw, GTK_STATE_PRELIGHT);
+		s.itemtext = ChGtkColor(2, menu_item);
+		s.menutext = SColorMenuText();
+		if(Diff(c, s.menutext) < 200) // menutext color too close to background color, fix it
+			s.menutext = IsDark(c) ? White() : Black();
+
+		ChGtkNew(top_item, "menuitem", GTK_BOX);
+		if(gtk_check_version(2, 1, 0))
+			sw = GtkInt("selected_shadow_type");
+		
+		s.topitemtext[0] = ChGtkColor(0, top_item);
+		if(Qt)
+			s.topitemtext[1] = ChGtkColor(2, top_item);
+		else
+			s.topitemtext[1] = ChGtkColor(0, top_item);
+		s.topitemtext[2] = ChGtkColor(2, top_item);
+		SColorMenuText_Write(s.topitemtext[1]);
+		if(Qt)
+			GtkCh(s.topitem[1], sw, GTK_STATE_PRELIGHT);
+		else
+			s.topitem[1] = s.topitem[0];
+		GtkCh(s.topitem[2], sw, GTK_STATE_PRELIGHT);
+		s.topitemtext[2] = ChGtkColor(2, top_item);
+		if(engine == "Redmond") {
+			s.topitem[1] = ChBorder(ThinOutsetBorder(), SColorFace());
+			s.topitem[2] = ChBorder(ThinInsetBorder(), SColorFace());
+		}
+		if(engine == "Geramik" || engine == "ThinGeramik")
+			s.topitemtext[2] = SColorText();
+		ChGtkNew(bar, "menubar", GTK_BGBOX);
+		sw = GtkInt("shadow_type");
+		s.look = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 0, 0, 1));
+		rlook = GtkMakeCh(sw, GTK_STATE_NORMAL, Rect(0, 1, 0, 1));
+		Image img = GetGTK(bar, GTK_STATE_NORMAL, sw, "menubar", GTK_BGBOX, 32, 32);
+		s.breaksep.l1 = Color(img[31][15]);
+		TopSeparator1_Write(s.breaksep.l1);
+		s.breaksep.l2 = Null;
+*/
 	}
 
 	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());

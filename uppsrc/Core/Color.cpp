@@ -131,7 +131,7 @@ void Color::Xmlize(XmlIO& xio)
 	if(IsNull(r))
 		*this = Null;
 	else
-		*this = Color(r, g, b);	
+		*this = Color(r, g, b);
 }
 
 RGBA operator*(int alpha, Color c)
