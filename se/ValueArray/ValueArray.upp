@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	ValueArray.cpp;
+
+mainconfig
+	"" = "";
+
