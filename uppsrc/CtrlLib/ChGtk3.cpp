@@ -294,8 +294,8 @@ void ChHostSkin()
 		s.itemtext = GetInkColor();
 		s.menutext = SColorMenuText();
 		Color c = AvgColor(m);
-		if(Diff(c, s.menutext) < 200) // menutext color too close to background color, fix it
-			s.menutext = IsDark(c) ? White() : Black();
+//		if(Diff(c, s.menutext) < 200) // menutext color too close to background color, fix it
+//			s.menutext = IsDark(c) ? White() : Black();
 		Gtk_State(CTRL_HOT);
 		s.item = Hot3(CairoImage(32, 16));
 
