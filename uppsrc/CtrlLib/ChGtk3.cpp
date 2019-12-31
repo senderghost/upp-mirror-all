@@ -213,17 +213,22 @@ Image Gtk_Icon(const char *icon_name, int size)
 {
 	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon_for_scale(gtk_icon_theme_get_default(), icon_name,
 		                                                   size, 2, (GtkIconLookupFlags)0, NULL);
-	int cx = gdk_pixbuf_get_width(pixbuf);
-	int cy = gdk_pixbuf_get_height(pixbuf);
-
-	Image m = CairoImage(cx, cy, [&](cairo_t *cr) {
-		gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-		cairo_paint(cr);
-	});
+	if(pixbuf) {
+		int cx = gdk_pixbuf_get_width(pixbuf);
+		int cy = gdk_pixbuf_get_height(pixbuf);
 	
-	Size sz = m.GetSize();
-
-	return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
+		Image m = CairoImage(cx, cy, [&](cairo_t *cr) {
+			gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+			cairo_paint(cr);
+		});
+		
+		Size sz = m.GetSize();
+		
+		g_object_unref(pixbuf);
+	
+		return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
+	}
+	return Null;
 }
 
 void ChHostSkin()
@@ -303,26 +308,33 @@ void ChHostSkin()
 					}
 					{
 						MultiButton::Style& s = MultiButton::StyleDefault().Write();
-				//		s.trivialsep = true;
-				//		s.edge[0] = Null;
 						s.clipedge = true;
 						s.border = s.trivialborder = 0;
-				
-				
+
 						s.left[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_LEFT|CORNER_BOTTOM_LEFT);
 						s.trivial[i] = s.look[i] = s.right[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_RIGHT|CORNER_BOTTOM_RIGHT);
-					/*
-						Image m = MakeButton(roundness, m, DPI(1), ink);
-						Size isz = m.GetSize();
-						int x3 = isz.cx / 3;
-						s.left[i] = Hot3(Crop(m, 0, 0, x3, isz.cy));
-						
-						Image mm = Crop(m, x3, 0, x3, isz.cy);
-						s.lmiddle[i] = Hot3(AddMargins(mm, 1, 0, 0, 0, SColorPaper()));
-						s.rmiddle[i] = Hot3(AddMargins(mm, 0, 0, 1, 0, SColorPaper()));
-					*/	
+						auto Middle = [&](Image m) {
+							ImageBuffer ib(m);
+							for(int y = 0; y < DPI(1); y++)
+								for(int x = 0; x < ib.GetWidth(); x++) {
+									ib[y][x] = ink;
+									ib[ib.GetHeight() - y - 1][x] = ink;
+								}
+							return Hot3(ib);
+						};
+						s.lmiddle[i] = Middle(WithRightLine(m, ink));
+						s.rmiddle[i] = Middle(WithLeftLine(m, ink));
+						SetChameleonSample(s.rmiddle[0]);
 						s.monocolor[i] = s.fmonocolor[i] = GetInkColor();
 					}
+					{
+						SpinButtons::Style& sp = SpinButtons::StyleDefault().Write();
+						if(i == 0)
+							sp.dec = sp.inc = Button::StyleNormal();
+						sp.inc.look[i] = ChLookWith(WithLeftLine(MakeButton(roundness, m, 0, Black(), CORNER_TOP_RIGHT), ink), CtrlImg::spinup(), GetInkColor());
+						sp.dec.look[i] = ChLookWith(WithLeftLine(MakeButton(roundness, m, 0, Black(), CORNER_BOTTOM_RIGHT), ink), CtrlImg::spindown(), GetInkColor());
+					}
+
 				}
 			}
 			s.ok = Gtk_Icon("gtk-ok", DPI(16));
@@ -433,7 +445,7 @@ void ChHostSkin()
 
 Image GtkThemeIcon(const char *name, int rsz)
 {
-	return CtrlImg::smallreporticon();
+	return Gtk_Icon(name, rsz);
 }
 
 };

@@ -19,6 +19,11 @@ Color AvgColor(const Image& m, int margin = 0);
 
 Color GetInk(const Image& m); // the color that is most different from AvgColor
 
+Image WithLeftLine(const Image& m, Color c, int w = DPI(1));
+Image WithRightLine(const Image& m, Color c, int w = DPI(1));
+
 // for diagnostics purposes
+#ifdef _DEBUG
 void  SetChameleonSample(const Value& m, bool once = true);
 Value GetChameleonSample();
+#endif

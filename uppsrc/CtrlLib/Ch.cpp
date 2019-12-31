@@ -195,7 +195,7 @@ Color GetInk(const Image& m)
 	return ink;
 }
 
-static Image sSample;
+static Value sSample;
 
 void SetChameleonSample(const Value& m, bool once)
 {
@@ -208,6 +208,23 @@ Value GetChameleonSample()
 	return sSample;
 }
 
+static Image sWithLine(Image m, Color c, int w, int at)
+{
+	ImageBuffer ib(m);
+	for(int x = 0; x < w; x++)
+		for(int y = 0; y < ib.GetHeight(); y++)
+			ib[y][x + at] = c;
+	return ib;
+}
 
+Image WithLeftLine(const Image& m, Color c, int w)
+{
+	return sWithLine(m, c, w, 0);
+}
+
+Image WithRightLine(const Image& m, Color c, int w)
+{
+	return sWithLine(m, c, w, m.GetWidth() - w);
+}
 
 }
