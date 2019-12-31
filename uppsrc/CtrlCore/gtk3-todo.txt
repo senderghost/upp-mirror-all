@@ -11,6 +11,7 @@
 - correct checks in menu
 - Combobox push is weird
 - FileSel
+- Issue with editfield text clipping in the right
 
 
 DONE:

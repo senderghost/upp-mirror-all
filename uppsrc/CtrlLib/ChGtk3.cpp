@@ -320,7 +320,7 @@ void ChHostSkin()
 									ib[y][x] = ink;
 									ib[ib.GetHeight() - y - 1][x] = ink;
 								}
-							return Hot3(ib);
+							return WithHotSpot(ib, DPI(1), DPI(1));
 						};
 						s.lmiddle[i] = Middle(WithRightLine(m, ink));
 						s.rmiddle[i] = Middle(WithLeftLine(m, ink));
