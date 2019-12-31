@@ -134,8 +134,8 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 	Rectf r(0, 0, q, q);
 	ImagePainter w(r.GetSize());
 	w.Clear(RGBAZero());
-	RoundedRect(w, r.Deflated(border_width - 1), radius, radius, corner);
-	FillImage(w, r.Deflated(border_width - 1), face);
+	RoundedRect(w, r.Deflated(border_width / 2.0 - 1), radius, radius, corner);
+	FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
 	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
 	w.Stroke(border_width, border_color);
 	Image m = w;
@@ -194,5 +194,20 @@ Color GetInk(const Image& m)
 	DDUMP(best);
 	return ink;
 }
+
+static Image sSample;
+
+void SetChameleonSample(const Value& m, bool once)
+{
+	if(!once || IsNull(sSample))
+		sSample = m;
+}
+
+Value GetChameleonSample()
+{
+	return sSample;
+}
+
+
 
 }

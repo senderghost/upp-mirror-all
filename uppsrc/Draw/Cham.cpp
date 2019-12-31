@@ -285,7 +285,6 @@ Value StdChLookFn(Draw& w, const Rect& r, const Value& v, int op)
 					}
 					if(tile) {
 						LTIMING("Ch-Tiles");
-						LTIMING("Ch-Tiles");
 						Size sz;
 						sz.cx = (tile & 1 ? sr : r).GetWidth();
 						sz.cy = (tile & 2 ? sr : r).GetHeight();

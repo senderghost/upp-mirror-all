@@ -226,12 +226,6 @@ Image Gtk_Icon(const char *icon_name, int size)
 	return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
 }
 
-void StandardLook()
-{
-	for(int i = 0; i < 6; i++)
-		CtrlsImg::Set(CtrlsImg::I_DA + i, CtrlsImg::Get(CtrlsImg::I_kDA + i));
-}
-
 void ChHostSkin()
 {
 	SetupFont();
@@ -253,7 +247,7 @@ void ChHostSkin()
 		SColorInfo_Write(GetBackgroundColor());
 		SColorInfoText_Write(GetInkColor());
 
-//	ChClassicSkin();
+	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 
 #if 0 // TODO (?)
 		{ SColorLight_Write, 2*5 + 0 },
@@ -267,13 +261,16 @@ void ChHostSkin()
 	SOImages(CtrlsImg::I_O0, GTK_STATE_FLAG_NORMAL);
 	SOImages(CtrlsImg::I_O1, GTK_STATE_FLAG_CHECKED);
 	SOImages(CtrlsImg::I_O2, GTK_STATE_FLAG_INCONSISTENT);
-	
-	StandardLook();
+
+	for(int i = 0; i < 6; i++)
+		CtrlsImg::Set(CtrlsImg::I_DA + i, CtrlsImg::Get(CtrlsImg::I_kDA + i));
 	
 	{
 		Gtk_New("button");
+		Color ink;
 		for(int pass = 0; pass < 2; pass++) {
 			Button::Style& s = pass ? Button::StyleOk().Write() : Button::StyleNormal().Write();
+			int roundness = DPI(3);
 			for(int i = 0; i < 4; i++) {
 				Gtk_State(i);
 				s.look[i] = Hot3(CairoImage());
@@ -281,22 +278,51 @@ void ChHostSkin()
 				DDUMP(GetInk(s.look[i]));
 				if(pass == 0) {
 					Image m = CairoImage(100, 100);
-					Color ink = GetInk(m);
+					if(i == 0) {
+						ink = GetInk(m);
+						Image p = CreateImage(Size(10, 5), SColorPaper());
+						CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, p, DPI(1), ink), DPI(2), DPI(1), 0, 0));
+						CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), p, DPI(1), ink), DPI(3), DPI(2), 0, 0));
+					}
 					Size sz = m.GetSize();
 					m = Crop(m, sz.cx / 8, sz.cy / 8, 6 * sz.cx / 8, 6 * sz.cy / 8);
-					auto Set = [&](Button::Style& s, const Image& arrow = Null) {
-						Value l = MakeButton(0, m, DPI(1), ink, 0);
-						s.look[i] = IsNull(l) ? l : ChLookWith(l, arrow);
-					};
-					Set(Button::StyleScroll().Write());
-					Set(Button::StyleEdge().Write());
-					Set(Button::StyleLeftEdge().Write());
-					ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
-					
-					Set(s.up, CtrlsImg::UA());
-					Set(s.down, CtrlsImg::DA());
-					Set(s.left, CtrlsImg::LA());
-					Set(s.right, CtrlsImg::RA());
+					{
+						auto Set = [&](Button::Style& s, const Image& arrow = Null) {
+							Value l = MakeButton(0, m, DPI(1), ink, 0);
+							s.look[i] = IsNull(l) ? l : ChLookWith(l, arrow);
+						};
+						Set(Button::StyleScroll().Write());
+						Set(Button::StyleEdge().Write());
+						Set(Button::StyleLeftEdge().Write());
+						ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+						
+						Set(s.up, CtrlsImg::UA());
+						Set(s.down, CtrlsImg::DA());
+						Set(s.left, CtrlsImg::LA());
+						Set(s.right, CtrlsImg::RA());
+					}
+					{
+						MultiButton::Style& s = MultiButton::StyleDefault().Write();
+				//		s.trivialsep = true;
+				//		s.edge[0] = Null;
+						s.clipedge = true;
+						s.border = s.trivialborder = 0;
+				
+				
+						s.left[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_LEFT|CORNER_BOTTOM_LEFT);
+						s.trivial[i] = s.look[i] = s.right[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_RIGHT|CORNER_BOTTOM_RIGHT);
+					/*
+						Image m = MakeButton(roundness, m, DPI(1), ink);
+						Size isz = m.GetSize();
+						int x3 = isz.cx / 3;
+						s.left[i] = Hot3(Crop(m, 0, 0, x3, isz.cy));
+						
+						Image mm = Crop(m, x3, 0, x3, isz.cy);
+						s.lmiddle[i] = Hot3(AddMargins(mm, 1, 0, 0, 0, SColorPaper()));
+						s.rmiddle[i] = Hot3(AddMargins(mm, 0, 0, 1, 0, SColorPaper()));
+					*/	
+						s.monocolor[i] = s.fmonocolor[i] = GetInkColor();
+					}
 				}
 			}
 			s.ok = Gtk_Icon("gtk-ok", DPI(16));
@@ -304,6 +330,17 @@ void ChHostSkin()
 			s.exit = Gtk_Icon("gtk-quit", DPI(16));
 		}
 	}
+
+	auto DialogIcon = [](int i, const char *s) { CtrlImg::Set(i, Gtk_Icon(s, DPI(48))); };
+	DialogIcon(CtrlImg::I_information, "gtk-dialog-info");
+	DialogIcon(CtrlImg::I_question, "gtk-dialog-question");
+	DialogIcon(CtrlImg::I_exclamation, "gtk-dialog-warning");
+	DialogIcon(CtrlImg::I_error, "gtk-dialog-error");
+	
+	YesButtonImage_Write(Gtk_Icon("gtk-yes", DPI(16)));
+	NoButtonImage_Write(Gtk_Icon("gtk-no", DPI(16)));
+	AbortButtonImage_Write(Gtk_Icon("gtk-stop", DPI(16)));
+	RetryButtonImage_Write(Gtk_Icon("gtk-refresh", DPI(16)));
 
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
@@ -319,9 +356,10 @@ void ChHostSkin()
 		
 		s.barsize = s.thumbwidth = DPI(sz.cx);
 		s.thumbmin = max(GtkStyleInt("min-slider-length"), s.barsize);
-		
+	#ifndef _DEBUG
 		if(!GtkStyleBool("has-backward-stepper"))
 			s.arrowsize = 0;
+	#endif
 		
 		sz.cy = 2 * sz.cx;
 
@@ -389,8 +427,6 @@ void ChHostSkin()
 		s.topitem[2] = Hot3(CairoImage(32, 16));
 		s.topitemtext[2] = GetInkColor();
 	}
-
-	ColoredOverride(CtrlsImg::Iml(), CtrlsImg::Iml());
 
 	Gtk_Free();
 }

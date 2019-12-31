@@ -11,10 +11,14 @@ enum {
 
 void  RoundedRect(Painter& w, double x, double y, double cx, double cy, double rx, double ry, dword corners);
 void  RoundedRect(Painter& w, Rectf r, double rx, double ry, dword corner);
-Image MakeButton(int radius, const Image& face, int border_width, Color border_color, dword corner);
+Image MakeButton(int radius, const Image& face, int border_width, Color border_color, dword corner = 0xff);
 
 Image Hot3(const Image& m); // Adds resizing hotspots at 1/3
 Color AvgColor(const Image& m, const Rect& rr);
 Color AvgColor(const Image& m, int margin = 0);
 
 Color GetInk(const Image& m); // the color that is most different from AvgColor
+
+// for diagnostics purposes
+void  SetChameleonSample(const Value& m, bool once = true);
+Value GetChameleonSample();

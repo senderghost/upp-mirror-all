@@ -70,9 +70,12 @@ int64 TextArrayOps::GetPrevWord(int64 cursor)
 Rect LookMargins(const Rect& r, const Value& ch)
 {
 	Rect m = ChMargins(ch);
+	DLOG("---- LookMargins");
+	DDUMP(m);
 	int fcy = GetStdFontCy();
 	if(m.top + m.bottom + fcy > r.GetHeight())
 		m.top = m.bottom = max((r.GetHeight() - fcy) / 2, 0);
+	DDUMP(m);
 	return m;
 }
 
