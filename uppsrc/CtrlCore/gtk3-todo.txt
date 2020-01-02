@@ -8,7 +8,6 @@
 - libgtk-3-dev to buildrequires
 - FileSelector
 - Issue with editfield text clipping in the right
-- uword cannot be resized smaller
 - Mint-Y disabled color is wrong
 - TabBar synthetise
 
@@ -22,3 +21,4 @@ DONE:
 - Test grip resize
 - toolbar button highlight
 - correct checks in menu
+- uword cannot be resized smaller

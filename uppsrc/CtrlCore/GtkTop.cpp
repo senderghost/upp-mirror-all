@@ -25,6 +25,7 @@ void    TopWindow::SyncSizeHints()
 	Size sz = sz0;
 	if(sizeable)
 		sz = GetMinSize();
+	DDUMP(sz);
 	m.min_width = IPD(sz.cx);
 	m.min_height = IPD(sz.cy);
 	sz = sz0;
@@ -35,6 +36,7 @@ void    TopWindow::SyncSizeHints()
 	gtk_window_set_resizable(gtk(), sizeable);
 	gtk_window_set_geometry_hints(gtk(), top->window, &m,
 	                              GdkWindowHints(GDK_HINT_MIN_SIZE|GDK_HINT_MAX_SIZE));
+	gtk_widget_set_size_request(top->window, m.min_width, m.min_height);
 }
 
 void TopWindow::SyncTitle()
