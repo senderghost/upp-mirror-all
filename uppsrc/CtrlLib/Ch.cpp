@@ -137,11 +137,17 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 	RoundedRect(w, r.Deflated(border_width / 2.0 - 1), radius, radius, corner);
 	FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
 	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
-	w.Stroke(border_width, border_color);
+	if(!IsNull(border_color))
+		w.Stroke(border_width, border_color);
 	Image m = w;
 	Point p1(radius, radius);
 	SetHotSpots(m, p1, (Point)r.BottomRight() - p1);
 	return m;
+}
+
+Image MakeButton(int radius, Color face, int border_width, Color border_color, dword corner)
+{
+	return MakeButton(radius, CreateImage(Size(10, 5), face), border_width, border_color, corner);
 }
 
 Image Hot3(const Image& m)
@@ -175,6 +181,8 @@ Color AvgColor(const Image& m, int margin)
 	return AvgColor(m, Rect(m.GetSize()).Deflated(margin));
 }
 
+
+
 Color GetInk(const Image& m)
 {
 	RGBA avg = AvgColor(m);
@@ -191,8 +199,34 @@ Color GetInk(const Image& m)
 			}
 		}
 	}
-	DDUMP(best);
 	return ink;
+}
+
+int GetRoundness(const Image& m)
+{
+	Size isz = m.GetSize();
+	int bestd = 0, besth = 0;
+	int di = 0, hi = 0;
+	int hy = isz.cy / 2;
+	RGBA avg = AvgColor(m);
+	auto Chk = [&](int x, int y, int& best, int& besti) {
+		if(x < isz.cx && y < isz.cy) {
+			RGBA c = m[y][x];
+			Unmultiply(&c, &c, 1);
+			if(c.a > 100) {
+				int q = Grayscale(abs(c.r - avg.r), abs(c.g - avg.g), abs(c.b - avg.b));
+				if(q > best) {
+					best = q;
+					besti = x;
+				}
+			}
+		}
+	};
+	for(int i = 0; i < 8; i++) {
+		Chk(i, hy, besth, hi);
+		Chk(i, i, bestd, di);
+	}
+	return max(di - hi, 0);
 }
 
 static Value sSample;
@@ -225,6 +259,75 @@ Image WithLeftLine(const Image& m, Color c, int w)
 Image WithRightLine(const Image& m, Color c, int w)
 {
 	return sWithLine(m, c, w, m.GetWidth() - w);
+}
+
+void ChSynthetic(Image button100x100[4], Color text[4])
+{
+	int roundness = DPI(3);
+	Color ink = SColorText();
+	for(int i = 0; i < 4; i++) {
+		Image m = button100x100[i];
+		if(i == 0) {
+			ink = GetInk(m);
+			DDUMP(GetRoundness(m));
+			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(2), DPI(1), 0, 0));
+			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(3), DPI(2), 0, 0));
+		}
+		Size sz = m.GetSize();
+		m = Crop(m, sz.cx / 8, sz.cy / 8, 6 * sz.cx / 8, 6 * sz.cy / 8);
+		{
+			auto Set = [&](Button::Style& s, const Image& arrow = Null) {
+				Value l = MakeButton(0, m, DPI(1), ink, 0);
+				s.look[i] = IsNull(l) ? l : ChLookWith(l, arrow);
+			};
+			Set(Button::StyleScroll().Write());
+			Set(Button::StyleEdge().Write());
+			Set(Button::StyleLeftEdge().Write());
+			ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
+			
+			Set(s.up, CtrlsImg::UA());
+			Set(s.down, CtrlsImg::DA());
+			Set(s.left, CtrlsImg::LA());
+			Set(s.right, CtrlsImg::RA());
+		}
+		{
+			MultiButton::Style& s = MultiButton::StyleDefault().Write();
+			s.clipedge = true;
+			s.border = s.trivialborder = 0;
+
+			s.left[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_LEFT|CORNER_BOTTOM_LEFT);
+			s.trivial[i] = s.look[i] = s.right[i] = MakeButton(roundness, m, DPI(1), ink, CORNER_TOP_RIGHT|CORNER_BOTTOM_RIGHT);
+			auto Middle = [&](Image m) {
+				ImageBuffer ib(m);
+				for(int y = 0; y < DPI(1); y++)
+					for(int x = 0; x < ib.GetWidth(); x++) {
+						ib[y][x] = ink;
+						ib[ib.GetHeight() - y - 1][x] = ink;
+					}
+				return WithHotSpot(ib, DPI(1), DPI(1));
+			};
+			s.lmiddle[i] = Middle(WithRightLine(m, ink));
+			s.rmiddle[i] = Middle(WithLeftLine(m, ink));
+			s.monocolor[i] = s.fmonocolor[i] = text[i];
+		}
+		{
+			SpinButtons::Style& sp = SpinButtons::StyleDefault().Write();
+			if(i == 0)
+				sp.dec = sp.inc = Button::StyleNormal();
+			auto Spin = [&](dword corners, const Image& sm) {
+				return ChLookWith(WithLeftLine(MakeButton(roundness, m, 0, Black(), corners), ink), sm, text[i]);
+			};
+			sp.inc.look[i] = Spin(CORNER_TOP_RIGHT, CtrlImg::spinup());
+			sp.dec.look[i] = Spin(CORNER_BOTTOM_RIGHT, CtrlImg::spindown());
+		}
+		if(i == CTRL_DISABLED) {
+			ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();
+			s.hlook = MakeButton(roundness, m, DPI(1), ink);
+			s.hchunk = MakeButton(roundness, SColorHighlight(), DPI(1), ink);
+			s.bound = true;
+			s.nomargins = true;
+		}
+	}
 }
 
 }

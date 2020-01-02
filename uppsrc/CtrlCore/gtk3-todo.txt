@@ -12,7 +12,8 @@
 - Combobox push is weird
 - FileSel
 - Issue with editfield text clipping in the right
-
+- uword cannot be resized smaller
+- Mint-Y disabled color is wrong
 
 DONE:
 
