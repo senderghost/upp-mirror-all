@@ -269,6 +269,11 @@ void ChHostSkin()
 	SOImages(CtrlsImg::I_O1, GTK_STATE_FLAG_CHECKED);
 	SOImages(CtrlsImg::I_O2, GTK_STATE_FLAG_INCONSISTENT);
 
+	CtrlImg::Set(CtrlImg::I_MenuCheck0, CtrlsImg::O0());
+	CtrlImg::Set(CtrlImg::I_MenuCheck1, CtrlsImg::O1());
+	CtrlImg::Set(CtrlImg::I_MenuRadio0, CtrlsImg::S0());
+	CtrlImg::Set(CtrlImg::I_MenuRadio1, CtrlsImg::S1());
+
 	for(int i = 0; i < 6; i++)
 		CtrlsImg::Set(CtrlsImg::I_DA + i, CtrlsImg::Get(CtrlsImg::I_kDA + i));
 	
@@ -285,7 +290,7 @@ void ChHostSkin()
 				s.look[i] = Hot3(CairoImage());
 				s.monocolor[i] = s.textcolor[i] = GetInkColor();
 				if(pass == 0) {
-					button[i] = CairoImage(100, 100);
+					button[i] = WithHotSpots(CairoImage(100, 100), DPI(4), DPI(4), 0, 0);
 					text[i] = GetInkColor();
 				}
 			}
@@ -295,6 +300,16 @@ void ChHostSkin()
 		}
 		
 		ChSynthetic(button, text);
+
+		{
+			auto& s = ToolButton::StyleDefault().Write();
+			s.look[CTRL_NORMAL] = Image();
+			s.look[CTRL_HOT] = button[CTRL_HOT];
+			s.look[CTRL_PRESSED] = button[CTRL_PRESSED];
+			s.look[CTRL_DISABLED] = Image();
+			s.look[CTRL_CHECKED] = button[CTRL_PRESSED];
+			s.look[CTRL_HOTCHECKED] = button[CTRL_HOT];
+		}
 	}
 
 	auto DialogIcon = [](int i, const char *s) { CtrlImg::Set(i, Gtk_Icon(s, DPI(48))); };
@@ -330,19 +345,23 @@ void ChHostSkin()
 		sz.cy = 2 * sz.cx;
 
 		for(int status = CTRL_NORMAL; status <= CTRL_DISABLED; status++) {
-			Gtk_New("scrollbar.right.vertical", status);
+			Gtk_New("scrollbar.vertical.right", status);
 			Size sz = GtkSize();
 			Image m = CairoImage(sz.cx, sz.cy);
-			Gtk_New("scrollbar.right.vertical contents", status);
+			Gtk_New("scrollbar.vertical.right contents", status);
 			GtkSize(sz);
 			Over(m, CairoImage(sz.cx, sz.cy));
-			Gtk_New("scrollbar.right.vertical contents trough", status);
+			Gtk_New("scrollbar.vertical.right contents trough", status);
 			GtkSize(sz);
 			Over(m, CairoImage(sz.cx, sz.cy));
 			s.vupper[status] = s.vlower[status] = Hot3(m);
-			Gtk_New("scrollbar.right.vertical contents trough slider", status);
+			if(status == CTRL_NORMAL)
+				SetChameleonSample(m);
+
+			Gtk_New("scrollbar.vertical.right contents trough slider", status);
 			GtkSize(sz);
 			s.vthumb[status] = Hot3(CairoImage(sz.cx, sz.cy));
+
 			Gtk_New("scrollbar.horizontal.bottom", status);
 			m = CairoImage(sz.cy, sz.cx);
 			Gtk_New("scrollbar.horizontal.bottom contents", status);

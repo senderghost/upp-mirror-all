@@ -134,7 +134,7 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 	Rectf r(0, 0, q, q);
 	ImagePainter w(r.GetSize());
 	w.Clear(RGBAZero());
-	RoundedRect(w, r.Deflated(border_width / 2.0 - 1), radius, radius, corner);
+	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
 	FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
 	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
 	if(!IsNull(border_color))
@@ -269,7 +269,7 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 		Image m = button100x100[i];
 		if(i == 0) {
 			ink = GetInk(m);
-			DDUMP(GetRoundness(m));
+			roundness = GetRoundness(m) ? DPI(3) : 0;
 			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(2), DPI(1), 0, 0));
 			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(3), DPI(2), 0, 0));
 		}
