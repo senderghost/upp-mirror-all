@@ -164,14 +164,14 @@ Color GetInkColor()
 {
 	GdkRGBA color;
 	gtk_style_context_get_color(sCtx, sFlags, &color);
-	return Color(int(255 * color.red), int(255 * color.green), int(255 * color.blue));
-}
-
-Color GetBackgroundColor()
-{
-    ImageDraw iw(16, 16);
-    gtk_render_background(sCtx, iw, 0, 0, 16, 16);
-	return AvgColor(iw);
+	RGBA rgba;
+	rgba.r = int(255 * color.red);
+	rgba.g = int(255 * color.green);
+	rgba.b = int(255 * color.blue);
+	rgba.a = int(255 * color.alpha);
+	RGBA t = SColorPaper();
+	AlphaBlend(&t, &rgba, 1);
+	return t;
 }
 
 static Image sCurrentImage;
@@ -207,6 +207,14 @@ Image CairoImage(int cx = 40, int cy = 32)
 		gtk_render_background(sCtx, cr, 0, 0, cx, cy);
 		gtk_render_frame(sCtx, cr,  0, 0, cx, cy);
 	});
+}
+
+Color GetBackgroundColor()
+{
+	Image m = CairoImage(30, 30);
+	Image b = CreateImage(m.GetSize(), SColorPaper());
+	Over(b, m);
+	return AvgColor(b);
 }
 
 Image Gtk_Icon(const char *icon_name, int size)
@@ -251,6 +259,7 @@ void ChHostSkin()
 	Gtk_New("label.view");
 		SColorLabel_Write(GetInkColor());
 	Gtk_New("tooltip.background");
+		SetChameleonSample(CairoImage());
 		SColorInfo_Write(GetBackgroundColor());
 		SColorInfoText_Write(GetInkColor());
 
@@ -355,8 +364,6 @@ void ChHostSkin()
 			GtkSize(sz);
 			Over(m, CairoImage(sz.cx, sz.cy));
 			s.vupper[status] = s.vlower[status] = Hot3(m);
-			if(status == CTRL_NORMAL)
-				SetChameleonSample(m);
 
 			Gtk_New("scrollbar.vertical.right contents trough slider", status);
 			GtkSize(sz);

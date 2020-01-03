@@ -3,12 +3,8 @@
 - Resizing fix black
 - cxZ  Uword - wrong caret
 - .iml cursors in UHD are wrong (e.g. header <-|->)
-- Scrollbar margins (better fit for slider)
-- Scrollbar Correct minsize, barsize...
 - libgtk-3-dev to buildrequires
-- FileSelector
 - Issue with editfield text clipping in the right
-- Mint-Y disabled color is wrong
 - TabBar synthetise
 
 DONE:
@@ -22,3 +18,8 @@ DONE:
 - toolbar button highlight
 - correct checks in menu
 - uword cannot be resized smaller
+- Scrollbar margins (better fit for slider)
+- Scrollbar Correct minsize, barsize...
+- FileSelector
+- Mint-Y disabled color is wrong
+- Mint-Y tooltip color is wrong
