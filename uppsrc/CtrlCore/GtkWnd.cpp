@@ -97,10 +97,12 @@ void  Ctrl::SetMouseCursor(const Image& image)
 		else {
 			Point p = image.GetHotSpot();
 
-			cairo_surface_t *cs = CreateCairoSurface(image);
+			cairo_surface_t *surface = CreateCairoSurface(image);
 			double scale = DPI(1);
-			cairo_surface_set_device_scale(cs, scale, scale);
-			c = gdk_cursor_new_from_surface(gdk_display_get_default(), cs, p.x / scale, p.y / scale);
+			cairo_surface_set_device_scale(surface, scale, scale);
+			c = gdk_cursor_new_from_surface(gdk_display_get_default(), surface, p.x / scale, p.y / scale);
+			cairo_surface_destroy(surface);
+
 	/* // will probably need this for 3.8
 			ImageGdk m;
 			m.Set(image);
