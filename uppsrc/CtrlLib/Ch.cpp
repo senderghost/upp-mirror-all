@@ -130,7 +130,7 @@ void RoundedRect(Painter& w, Rectf r, double rx, double ry, dword corner)
 
 Image MakeButton(int radius, const Image& face, int border_width, Color border_color, dword corner)
 {
-	int q = radius + border_width + 16;
+	int q = radius + border_width + DPI(16);
 	Rectf r(0, 0, q, q);
 	ImagePainter w(r.GetSize());
 	w.Clear(RGBAZero());
@@ -147,13 +147,18 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 
 Image MakeButton(int radius, Color face, int border_width, Color border_color, dword corner)
 {
-	return MakeButton(radius, CreateImage(Size(10, 5), face), border_width, border_color, corner);
+	return MakeButton(radius, CreateImage(Size(DPI(10), DPI(5)), face), border_width, border_color, corner);
 }
 
 Image Hot3(const Image& m)
 {
 	Size sz = m.GetSize();
 	return WithHotSpots(m, sz.cx / 3, sz.cy / 3, sz.cx - sz.cx / 3, sz.cy - sz.cy / 3);
+}
+
+Image ChHot(const Image& m, int n)
+{
+	return WithHotSpots(m, DPI(n), DPI(n), 0, 0);
 }
 
 Color AvgColor(const Image& m, const Rect& rr)
@@ -270,8 +275,9 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 		if(i == 0) {
 			ink = GetInk(m);
 			roundness = GetRoundness(m) ? DPI(3) : 0;
-			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(2), DPI(1), 0, 0));
-			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(3), DPI(2), 0, 0));
+			DDUMP(GetRoundness(m));
+			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(3), DPI(1), 0, 0));
+			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(2), DPI(2), 0, 0));
 		}
 		Size sz = m.GetSize();
 		m = Crop(m, sz.cx / 8, sz.cy / 8, 6 * sz.cx / 8, 6 * sz.cy / 8);

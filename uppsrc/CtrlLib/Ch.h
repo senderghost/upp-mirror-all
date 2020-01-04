@@ -15,6 +15,7 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 Image MakeButton(int radius, Color face, int border_width, Color border_color = Null, dword corner = 0xff);
 
 Image Hot3(const Image& m); // Adds resizing hotspots at 1/3
+Image ChHot(const Image& m, int n = 2); // Adds resizing hotspots DPI(n)
 Color AvgColor(const Image& m, const Rect& rr);
 Color AvgColor(const Image& m, int margin = 0);
 

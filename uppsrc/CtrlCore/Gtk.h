@@ -156,10 +156,6 @@ struct GdkRect : GdkRectangle {
 	GdkRect(const Rect& r);
 };
 
-struct GdkRectIPD : GdkRect {
-	GdkRectIPD(const Rect& r) : GdkRect(RectC(IPD(r.left), IPD(r.top), IPD(r.Width()), IPD(r.Height()))) {}
-};
-
 class ImageGdk {
 	GdkPixbuf *pixbuf;
 	Image      img;

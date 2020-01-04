@@ -1,11 +1,15 @@
 - Fix IsPainting
 - Scale should not be same as UHD
 - Resizing fix black
-- cxZ  Uword - wrong caret
-- .iml cursors in UHD are wrong (e.g. header <-|->)
-- libgtk-3-dev to buildrequires
 - Issue with editfield text clipping in the right
 - TabBar synthetise
+- Header synthetise
+- Combobox appearance issues (minor, round corners broken on the left)
+- Problem with hot3 in scrollbar horizontal
+- GtkStyleBool("has-backward-stepper")
+
+- makefile pkg-config support
+- libgtk-3-dev to buildrequires
 
 DONE:
 
@@ -23,3 +27,5 @@ DONE:
 - FileSelector
 - Mint-Y disabled color is wrong
 - Mint-Y tooltip color is wrong
+- .iml cursors in UHD are wrong (e.g. header <-|->)
+- cxZ  Uword - wrong caret

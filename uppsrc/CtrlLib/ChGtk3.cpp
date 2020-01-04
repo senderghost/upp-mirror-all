@@ -336,6 +336,13 @@ void ChHostSkin()
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 		s.through = true;
 		Gtk_New("scrollbar.right.vertical");
+		DDUMP(GtkStyleBool("has-backward-stepper"));
+/*
+	#ifndef _DEBUG0
+		if(!GtkStyleBool("has-backward-stepper"))
+			s.arrowsize = 0;
+	#endif
+*/
 		Size sz = GtkSize();
 		Gtk_New("scrollbar.right.vertical contents");
 		GtkSize(sz);
@@ -346,38 +353,24 @@ void ChHostSkin()
 		
 		s.barsize = s.thumbwidth = DPI(sz.cx);
 		s.thumbmin = max(GtkStyleInt("min-slider-length"), s.barsize);
-	#ifndef _DEBUG
-		if(!GtkStyleBool("has-backward-stepper"))
-			s.arrowsize = 0;
-	#endif
-		
+
 		sz.cy = 2 * sz.cx;
 
 		for(int status = CTRL_NORMAL; status <= CTRL_DISABLED; status++) {
-			Gtk_New("scrollbar.vertical.right", status);
-			Size sz = GtkSize();
-			Image m = CairoImage(sz.cx, sz.cy);
-			Gtk_New("scrollbar.vertical.right contents", status);
-			GtkSize(sz);
-			Over(m, CairoImage(sz.cx, sz.cy));
-			Gtk_New("scrollbar.vertical.right contents trough", status);
-			GtkSize(sz);
-			Over(m, CairoImage(sz.cx, sz.cy));
-			s.vupper[status] = s.vlower[status] = Hot3(m);
-
-			Gtk_New("scrollbar.vertical.right contents trough slider", status);
-			GtkSize(sz);
-			s.vthumb[status] = Hot3(CairoImage(sz.cx, sz.cy));
-
 			Gtk_New("scrollbar.horizontal.bottom", status);
-			m = CairoImage(sz.cy, sz.cx);
+			Image m = CairoImage(sz.cy, sz.cx);
 			Gtk_New("scrollbar.horizontal.bottom contents", status);
 			Over(m, CairoImage(sz.cy, sz.cx));
 			Gtk_New("scrollbar.horizontal.bottom contents trough", status);
 			Over(m, CairoImage(sz.cy, sz.cx));
-			s.hupper[status] = s.hlower[status] = Hot3(m);
+			s.hupper[status] = s.hlower[status] = ChHot(m);
+			s.vupper[status] = s.vlower[status] = ChHot(RotateAntiClockwise(m)); // we have problems getting this right for vertical
 			Gtk_New("scrollbar.horizontal.bottom contents trough slider", status);
-			s.hthumb[status] = Hot3(CairoImage(sz.cy, sz.cx));
+			s.hthumb[status] = ChHot(CairoImage(sz.cy, sz.cx));
+
+			Gtk_New("scrollbar.vertical.right contents trough slider", status);
+			GtkSize(sz);
+			s.vthumb[status] = ChHot(CairoImage(sz.cx, sz.cy));
 		}
 	}
 	

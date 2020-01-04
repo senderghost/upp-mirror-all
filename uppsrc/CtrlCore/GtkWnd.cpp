@@ -70,6 +70,8 @@ Vector<Ctrl *> Ctrl::GetTopCtrls()
 	return h;
 }
 
+cairo_surface_t *CreateCairoSurface(const Image& img);
+
 void  Ctrl::SetMouseCursor(const Image& image)
 {
 	LLOG("SetMouseCursor");
@@ -88,17 +90,24 @@ void  Ctrl::SetMouseCursor(const Image& image)
 		int64 aux = image.GetAuxData();
 		GdkCursor *c = NULL;
 		if(aux)
-			c = gdk_cursor_new((GdkCursorType)(aux - 1));
+			c = gdk_cursor_new_for_display(gdk_display_get_default(), (GdkCursorType)(aux - 1));
 		else
 		if(IsNull(image))
 			c = gdk_cursor_new(GDK_BLANK_CURSOR);
 		else {
 			Point p = image.GetHotSpot();
+
+			cairo_surface_t *cs = CreateCairoSurface(image);
+			double scale = DPI(1);
+			cairo_surface_set_device_scale(cs, scale, scale);
+			c = gdk_cursor_new_from_surface(gdk_display_get_default(), cs, p.x / scale, p.y / scale);
+	/* // will probably need this for 3.8
 			ImageGdk m;
 			m.Set(image);
 			GdkPixbuf *pb = m;
 			if(pb)
 				c = gdk_cursor_new_from_pixbuf(gdk_display_get_default(), pb, p.x, p.y);
+	*/
 		}
 		if(c && topctrl->IsOpen()) {
 			gdk_window_set_cursor(topctrl->gdk(), c);
@@ -378,9 +387,17 @@ void Ctrl::WndInvalidateRect(const Rect& r)
 {
 	GuiLock __;
 	LLOG("WndInvalidateRect " << r);
-	DDUMP(r);
-	DDUMP(GetRect());
-	gdk_window_invalidate_rect(gdk(), GdkRectIPD(r), TRUE);
+	Rect rr;
+	if(IsUHDMode()) {
+		rr.left = r.left / 2;
+		rr.top = r.top / 2;
+		rr.right = (r.right + 1) / 2;
+		rr.bottom = (r.bottom + 1) / 2;
+	}
+	else
+		rr = r;
+	
+	gdk_window_invalidate_rect(gdk(), GdkRect(rr), TRUE);
 }
 
 void  Ctrl::WndScrollView(const Rect& r, int dx, int dy)
