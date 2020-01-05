@@ -278,6 +278,8 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			DDUMP(GetRoundness(m));
 			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(3), DPI(1), 0, 0));
 			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(2), DPI(2), 0, 0));
+			EditField::StyleDefault().Write().edge[CTRL_DISABLED] = WithHotSpots(MakeButton(roundness, SColorFace(), DPI(1), ink), DPI(3), DPI(1), 0, 0);
+			EditField::StyleDefault().Write().activeedge = true;
 		}
 		Size sz = m.GetSize();
 		m = Crop(m, sz.cx / 8, sz.cy / 8, 6 * sz.cx / 8, 6 * sz.cy / 8);
@@ -315,6 +317,9 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			s.lmiddle[i] = Middle(WithRightLine(m, ink));
 			s.rmiddle[i] = Middle(WithLeftLine(m, ink));
 			s.monocolor[i] = s.fmonocolor[i] = text[i];
+			for(int i = 0; i < 4; i++)
+				s.edge[i] = EditField::StyleDefault().edge[i];
+			s.margin = Rect(DPI(3), 2, DPI(1), 2);
 		}
 		{
 			SpinButtons::Style& sp = SpinButtons::StyleDefault().Write();
