@@ -320,6 +320,7 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			for(int i = 0; i < 4; i++)
 				s.edge[i] = EditField::StyleDefault().edge[i];
 			s.margin = Rect(DPI(3), 2, DPI(1), 2);
+			s.activeedge = true;
 		}
 		{
 			SpinButtons::Style& sp = SpinButtons::StyleDefault().Write();
