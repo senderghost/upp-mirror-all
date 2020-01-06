@@ -56,9 +56,7 @@ bool Ctrl::IsAlphaSupported()
 
 bool Ctrl::IsCompositedGui()
 {
-    GuiLock __;
-    static bool b = gdk_display_supports_composite(gdk_display_get_default());
-    return b;
+	return true; // limits some GUI effects that do not play well with advanced desktops
 }
 
 Vector<Ctrl *> Ctrl::GetTopCtrls()
@@ -93,7 +91,7 @@ void  Ctrl::SetMouseCursor(const Image& image)
 			c = gdk_cursor_new_for_display(gdk_display_get_default(), (GdkCursorType)(aux - 1));
 		else
 		if(IsNull(image))
-			c = gdk_cursor_new(GDK_BLANK_CURSOR);
+			c = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_BLANK_CURSOR);
 		else {
 			Point p = image.GetHotSpot();
 
@@ -113,8 +111,8 @@ void  Ctrl::SetMouseCursor(const Image& image)
 		}
 		if(c && topctrl->IsOpen()) {
 			gdk_window_set_cursor(topctrl->gdk(), c);
-			gdk_cursor_unref(c);
-			gdk_flush(); // Make it visible immediately
+			g_object_unref(c);
+			gdk_display_flush(gdk_display_get_default()); // Make it visible immediately
 		}
 	}
 }
@@ -249,15 +247,13 @@ Rect Ctrl::GetWorkArea() const
 void Ctrl::GetWorkArea(Array<Rect>& rc)
 {
 	GuiLock __;
-	GdkScreen *s = gdk_screen_get_default();
-	int n = gdk_screen_get_n_monitors(s);
+	GdkDisplay *s = gdk_display_get_default();
+	int n = gdk_display_get_n_monitors(s);
 	rc.Clear();
 	Vector<int> netwa;
 	for(int i = 0; i < n; i++) {
 		GdkRectangle rr;
-		// 3.22
-		// gdk_monitor_get_workarea(gdk_display_get_monitor(s, i), i, &rr);
-		gdk_screen_get_monitor_workarea(s, i, &rr);
+		gdk_monitor_get_workarea(gdk_display_get_monitor(s, i), &rr);
 		rc.Add(DPI(rr.x, rr.y, rr.width, rr.height));
 	}
 }
@@ -292,21 +288,9 @@ Rect Ctrl::GetVirtualScreenArea()
 Rect Ctrl::GetPrimaryWorkArea()
 {
 	GuiLock __;
-	static Rect r;
-	if (r.right == 0) {
-		Array<Rect> rc;
-		GetWorkArea(rc);
-#if GTK_CHECK_VERSION(2, 20, 0)
-		int primary = gdk_screen_get_primary_monitor(gdk_screen_get_default());
-#else
-		int primary = 0;
-#endif
-		if(primary >= 0 && primary < rc.GetCount())
-			r = rc[primary];
-		else
-			r = GetVirtualScreenArea();
-	}
-	return r;
+	GdkRectangle rr;
+	gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &rr);
+	return DPI(rr.x, rr.y, rr.width, rr.height);
 }
 
 Rect Ctrl::GetPrimaryScreenArea()
@@ -475,9 +459,9 @@ void Ctrl::WndUpdate()
 {
 	GuiLock __;
 	LLOG("WndUpdate0");
-	gdk_window_process_updates(gdk(), TRUE);
+//	gdk_window_process_updates(gdk(), TRUE); // deprecated
 	FetchEvents(FALSE); // Should pickup GDK_EXPOSE and repaint the window
-	gdk_flush();
+	gdk_display_flush(gdk_display_get_default());
 }
 
 Rect Ctrl::GetDefaultWindowRect()

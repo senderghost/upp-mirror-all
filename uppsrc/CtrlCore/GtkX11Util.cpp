@@ -106,11 +106,13 @@ dword X11mods(dword key)
 	return mod;
 }
 
+#if 0 // retained for 3.8 compatibility
+
 int Ctrl::RegisterSystemHotKey(dword key, Function<void ()> cb)
 {
 	GuiLock __;
 	ASSERT(key >= K_DELTA);
-	gdk_error_trap_push();
+	gdk_x11_display_error_trap_push(gdk_display_get_default());
 	KeyCode k = XKeysymToKeycode(Xdisplay(), key & 0xffff);
 	dword mod = X11mods(key);
 	bool r = false;
@@ -120,7 +122,7 @@ int Ctrl::RegisterSystemHotKey(dword key, Function<void ()> cb)
 				r = XGrabKey(Xdisplay(), k,
 				             mod | (nlock * Mod2Mask) | (clock * LockMask) | (slock * Mod3Mask),
 				             Xroot(), true, GrabModeAsync, GrabModeAsync) || r;
-	(void)gdk_error_trap_pop();
+	gdk_x11_display_error_trap_pop_ignored(gdk_display_get_default());
 	if(!r) return -1;
 	int q = hotkey.GetCount();
 	for(int i = 0; i < hotkey.GetCount(); i++)
@@ -138,17 +140,19 @@ void Ctrl::UnregisterSystemHotKey(int id)
 {
 	GuiLock __;
 	if(id >= 0 && id < hotkey.GetCount() && hotkey[id]) {
-		gdk_error_trap_push();
+		gdk_x11_display_error_trap_push(gdk_display_get_default());
 		for(dword nlock = 0; nlock < 2; nlock++)
 			for(dword clock = 0; clock < 2; clock++)
 				for(dword slock = 0; slock < 2; slock++)
 					XUngrabKey(Xdisplay(), keyhot[id],
 					           modhot[id] | (nlock * Mod2Mask) | (clock * LockMask) | (slock * Mod3Mask),
 					           Xroot());
-		(void)gdk_error_trap_pop();
+		gdk_x11_display_error_trap_pop_ignored(gdk_display_get_default());
 		hotkey[id].Clear();
 	}
 }
+
+#endif
 
 GdkFilterReturn Ctrl::RootKeyFilter(GdkXEvent *xevent, GdkEvent *Xevent, gpointer data)
 {

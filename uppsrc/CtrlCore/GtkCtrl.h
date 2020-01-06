@@ -29,6 +29,9 @@ _DBG_
 	static gboolean GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer data);
 
 	static Point GetMouseInfo(GdkWindow *win, GdkModifierType& mod);
+	static GdkDevice *GetMouseDevice();
+	static GdkSeat   *GetSeat();
+	static bool MouseIsGrabbed();
 
 	enum {
 		EVENT_NONE = -15321,

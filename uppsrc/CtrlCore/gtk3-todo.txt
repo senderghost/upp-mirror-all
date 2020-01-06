@@ -4,9 +4,11 @@
 - Issue with editfield text clipping in the right
 - TabBar synthetise
 - Header synthetise
-- Combobox appearance issues (minor, round corners broken on the left)
 - Problem with hot3 in scrollbar horizontal
 - GtkStyleBool("has-backward-stepper")
+- spinbuttons in UWord
+- read-only dropchoice left color
+- ColorPopup background
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
@@ -29,3 +31,4 @@ DONE:
 - Mint-Y tooltip color is wrong
 - .iml cursors in UHD are wrong (e.g. header <-|->)
 - cxZ  Uword - wrong caret
+- Combobox appearance issues (minor, round corners broken on the left)
