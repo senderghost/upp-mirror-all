@@ -1,17 +1,16 @@
-- Fix IsPainting
 - Scale should not be same as UHD
 - Resizing fix black
 - Issue with editfield text clipping in the right
 - TabBar synthetise
 - Header synthetise
-- Problem with hot3 in scrollbar horizontal
 - GtkStyleBool("has-backward-stepper")
-- spinbuttons in UWord
-- read-only dropchoice left color
-- ColorPopup background
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
+
+PROBABLY DONE:
+- Problem with hot3 in scrollbar horizontal (check in SD)
+
 
 DONE:
 
@@ -32,3 +31,7 @@ DONE:
 - .iml cursors in UHD are wrong (e.g. header <-|->)
 - cxZ  Uword - wrong caret
 - Combobox appearance issues (minor, round corners broken on the left)
+- spinbuttons in UWord
+- read-only dropchoice left color
+- ColorPopup background
+- Fix IsPainting

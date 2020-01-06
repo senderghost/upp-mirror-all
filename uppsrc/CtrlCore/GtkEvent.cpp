@@ -97,6 +97,18 @@ gboolean Ctrl::GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 		DDUMP(p->GetScreenView());
 		DDUMP(p->GetScreenRect());
 		w.Clip(r); // Because of IsPainting
+
+		cairo_rectangle_list_t *list = cairo_copy_clip_rectangle_list(cr);
+		if(list->status == CAIRO_STATUS_SUCCESS && list->num_rectangles < 10) {
+			Vector<Rect> clip;
+			for(int i = 0; i < list->num_rectangles; i++) {
+				const cairo_rectangle_t& r = list->rectangles[i];
+				clip.Add(Rect((int)r.x, (int)r.y, (int)(r.x + r.width), (int)(r.y + r.height)));
+			}
+			w.PickInvalid(pick(clip));
+		}
+		cairo_rectangle_list_destroy(list);
+
 		p->UpdateArea(w, r);
 		w.End();
 		if(p->top->dr)

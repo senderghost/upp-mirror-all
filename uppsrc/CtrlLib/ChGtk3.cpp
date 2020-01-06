@@ -386,17 +386,17 @@ void ChHostSkin()
 		Size sz = m.GetSize();
 		s.popupbody = Crop(m, mg, mg, sz.cx - 2 * mg, sz.cy - 2 * mg);
 		s.leftgap = DPI(16) + Zx(6);
+		SColorMenu_Write(GetBackgroundColor());
+		SColorMenuText_Write(s.menutext);
 		
 		Gtk_New("menu menuitem");
 		s.menutext = GetInkColor();
 		Gtk_State(CTRL_HOT);
 		s.itemtext = GetInkColor();
-		SColorMenuText_Write(s.menutext);
 		Color c = AvgColor(m);
 		if(Diff(c, s.menutext) < 100) // menutext color too close to background color, fix it
 			s.menutext = IsDark(c) ? White() : Black();
 		s.item = Hot3(CairoImage(32, 16));
-		SColorMenu_Write(GetBackgroundColor());
 		
 		Gtk_New("menubar");
 		s.look = Hot3(CairoImage(32, 16));

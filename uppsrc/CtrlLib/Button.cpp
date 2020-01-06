@@ -454,6 +454,9 @@ CH_STYLE(SpinButtons, Style, StyleDefault)
 	CtrlsImageLook(inc.look, CtrlsImg::I_EB, CtrlsImg::SpU(), inc.monocolor);
 	CtrlsImageLook(dec.look, CtrlsImg::I_EB, CtrlsImg::SpD(), dec.monocolor);
 	width = Zx(12);
+	DLOG("def");
+	DDUMP(Zx(12));
+	DDUMP(width);
 }
 
 void SpinButtons::FrameLayout(Rect& r)

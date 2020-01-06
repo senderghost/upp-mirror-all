@@ -321,6 +321,7 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 				s.edge[i] = EditField::StyleDefault().edge[i];
 			s.margin = Rect(DPI(3), 2, DPI(1), 2);
 			s.activeedge = true;
+			s.stdwidth = DPI(17);
 		}
 		{
 			SpinButtons::Style& sp = SpinButtons::StyleDefault().Write();
@@ -331,6 +332,7 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			};
 			sp.inc.look[i] = Spin(CORNER_TOP_RIGHT, CtrlImg::spinup());
 			sp.dec.look[i] = Spin(CORNER_BOTTOM_RIGHT, CtrlImg::spindown());
+			sp.width = DPI(14); // DPI(17) - DPI(3) (droplist stdwidth minus frame)
 		}
 		if(i == CTRL_DISABLED) {
 			ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();

@@ -119,8 +119,12 @@ bool SystemDraw::IsPaintingOp(const Rect& r) const
 	cr.Intersect(GetClip());
 	if(cr.IsEmpty())
 		return false;
-	return true;
-	_DBG_// return !invalid || gdk_region_rect_in(invalid, GdkRect(cr)) != GDK_OVERLAP_RECTANGLE_OUT;
+	if(invalid.GetCount() == 0)
+		return true;
+	for(const Rect& ir : invalid)
+		if(cr.Intersects(ir))
+			return true;
+	return false;
 }
 
 Rect SystemDraw::GetPaintRect() const
