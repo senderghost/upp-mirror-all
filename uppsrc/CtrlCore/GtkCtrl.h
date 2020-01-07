@@ -71,6 +71,7 @@ _DBG_
 	void   Proc();
 	bool   SweepConfigure(bool wait);
 	bool   SweepFocus(bool wait);
+	void   SyncWndRect(const Rect& rect);
 
 	static BiVector<GEvent>    Events;
 	static Vector< Ptr<Ctrl> > activePopup; // created with 'activate' flag - usually menu

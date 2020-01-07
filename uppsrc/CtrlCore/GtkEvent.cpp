@@ -86,16 +86,13 @@ gboolean Ctrl::GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 		p->fullrefresh = false;
 		if(IsUHDMode()) _DBG_ // TODO: Disconnect UHDMode from Scale
 			cairo_scale(cr, 0.5, 0.5);
+		p->SyncWndRect(p->GetWndScreenRect()); // avoid black areas when resizing
+
 		SystemDraw w(cr);
 		painting = true;
 		double x1, y1, x2, y2;
 		cairo_clip_extents (cr, &x1, &y1, &x2, &y2);
 		Rect r = RectC((int)x1, (int)y1, (int)ceil(x2 - x1), (int)ceil(y2 - y1));
-		DLOG("Clip extents " << r);
-		DDUMP(p->GetRect());
-		DDUMP(p->GetView());
-		DDUMP(p->GetScreenView());
-		DDUMP(p->GetScreenRect());
 		w.Clip(r); // Because of IsPainting
 
 		cairo_rectangle_list_t *list = cairo_copy_clip_rectangle_list(cr);
@@ -568,16 +565,8 @@ void Ctrl::Proc()
 		}
 		return;
 	}
-	case GDK_CONFIGURE: {
-			Rect rect = CurrentEvent.value;
-			if(GetRect() != rect)
-				SetWndRect(rect);
-			{
-				TopWindow *w = dynamic_cast<TopWindow *>(this);
-				if(w && w->state == TopWindow::OVERLAPPED)
-					w->overlapped = rect;
-			}
-		}
+	case GDK_CONFIGURE:
+		SyncWndRect(CurrentEvent.value);
 		break;
 	default:
 		return;
@@ -586,6 +575,14 @@ void Ctrl::Proc()
 		_this->PostInput();
 }
 
+void Ctrl::SyncWndRect(const Rect& rect)
+{
+	if(GetRect() != rect)
+		SetWndRect(rect);
+	TopWindow *w = dynamic_cast<TopWindow *>(this);
+	if(w && w->state == TopWindow::OVERLAPPED)
+		w->overlapped = rect;
+}
 
 bool Ctrl::ProcessEvent0(bool *quit, bool fetch)
 {

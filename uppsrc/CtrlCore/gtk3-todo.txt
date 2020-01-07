@@ -1,5 +1,4 @@
 - Scale should not be same as UHD
-- Resizing fix black
 - Issue with editfield text clipping in the right
 - TabBar synthetise
 - GtkStyleBool("has-backward-stepper")
@@ -8,6 +7,9 @@
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
+
+NTH:
+- spinbutton cosmetics
 
 PROBABLY DONE:
 - Problem with hot3 in scrollbar horizontal (check in SD)
@@ -37,3 +39,4 @@ DONE:
 - ColorPopup background
 - Fix IsPainting
 - Header synthetise
+- Resizing fix black
