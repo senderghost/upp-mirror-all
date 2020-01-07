@@ -259,7 +259,6 @@ void ChHostSkin()
 	Gtk_New("label.view");
 		SColorLabel_Write(GetInkColor());
 	Gtk_New("tooltip.background");
-		SetChameleonSample(CairoImage());
 		SColorInfo_Write(GetBackgroundColor());
 		SColorInfoText_Write(GetInkColor());
 

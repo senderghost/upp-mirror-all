@@ -128,21 +128,29 @@ void RoundedRect(Painter& w, Rectf r, double rx, double ry, dword corner)
 	RoundedRect(w, r.left, r.top, r.GetWidth(), r.GetHeight(), rx, ry, corner);
 }
 
-Image MakeButton(int radius, const Image& face, int border_width, Color border_color, dword corner)
+Image MakeElement(Size sz, double radius, const Image& face, int border_width, Color border_color, Event<Painter&, const Rectf&> shape)
 {
-	int q = radius + border_width + DPI(16);
-	Rectf r(0, 0, q, q);
+	Rectf r(0, 0, sz.cx, sz.cy);
 	ImagePainter w(r.GetSize());
 	w.Clear(RGBAZero());
-	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
+	Rectf dr = r.Deflated(border_width / 2.0);
+	shape(w, dr);
 	FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
-	RoundedRect(w, r.Deflated(border_width / 2.0), radius, radius, corner);
+	shape(w, dr);
 	if(!IsNull(border_color))
 		w.Stroke(border_width, border_color);
 	Image m = w;
 	Point p1(radius + border_width, radius + border_width);
 	SetHotSpots(m, p1, (Point)r.BottomRight() - p1 - Point(1, 1));
 	return m;
+}
+
+Image MakeButton(int radius, const Image& face, int border_width, Color border_color, dword corner)
+{
+	int q = radius + border_width + DPI(16);
+	return MakeElement(Size(q, q), radius, face, border_width, border_color, [&](Painter& w, const Rectf& r) {
+		RoundedRect(w, r, radius, radius, corner);
+	});
 }
 
 Image MakeButton(int radius, Color face, int border_width, Color border_color, dword corner)
@@ -185,8 +193,6 @@ Color AvgColor(const Image& m, int margin)
 {
 	return AvgColor(m, Rect(m.GetSize()).Deflated(margin));
 }
-
-
 
 Color GetInk(const Image& m)
 {
@@ -354,6 +360,22 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			s.hchunk = MakeButton(roundness, SColorHighlight(), DPI(1), ink);
 			s.bound = true;
 			s.nomargins = true;
+		}
+		if(i == CTRL_NORMAL || i == CTRL_PRESSED) {
+			Image sm = MakeElement(Size(DPI(10), DPI(20)), roundness, m, DPI(1), ink, [&](Painter& w, const Rectf& r) {
+				double cx = r.GetWidth();
+				double cy = r.GetHeight();
+				double uy = 0.4 * cy;
+				double uq = 0.5 * uy;
+				w.Move(r.left, r.top + cy)
+				 .Line(r.left, r.top + uy)
+				 .Quadratic(r.left, r.top + uq, r.left + cx / 2, r.top)
+				 .Quadratic(r.left + cx, r.top + uq, r.left + cx, r.top + uy)
+				 .Line(r.left + cx, r.top + cy)
+				 .Close();
+			});
+			CtrlImg::Set(i == CTRL_PRESSED ? CtrlImg::I_hthumb1 : CtrlImg::I_hthumb, sm);
+			CtrlImg::Set(i == CTRL_PRESSED ? CtrlImg::I_vthumb1 : CtrlImg::I_vthumb, RotateClockwise(sm));
 		}
 	}
 }

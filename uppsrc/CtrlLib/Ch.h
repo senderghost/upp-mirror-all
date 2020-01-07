@@ -11,6 +11,7 @@ enum {
 
 void  RoundedRect(Painter& w, double x, double y, double cx, double cy, double rx, double ry, dword corners);
 void  RoundedRect(Painter& w, Rectf r, double rx, double ry, dword corner);
+Image MakeElement(Size sz, double radius, const Image& face, int border_width, Color border_color, Event<Painter&, const Rectf&> shape);
 Image MakeButton(int radius, const Image& face, int border_width, Color border_color = Null, dword corner = 0xff);
 Image MakeButton(int radius, Color face, int border_width, Color border_color = Null, dword corner = 0xff);
 

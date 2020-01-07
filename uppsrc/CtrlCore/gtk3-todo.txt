@@ -1,9 +1,10 @@
-- Scale should not be same as UHD
 - Issue with editfield text clipping in the right
 - TabBar synthetise
 - GtkStyleBool("has-backward-stepper")
 - DropChoice read only active edge
-- Slider thumb
+- Remove warnings
+- Remove DDUMPs
+- Test with 3.8
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
@@ -40,3 +41,7 @@ DONE:
 - Fix IsPainting
 - Header synthetise
 - Resizing fix black
+- Slider thumb
+
+REJECTED:
+- Scale should not be same as UHD
