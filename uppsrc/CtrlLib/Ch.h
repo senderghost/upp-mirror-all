@@ -22,8 +22,11 @@ Color AvgColor(const Image& m, int margin = 0);
 Color GetInk(const Image& m); // the color that is most different from AvgColor
 int   GetRoundness(const Image& m);
 
+Image WithRect(Image m, int x, int y, int cx, int cy, Color c);
 Image WithLeftLine(const Image& m, Color c, int w = DPI(1));
 Image WithRightLine(const Image& m, Color c, int w = DPI(1));
+Image WithTopLine(const Image& m, Color c, int w = DPI(1));
+Image WithBottomLine(const Image& m, Color c, int w = DPI(1));
 
 // Creates synthetic style based on SColors and basic button face
 void ChSynthetic(Image button100x100[4], Color text[4]);

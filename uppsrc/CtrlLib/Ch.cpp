@@ -140,8 +140,8 @@ Image MakeButton(int radius, const Image& face, int border_width, Color border_c
 	if(!IsNull(border_color))
 		w.Stroke(border_width, border_color);
 	Image m = w;
-	Point p1(radius, radius);
-	SetHotSpots(m, p1, (Point)r.BottomRight() - p1);
+	Point p1(radius + border_width, radius + border_width);
+	SetHotSpots(m, p1, (Point)r.BottomRight() - p1 - Point(1, 1));
 	return m;
 }
 
@@ -247,23 +247,33 @@ Value GetChameleonSample()
 	return sSample;
 }
 
-static Image sWithLine(Image m, Color c, int w, int at)
+Image WithRect(Image m, int x, int y, int cx, int cy, Color c)
 {
 	ImageBuffer ib(m);
-	for(int x = 0; x < w; x++)
-		for(int y = 0; y < ib.GetHeight(); y++)
-			ib[y][x + at] = c;
+	for(int i = 0; i < cx; i++)
+		for(int j = 0; j < cy; j++)
+			ib[y + j][x + i] = c;
 	return ib;
 }
 
 Image WithLeftLine(const Image& m, Color c, int w)
 {
-	return sWithLine(m, c, w, 0);
+	return WithRect(m, 0, 0, w, m.GetHeight(), c);
 }
 
 Image WithRightLine(const Image& m, Color c, int w)
 {
-	return sWithLine(m, c, w, m.GetWidth() - w);
+	return WithRect(m, m.GetWidth() - w, 0, w, m.GetHeight(), c);
+}
+
+Image WithTopLine(const Image& m, Color c, int w)
+{
+	return WithRect(m, 0, 0, m.GetWidth(), w, c);
+}
+
+Image WithBottomLine(const Image& m, Color c, int w)
+{
+	return WithRect(m, 0, m.GetHeight() - w, m.GetWidth(), w, c);
 }
 
 void ChSynthetic(Image button100x100[4], Color text[4])
@@ -333,6 +343,10 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			sp.inc.look[i] = Spin(CORNER_TOP_RIGHT, CtrlImg::spinup());
 			sp.dec.look[i] = Spin(CORNER_BOTTOM_RIGHT, CtrlImg::spindown());
 			sp.width = DPI(14); // DPI(17) - DPI(3) (droplist stdwidth minus frame)
+		}
+		{
+			HeaderCtrl::Style& hs = HeaderCtrl::StyleDefault().Write();
+			hs.look[i] = ChHot(WithBottomLine(WithRightLine(m, ink, 1), ink));
 		}
 		if(i == CTRL_DISABLED) {
 			ProgressIndicator::Style& s = ProgressIndicator::StyleDefault().Write();
