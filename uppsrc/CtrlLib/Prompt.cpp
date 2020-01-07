@@ -93,17 +93,13 @@ int Prompt(Event<const String&> WhenLink,
 	if(bsz.cx)
 		qcx -= bsz.cx + fcy;
 	int ccy = qtfctrl.GetHeight(qcx);
-	DDUMP(ccy);
 	int qcy = min(Zy(400), ccy);
-	DDUMP(qcy);
 	if(qcy <= ccy) {
 		qcx += ScrollBarSize() + fcy;
 		cx += ScrollBarSize() + fcy;
 	}
 	int mcy = max(qcy, bsz.cy);
-	DDUMP(mcy);
 	int cy = mcy + 48 * fcy / 10;
-	DDUMP(cy);
 	dlg.SetRect(Size(cx, cy));
 	dlg << icon.TopPos(fcy, bsz.cy).LeftPos(fcy, bsz.cx);
 	dlg << qtfctrl.TopPos(fcy + (mcy - qcy) / 2, qcy).RightPos(fcy, qcx);

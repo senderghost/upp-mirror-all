@@ -28,8 +28,6 @@ void Ctrl::Create(Ctrl *owner, bool popup)
 	w.gtk = top->window;
 	w.gdk = gtk_widget_get_window(top->window);
 
-	DLOG("B");
-
 	TopWindow *tw = dynamic_cast<TopWindow *>(this);
 	if(popup && !owner) {
 		gtk_window_set_decorated(gtk(), FALSE);

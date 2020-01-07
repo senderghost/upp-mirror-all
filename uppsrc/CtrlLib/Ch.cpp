@@ -291,7 +291,6 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 		if(i == 0) {
 			ink = GetInk(m);
 			roundness = GetRoundness(m) ? DPI(3) : 0;
-			DDUMP(GetRoundness(m));
 			CtrlsImg::Set(CtrlsImg::I_EFE, WithHotSpots(MakeButton(roundness, SColorPaper(), DPI(1), ink), DPI(3), DPI(1), 0, 0));
 			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(2), DPI(2), 0, 0));
 			EditField::StyleDefault().Write().edge[CTRL_DISABLED] = WithHotSpots(MakeButton(roundness, SColorFace(), DPI(1), ink), DPI(3), DPI(1), 0, 0);

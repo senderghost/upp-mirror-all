@@ -414,7 +414,7 @@ bool Ctrl::SweepConfigure(bool wait)
 
 void Ctrl::WndSetPos(const Rect& rect)
 {
-	DLOG("WndSetPos0 " << rect);
+	LLOG("WndSetPos0 " << rect);
 	GuiLock __;
 	if(!IsOpen())
 		return;
@@ -422,7 +422,6 @@ void Ctrl::WndSetPos(const Rect& rect)
 	SweepConfigure(false); // Remove any previous GDK_CONFIGURE for this window
 	if(!this_ || !IsOpen())
 		return;
-	DDUMP(IPD(rect.GetHeight()));
 
 	Rect m(0, 0, 0, 0);
 	if(dynamic_cast<TopWindow *>(this))

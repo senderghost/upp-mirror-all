@@ -84,7 +84,7 @@ gboolean Ctrl::GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	Ctrl *p = GetTopCtrlFromId(user_data);
 	if(p) {
 		p->fullrefresh = false;
-		if(IsUHDMode()) _DBG_ // TODO: Disconnect UHDMode from Scale
+		if(IsUHDMode())
 			cairo_scale(cr, 0.5, 0.5);
 		p->SyncWndRect(p->GetWndScreenRect()); // avoid black areas when resizing
 
@@ -132,35 +132,6 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 
 	switch(event->type) {
-/*
-	case GDK_EXPOSE:
-	case GDK_DAMAGE:
-		if(p) {
-			DLOG("Expose");
-#ifdef LOG_EVENTS
-			TimeStop tm;
-#endif
-			p->fullrefresh = false;
-			GdkEventExpose *e = (GdkEventExpose *)event;
-			SystemDraw w(gdk_cairo_create(p->gdk()));
-			painting = true;
-			Rect r = RectC(e->area.x, e->area.y, e->area.width, e->area.height);
-			DDUMP(r);
-			_DBG_ // w.SetInvalid(e->region);
-			w.Clip(r);
-			p->UpdateArea(w, r);
-			w.End();
-			cairo_destroy(w);
-			if(p->top->dr)
-				DrawDragRect(*p, *p->top->dr);
-			painting = false;
-#ifdef LOG_EVENTS
-			LOG("* " << ev << " elapsed " << tm);
-#endif
-		}
-
-		return true;
-*/ _DBG_ // remove
 	case GDK_DELETE:
 		break;
 	case GDK_FOCUS_CHANGE:
@@ -216,7 +187,6 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 		retval = false;
 		GdkEventConfigure *e = (GdkEventConfigure *)event;
 		value = DPI(e->x, e->y, e->width, e->height);
-		DLOG("GDK_CONFIGURE " << value);
 		break;
 	}
 	default:

@@ -128,7 +128,6 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	ASSERT(sCtx);
 	gtk_style_context_set_scale(sCtx, DPI(1));
 	Gtk_State(state, flags);
-	DLOG("Current style " << gtk_widget_path_to_string(gtk_style_context_get_path(sCtx)));
 	
 	GtkBorder margin, border, padding;
 	int min_width, min_height;
@@ -139,8 +138,6 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	gtk_style_context_get_padding (sCtx, f, &padding);
 
 	gtk_style_context_get (sCtx, f, "min-width", &min_width, "min-height", &min_height, NULL);
-	DDUMP(min_width);
-	DDUMP(min_height);
 	
 	min_width += margin.left + margin.right + border.left + border.right + padding.left + padding.right;
 	min_height += margin.top + margin.bottom + border.top + border.bottom + padding.top + padding.bottom;
@@ -241,7 +238,6 @@ Image Gtk_Icon(const char *icon_name, int size)
 
 void ChHostSkin()
 {
-	DDUMP(GtkStyleString("gtk-theme-name"));
 
 	SetupFont();
 	
@@ -335,7 +331,6 @@ void ChHostSkin()
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 		s.through = true;
 		Gtk_New("scrollbar.right.vertical");
-		DDUMP(GtkStyleBool("has-backward-stepper"));
 /*
 	#ifndef _DEBUG0
 		if(!GtkStyleBool("has-backward-stepper"))
