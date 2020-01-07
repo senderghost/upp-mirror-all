@@ -90,6 +90,7 @@ void Gtk_Free()
 {
 	if(sCtx)
 		g_object_unref(sCtx);
+	sCtx = NULL;
 }
 
 void Gtk_State(int state, dword flags = 0)
