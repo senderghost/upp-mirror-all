@@ -1,9 +1,9 @@
+- LabelBox
 - Issue with editfield text clipping in the right
-- TabBar synthetise
 - GtkStyleBool("has-backward-stepper")
 - DropChoice read only active edge
 - Remove warnings
-- Remove DDUMPs
+- Problem with theide menu
 - Test with 3.8
 - Test dark theme
 - Test rect theme
@@ -44,6 +44,9 @@ DONE:
 - Header synthetise
 - Resizing fix black
 - Slider thumb
+- Remove DDUMPs
+- TabBar synthetise
 
 REJECTED:
+
 - Scale should not be same as UHD

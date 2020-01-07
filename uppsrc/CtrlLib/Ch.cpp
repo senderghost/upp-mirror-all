@@ -376,6 +376,26 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			CtrlImg::Set(i == CTRL_PRESSED ? CtrlImg::I_hthumb1 : CtrlImg::I_hthumb, sm);
 			CtrlImg::Set(i == CTRL_PRESSED ? CtrlImg::I_vthumb1 : CtrlImg::I_vthumb, RotateClockwise(sm));
 		}
+		{
+			TabCtrl::Style& s = TabCtrl::StyleDefault().Write();
+			int adj = 8;
+			auto Face = [](int adj) {
+				Color c = SColorFace();
+				return Color(clamp(c.GetR() + adj, 0, 255),
+				             clamp(c.GetG() + adj, 0, 255),
+				             clamp(c.GetB() + adj, 0, 255));
+			};
+			s.body = MakeButton(0, Face(8), DPI(1), ink);
+			Image t = MakeButton(roundness, Face(decode(i, CTRL_NORMAL, -20,
+			                                               CTRL_HOT, 2,
+			                                               CTRL_PRESSED, 8,
+			                                               -8)), DPI(1), ink, CORNER_TOP_LEFT|CORNER_TOP_RIGHT);
+			s.first[i] = s.last[i] = s.both[i] = s.normal[i] = ChHot(Crop(t, 0, 0, t.GetWidth(), t.GetHeight() - DPI(2)), DPI(3));
+			s.margin = 0;
+			s.sel = Rect(0, DPI(1), 0, DPI(1));
+			s.extendleft = DPI(2);
+			s.text_color[i] = SColorText();
+		}
 	}
 }
 
