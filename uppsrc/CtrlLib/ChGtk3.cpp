@@ -400,7 +400,7 @@ void ChHostSkin()
 		if(IsDark(wh))
 			Swap(dk, wh);
 		s.topitemtext[0] = IsDark(AvgColor(sCurrentImage)) ? wh : dk; // TODO: Do this properly
-		s.topitem[1] = s.topitem[0];
+		s.topitem[1] = s.topitem[0] = Null;
 		s.topitemtext[1] = s.topitemtext[0];
 		Gtk_New("menubar menuitem", CTRL_HOT);
 		s.topitem[0] = Null;

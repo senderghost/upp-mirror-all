@@ -3,7 +3,6 @@
 - GtkStyleBool("has-backward-stepper")
 - DropChoice read only active edge
 - Remove warnings
-- Problem with theide menu
 - Test with 3.8
 - Test dark theme
 - Test rect theme
@@ -16,7 +15,6 @@ NTH:
 
 PROBABLY DONE:
 - Problem with hot3 in scrollbar horizontal (check in SD)
-
 
 DONE:
 
@@ -46,6 +44,7 @@ DONE:
 - Slider thumb
 - Remove DDUMPs
 - TabBar synthetise
+- Problem with theide menu
 
 REJECTED:
 
