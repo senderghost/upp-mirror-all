@@ -83,6 +83,27 @@ void SetupFont()
 	Font::SetDefaultFont(gui_font);
 }
 
+static Image sCurrentImage;
+
+Image CairoImage(int cx, int cy, Event<cairo_t *> draw)
+{
+	Image m[2];
+	for(int i = 0; i < 2; i++) {
+		ImageDraw iw(DPI(cx), DPI(cy));
+		iw.DrawRect(0, 0, DPI(cx), DPI(cy), i ? Black() : White());
+		cairo_t *cr = iw;
+#if GLIB_CHECK_VERSION(3, 20, 0)
+		cairo_surface_set_device_scale(cairo_get_target(cr), DPI(1), DPI(1));
+#endif
+		draw(cr);
+		m[i] = iw;
+	}
+	sCurrentImage = RecreateAlpha(m[0], m[1]);
+	return sCurrentImage;
+}
+
+#if GLIB_CHECK_VERSION(3, 20, 0)
+
 static GtkStyleContext *sCtx = NULL;
 static GtkStateFlags sFlags;
 
@@ -113,8 +134,8 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 		                           : gtk_widget_path_new();
 		Vector<String> s = Split(element, '.');
 		if(s.GetCount()) {
-			gtk_widget_path_append_type (path, G_TYPE_NONE);
-			gtk_widget_path_iter_set_object_name (path, -1, s[0]);
+			gtk_widget_path_append_type(path, G_TYPE_NONE);
+			gtk_widget_path_iter_set_object_name(path, -1, s[0]);
 		}
 		for(int i = 1; i < s.GetCount(); i++)
 			gtk_widget_path_iter_add_class(path, -1, s[i]);
@@ -147,6 +168,14 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	sCurrentSize.cy = min_height;
 }
 
+Image CairoImage(int cx = 40, int cy = 32)
+{
+	return CairoImage(cx, cy, [&](cairo_t *cr) {
+		gtk_render_background(sCtx, cr, 0, 0, cx, cy);
+		gtk_render_frame(sCtx, cr,  0, 0, cx, cy);
+	});
+}
+
 Size GtkSize()
 {
 	return sCurrentSize;
@@ -172,23 +201,6 @@ Color GetInkColor()
 	return t;
 }
 
-static Image sCurrentImage;
-
-Image CairoImage(int cx, int cy, Event<cairo_t *> draw)
-{
-	Image m[2];
-	for(int i = 0; i < 2; i++) {
-		ImageDraw iw(DPI(cx), DPI(cy));
-		iw.DrawRect(0, 0, DPI(cx), DPI(cy), i ? Black() : White());
-		cairo_t *cr = iw;
-		cairo_surface_set_device_scale(cairo_get_target(cr), DPI(1), DPI(1));
-		draw(cr);
-		m[i] = iw;
-	}
-	sCurrentImage = RecreateAlpha(m[0], m[1]);
-	return sCurrentImage;
-}
-
 void SOImages(int imli, dword flags)
 {
 	for(int st = 0; st < 4; st++) {
@@ -197,14 +209,6 @@ void SOImages(int imli, dword flags)
 			gtk_render_check(sCtx, cr, 0, 0, 16, 16);
 		}));
 	}
-}
-
-Image CairoImage(int cx = 40, int cy = 32)
-{
-	return CairoImage(cx, cy, [&](cairo_t *cr) {
-		gtk_render_background(sCtx, cr, 0, 0, cx, cy);
-		gtk_render_frame(sCtx, cr,  0, 0, cx, cy);
-	});
 }
 
 Color GetBackgroundColor()
@@ -239,7 +243,6 @@ Image Gtk_Icon(const char *icon_name, int size)
 
 void ChHostSkin()
 {
-
 	SetupFont();
 	
 	Gtk_New("label.view");
@@ -415,6 +418,37 @@ Image GtkThemeIcon(const char *name, int rsz)
 {
 	return Gtk_Icon(name, rsz);
 }
+
+#else
+
+Image Gtk_Icon(const char *icon_name, int size)
+{
+	GdkPixbuf *pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), icon_name,
+		                                         size, (GtkIconLookupFlags)0, NULL);
+	if(pixbuf) {
+		int cx = gdk_pixbuf_get_width(pixbuf);
+		int cy = gdk_pixbuf_get_height(pixbuf);
+	
+		Image m = CairoImage(cx, cy, [&](cairo_t *cr) {
+			gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+			cairo_paint(cr);
+		});
+		
+		Size sz = m.GetSize();
+		
+		g_object_unref(pixbuf);
+	
+		return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
+	}
+	return Null;
+}
+
+void ChHostSkin()
+{
+	SetupFont();
+}
+
+#endif
 
 };
 
