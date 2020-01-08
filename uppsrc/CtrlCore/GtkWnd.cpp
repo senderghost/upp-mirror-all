@@ -95,19 +95,19 @@ void  Ctrl::SetMouseCursor(const Image& image)
 		else {
 			Point p = image.GetHotSpot();
 
+#if GLIB_CHECK_VERSION(3, 10, 0)
 			cairo_surface_t *surface = CreateCairoSurface(image);
 			double scale = DPI(1);
 			cairo_surface_set_device_scale(surface, scale, scale);
 			c = gdk_cursor_new_from_surface(gdk_display_get_default(), surface, p.x / scale, p.y / scale);
 			cairo_surface_destroy(surface);
-
-	/* // will probably need this for 3.8
+#else
 			ImageGdk m;
 			m.Set(image);
 			GdkPixbuf *pb = m;
 			if(pb)
 				c = gdk_cursor_new_from_pixbuf(gdk_display_get_default(), pb, p.x, p.y);
-	*/
+#endif
 		}
 		if(c && topctrl->IsOpen()) {
 			gdk_window_set_cursor(topctrl->gdk(), c);
