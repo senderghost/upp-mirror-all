@@ -9,7 +9,7 @@ namespace Upp {
 Ptr<Ctrl> Ctrl::grabwindow;
 Ptr<Ctrl> Ctrl::grabpopup;
 
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 GdkSeat *Ctrl::GetSeat()
 {
 	return gdk_display_get_default_seat(gdk_display_get_default());
@@ -18,7 +18,7 @@ GdkSeat *Ctrl::GetSeat()
 
 GdkDevice *Ctrl::GetMouseDevice()
 {
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 	return gdk_seat_get_pointer(GetSeat());
 #else
 	return gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
@@ -33,7 +33,7 @@ bool Ctrl::MouseIsGrabbed()
 bool Ctrl::GrabMouse()
 {
 	return
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 		gdk_seat_grab(GetSeat(), gdk(), GDK_SEAT_CAPABILITY_ALL_POINTING, true, NULL, NULL, NULL, 0)
 #else
 		gdk_device_grab(GetMouseDevice(), gdk(), GDK_OWNERSHIP_APPLICATION, true, (GdkEventMask)0, NULL, GDK_CURRENT_TIME)
@@ -43,7 +43,7 @@ bool Ctrl::GrabMouse()
 
 void Ctrl::UngrabMouse()
 {
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 		gdk_seat_ungrab(GetSeat());
 #else
 		gdk_device_ungrab(GetMouseDevice(), GDK_CURRENT_TIME);

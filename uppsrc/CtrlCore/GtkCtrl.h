@@ -30,7 +30,7 @@ _DBG_
 
 	static Point GetMouseInfo(GdkWindow *win, GdkModifierType& mod);
 	static GdkDevice *GetMouseDevice();
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 	static GdkSeat   *GetSeat();
 #endif
 	static bool MouseIsGrabbed();

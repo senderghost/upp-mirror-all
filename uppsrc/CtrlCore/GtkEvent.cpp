@@ -249,7 +249,7 @@ void Ctrl::GEvent::operator=(const GEvent& e)
 
 Point Ctrl::GetMouseInfo(GdkWindow *win, GdkModifierType& mod)
 {
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 	GdkDisplay *display = gdk_window_get_display (win);
 	GdkDevice *pointer = gdk_seat_get_pointer (gdk_display_get_default_seat (display));
 	double x, y;

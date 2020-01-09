@@ -95,7 +95,7 @@ void  Ctrl::SetMouseCursor(const Image& image)
 		else {
 			Point p = image.GetHotSpot();
 
-#if GLIB_CHECK_VERSION(3, 10, 0)
+#if GTK_CHECK_VERSION(3, 10, 0)
 			cairo_surface_t *surface = CreateCairoSurface(image);
 			double scale = SCL(1);
 			cairo_surface_set_device_scale(surface, scale, scale);
@@ -247,7 +247,7 @@ Rect Ctrl::GetWorkArea() const
 void Ctrl::GetWorkArea(Array<Rect>& rc)
 {
 	GuiLock __;
-#if GLIB_CHECK_VERSION(3, 22, 0)
+#if GTK_CHECK_VERSION(3, 22, 0)
 	GdkDisplay *s = gdk_display_get_default();
 	int n = gdk_display_get_n_monitors(s);
 	rc.Clear();
@@ -302,7 +302,7 @@ Rect Ctrl::GetVirtualScreenArea()
 Rect Ctrl::GetPrimaryWorkArea()
 {
 	GuiLock __;
-#if GLIB_CHECK_VERSION(3, 22, 0)
+#if GTK_CHECK_VERSION(3, 22, 0)
 	GdkRectangle rr;
 	gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &rr);
 	return SCL(rr.x, rr.y, rr.width, rr.height);

@@ -63,7 +63,7 @@ void InitGtkApp(int argc, char **argv, const char **envptr)
 {
 	LLOG(rmsecs() << " InitGtkApp");
 #ifdef _MULTITHREADED
-#if !GLIB_CHECK_VERSION(2, 32, 0)
+#if !GTK_CHECK_VERSION(2, 32, 0)
     if(!g_thread_supported())
         g_thread_init(NULL);
 #endif
@@ -76,7 +76,7 @@ void InitGtkApp(int argc, char **argv, const char **envptr)
 	Ctrl::SetUHDEnabled(true);
 	
 	Ctrl::scale = 1;
-#if GLIB_CHECK_VERSION(3, 10, 0)
+#if GTK_CHECK_VERSION(3, 10, 0)
 	Ctrl::scale = gdk_window_get_scale_factor(gdk_screen_get_root_window(gdk_screen_get_default()));
 #endif
 

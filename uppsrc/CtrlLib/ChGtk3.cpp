@@ -92,7 +92,7 @@ Image CairoImage(int cx, int cy, Event<cairo_t *> draw)
 		ImageDraw iw(DPI(cx), DPI(cy));
 		iw.DrawRect(0, 0, DPI(cx), DPI(cy), i ? Black() : White());
 		cairo_t *cr = iw;
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 		cairo_surface_set_device_scale(cairo_get_target(cr), DPI(1), DPI(1));
 #endif
 		draw(cr);
@@ -110,7 +110,7 @@ Image CairoImage(GtkStyleContext *ctx, int cx = 40, int cy = 32)
 	});
 }
 
-#if GLIB_CHECK_VERSION(3, 20, 0)
+#if GTK_CHECK_VERSION(3, 20, 0)
 
 static GtkStyleContext *sCtx = NULL;
 static GtkStateFlags sFlags;
@@ -228,7 +228,7 @@ void SOImages(int imli, dword flags)
 	}
 }
 
-Image CairoImage(GtkStyleContext *ctx, int cx = 40, int cy = 32)
+Image CairoImage(int cx = 40, int cy = 32)
 {
 	return CairoImage(sCtx, cx, cy);
 }
