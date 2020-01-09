@@ -1,11 +1,12 @@
-- LabelBox
 - Issue with editfield text clipping in the right
-- GtkStyleBool("has-backward-stepper")
-- DropChoice read only active edge
 - Remove warnings
 - Test with 3.8
 - Test dark theme
 - Test rect theme
+- Blue Menta ugly scrollbars (round)
+- TraditionalOk ugly scrollbars (centre image)
+- DropChoice STDSIZE (.TopPosZ(10))
+- LeftRoundness with DropChoice (DropChoiceRdO)
 - Scale must not be same as UHD
 
 - makefile pkg-config support
@@ -46,3 +47,6 @@ DONE:
 - Remove DDUMPs
 - TabBar synthetise
 - Problem with theide menu
+- LabelBox
+- GtkStyleBool("has-backward-stepper")
+- DropChoice read only active edge

@@ -10,21 +10,21 @@ TODO: overpaint
 
 namespace Upp {
 
-int GtkStyleInt(const char *name)
+int GtkSettingsInt(const char *name)
 {
 	gint h = Null;
 	g_object_get(gtk_settings_get_default(), name, &h, NULL);
 	return h;
 }
 
-int GtkStyleBool(const char *name)
+int GtkSettingsBool(const char *name)
 {
 	gboolean h = false;
 	g_object_get(gtk_settings_get_default(), name, &h, NULL);
 	return h;
 }
 
-String GtkStyleString(const char *name)
+String GtkSettingsString(const char *name)
 {
 	const char *h = "";
 	g_object_get(gtk_settings_get_default(), name, &h, NULL);
@@ -38,8 +38,8 @@ void SetupFont()
 	bool bold = false;
 	bool italic = false;
 
-	String font_name = GtkStyleString("gtk-font-name");
-	int xdpi = Nvl(GtkStyleInt("gtk-xft-dpi"), 72 * 1024);
+	String font_name = GtkSettingsString("gtk-font-name");
+	int xdpi = Nvl(GtkSettingsInt("gtk-xft-dpi"), 72 * 1024);
 	
 	const char *q = strrchr(font_name, ' ');
 	if(q) {
@@ -167,7 +167,7 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	gtk_style_context_get_border (sCtx, f, &border);
 	gtk_style_context_get_padding (sCtx, f, &padding);
 
-	gtk_style_context_get (sCtx, f, "min-width", &min_width, "min-height", &min_height, NULL);
+	gtk_style_context_get(sCtx, f, "min-width", &min_width, "min-height", &min_height, NULL);
 	
 	min_width += margin.left + margin.right + border.left + border.right + padding.left + padding.right;
 	min_height += margin.top + margin.bottom + border.top + border.bottom + padding.top + padding.bottom;
@@ -175,6 +175,23 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	sCurrentSize.cx = min_width;
 	sCurrentSize.cy = min_height;
 }
+
+/*
+bool GtkStyleBool(const char *name)
+{
+	return false;
+	gboolean b = false;
+	gtk_style_context_get(sCtx, gtk_style_context_get_state(sCtx), name, &b, NULL);
+	return b;
+}
+
+int GtkStyleInt(const char *name)
+{
+	gint n = 0;
+	gtk_style_context_get(sCtx, gtk_style_context_get_state(sCtx), name, &n, NULL);
+	return n;
+}
+*/
 
 Size GtkSize()
 {
@@ -339,41 +356,41 @@ void ChHostSkin()
 	{
 		ScrollBar::Style& s = ScrollBar::StyleDefault().Write();
 		s.through = true;
-		Gtk_New("scrollbar.right.vertical");
-/*
-	#ifndef _DEBUG0
-		if(!GtkStyleBool("has-backward-stepper"))
+		static GtkWidget *proto = (GtkWidget *)gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, NULL); // to get style params
+		gboolean stepper;
+		gint minslider;
+		gtk_widget_style_get(proto, "has-backward-stepper", &stepper, "min-slider-length", &minslider, NULL);
+		if(!stepper)
 			s.arrowsize = 0;
-	#endif
-*/
+		Gtk_New("scrollbar.horizontal.bottom");
 		Size sz = GtkSize();
-		Gtk_New("scrollbar.right.vertical contents");
+		Gtk_New("scrollbar.horizontal.bottom contents");
 		GtkSize(sz);
-		Gtk_New("scrollbar.right.vertical contents trough");
+		Gtk_New("scrollbar.horizontal.bottom contents trough");
 		GtkSize(sz);
-		Gtk_New("scrollbar.right.vertical contents trough slider");
+		Gtk_New("scrollbar.horizontal.bottom contents trough slider");
 		GtkSize(sz);
 		
-		s.barsize = s.thumbwidth = DPI(sz.cx);
-		s.thumbmin = max(GtkStyleInt("min-slider-length"), s.barsize);
+		s.barsize = s.thumbwidth = DPI(sz.cy);
+		s.thumbmin = max(minslider, s.barsize);
 
-		sz.cy = 2 * sz.cx;
+		sz.cx = 2 * sz.cy;
 
 		for(int status = CTRL_NORMAL; status <= CTRL_DISABLED; status++) {
 			Gtk_New("scrollbar.horizontal.bottom", status);
-			Image m = CairoImage(sz.cy, sz.cx);
+			Image m = CairoImage(sz.cx, sz.cy);
 			Gtk_New("scrollbar.horizontal.bottom contents", status);
-			Over(m, CairoImage(sz.cy, sz.cx));
+			Over(m, CairoImage(sz.cx, sz.cy));
 			Gtk_New("scrollbar.horizontal.bottom contents trough", status);
-			Over(m, CairoImage(sz.cy, sz.cx));
+			Over(m, CairoImage(sz.cx, sz.cy));
 			s.hupper[status] = s.hlower[status] = ChHot(m);
 			s.vupper[status] = s.vlower[status] = ChHot(RotateAntiClockwise(m)); // we have problems getting this right for vertical
 			Gtk_New("scrollbar.horizontal.bottom contents trough slider", status);
-			s.hthumb[status] = ChHot(CairoImage(sz.cy, sz.cx));
+			s.hthumb[status] = ChHot(CairoImage(sz.cx, sz.cy));
 
 			Gtk_New("scrollbar.vertical.right contents trough slider", status);
 			GtkSize(sz);
-			s.vthumb[status] = ChHot(CairoImage(sz.cx, sz.cy));
+			s.vthumb[status] = ChHot(CairoImage(sz.cy, sz.cx));
 		}
 	}
 	
@@ -384,7 +401,7 @@ void ChHostSkin()
 		Gtk_New("menu");
 		Image m = CairoImage(32, 32);
 		s.pullshift.y = 0;
-		int mg = DPI(2); // TODO: Use values from GTK
+		int mg = DPI(2);
 		s.popupframe = WithHotSpot(m, mg, mg);
 		Size sz = m.GetSize();
 		s.popupbody = Crop(m, mg, mg, sz.cx - 2 * mg, sz.cy - 2 * mg);
@@ -407,7 +424,7 @@ void ChHostSkin()
 		Color wh = SColorPaper();
 		if(IsDark(wh))
 			Swap(dk, wh);
-		s.topitemtext[0] = IsDark(AvgColor(sCurrentImage)) ? wh : dk; // TODO: Do this properly
+		s.topitemtext[0] = IsDark(AvgColor(sCurrentImage)) ? wh : dk;
 		s.topitem[1] = s.topitem[0] = Null;
 		s.topitemtext[1] = s.topitemtext[0];
 		Gtk_New("menubar menuitem", CTRL_HOT);

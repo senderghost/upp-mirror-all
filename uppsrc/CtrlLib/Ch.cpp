@@ -134,8 +134,10 @@ Image MakeElement(Size sz, double radius, const Image& face, int border_width, C
 	ImagePainter w(r.GetSize());
 	w.Clear(RGBAZero());
 	Rectf dr = r.Deflated(border_width / 2.0);
-	shape(w, dr);
-	FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
+	if(!IsNull(face)) {
+		shape(w, dr);
+		FillImage(w, r.Deflated(border_width / 2.0 - 1), face);
+	}
 	shape(w, dr);
 	if(!IsNull(border_color))
 		w.Stroke(border_width, border_color);
@@ -295,6 +297,7 @@ void ChSynthetic(Image button100x100[4], Color text[4])
 			CtrlsImg::Set(CtrlsImg::I_VE, WithHotSpots(MakeButton(DPI(0), SColorPaper(), DPI(1), ink), DPI(2), DPI(2), 0, 0));
 			EditField::StyleDefault().Write().edge[CTRL_DISABLED] = WithHotSpots(MakeButton(roundness, SColorFace(), DPI(1), ink), DPI(3), DPI(1), 0, 0);
 			EditField::StyleDefault().Write().activeedge = true;
+			LabelBox::SetLook(WithHotSpots(MakeButton(2 * roundness / 3, Image(), DPI(1), ink), DPI(3), DPI(3), 0, 0));
 		}
 		Size sz = m.GetSize();
 		m = Crop(m, sz.cx / 8, sz.cy / 8, 6 * sz.cx / 8, 6 * sz.cy / 8);
