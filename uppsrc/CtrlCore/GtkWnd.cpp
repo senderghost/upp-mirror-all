@@ -399,7 +399,7 @@ void Ctrl::WndInvalidateRect(const Rect& r)
 	GuiLock __;
 	LLOG("WndInvalidateRect " << r);
 	Rect rr;
-	if(IsUHDMode()) {
+	if(scale > 1) {
 		rr.left = r.left / 2;
 		rr.top = r.top / 2;
 		rr.right = (r.right + 1) / 2;
