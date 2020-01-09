@@ -102,6 +102,14 @@ Image CairoImage(int cx, int cy, Event<cairo_t *> draw)
 	return sCurrentImage;
 }
 
+Image CairoImage(GtkStyleContext *ctx, int cx = 40, int cy = 32)
+{
+	return CairoImage(cx, cy, [&](cairo_t *cr) {
+		gtk_render_background(ctx, cr, 0, 0, cx, cy);
+		gtk_render_frame(ctx, cr,  0, 0, cx, cy);
+	});
+}
+
 #if GLIB_CHECK_VERSION(3, 20, 0)
 
 static GtkStyleContext *sCtx = NULL;
@@ -168,14 +176,6 @@ void Gtk_New(const char *name, int state = 0, dword flags = 0)
 	sCurrentSize.cy = min_height;
 }
 
-Image CairoImage(int cx = 40, int cy = 32)
-{
-	return CairoImage(cx, cy, [&](cairo_t *cr) {
-		gtk_render_background(sCtx, cr, 0, 0, cx, cy);
-		gtk_render_frame(sCtx, cr,  0, 0, cx, cy);
-	});
-}
-
 Size GtkSize()
 {
 	return sCurrentSize;
@@ -209,6 +209,11 @@ void SOImages(int imli, dword flags)
 			gtk_render_check(sCtx, cr, 0, 0, 16, 16);
 		}));
 	}
+}
+
+Image CairoImage(GtkStyleContext *ctx, int cx = 40, int cy = 32)
+{
+	return CairoImage(sCtx, cx, cy);
 }
 
 Color GetBackgroundColor()
@@ -441,6 +446,11 @@ Image Gtk_Icon(const char *icon_name, int size)
 		return sz.cy > size && sz.cy ? Rescale(m, sz.cx * size / sz.cy, size) : m;
 	}
 	return Null;
+}
+
+Image GtkThemeIcon(const char *name, int rsz)
+{
+	return Gtk_Icon(name, rsz);
 }
 
 void ChHostSkin()

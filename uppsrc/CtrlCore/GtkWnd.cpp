@@ -247,6 +247,7 @@ Rect Ctrl::GetWorkArea() const
 void Ctrl::GetWorkArea(Array<Rect>& rc)
 {
 	GuiLock __;
+#if GLIB_CHECK_VERSION(3, 22, 0)
 	GdkDisplay *s = gdk_display_get_default();
 	int n = gdk_display_get_n_monitors(s);
 	rc.Clear();
@@ -256,6 +257,19 @@ void Ctrl::GetWorkArea(Array<Rect>& rc)
 		gdk_monitor_get_workarea(gdk_display_get_monitor(s, i), &rr);
 		rc.Add(DPI(rr.x, rr.y, rr.width, rr.height));
 	}
+#else
+	GdkScreen *s = gdk_screen_get_default();
+	int n = gdk_screen_get_n_monitors(s);
+	rc.Clear();
+	Vector<int> netwa;
+	for(int i = 0; i < n; i++) {
+		GdkRectangle rr;
+		Rect r;
+		gdk_screen_get_monitor_workarea(s, i, &rr);
+		r = RectC(rr.x, rr.y, rr.width, rr.height);
+		rc.Add(r);
+	}
+#endif
 }
 
 Rect Ctrl::GetVirtualWorkArea()
@@ -288,9 +302,20 @@ Rect Ctrl::GetVirtualScreenArea()
 Rect Ctrl::GetPrimaryWorkArea()
 {
 	GuiLock __;
+#if GLIB_CHECK_VERSION(3, 22, 0)
 	GdkRectangle rr;
 	gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &rr);
 	return DPI(rr.x, rr.y, rr.width, rr.height);
+#else
+	static Rect r;
+	if (r.right == 0) {
+		Array<Rect> rc;
+		GetWorkArea(rc);
+		int primary = gdk_screen_get_primary_monitor(gdk_screen_get_default());
+		primary >= 0 && primary < rc.GetCount() ? r = rc[primary] : r = GetVirtualScreenArea();
+	}
+	return r;
+#endif
 }
 
 Rect Ctrl::GetPrimaryScreenArea()
