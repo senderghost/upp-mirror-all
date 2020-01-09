@@ -7,7 +7,6 @@
 - TraditionalOk ugly scrollbars (centre image)
 - DropChoice STDSIZE (.TopPosZ(10))
 - LeftRoundness with DropChoice (DropChoiceRdO)
-- Scale must not be same as UHD
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
@@ -50,3 +49,4 @@ DONE:
 - LabelBox
 - GtkStyleBool("has-backward-stepper")
 - DropChoice read only active edge
+- Scale must not be same as UHD
