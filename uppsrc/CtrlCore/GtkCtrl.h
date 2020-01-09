@@ -39,10 +39,6 @@ _DBG_
 	
 	static int scale; // in case GUI is scaling (e.g. in UHD mode)
 
-	static int    SCL(int x)                        { return scale * x; }
-	static Rect   SCL(int x, int y, int cx, int cy) { return RectC(SCL(x), SCL(y), SCL(cx), SCL(cy)); }
-	static double LSC(int x)                        { return (double)x / scale; }
-
 	enum {
 		EVENT_NONE = -15321,
 		EVENT_TEXT,
@@ -187,6 +183,10 @@ public: // really private:
 	static Vector<dword>   keyhot;
 	static Vector<dword>   modhot;
 	static guint           MouseState;
+
+	static int    SCL(int x)                        { return scale * x; }
+	static Rect   SCL(int x, int y, int cx, int cy) { return RectC(SCL(x), SCL(y), SCL(cx), SCL(cy)); }
+	static double LSC(int x)                        { return (double)x / scale; }
             
 public:
 	static void      EndSession()              {}

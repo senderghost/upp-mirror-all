@@ -79,7 +79,7 @@ void SetupFont()
 		}
 	}
 	
-	Font gui_font = Font(fontface, fround(DPI(fontheight) * xdpi + 512*72.0) / (1024*72)).Bold(bold).Italic(italic);
+	Font gui_font = Font(fontface, fround(Ctrl::SCL(fontheight) * xdpi + 512*72.0) / (1024*72)).Bold(bold).Italic(italic);
 	Font::SetDefaultFont(gui_font);
 }
 
