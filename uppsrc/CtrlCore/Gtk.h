@@ -17,10 +17,6 @@
 #endif
 
 namespace Upp {
-	
-#if GTK_CHECK_VERSION(3,10,0) // Gtk 3.10 is critical for HiDPI support
-#define GTK310
-#endif
 
 class SystemDraw : public Draw {
 	virtual dword GetInfo() const;
@@ -146,8 +142,6 @@ public:
 	BackDraw();
 	~BackDraw();
 };
-
-inline double IPD(int x) { return IsUHDMode() ? 0.5 * x : (double)x; }
 
 struct GdkRect : GdkRectangle {
 	operator GdkRectangle *() { return this; }

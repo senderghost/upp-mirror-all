@@ -36,6 +36,12 @@ _DBG_
 	static bool MouseIsGrabbed();
 	bool GrabMouse();
 	static void UngrabMouse();
+	
+	static int scale; // in case GUI is scaling (e.g. in UHD mode)
+
+	static int    SCL(int x)                        { return scale * x; }
+	static Rect   SCL(int x, int y, int cx, int cy) { return RectC(SCL(x), SCL(y), SCL(cx), SCL(cy)); }
+	static double LSC(int x)                        { return (double)x / scale; }
 
 	enum {
 		EVENT_NONE = -15321,

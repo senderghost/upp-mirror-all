@@ -25,13 +25,13 @@ void    TopWindow::SyncSizeHints()
 	Size sz = sz0;
 	if(sizeable)
 		sz = GetMinSize();
-	m.min_width = IPD(sz.cx);
-	m.min_height = IPD(sz.cy);
+	m.min_width = LSC(sz.cx);
+	m.min_height = LSC(sz.cy);
 	sz = sz0;
 	if(sizeable)
 		sz = GetMaxSize();
-	m.max_width = IPD(sz.cx);
-	m.max_height = IPD(sz.cy);
+	m.max_width = LSC(sz.cx);
+	m.max_height = LSC(sz.cy);
 	gtk_window_set_resizable(gtk(), sizeable);
 	gtk_window_set_geometry_hints(gtk(), top->window, &m,
 	                              GdkWindowHints(GDK_HINT_MIN_SIZE|GDK_HINT_MAX_SIZE));
@@ -138,10 +138,10 @@ void TopWindow::Open(Ctrl *owner)
 	GdkRectangle fr;
 	gdk_window_get_frame_extents(gdk(), &fr);
 	Rect r = GetRect();
-	frameMargins.left = max(frameMargins.left, minmax(r.left - DPI(fr.x), 0, 32));
-	frameMargins.right = max(frameMargins.right, minmax(DPI(fr.x + fr.width) - r.right, 0, 32));
-	frameMargins.top = max(frameMargins.top, minmax(r.top - DPI(fr.y), 0, 64));
-	frameMargins.bottom = max(frameMargins.bottom, minmax(DPI(fr.y + fr.height) - r.bottom, 0, 48));
+	frameMargins.left = max(frameMargins.left, minmax(r.left - SCL(fr.x), 0, 32));
+	frameMargins.right = max(frameMargins.right, minmax(SCL(fr.x + fr.width) - r.right, 0, 32));
+	frameMargins.top = max(frameMargins.top, minmax(r.top - SCL(fr.y), 0, 64));
+	frameMargins.bottom = max(frameMargins.bottom, minmax(SCL(fr.y + fr.height) - r.bottom, 0, 48));
 }
 
 void TopWindow::Open()

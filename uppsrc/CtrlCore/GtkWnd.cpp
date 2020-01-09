@@ -97,7 +97,7 @@ void  Ctrl::SetMouseCursor(const Image& image)
 
 #if GLIB_CHECK_VERSION(3, 10, 0)
 			cairo_surface_t *surface = CreateCairoSurface(image);
-			double scale = DPI(1);
+			double scale = SCL(1);
 			cairo_surface_set_device_scale(surface, scale, scale);
 			c = gdk_cursor_new_from_surface(gdk_display_get_default(), surface, p.x / scale, p.y / scale);
 			cairo_surface_destroy(surface);
@@ -202,7 +202,7 @@ Rect Ctrl::GetWndScreenRect() const
 		gdk_window_get_position(gdk(), &x, &y);
 		gint width = gdk_window_get_width(gdk());
 		gint height = gdk_window_get_height(gdk());
-		return DPI(x, y, width, height);
+		return SCL(x, y, width, height);
 	}
 	return Null;
 }
@@ -255,7 +255,7 @@ void Ctrl::GetWorkArea(Array<Rect>& rc)
 	for(int i = 0; i < n; i++) {
 		GdkRectangle rr;
 		gdk_monitor_get_workarea(gdk_display_get_monitor(s, i), &rr);
-		rc.Add(DPI(rr.x, rr.y, rr.width, rr.height));
+		rc.Add(SCL(rr.x, rr.y, rr.width, rr.height));
 	}
 #else
 	GdkScreen *s = gdk_screen_get_default();
@@ -294,7 +294,7 @@ Rect Ctrl::GetVirtualScreenArea()
 		gint x, y, width, height;
 		gdk_window_get_geometry(gdk_screen_get_root_window(gdk_screen_get_default()),
 	                            &x, &y, &width, &height);
-	    r = DPI(x, y, width, height);
+	    r = SCL(x, y, width, height);
 	}
 	return r;
 }
@@ -305,7 +305,7 @@ Rect Ctrl::GetPrimaryWorkArea()
 #if GLIB_CHECK_VERSION(3, 22, 0)
 	GdkRectangle rr;
 	gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &rr);
-	return DPI(rr.x, rr.y, rr.width, rr.height);
+	return SCL(rr.x, rr.y, rr.width, rr.height);
 #else
 	static Rect r;
 	if (r.right == 0) {
@@ -451,7 +451,7 @@ void Ctrl::WndSetPos(const Rect& rect)
 	Rect m(0, 0, 0, 0);
 	if(dynamic_cast<TopWindow *>(this))
 		m = GetFrameMargins();
-	gdk_window_move_resize(gdk(), IPD(rect.left - m.left), IPD(rect.top - m.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
+	gdk_window_move_resize(gdk(), LSC(rect.left - m.left), LSC(rect.top - m.top), LSC(rect.GetWidth()), LSC(rect.GetHeight()));
 
 //	gdk_window_move_resize(gdk(), IPD(rect.left), IPD(rect.top), IPD(rect.GetWidth()), IPD(rect.GetHeight()));
 	int t0 = msecs();

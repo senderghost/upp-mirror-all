@@ -51,10 +51,11 @@ void Ctrl::Create(Ctrl *owner, bool popup)
 		tw->SyncSizeHints();
 
 	Rect r = GetRect();
-	gtk_window_set_default_size (gtk(), IPD(r.GetWidth()), IPD(r.GetHeight()));
 
-	gtk_window_move(gtk(), IPD(r.left), IPD(r.top));
-	gtk_window_resize(gtk(), IPD(r.GetWidth()), IPD(r.GetHeight()));
+	gtk_window_set_default_size (gtk(), LSC(r.GetWidth()), LSC(r.GetHeight()));
+
+	gtk_window_move(gtk(), LSC(r.left), LSC(r.top));
+	gtk_window_resize(gtk(), LSC(r.GetWidth()), LSC(r.GetHeight()));
 
 	gtk_widget_realize(top->window);
 

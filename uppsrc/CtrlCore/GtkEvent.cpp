@@ -84,8 +84,7 @@ gboolean Ctrl::GtkDraw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	Ctrl *p = GetTopCtrlFromId(user_data);
 	if(p) {
 		p->fullrefresh = false;
-		if(IsUHDMode())
-			cairo_scale(cr, 0.5, 0.5);
+		cairo_scale(cr, 1.0 / scale, 1.0 / scale);
 		p->SyncWndRect(p->GetWndScreenRect()); // avoid black areas when resizing
 
 		SystemDraw w(cr);
@@ -186,7 +185,7 @@ gboolean Ctrl::GtkEvent(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 	case GDK_CONFIGURE: {
 		retval = false;
 		GdkEventConfigure *e = (GdkEventConfigure *)event;
-		value = DPI(e->x, e->y, e->width, e->height);
+		value = SCL(e->x, e->y, e->width, e->height);
 		break;
 	}
 	default:
@@ -250,16 +249,16 @@ void Ctrl::GEvent::operator=(const GEvent& e)
 
 Point Ctrl::GetMouseInfo(GdkWindow *win, GdkModifierType& mod)
 {
-#ifdef GTK310
+#if GLIB_CHECK_VERSION(3, 20, 0)
 	GdkDisplay *display = gdk_window_get_display (win);
 	GdkDevice *pointer = gdk_seat_get_pointer (gdk_display_get_default_seat (display));
 	double x, y;
 	gdk_window_get_device_position_double (win, pointer, &x, &y, &mod);
-	return Point((int)DPI(x), (int)DPI(y));
+	return Point((int)SCL(x), (int)SCL(y));
 #else
 	gint x, y;
 	gdk_window_get_pointer(win, &x, &y, &mod);
-	return Point(x, y);
+	return Point(SCL(x), SCL(y));
 #endif
 }
 

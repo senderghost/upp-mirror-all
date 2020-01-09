@@ -6,6 +6,7 @@
 - Test with 3.8
 - Test dark theme
 - Test rect theme
+- Scale must not be same as UHD
 
 - makefile pkg-config support
 - libgtk-3-dev to buildrequires
@@ -45,7 +46,3 @@ DONE:
 - Remove DDUMPs
 - TabBar synthetise
 - Problem with theide menu
-
-REJECTED:
-
-- Scale should not be same as UHD
