@@ -25,6 +25,25 @@ s_colors[] = {
 	{ "Yellow", &Yellow },
 	{ "WhiteGray", &WhiteGray },
 	{ "White", &White },
+
+	{ "SBlack", &Black },
+	{ "SRed", &Red },
+	{ "SGreen", &Green },
+	{ "SBrown", &Brown },
+	{ "SBlue", &Blue },
+	{ "SMagenta", &Magenta },
+	{ "SCyan", &Cyan },
+	{ "SGray", &Gray },
+	{ "SLtGray", &LtGray },
+	{ "SLtRed", &LtRed },
+	{ "SLtGreen", &LtGreen },
+	{ "SLtYellow", &LtYellow },
+	{ "SLtBlue", &LtBlue },
+	{ "SLtMagenta", &LtMagenta },
+	{ "SLtCyan", &LtCyan },
+	{ "SYellow", &Yellow },
+	{ "SWhiteGray", &WhiteGray },
+	{ "SWhite", &White },
 };
 
 Color ColorPopUp::hint[18];
@@ -82,14 +101,16 @@ ColorPopUp::~ColorPopUp() {}
 
 int ColorPopUp::GetColorCount() const
 {
-	return 18 + 2 * 18 + hints * 18 + 216;
+	return 18 + scolors * 18 + 2 * 18 + hints * 18 + 216;
 }
 
 Color ColorPopUp::GetColor(int i) const
 {
-	if(i < 18)
+	if(!scolors)
+		i += 18;
+	if(i < 36)
 		return *s_colors[i].color;
-	i -= 18;
+	i -= 36;
 	if(i < 18)
 		return GrayColor(255 * (i + 1) / 20);
 	if(hints) {
@@ -129,7 +150,7 @@ void ColorPopUp::Paint(Draw& w)
 	Size sz = GetSize();
 	int cy = GetCy();
 
-	w.DrawRect(sz, SColorFace());
+	w.DrawRect(sz, SColorMenu);
 
 	int y = DPI(1);
 
@@ -185,6 +206,8 @@ void ColorPopUp::Paint(Draw& w)
 			}
 
 			DrawFilledFrame(w, x + DPI(1), y, DPI(14), DPI(14), SColorText, GetColor(i));
+			if(i < 18 && scolors)
+				DrawFrame(w, x + DPI(2), y + DPI(1), DPI(12), DPI(12), Blend(SColorLight, SColorHighlight));
 
 			if(i == colori) {
 				if(GetMouseLeft())
@@ -373,6 +396,7 @@ ColorPopUp::ColorPopUp()
 	norampwheel = false;
 	notnull = false;
 	withvoid = false;
+	scolors = false;
 	animating = false;
 	hints = false;
 	open = false;
