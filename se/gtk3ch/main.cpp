@@ -10,25 +10,7 @@ struct MyApp : TopWindow {
 	virtual void Paint(Draw& w);
 };
 
-Color AvgColor(const Image& m, const Rect& rr)
-{
-	int n = rr.GetWidth() * rr.GetHeight();
-	if(n <= 0)
-		return White();
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	for(int y = rr.top; y < rr.bottom; y++)
-		for(int x = rr.left; x < rr.right; x++) {
-			RGBA c = m[y][x];
-			r += c.r;
-			g += c.g;
-			b += c.b;
-		}
-	return Color(r / n, g / n, b / n);
-}
-
-Color AvgColor(const Image& m, int margin = 0)
+Color AvgColor(const Image& m, int margin)
 {
 	return AvgColor(m, Rect(m.GetSize()).Deflated(margin));
 }
