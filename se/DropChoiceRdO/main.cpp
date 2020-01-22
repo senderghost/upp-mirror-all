@@ -11,11 +11,11 @@ GUI_APP_MAIN
 	dc.SetReadOnly();
 //	dc.Disable();
 #else
-	EditString dc;
+	EditString ef;
 #endif
 
 	TopWindow win;
-	win.Add(dc.LeftPosZ(10, 100).TopPosZ(10, Ctrl::STDSIZE));
+	win.Add(dc.LeftPosZ(10, 100).TopPosZ(10, 50));
 
 	win.Run();
 }

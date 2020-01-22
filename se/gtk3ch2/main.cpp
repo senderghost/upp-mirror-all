@@ -559,11 +559,11 @@ void MyApp::Paint(Draw& w)
 			}));
 			x += DPI(55);
 	
-			w.DrawImage(x, yy, CairoImage(50, 20, [&](cairo_t *cr) {
+			w.DrawImage(x, yy, CairoImage(100, 20, [&](cairo_t *cr) {
 				gtk_render_background(slider_context, cr, 0, 0, 50, 20);
 				gtk_render_frame(slider_context, cr,  0, 0, 50, 20);
 			}));
-			x += DPI(55);
+			x += DPI(105);
 			
 			g_object_unref (slider_context);
 			g_object_unref (trough_context);
