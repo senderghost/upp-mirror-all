@@ -69,12 +69,13 @@ EXITBLOCK
 	EVP_cleanup();
 	ENGINE_cleanup();
 	CRYPTO_cleanup_all_ex_data();
-	ERR_remove_state(0);
-	ERR_free_strings();
-	
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	STACK_OF(SSL_COMP) *pCOMP = SSL_COMP_get_compression_methods();
 	if(pCOMP)
 		sk_SSL_COMP_free( pCOMP );
+	ERR_remove_state(0);
+#endif
+	ERR_free_strings();
 }
 
 #ifdef _MULTITHREADED
