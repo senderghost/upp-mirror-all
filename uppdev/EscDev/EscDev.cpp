@@ -1,5 +1,7 @@
 #include "Esc/Esc.h"
 
+using namespace Upp;
+
 void TestEscValue()
 	{
 		EscValue x("0123456789");
@@ -101,31 +103,10 @@ void SIC_OpenTest(EscEscape& e)
 	new Test(e.ret_val);
 }
 
-void Test::Print2(EscEscape&) {}
-
-void Test::Print(EscEscape&)
-{
-}
-
-Test::Test(EscValue& v)
-{
-}
-
-~ Test::Test()
-{
-}
-
-
-~Test::Test()
-{
-}
-
-~Test::Test()
-{
-}
-
 CONSOLE_APP_MAIN
 {
+	RDUMP(sizeof(EscValue));
+
 	String code = LoadFile(GetDataFile("test.esc"));
 	ArrayMap<String, EscValue> global;
 
@@ -136,9 +117,9 @@ CONSOLE_APP_MAIN
 	StdLib(global);
 
 	try {
-		RTIMING("run");
 		Scan(global, code);
-		Execute(global, "main", INT_MAX);
+		RTIMING("run");
+		Execute(global, "main", 50000);
 	}
 	catch(CParser::Error e) {
 		RLOG(e);
