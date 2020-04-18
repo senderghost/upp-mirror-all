@@ -12,9 +12,9 @@ file
 	test.iml;
 
 mainconfig
+	"" = "GUI",
 	"" = "GUI X11 TEST_HIDPI",
 	"" = "GUI NOGTK",
 	"" = "GUI MT",
-	"" = "GUI USEMALLOC",
-	"" = "GUI";
+	"" = "GUI USEMALLOC";
 
