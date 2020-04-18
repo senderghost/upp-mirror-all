@@ -13,7 +13,7 @@ file
 
 mainconfig
 	"" = "GUI",
-	"" = "GUI X11 TEST_HIDPI",
+	"" = "GUI X11",
 	"" = "GUI NOGTK",
 	"" = "GUI MT",
 	"" = "GUI USEMALLOC";
