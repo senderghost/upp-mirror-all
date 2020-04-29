@@ -376,8 +376,10 @@ class HttpRequest : public TcpSocket {
 	int          ssl_proxy_port;
 	String       ssl_proxy_username;
 	String       ssl_proxy_password;
+	bool         ssl_get_proxy;
 	String       path;
 	bool         ssl;
+	String       phost;
 
 	int          method;
 	String       custom_method;
@@ -525,7 +527,8 @@ public:
 
 	HttpRequest&  SSLProxy(const String& host, int port)         { ssl_proxy_host = host; ssl_proxy_port = port; return *this; }
 	HttpRequest&  SSLProxy(const char *p);
-	HttpRequest&  SSLProxyAuth(const String& u, const String& p) {  ssl_proxy_username = u; ssl_proxy_password = p; return *this; }
+	HttpRequest&  SSLProxyAuth(const String& u, const String& p) { ssl_proxy_username = u; ssl_proxy_password = p; return *this; }
+	HttpRequest&  SSLProxyGET(bool b = true)                     { ssl_get_proxy = b; return *this; }
 
 	HttpRequest&  CommonProxy(const String& host, int port)         { Proxy(host, port); return SSLProxy(host, port); }
 	HttpRequest&  CommonProxy(const char *p)                        { Proxy(p); return SSLProxy(p); }
