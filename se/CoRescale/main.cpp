@@ -10,7 +10,8 @@ struct MyApp : TopWindow {
 	virtual void Paint(Draw& w) {
 		Size sz = GetSize();
 		tm = msecs();
-		Image m = co ? CoRescaleFilter(img, sz, FILTER_LANCZOS3) : RescaleFilter(img, sz, FILTER_LANCZOS3);
+		Image m = Rescale(img, sz);
+//		Image m = co ? CoRescaleFilter(img, sz, FILTER_LANCZOS3) : RescaleFilter(img, sz, FILTER_LANCZOS3);
 		tm = (msecs() - tm) / 1000.0;
 		w.DrawImage(0, 0, m);
 		PostCallback([=] {
@@ -41,6 +42,6 @@ struct MyApp : TopWindow {
 GUI_APP_MAIN
 {
 	MyApp x;
-	x.img = StreamRaster::LoadFileAny("C:/Users/cxl/Documents/startmac1.png");
+	x.img = StreamRaster::LoadFileAny("C:/Users/cxl/Documents/start12.png");
 	x.Run();
 }
