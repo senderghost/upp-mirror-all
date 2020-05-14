@@ -8,13 +8,21 @@ using namespace Upp;
 VectorMap<String, int> GetProcessList()
 {
 	VectorMap<String, int> pl;
-	HANDLE hProcessSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+	HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if(hProcessSnap != INVALID_HANDLE_VALUE) {
 		PROCESSENTRY32 pe32;
 		pe32.dwSize = sizeof(PROCESSENTRY32);
 		if(Process32First(hProcessSnap, &pe32))
-			do
-				pl.Add(pe32.szExeFile, pe32.th32ProcessID);
+			do {
+				HANDLE hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pe32.th32ProcessID);
+				if(hModuleSnap != INVALID_HANDLE_VALUE) {
+					MODULEENTRY32 me32;
+					me32.dwSize = sizeof(MODULEENTRY32);
+					if(Module32First(hModuleSnap, &me32))
+						pl.Add(me32.szExePath, pe32.th32ProcessID);
+					CloseHandle(hModuleSnap);
+				}
+			}
 			while(Process32Next(hProcessSnap, &pe32));
 		CloseHandle( hProcessSnap );
 	}

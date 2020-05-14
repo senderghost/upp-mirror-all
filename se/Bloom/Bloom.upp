@@ -1,0 +1,12 @@
+uses
+	CtrlLib,
+	plugin/jpg;
+
+file
+	BloomEffect.h,
+	BloomEffect.cpp,
+	main.cpp;
+
+mainconfig
+	"" = "GUI";
+
