@@ -1,0 +1,10 @@
+uses
+	Core,
+	Painter;
+
+file
+	AlphaBlendSSE2.cpp;
+
+mainconfig
+	"" = "";
+
