@@ -13,31 +13,100 @@ void svo_memcpy_l(byte *t, byte *s, size_t len)
 	memcpyd((dword *)t, (dword *)s, len >> 2);
 }
 
+never_inline
+void memcpy8_l(byte *t, const byte *s, size_t len)
+{
+	ASSERT(len >= 16);
+
+	auto Copy128 = [&](size_t at) { _mm_storeu_si128((__m128i *)(t + at), _mm_loadu_si128((__m128i *)(s + at))); };
+
+	if(len > 4*1024*1024) { // for really huge data, call memcpy to bypass the cache
+		memcpy(t, s, len);
+		return;
+	}
+	Copy128(len - 16); // copy tail
+	Copy128(0); // align target data up on the next 16 bytes boundary
+	const byte *e = t + len;
+	byte *t1 = (byte *)(((uintptr_t)t | 15) + 1);
+	s += t1 - t;
+	t = t1;
+	len = e - t;
+	e -= 64;
+	while(t <= e) {
+		Copy128(0); Copy128(16); Copy128(32); Copy128(48);
+		t += 64;
+		s += 64;
+	}
+	if(len & 32) {
+		Copy128(0); Copy128(16);
+		t += 32;
+		s += 32;
+	}
+	if(len & 16)
+		Copy128(0);
+}
+
 inline
-void svo_memcpy(void *p, const void *q, size_t len)
+void memcpy8(void *p, const void *q, size_t len)
 {
 	byte *t = (byte *)p;
 	byte *s = (byte *)q;
-	if(len < 2) {
-		if(len)
-			t[0] = s[0];
+	if(len <= 4) {
+		if(len < 2) {
+			if(len)
+				t[0] = s[0];
+			return;
+		}
+		word a = *(word *)s;
+		word b = *(word *)(s + len - 2);
+		*(word *)t = a;
+		*(word *)(t + len - 2) = b;
 		return;
 	}
-	if(len <= 4) {
+	if(len <= 16) {
+		if(len <= 8) {
+			dword a = *(dword *)(s);
+			dword b = *(dword *)(s + len - 4);
+			*(dword *)(t) = a;
+			*(dword *)(t + len - 4) = b;
+			return;
+		}
+		uint64 a = *(uint64 *)s;
+		uint64 b = *(uint64 *)(s + len - 8);
+		*(uint64 *)t = a;
+		*(uint64 *)(t + len - 8) = b;
+		return;
+	}
+	memcpy8_l(t, s, len);
+}
+
+inline
+void memcpy8a(void *p, const void *q, size_t len)
+{
+	byte *t = (byte *)p;
+	byte *s = (byte *)q;
+	if(len < 4) {
+		if(len < 2) {
+			if(len)
+				t[0] = s[0];
+			return;
+		}
 		*(word *)t = *(word *)s;
 		*(word *)(t + len - 2) = *(word *)(s + len - 2);
 		return;
 	}
-	*(dword *)t = *(dword *)s;
-	*(dword *)(t + len - 4) = *(dword *)(s + len - 4);
-	if(len > 16) {
-		svo_memcpy_l(t, s, len);
+	if(len >= 16) {
+		memcpy8_l(t, s, len);
 		return;
 	}
-	if(len > 8) {
-		*(dword *)(t + 4) = *(dword *)(s + 4);
-		*(dword *)(t + len - 8) = *(dword *)(s + len - 8);
+	*(dword *)(t + len - 4) = *(dword *)(s + len - 4);
+	if(len & 8) {
+		*(uint64 *)t = *(uint64 *)s;
+		s += 8;
+		t += 8;
 	}
+	if(len & 4)
+		*(dword *)t = *(dword *)s;
 }
 
 inline
@@ -69,13 +138,7 @@ void svo_memcpya(void *p, const void *q, size_t len)
 		t[0] = s[0];
 }
 
-inline
-void svo_memcpy0(void *p, void *q, size_t len)
-{
-	SVO_MEMCPY(p, q, len);
-}
-
-void Check(void (*copy)(void *t, void *s, size_t len))
+void Check(void (*copy)(void *t, const void *s, size_t len))
 {
 	RTIMING("Check");
 	Buffer<byte> b0(2000, 0), b1(2000, 0), b2(2000, 0);
@@ -102,11 +165,8 @@ CONSOLE_APP_MAIN
 {
 	svo_memcpya(h + 20, h + 40, 14);
 	
-	Check(svo_memcpy);
-	Check(svo_memcpy0);
-	Check(svo_memcpya);
+	Check(memcpy8);
 
-#if 0
 	Buffer<byte> b1(200000);
 	Buffer<byte> b2(200000);
 	
@@ -126,38 +186,37 @@ CONSOLE_APP_MAIN
 				svo_memcpy((dword *)~b1 + rnd[i], (dword *)~b2 + rnd[i], rnd[i + 1]);
 		}
 		{
-			RTIMING("svo_memcpya");
+			RTIMING("memcpy8");
 			for(int i = 0; i < rnd.GetCount(); i += 2)
-				svo_memcpya((dword *)~b1 + rnd[i], (dword *)~b2 + rnd[i], rnd[i + 1]);
+				memcpy8((dword *)~b1 + rnd[i], (dword *)~b2 + rnd[i], rnd[i + 1]);
 		}
 		{
-			RTIMING("svo_memcpy0");
+			RTIMING("memcpy8a");
 			for(int i = 0; i < rnd.GetCount(); i += 2)
-				svo_memcpy0((dword *)~b1 + rnd[i], (dword *)~b2 + rnd[i], rnd[i + 1]);
+				memcpy8a((dword *)~b1 + rnd[i], (dword *)~b2 + rnd[i], rnd[i + 1]);
 		}
 	}
-#else
-	int bsize=8*1024*1024;
-	Buffer<byte> b1(bsize, 0), b2(bsize, 0);
-	dword cw = 123;
-
-	String result="\"N\",\"memcpy()\",\"memcpyd\"\r\n";
-	for(int len=1;len<=bsize;){
-		int maximum=100000000/len;
-		int64 t0=usecs();
-		for(int i = 0; i < maximum; i++)
-			svo_memcpya(~b1 + 1, ~b2 + 1, len);
-		int64 t1=usecs();
-		for(int i = 0; i < maximum; i++)
-			svo_memcpy(~b1 + 1, ~b2 + 1, len);
-		int64 t2=usecs();
-		String r = Format("%d,%f,%f",len,1000.0*(t1-t0)/maximum,1000.0*(t2-t1)/maximum);
-		RLOG(r);
-		result.Cat(r + "\r\n");
-		if(len<64) len++;
-		else len*=2;
+	{
+		int bsize=8*1024*1024;
+		Buffer<byte> b1(bsize, 0), b2(bsize, 0);
+		dword cw = 123;
+	
+		String result="\"N\",\"memcpy8()\",\"memcpyd\"\r\n";
+		for(int len=1;len<=bsize;){
+			int maximum=100000000/len;
+			int64 t0=usecs();
+			for(int i = 0; i < maximum; i++)
+				memcpy8(~b1, ~b2, len);
+			int64 t1=usecs();
+			for(int i = 0; i < maximum; i++)
+				memcpy8a(~b1, ~b2, len);
+			int64 t2=usecs();
+			String r = Format("%d,%f,%f",len,1000.0*(t1-t0)/maximum,1000.0*(t2-t1)/maximum);
+			RLOG(r);
+			result.Cat(r + "\r\n");
+			if(len<64) len++;
+			else len*=2;
+		}
+		SaveFile(GetHomeDirFile("memset.csv"),result);
 	}
-	SaveFile(GetHomeDirFile("memset.csv"),result);
-#endif
-	BeepInformation();
 }

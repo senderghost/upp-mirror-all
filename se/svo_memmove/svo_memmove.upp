@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	svo_memmove.cpp;
+
+mainconfig
+	"" = "";
+

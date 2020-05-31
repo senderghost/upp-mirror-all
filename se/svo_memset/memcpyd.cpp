@@ -199,10 +199,10 @@ CONSOLE_APP_MAIN
 		int maximum=100000000/len;
 		int64 t0=usecs();
 		for(int i = 0; i < maximum; i++)
-			memset(~b + 1, cw, len);
+			cw += memhash(~b + 1, cw, len);
 		int64 t1=usecs();
 		for(int i = 0; i < maximum; i++)
-			svo_memseta(~b + 1, cw, len);
+			cw += memhash(~b + 1, cw, len);
 		int64 t2=usecs();
 		String r = Format("%d,%f,%f",len,1000.0*(t1-t0)/maximum,1000.0*(t2-t1)/maximum);
 		RLOG(r);
