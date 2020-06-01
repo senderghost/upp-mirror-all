@@ -55,26 +55,26 @@ never_inline
 uint64 memhash3a(const void *ptr, int len)
 {
 	const byte *s = (byte *)ptr;
-	uint64 val = HASH64_CONST1;
+	uint64 val = HASH32_CONST1;
 	if(len >= 8) {
 		const byte *e = s + len - 8;
 		while(s < e) {
-			val = HASH64_CONST2 * val + *(qword *)(s);
+			val = HASH32_CONST2 * val + *(qword *)(s);
 			s += 8;
 		}
-		return HASH64_CONST2 * val + *(qword *)(e);
+		return HASH32_CONST2 * val + *(qword *)(e);
 	}
 	if(len > 4) {
-		val = HASH64_CONST2 * val + *(dword *)(s);
-		val = HASH64_CONST2 * val + *(dword *)(s + len - 4);
+		val = HASH32_CONST2 * val + *(dword *)(s);
+		val = HASH32_CONST2 * val + *(dword *)(s + len - 4);
 		return val;
 	}
 	if(len >= 2) {
-		val = HASH64_CONST2 * val + *(word *)(s);
-		val = HASH64_CONST2 * val + *(word *)(s + len - 2);
+		val = HASH32_CONST2 * val + *(word *)(s);
+		val = HASH32_CONST2 * val + *(word *)(s + len - 2);
 		return val;
 	}
-	return len ? HASH64_CONST2 * val + *s : val;
+	return len ? HASH32_CONST2 * val + *s : val;
 }
 
 never_inline
@@ -83,14 +83,14 @@ uint64 memhash3b(const void *ptr, int len)
 	const byte *s = (byte *)ptr;
 	uint64 val = HASH64_CONST1;
 	if(len >= 8) {
-		if(len >= 64) {
+		if(len >= 32) {
 			uint64 val1, val2, val3, val4;
 			val1 = val2 = val3 = val4 = HASH64_CONST1;
 			while(len >= 32) {
-				val1 = HASH64_CONST2 * val2 + *(qword *)(s);
+				val1 = HASH64_CONST2 * val1 + *(qword *)(s);
 				val2 = HASH64_CONST2 * val2 + *(qword *)(s + 8);
-				val3 = HASH64_CONST2 * val2 + *(qword *)(s + 16);
-				val4 = HASH64_CONST2 * val2 + *(qword *)(s + 24);
+				val3 = HASH64_CONST2 * val3 + *(qword *)(s + 16);
+				val4 = HASH64_CONST2 * val4 + *(qword *)(s + 24);
 				s += 32;
 				len -= 32;
 			}
@@ -119,8 +119,41 @@ uint64 memhash3b(const void *ptr, int len)
 	return len ? HASH64_CONST2 * val + *s : val;
 }
 
+never_inline
+uint64 memhash32(const void *ptr, int len)
+{
+	const byte *s = (byte *)ptr;
+	dword val = HASH32_CONST1;
+	if(len >= 4) {
+		if(len >= 16) {
+			dword val1, val2;
+			val1 = val2 = HASH32_CONST1;
+			while(len >= 8) {
+				val1 = HASH32_CONST2 * val1 + *(dword *)(s);
+				val2 = HASH32_CONST2 * val2 + *(dword *)(s + 4);
+				s += 8;
+				len -= 8;
+			}
+			val = HASH32_CONST2 * val + val1;
+			val = HASH32_CONST2 * val + val2;
+		}
+		const byte *e = s + len - 4;
+		while(s < e) {
+			val = HASH32_CONST2 * val + *(dword *)(s);
+			s += 4;
+		}
+		return HASH32_CONST2 * val + *(dword *)(e);
+	}
+	if(len >= 2) {
+		val = HASH32_CONST2 * val + *(word *)(s);
+		val = HASH32_CONST2 * val + *(word *)(s + len - 2);
+		return val;
+	}
+	return len ? HASH32_CONST2 * val + *s : val;
+}
 
-inline
+
+never_inline
 uint64 memhash3c(const void *ptr, int len)
 {
 	const byte *s = (byte *)ptr;
@@ -146,6 +179,24 @@ uint64 memhash3c(const void *ptr, int len)
 	return len ? HASH64_CONST2 * val + *s : val;
 }
 
+
+never_inline
+hash_t memhash0(const void *ptr, size_t count)
+{
+	unsigned hash = 1234567890U;
+
+	const unsigned *ds = (unsigned *)ptr;
+	const unsigned *de = ds + (count >> 2);
+	while(ds < de)
+		hash = ((hash << 5) - hash) ^ *ds++;
+
+	const byte *s = (byte *)ds;
+	const byte *e = s + (count & 3);
+	while(s < e)
+		hash = ((hash << 5) - hash) ^ *s++;
+
+	return hash;
+}
 
 void CheckFill(void (*fill)(void *t, byte val, int len))
 {
@@ -186,10 +237,10 @@ CONSOLE_APP_MAIN
 		int maximum=100000000/len;
 		int64 t0=usecs();
 		for(int i = 0; i < maximum; i++)
-			cw += memhash3a(~b, len);
+			cw += memhash(~b, len);
 		int64 t1=usecs();
 		for(int i = 0; i < maximum; i++)
-			cw += memhash3b(~b, len);
+			cw += memhash32(~b, len);
 		int64 t2=usecs();
 		String r = Format("%d,%f,%f",len,1000.0*(t1-t0)/maximum,1000.0*(t2-t1)/maximum);
 		RLOG(r);
