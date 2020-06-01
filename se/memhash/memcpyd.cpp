@@ -78,7 +78,7 @@ uint64 memhash3a(const void *ptr, int len)
 }
 
 never_inline
-uint64 memhash3b(const void *ptr, int len)
+hash_t memhash64(const void *ptr, size_t len)
 {
 	const byte *s = (byte *)ptr;
 	uint64 val = HASH64_CONST1;
@@ -120,7 +120,7 @@ uint64 memhash3b(const void *ptr, int len)
 }
 
 never_inline
-uint64 memhash32(const void *ptr, int len)
+hash_t memhash32(const void *ptr, size_t len)
 {
 	const byte *s = (byte *)ptr;
 	dword val = HASH32_CONST1;
@@ -225,6 +225,13 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT|LOG_FILE);
 
+	byte p1[] = { 0x5A, 0x23, 0xBF, 0x73, 0xFF, 0x1F, 0xD5, 0xC0 };
+	byte p2[] = { 0x5A, 0x23, 0xBF, 0x73, 0xB4, 0x1F, 0xD5, 0xC0 };
+	
+	RDUMP(memhash64(p1, 8));
+	RDUMP(memhash64(p2, 8));
+	return;
+
 	int bsize=8*1024*1024;
 	Buffer<byte> b(bsize, 0);
 	for(int i = 0; i < bsize; i++)
@@ -232,7 +239,6 @@ CONSOLE_APP_MAIN
 	
 	cw += memhash3a(&b, len);
 
-	String result="\"N\",\"memsetd()\",\"FillX()\"\r\n";
 	for(int len=1;len<=bsize;){
 		int maximum=100000000/len;
 		int64 t0=usecs();
@@ -242,9 +248,11 @@ CONSOLE_APP_MAIN
 		for(int i = 0; i < maximum; i++)
 			cw += memhash32(~b, len);
 		int64 t2=usecs();
-		String r = Format("%d,%f,%f",len,1000.0*(t1-t0)/maximum,1000.0*(t2-t1)/maximum);
+		for(int i = 0; i < maximum; i++)
+			cw += memhash64(~b, len);
+		int64 t3=usecs();
+		String r = Format("%d,%f,%f,%f", len, 1000.0*(t1-t0)/maximum, 1000.0*(t2-t1)/maximum, 1000.0*(t3-t2)/maximum);
 		RLOG(r);
-		result.Cat(r + "\r\n");
 		if(len<64) len++;
 		else len*=2;
 	}
