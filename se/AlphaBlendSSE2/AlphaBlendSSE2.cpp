@@ -102,10 +102,6 @@ __m128i MakeAlpha(__m128i x)
 force_inline
 __m128i AlphaBlendSSE2(__m128i t, __m128i s, __m128i alpha)
 {
-	LOG("---- AlphaBlendSSE2");
-	DUMPS(t);
-	DUMPS(s);
-	DUMPS(alpha);
 	return _mm_adds_epi16(s, _mm_srli_epi16(_mm_mullo_epi16(t, alpha), 8)); // t = c + (t * alpha >> 8);
 }
 
@@ -142,7 +138,6 @@ void AlphaBlend2(RGBA *t, __m128i s, __m128i alpha)
 	StoreRGBA2(t, AlphaBlendSSE2(LoadRGBA2(t), s, alpha));
 }
 
-
 force_inline
 void AlphaBlend4(RGBA *t, __m128i sl, __m128i al, __m128i sh, __m128i ah)
 {
@@ -155,12 +150,8 @@ void AlphaBlend4(RGBA *t, __m128i sl, __m128i al, __m128i sh, __m128i ah)
 
 void AlphaBlendSSE2(RGBA *t, const RGBA& c, int alpha, int len)
 {
-	__m128i s = LoadRGBA2(c);
-	DUMPS(s);
-	s = Mul8(s, alpha);
-	DUMPS(s);
+	__m128i s = Mul8(LoadRGBA2(c), alpha);
 	__m128i a = MakeAlpha(s);
-	DUMPS(a);
 	while(len >= 4) {
 		AlphaBlend4(t, s, a, s, a);
 		t += 4;
@@ -173,6 +164,34 @@ void AlphaBlendSSE2(RGBA *t, const RGBA& c, int alpha, int len)
 	if(len & 1)
 		AlphaBlend1(t, s, a);
 }
+
+void AlphaBlendSSE2(RGBA *t, const RGBA *s, int alpha, int len)
+{
+	while(len >= 4) {
+		__m128i m = _mm_loadu_si128((__m128i *)s);
+		__m128i s0 = Mul8(LoadRGBAL(m), alpha);
+		__m128i s1 = Mul8(LoadRGBAH(m), alpha);
+		AlphaBlend4(t, s0, MakeAlpha(s0), s1, MakeAlpha(s1));
+		t += 4;
+		s += 4;
+		len -= 4;
+	}
+	if(len & 2) {
+		__m128i s0 = Mul8(LoadRGBA2(s), alpha);
+		AlphaBlend2(t, s0, MakeAlpha(s0));
+		t += 2;
+		s += 2;
+	}
+	if(len & 1)
+		AlphaBlend1(t, *s, alpha);
+}
+
+
+/*
+void AlphaBlend(RGBA *t, const RGBA& c, int alpha);
+void AlphaBlend(RGBA *t, const RGBA *s, int alpha, int len)
+void AlphaBlend(RGBA *t, const RGBA& c, int alpha, int len)
+*/
 
 RGBA RandomRGBA()
 {
