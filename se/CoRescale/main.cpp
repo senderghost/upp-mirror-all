@@ -43,6 +43,12 @@ struct MyApp : TopWindow {
 GUI_APP_MAIN
 {
 	MyApp x;
+<<<<<<< .mine
+	x.img = StreamRaster::LoadFileAny("/home/pi/2020-05-13-162043_1920x1200_scrot.png");
+||||||| .r14472
+	x.img = StreamRaster::LoadFileAny("C:/Users/cxl/Documents/startmac1.png");
+=======
 	x.img = StreamRaster::LoadFileAny("C:/Users/cxl/Documents/start12.png");
+>>>>>>> .r14566
 	x.Run();
 }
