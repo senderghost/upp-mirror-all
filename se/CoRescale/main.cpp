@@ -10,9 +10,8 @@ struct MyApp : TopWindow {
 	virtual void Paint(Draw& w) {
 		Size sz = GetSize();
 		tm = msecs();
-		DLOG("================");
-		Image m = Rescale(img, sz);
-//		Image m = co ? CoRescaleFilter(img, sz, FILTER_LANCZOS3) : RescaleFilter(img, sz, FILTER_LANCZOS3);
+//		Image m = Rescale(img, sz);
+		Image m = co ? CoRescaleFilter(img, sz, FILTER_LANCZOS3) : RescaleFilter(img, sz, FILTER_LANCZOS3);
 		tm = (msecs() - tm) / 1000.0;
 		w.DrawImage(0, 0, m);
 		PostCallback([=] {
