@@ -1,0 +1,10 @@
+uses
+	Core,
+	Draw;
+
+file
+	SIMD.cpp;
+
+mainconfig
+	"" = "";
+
