@@ -38,10 +38,12 @@ force_inline f32x4& operator/=(f32x4& a, f32x4 b) { return a = a + b; }
 force_inline f32x4 min(f32x4 a, f32x4 b)          { return _mm_min_ps(a.data, b.data); }
 force_inline f32x4 max(f32x4 a, f32x4 b)          { return _mm_max_ps(a.data, b.data); }
 
-force_inline f32x4 Broadcast0(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_SHUFFLE(0,0,0,0)); }
-force_inline f32x4 Broadcast1(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_SHUFFLE(1,1,1,1)); }
-force_inline f32x4 Broadcast2(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_SHUFFLE(2,2,2,2)); }
-force_inline f32x4 Broadcast3(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_SHUFFLE(3,3,3,3)); }
+#define _MM_BCAST(a)                              _MM_SHUFFLE(a,a,a,a)
+
+force_inline f32x4 Broadcast0(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_BCAST(0)); }
+force_inline f32x4 Broadcast1(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_BCAST(1)); }
+force_inline f32x4 Broadcast2(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_BCAST(2)); }
+force_inline f32x4 Broadcast3(f32x4 a)            { return _mm_shuffle_ps(a.data, a.data, _MM_BCAST(3)); }
 
 struct i16x8 { // 8xint16
 	__m128i data;
@@ -144,7 +146,10 @@ i32x4 Unpack16H(i16x8 a)                          { return _mm_unpackhi_epi16(a.
 
 i8x16 Pack16(i16x8 l, i16x8 h)                    { return _mm_packus_epi16(l.data, h.data); }
 
-// i8x16 BroadcastLH(i16x8 a, int i)                 { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(x, bshuffle__(i)), bshuffle__(i)) };
+i16x8 BroadcastLH0(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(0)), _MM_BCAST(0)); }
+i16x8 BroadcastLH1(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(1)), _MM_BCAST(1)); }
+i16x8 BroadcastLH2(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(2)), _MM_BCAST(2)); }
+i16x8 BroadcastLH3(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(3)), _MM_BCAST(3)); }
 
 #if 0
 	auto do_line = [&](int ty, __m128 *b, __m128 *div) {
@@ -253,7 +258,7 @@ String AsString(const i32x4& x)
 String AsString(const i16x8& x)
 {
 	int16 *f = (int16 *)&x;
-	return Format("%d %d %d %d . %d %d %d %d", f[7], f[6], f[5], f[4], f[3], f[2], f[1], f[0]);
+	return Format("%d %d %d %d  %d %d %d %d", f[7], f[6], f[5], f[4], f[3], f[2], f[1], f[0]);
 }
 
 String AsString(const i8x16& x)
@@ -272,13 +277,22 @@ CONSOLE_APP_MAIN
 		y[i] = i;
 	}
 	
-	f32x4 x(1, 2, 3, 4);
-	DDUMP(Broadcast0(x));
-	DDUMP(Broadcast1(x));
-	DDUMP(Broadcast2(x));
-	DDUMP(Broadcast3(x));
-	
-	
+	{
+		f32x4 x(1, 2, 3, 4);
+		DDUMP(Broadcast0(x));
+		DDUMP(Broadcast1(x));
+		DDUMP(Broadcast2(x));
+		DDUMP(Broadcast3(x));
+	}
+
+	{
+		i16x8 x(1, 2, 3, 4, 5, 6, 7, 8);
+		DDUMP(BroadcastLH0(x));
+		DDUMP(BroadcastLH1(x));
+		DDUMP(BroadcastLH2(x));
+		DDUMP(BroadcastLH3(x));
+	}
+
 	{
 		f32x4 s = 0;
 		for(int i = 0; i < 256; i += 4) {
