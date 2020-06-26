@@ -117,7 +117,9 @@ struct i8x16 : i16x8 { // 16xint8
 	i8x16()                      {}
 	i8x16(void *ptr)             { Load(ptr); }
 	i8x16(__m128i d)             { data = d; }
-	i8x16(int v)                 { data = _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, v); }
+	i8x16(int v)                 { data = _mm_set_epi8(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,v); }
+	i8x16(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p)
+	                             { data = _mm_set_epi8(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p); }
 
 	static i8x16   all(int v)    { i8x16 x; x.data = _mm_set1_epi8(v); return x; }
 };
@@ -139,8 +141,8 @@ f32x4 ToFloat(i32x4 a)                            { return _mm_cvtepi32_ps(a.dat
 i32x4 Truncate(f32x4 a)                           { return _mm_cvttps_epi32(a.data); }
 i32x4 Round(f32x4 a)                              { return _mm_cvtps_epi32(a.data); }
 
-i16x8 Unpack8L(i8x16 a)                           { return _mm_unpacklo_epi8(a.data, _mm_setzero_si128()); }
-i16x8 Unpack8H(i8x16 a)                           { return _mm_unpackhi_epi8(a.data, _mm_setzero_si128()); }
+i16x8 Unpack8L(i16x8 a)                           { return _mm_unpacklo_epi8(a.data, _mm_setzero_si128()); }
+i16x8 Unpack8H(i16x8 a)                           { return _mm_unpackhi_epi8(a.data, _mm_setzero_si128()); }
 i32x4 Unpack16L(i16x8 a)                          { return _mm_unpacklo_epi16(a.data, _mm_setzero_si128()); }
 i32x4 Unpack16H(i16x8 a)                          { return _mm_unpackhi_epi16(a.data, _mm_setzero_si128()); }
 
@@ -151,102 +153,10 @@ i16x8 BroadcastLH1(i16x8 a)                       { return _mm_shufflelo_epi16(_
 i16x8 BroadcastLH2(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(2)), _MM_BCAST(2)); }
 i16x8 BroadcastLH3(i16x8 a)                       { return _mm_shufflelo_epi16(_mm_shufflehi_epi16(a.data, _MM_BCAST(3)), _MM_BCAST(3)); }
 
-#if 0
-	auto do_line = [&](int ty, __m128 *b, __m128 *div) {
-		memset(b, 0, tsz.cx * sizeof(__m128));
-		memset(div, 0, tsz.cx * sizeof(__m128));
-		m128f v1 = m128f::All(1);
-		int yy = ny * ty;
-		for(int yi = 0; yi < ny; yi++) {
-			int y = yy + yi;
-			if(y < ssz.cy) {
-				const RGBA *s = img[yy + yi];
-				const RGBA *e = s + scx0;
-				const RGBA *e2 = s + ssz.cx;
-				m128f *t = b;
-				m128f *d = div;
-				while(s < e) {
-					m128f px = 0;
-					m128f dv = 0;
-					for(int n = nx; n--;) {
-						px += LoadRGBAF(s++);
-						dv += v1;
-					}
-					*t++ = px;
-					*d++ = dv;
-				}
-				__m128f px = 0;
-				__m128f dv = 0;
-				while(s < e2) {
-					px += LoadRGBAF(s++);
-					dv += m128f::all(1);
-				}
-				*t++ = px;
-				*d++ = dv;
-			}
-		}
-		__m128 *s = b;
-		__m128 *d = div;
-		RGBA *t = ~ib + ty * tsz.cx;
-		RGBA *e = t + tsz.cx;
-		while(t < e)
-			StoreRGBAF(t++, *s++ / *d++);
-	};
-
-force_inline
-m128i16 LoadRGBA2(const RGBA& c)
-{
-	return ((m128i8)m128i32(0, 0, *(dword *)&c, *(dword *)&c)).UnpackL();
-}
-
-
-/*
-force_inline
-m128i16 AlphaBlendSSE2(m128i16 t, m128i16 s, m128i16 alpha)
-{
-	return s + (t * alpha >> 8); 
-}
-
-force_inline
-m128i16 Mul8(m128i16 x, int alpha)
-{
-	return x * alpha >> 8;
-}
-
-force_inline
-m128i16 MakeAlpha(m128i16 x)
-{
-	x = BroadcastAlpha(x);
-	x = m128i16::All(256) - (m128i16(128, 129, 129, 129, 128, 129, 129, 129) * x >> 7);
-	return x;
-}
-
-force_inline
-__m128i LoadRGBA2(const RGBA& c)
-{
-	return _mm_unpacklo_epi8(_mm_set_epi32(0, 0, *(dword *)&c, *(dword *)&c), _mm_setzero_si128());
-}
-
-
-*/
-
-String AsString(const m128& x)
-{
-	return Format("%d %d %d %d", x.i32[0], x.i32[1], x.i32[2], x.i32[3]);
-}
-
-#endif
-
-float x[256];
-f32x4 global;
-
-int16 y[256];
-i16x8 yg;
-
 String AsString(const f32x4& x)
 {
 	float *f = (float *)&x;
-	return Format("%f %f %f %f", f[3], f[2], f[1], f[0]);
+	return Format("%g %g %g %g", f[3], f[2], f[1], f[0]);
 }
 
 String AsString(const i32x4& x)
@@ -269,6 +179,13 @@ String AsString(const i8x16& x)
 	              f[7], f[6], f[5], f[4], f[3], f[2], f[1], f[0]);
 }
 
+float x[256];
+f32x4 global;
+
+int16 y[256];
+i16x8 yg;
+
+#define TEST(x, v) DDUMP(x); if(v) ASSERT(AsString(x) == v);
 
 CONSOLE_APP_MAIN
 {
@@ -279,8 +196,8 @@ CONSOLE_APP_MAIN
 	
 	{
 		f32x4 x(1, 2, 3, 4);
-		DDUMP(Broadcast0(x));
-		DDUMP(Broadcast1(x));
+		TEST(Broadcast0(x), "4 4 4 4");
+		TEST(Broadcast1(x), "3 3 3 3");
 		DDUMP(Broadcast2(x));
 		DDUMP(Broadcast3(x));
 	}
@@ -292,23 +209,28 @@ CONSOLE_APP_MAIN
 		DDUMP(BroadcastLH2(x));
 		DDUMP(BroadcastLH3(x));
 	}
-
+	
 	{
-		f32x4 s = 0;
-		for(int i = 0; i < 256; i += 4) {
-			s += f32x4(x + i);
-			DDUMP(s);
-		}
-		global = s;
-		DDUMP(s);
+		i8x16 x(1,2,3,4, 11,12,13,14, 21,22,23,24, 31,32,33,34);
+		DDUMP(x);
+		DDUMP(Unpack8L(x));
+		DDUMP(Unpack8H(x));
+	}
+	{
+		i16x8 x(1,2,3,4, 11,12,13,14);
+		DDUMP(Unpack16L(x));
+		DDUMP(Unpack16H(x));
+	}
+	
+	{
+		i32x4 x(1, 2, 3, 4);
+		DDUMP(ToFloat(x));
 	}
 
 	{
-		i16x8 s = 0;
-		for(int i = 0; i < 256; i += 4) {
-			s += i16x8(y + i);
-			DDUMP(s);
-		}
-		yg = s;
+		f32x4 x(1.1, 2.8, 3.7, -4.2);
+		DDUMP(x);
+		DDUMP(Truncate(x));
+		DDUMP(Round(x));
 	}
 }
