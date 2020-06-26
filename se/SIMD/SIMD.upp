@@ -1,6 +1,7 @@
 uses
 	Core,
-	Draw;
+	Draw,
+	Painter;
 
 file
 	SIMD.cpp;
