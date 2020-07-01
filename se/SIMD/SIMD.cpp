@@ -35,6 +35,14 @@ force_inline f32x4& operator*=(f32x4& a, f32x4 b) { return a = a * b; }
 force_inline f32x4  operator/(f32x4 a, f32x4 b)   { return _mm_div_ps(a.data, b.data); }
 force_inline f32x4& operator/=(f32x4& a, f32x4 b) { return a = a + b; }
 
+force_inline f32x4  operator==(f32x4 a, f32x4 b)   { return _mm_cmpeq_ps(a.data, b.data); }
+force_inline f32x4  operator!=(f32x4 a, f32x4 b)   { return _mm_cmpneq_ps(a.data, b.data); }
+force_inline f32x4  operator<(f32x4 a, f32x4 b)    { return _mm_cmplt_ps(a.data, b.data); }
+force_inline f32x4  operator>(f32x4 a, f32x4 b)    { return _mm_cmpgt_ps(a.data, b.data); }
+force_inline f32x4  operator<=(f32x4 a, f32x4 b)   { return _mm_cmple_ps(a.data, b.data); }
+force_inline f32x4  operator>=(f32x4 a, f32x4 b)   { return _mm_cmpge_ps(a.data, b.data); }
+force_inline bool   Test(f32x4 a)                  { return _mm_movemask_ps(a.data) == 0xf; }
+
 force_inline f32x4 min(f32x4 a, f32x4 b)          { return _mm_min_ps(a.data, b.data); }
 force_inline f32x4 max(f32x4 a, f32x4 b)          { return _mm_max_ps(a.data, b.data); }
 
@@ -48,16 +56,16 @@ force_inline f32x4 Broadcast3(f32x4 a)            { return _mm_shuffle_ps(a.data
 struct i16x8 { // 8xint16
 	__m128i data;
 
-	void   Load(void *ptr)       { data = _mm_loadu_si128((__m128i *)ptr); }
-	void   Load64(void *ptr)     { data = _mm_castpd_si128(_mm_load_sd((double *)ptr)); }
-	void   Load32(void *ptr)     { data = _mm_castps_si128(_mm_load_ss((float *)ptr)); }
+	const void   Load(const void *ptr)       { data = _mm_loadu_si128((__m128i *)ptr); }
+	const void   Load64(const void *ptr)     { data = _mm_castpd_si128(_mm_load_sd((double *)ptr)); }
+	const void   Load32(const void *ptr)     { data = _mm_castps_si128(_mm_load_ss((float *)ptr)); }
 
-	void   Store(void *ptr)      { _mm_storeu_si128((__m128i *)ptr, data); }
-	void   Store64(void *ptr)    { _mm_store_sd((double *)ptr, _mm_castsi128_pd(data)); }
-	void   Store32(void *ptr)    { _mm_store_ss((float *)ptr, _mm_castsi128_ps(data)); }
+	const void   Store(const void *ptr)      { _mm_storeu_si128((__m128i *)ptr, data); }
+	const void   Store64(const void *ptr)    { _mm_store_sd((double *)ptr, _mm_castsi128_pd(data)); }
+	const void   Store32(const void *ptr)    { _mm_store_ss((float *)ptr, _mm_castsi128_ps(data)); }
 	
 	i16x8()                      {}
-	i16x8(void *ptr)             { Load(ptr); }
+	i16x8(const void *ptr)       { Load(ptr); }
 	i16x8(__m128i d)             { data = d; }
 	i16x8(int v)                 { data = _mm_set_epi16(0, 0, 0, 0, 0, 0, 0, v); }
 	i16x8(int a, int b, int c, int d, int e, int f, int g, int h)  { data = _mm_set_epi16(a, b, c, d, e, f, g, h); }
@@ -84,6 +92,11 @@ force_inline i16x8  operator>>(i16x8 a, int b)     { return _mm_srli_epi16(a.dat
 force_inline i16x8& operator>>=(i16x8& a, int b)   { return a = a >> b; }
 force_inline i16x8  operator<<(i16x8 a, int b)     { return _mm_slli_epi16(a.data, b); }
 force_inline i16x8& operator<<=(i16x8& a, int b)   { return a = a << b; }
+
+force_inline i16x8  operator==(i16x8 a, i16x8 b)   { return _mm_cmpeq_epi16(a.data, b.data); }
+force_inline i16x8  operator<(i16x8 a, i16x8 b)    { return _mm_cmplt_epi16(a.data, b.data); }
+force_inline i16x8  operator>(i16x8 a, i16x8 b)    { return _mm_cmpgt_epi16(a.data, b.data); }
+force_inline bool   Test(i16x8 a)                  { return _mm_movemask_epi8(a.data) == 0xffff; }
 
 struct i32x4 : i16x8 { // 4xint32
 	i32x4()                      {}
@@ -112,6 +125,11 @@ force_inline i32x4  operator>>(i32x4 a, int b)    { return _mm_srli_epi32(a.data
 force_inline i32x4& operator>>=(i32x4& a, int b)  { return a = a >> b; }
 force_inline i32x4  operator<<(i32x4 a, int b)    { return _mm_slli_epi32(a.data, b); }
 force_inline i32x4& operator<<=(i32x4& a, int b)  { return a = a << b; }
+
+force_inline i32x4  operator==(i32x4 a, i32x4 b)   { return _mm_cmpeq_epi32(a.data, b.data); }
+force_inline i32x4  operator<(i32x4 a, i32x4 b)    { return _mm_cmplt_epi32(a.data, b.data); }
+force_inline i32x4  operator>(i32x4 a, i32x4 b)    { return _mm_cmpgt_epi32(a.data, b.data); }
+force_inline bool   Test(i32x4 a)                  { return _mm_movemask_epi8(a.data) == 0xffff; }
 
 struct i8x16 : i16x8 { // 16xint8
 	i8x16()                      {}
@@ -187,6 +205,41 @@ i16x8 yg;
 
 #define TEST(x, v) DDUMP(x); if(v) ASSERT(AsString(x) == v);
 
+force_inline
+bool memeq8__(const void *p, const void *q, size_t len)
+{
+	ASSERT(len >= 16);
+	const byte *t = (byte *)p;
+	const byte *s = (byte *)q;
+	
+	auto Cmp128 = [&](size_t at)    { return i16x8(s + at) == i16x8(t + at); };
+	
+	if(!Test(Cmp128(len - 16) & Cmp128(0))) // tail & alignment, also <= 32
+		return false;
+	
+	if(len <= 32)
+		return true;
+
+	const byte *e = t + len; // align up
+
+	byte *t1 = (byte *)(((uintptr_t)t | 15) + 1);
+	s += t1 - t;
+	t = t1;
+	len = e - t;
+	e -= 32;
+	while(t <= e) {
+		if(!Test(Cmp128(0*16) & Cmp128(1*16)))
+			return false;
+		s += 32;
+		t += 32;
+	}
+	if(len & 16)
+		if(!Test(Cmp128(0)))
+			return false;
+	return true;
+}
+
+
 CONSOLE_APP_MAIN
 {
 	for(int i = 0; i < 256; i++) {
@@ -200,6 +253,18 @@ CONSOLE_APP_MAIN
 		TEST(Broadcast1(x), "3 3 3 3");
 		DDUMP(Broadcast2(x));
 		DDUMP(Broadcast3(x));
+		
+		f32x4 y(1, 3, 2, 4);
+		DDUMP(min(x, y));
+		DDUMP(max(x, y));
+		DDUMP(x == y);
+		DDUMP(x != y);
+		DDUMP(x < y);
+		DDUMP(x <= y);
+		DDUMP(x > y);
+		DDUMP(x >= y);
+		DDUMP(Test(x == y));
+		DDUMP(Test(x == x));
 	}
 
 	{
@@ -208,6 +273,14 @@ CONSOLE_APP_MAIN
 		DDUMP(BroadcastLH1(x));
 		DDUMP(BroadcastLH2(x));
 		DDUMP(BroadcastLH3(x));
+		
+		i16x8 y(1, 4, 2, 3, 8, 7, 5, 6);
+		DDUMP(x == y);
+		DDUMP(x < y);
+		DDUMP(x > y);
+		
+		DDUMP(Test(x == y));
+		DDUMP(Test(x == x));
 	}
 	
 	{
@@ -225,6 +298,14 @@ CONSOLE_APP_MAIN
 	{
 		i32x4 x(1, 2, 3, 4);
 		DDUMP(ToFloat(x));
+
+		i32x4 y(1, 4, 2, 3);
+		DDUMP(x == y);
+		DDUMP(x < y);
+		DDUMP(x > y);
+		
+		DDUMP(Test(x == y));
+		DDUMP(Test(x == x));
 	}
 
 	{
