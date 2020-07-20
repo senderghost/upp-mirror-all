@@ -27,8 +27,16 @@ CONSOLE_APP_MAIN
 /*
 #ifdef PLATFORM_POSIX
 	int pgsz = getpagesize();
+<<<<<<< .mine
+	DDUMP((int64)sysconf (_SC_PHYS_PAGES) * pgsz >> 20);
+	DDUMP((int64)sysconf (_SC_AVPHYS_PAGES) * pgsz >> 20);
+||||||| .r14567
+	DDUMP(sysconf (_SC_PHYS_PAGES) * pgsz >> 20);
+	DDUMP(sysconf (_SC_AVPHYS_PAGES) * pgsz >> 20);
+=======
 	DDUMP(sysconf (_SC_PHYS_PAGES) * pgsz >> 20);
 //	DDUMP(sysconf (_SC_AVPHYS_PAGES) * pgsz >> 20);
+>>>>>>> .r14688
 #else
   MEMORYSTATUSEX statex;
 
