@@ -2,13 +2,13 @@
 
 #include "SIMD_NEON.h"
 
-/*
+
 String AsString(const i32x4& x)
 {
 	int *f = (int *)&x;
 	return Format("%d %d %d %d", f[3], f[2], f[1], f[0]);
 }
-
+/*
 String AsString(const i8x16& x)
 {
 	int8 *f = (int8 *)&x;
@@ -161,6 +161,67 @@ CONSOLE_APP_MAIN
 		DUMP(AllTrue(a == b));
 		
 		b = i16all(10);
+
+		DUMP(AllTrue(a < b));
+		DUMP(AllTrue(b < a));
+
+		DUMP(AllTrue(a > b));
+		DUMP(AllTrue(b > a));
+	}
+
+	{
+		LOG("==========================================================");
+		int y[] = { 1, 2, 3, 4 };
+		
+		i32x4 x;
+		x.Load32(y);
+		DUMP(x);
+		x.Load64(y);
+		DUMP(x);
+		x.Load(y);
+		DUMP(x);
+		
+		int16 r[8] = { 0 };
+		x.Store32(r);
+		DUMP(i32x4(r));
+		x.Store64(r);
+		DUMP(i32x4(r));
+		x.Store(r);
+		DUMP(i32x4(r));
+		
+		DUMP(i32x4(13));
+		DUMP(i32all(13));
+
+		i32x4 a(1, 2, 3, 4);
+		i32x4 b(2, 2, 2, 2);
+		
+		DUMP(a);
+		DUMP(b);
+		
+		DUMP(a + b);
+		DUMP(a - b);
+		
+		DUMP(a & b);
+		DUMP(a | b);
+		DUMP(a ^ b);
+		DUMP(~a);
+		
+		DUMP(a << 1);
+		DUMP(a >> 1);
+
+		DUMP((a == a));
+		DUMP((a == b));
+
+		DUMP((a < b));
+		DUMP((b < a));
+
+		DUMP((a > b));
+		DUMP((b > a));
+		
+		DUMP(AllTrue(a == a));
+		DUMP(AllTrue(a == b));
+		
+		b = i32all(10);
 
 		DUMP(AllTrue(a < b));
 		DUMP(AllTrue(b < a));

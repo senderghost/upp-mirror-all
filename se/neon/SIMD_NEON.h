@@ -124,3 +124,56 @@ force_inline bool   AllTrue(i16x8 a) {
     uint32x2_t tmp = vand_u32(vget_low_u32(v), vget_high_u32(v));
     return vget_lane_u32(vpmax_u32(tmp, tmp), 0) == 0xffffffff;
 }
+
+struct i32x4 { // 4xint32
+	int32x4_t data;
+
+	i32x4& Load(const void *ptr) { data = vld1q_s32((int32_t *)ptr); return *this; }
+	i32x4& Load64(void *ptr)     { data = vreinterpretq_s32_s64(vsetq_lane_s64(*(int64_t *)ptr, vdupq_n_s64(0), 0)); return *this; }
+	i32x4& Load32(void *ptr)     { data = vsetq_lane_s32(*(int32_t *)ptr, vdupq_n_s32(0), 0); return *this; }
+
+	void   Store(void *ptr)      { vst1q_s32((int32_t *)ptr, data); }
+	void   Store64(void *ptr)    { vst1q_lane_s64((int64_t *)ptr, vreinterpretq_s64_s32(data), 0); }
+	void   Store32(void *ptr)    { vst1q_lane_s32((int32_t *)ptr, data, 0); }
+
+	i32x4()                      {}
+	i32x4(void *ptr)             { Load(ptr); }
+	i32x4(int32x4_t d)           { data = d; }
+	i32x4(int v)                 { data = vsetq_lane_s32(v, vdupq_n_s32(0), 0); }
+	i32x4(int a, int b, int c, int d)  {
+		int32_t __attribute__((aligned(16))) val[4] = { (int16_t)d, (int16_t)c, (int16_t)b, (int16_t)a };
+		data = vld1q_s32(val);
+	}
+	operator int32x4_t()         { return data; }
+	operator int()               { return vgetq_lane_s32(data, 0); }
+};
+
+force_inline i32x4  i32all(int v)                 { return vdupq_n_s32(v); }
+
+force_inline i32x4  operator+(i32x4 a, i32x4 b)   { return vaddq_s32(a, b); }
+force_inline i32x4& operator+=(i32x4& a, i32x4 b) { return a = a + b; }
+force_inline i32x4  operator-(i32x4 a, i32x4 b)   { return vsubq_s32(a, b); }
+force_inline i32x4& operator-=(i32x4& a, i32x4 b) { return a = a - b; }
+
+force_inline i32x4  operator&(i32x4 a, i32x4 b)    { return vandq_s32(a, b); }
+force_inline i32x4& operator&=(i32x4& a, i32x4 b)  { return a = a & b; }
+force_inline i32x4  operator|(i32x4 a, i32x4 b)    { return vorrq_s32(a, b); }
+force_inline i32x4& operator|=(i32x4& a, i32x4 b)  { return a = a | b; }
+force_inline i32x4  operator^(i32x4 a, i32x4 b)    { return veorq_s32(a, b); }
+force_inline i32x4& operator^=(i32x4& a, i32x4 b)  { return a = a ^ b; }
+force_inline i32x4  operator~(i32x4 a)             { return vmvnq_s32(a); }
+
+force_inline i32x4  operator>>(i32x4 a, int b)     { return vshlq_s32(a, vdupq_n_s32(-b)); }
+force_inline i32x4& operator>>=(i32x4& a, int b)   { return a = a >> b; }
+force_inline i32x4  operator<<(i32x4 a, int b)     { return vshlq_s32(a, vdupq_n_s32(b)); }
+force_inline i32x4& operator<<=(i32x4& a, int b)   { return a = a << b; }
+
+force_inline i32x4  operator==(i32x4 a, i32x4 b)  { return vreinterpretq_s32_u32(vceqq_s32(a, b)); }
+force_inline i32x4  operator<(i32x4 a, i32x4 b)   { return vreinterpretq_s32_u32(vcltq_s32(a, b)); }
+force_inline i32x4  operator>(i32x4 a, i32x4 b)   { return vreinterpretq_s32_u32(vcgtq_s32(a, b)); }
+
+force_inline bool   AllTrue(i32x4 a) {
+	uint32x4_t v = vreinterpretq_u32_s32(a);
+    uint32x2_t tmp = vand_u32(vget_low_u32(v), vget_high_u32(v));
+    return vget_lane_u32(vpmax_u32(tmp, tmp), 0) == 0xffffffff;
+}
