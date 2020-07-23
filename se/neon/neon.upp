@@ -2,6 +2,7 @@ uses
 	Core;
 
 file
+	SIMD_NEON.h,
 	neon.cpp;
 
 mainconfig
