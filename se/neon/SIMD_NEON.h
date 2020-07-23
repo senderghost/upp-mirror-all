@@ -177,3 +177,47 @@ force_inline bool   AllTrue(i32x4 a) {
     uint32x2_t tmp = vand_u32(vget_low_u32(v), vget_high_u32(v));
     return vget_lane_u32(vpmax_u32(tmp, tmp), 0) == 0xffffffff;
 }
+
+struct i8x16 { // 16*int8
+	int8x16_t data;
+
+	i8x16& Load(const void *ptr) { data = vld1q_s8((int8_t *)ptr); return *this; }
+	i8x16& Load64(void *ptr)     { data = vreinterpretq_s8_s64(vsetq_lane_s64(*(int64_t *)ptr, vdupq_n_s64(0), 0)); return *this; }
+	i8x16& Load32(void *ptr)     { data = vreinterpretq_s8_s32(vsetq_lane_s32(*(int32_t *)ptr, vdupq_n_s32(0), 0)); return *this; }
+
+
+	void   Store(void *ptr)      { vst1q_s8((int8_t *)ptr, data); }
+	void   Store64(void *ptr)    { vst1q_lane_s64((int64_t *)ptr, vreinterpretq_s64_s8(data), 0); }
+	void   Store32(void *ptr)    { vst1q_lane_s32((int32_t *)ptr, vreinterpretq_s32_s8(data), 0); }
+
+	i8x16()                      {}
+	i8x16(void *ptr)             { Load(ptr); }
+	i8x16(int8x16_t d)           { data = d; }
+	i8x16(int v)                 { data = vsetq_lane_s8(v, vdupq_n_s8(0), 0); }
+	i8x16(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p)
+	{
+		int8_t __attribute__((aligned(16))) val[16] = {
+			(int8_t)p, (int8_t)o, (int8_t)n, (int8_t)m,
+			(int8_t)l, (int8_t)k, (int8_t)j, (int8_t)i,
+			(int8_t)h, (int8_t)g, (int8_t)f, (int8_t)e,
+			(int8_t)d, (int8_t)c, (int8_t)b, (int8_t)a,
+		};
+		data = vld1q_s8(val);
+	}
+	operator int8x16_t()         { return data; }
+};
+
+force_inline i8x16  i8all(int v)                  { return vdupq_n_s8(v); }
+
+force_inline i8x16  operator+(i8x16 a, i8x16 b)   { return vaddq_s8(a, b); }
+force_inline i8x16& operator+=(i8x16& a, i8x16 b) { return a = a + b; }
+force_inline i8x16  operator-(i8x16 a, i8x16 b)   { return vsubq_s8(a, b); }
+force_inline i8x16& operator-=(i8x16& a, i8x16 b) { return a = a - b; }
+
+force_inline i8x16  operator&(i8x16 a, i8x16 b)    { return vandq_s8(a, b); }
+force_inline i8x16& operator&=(i8x16& a, i8x16 b)  { return a = a & b; }
+force_inline i8x16  operator|(i8x16 a, i8x16 b)    { return vorrq_s8(a, b); }
+force_inline i8x16& operator|=(i8x16& a, i8x16 b)  { return a = a | b; }
+force_inline i8x16  operator^(i8x16 a, i8x16 b)    { return veorq_s8(a, b); }
+force_inline i8x16& operator^=(i8x16& a, i8x16 b)  { return a = a ^ b; }
+force_inline i8x16  operator~(i8x16 a)             { return vmvnq_s8(a); }

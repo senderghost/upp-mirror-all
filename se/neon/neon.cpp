@@ -8,7 +8,7 @@ String AsString(const i32x4& x)
 	int *f = (int *)&x;
 	return Format("%d %d %d %d", f[3], f[2], f[1], f[0]);
 }
-/*
+
 String AsString(const i8x16& x)
 {
 	int8 *f = (int8 *)&x;
@@ -16,7 +16,6 @@ String AsString(const i8x16& x)
 	              f[15], f[14], f[13], f[12], f[11], f[10], f[9], f[8],
 	              f[7], f[6], f[5], f[4], f[3], f[2], f[1], f[0]);
 }
-*/
 
 String AsString(const f32x4& x)
 {
@@ -228,5 +227,42 @@ CONSOLE_APP_MAIN
 
 		DUMP(AllTrue(a > b));
 		DUMP(AllTrue(b > a));
+	}
+	{
+		LOG("==========================================================");
+		int8 y[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+		
+		i8x16 x;
+		x.Load32(y);
+		DUMP(x);
+		x.Load64(y);
+		DUMP(x);
+		x.Load(y);
+		DUMP(x);
+		
+		int16 r[8] = { 0 };
+		x.Store32(r);
+		DUMP(i8x16(r));
+		x.Store64(r);
+		DUMP(i8x16(r));
+		x.Store(r);
+		DUMP(i8x16(r));
+		
+		DUMP(i8x16(13));
+		DUMP(i8all(13));
+
+		i8x16 a(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+		i8x16 b(2, 2, 2, 2, 2, 2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2);
+		
+		DUMP(a);
+		DUMP(b);
+		
+		DUMP(a + b);
+		DUMP(a - b);
+		
+		DUMP(a & b);
+		DUMP(a | b);
+		DUMP(a ^ b);
+		DUMP(~a);
 	}
 }
