@@ -56,7 +56,7 @@ force_inline f32x4  operator>=(f32x4 a, f32x4 b)  { return vreinterpretq_f32_u32
 force_inline bool   AllTrue(f32x4 a) {
 	uint32x4_t v = vreinterpretq_u32_f32(a);
     uint32x2_t tmp = vand_u32(vget_low_u32(v), vget_high_u32(v));
-    return vget_lane_u32(vpmax_u32(tmp, tmp), 0);
+    return vget_lane_u32(vpmax_u32(tmp, tmp), 0) == 0xffffffff;;
 }
 
 force_inline f32x4 min(f32x4 a, f32x4 b)          { return vminq_f32(a, b); }
@@ -66,7 +66,6 @@ force_inline f32x4 Broadcast0(f32x4 a)            { return vdupq_n_f32(vgetq_lan
 force_inline f32x4 Broadcast1(f32x4 a)            { return vdupq_n_f32(vgetq_lane_f32(a, 1)); }
 force_inline f32x4 Broadcast2(f32x4 a)            { return vdupq_n_f32(vgetq_lane_f32(a, 2)); }
 force_inline f32x4 Broadcast3(f32x4 a)            { return vdupq_n_f32(vgetq_lane_f32(a, 3)); }
-
 
 struct i16x8 { // 8xint16
 	int16x8_t data;
@@ -83,6 +82,8 @@ struct i16x8 { // 8xint16
 	i16x8()                      {}
 	i16x8(const void *ptr)       { Load(ptr); }
 	i16x8(int16x8_t d)           { data = d; }
+	i16x8(int8x16_t d)           { data = vreinterpretq_s16_s8(d); }
+	i16x8(int32x4_t d)           { data = vreinterpretq_s16_s32(d); }
 	i16x8(int v)                 { data = vsetq_lane_s16(v, vdupq_n_s16(0), 0); }
 	i16x8(int a, int b, int c, int d, int e, int f, int g, int h) {
 		int16_t __attribute__((aligned(16))) val[8] = { (int16_t)h, (int16_t)g, (int16_t)f, (int16_t)e, (int16_t)d, (int16_t)c, (int16_t)b, (int16_t)a };
@@ -139,6 +140,8 @@ struct i32x4 { // 4xint32
 	i32x4()                      {}
 	i32x4(void *ptr)             { Load(ptr); }
 	i32x4(int32x4_t d)           { data = d; }
+	i32x4(int8x16_t d)           { data = vreinterpretq_s32_s8(d); }
+	i32x4(int16x8_t d)           { data = vreinterpretq_s32_s16(d); }
 	i32x4(int v)                 { data = vsetq_lane_s32(v, vdupq_n_s32(0), 0); }
 	i32x4(int a, int b, int c, int d)  {
 		int32_t __attribute__((aligned(16))) val[4] = { (int16_t)d, (int16_t)c, (int16_t)b, (int16_t)a };
@@ -146,6 +149,7 @@ struct i32x4 { // 4xint32
 	}
 	operator int32x4_t()         { return data; }
 	operator int()               { return vgetq_lane_s32(data, 0); }
+	operator i16x8() const       { return i16x8(data); }
 };
 
 force_inline i32x4  i32all(int v)                 { return vdupq_n_s32(v); }
@@ -193,6 +197,8 @@ struct i8x16 { // 16*int8
 	i8x16()                      {}
 	i8x16(void *ptr)             { Load(ptr); }
 	i8x16(int8x16_t d)           { data = d; }
+	i8x16(int16x8_t d)           { data = vreinterpretq_s8_s16(d); }
+	i8x16(int32x4_t d)           { data = vreinterpretq_s8_s32(d); }
 	i8x16(int v)                 { data = vsetq_lane_s8(v, vdupq_n_s8(0), 0); }
 	i8x16(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p)
 	{
@@ -204,7 +210,8 @@ struct i8x16 { // 16*int8
 		};
 		data = vld1q_s8(val);
 	}
-	operator int8x16_t()         { return data; }
+	operator int8x16_t() const   { return data; }
+	operator i16x8() const       { return i16x8(data); }
 };
 
 force_inline i8x16  i8all(int v)                  { return vdupq_n_s8(v); }
@@ -221,3 +228,35 @@ force_inline i8x16& operator|=(i8x16& a, i8x16 b)  { return a = a | b; }
 force_inline i8x16  operator^(i8x16 a, i8x16 b)    { return veorq_s8(a, b); }
 force_inline i8x16& operator^=(i8x16& a, i8x16 b)  { return a = a ^ b; }
 force_inline i8x16  operator~(i8x16 a)             { return vmvnq_s8(a); }
+
+force_inline f32x4 ToFloat(i32x4 a)               { return vcvtq_f32_s32(a); }
+force_inline i32x4 Truncate(f32x4 a)              { return vcvtq_s32_f32(a); }
+
+force_inline i16x8 Unpack8L(i16x8 a)              { return vzipq_s8(vreinterpretq_s8_s16(a), vdupq_n_s8(0)).val[0]; }
+force_inline i16x8 Unpack8H(i16x8 a)              { return vzipq_s8(vreinterpretq_s8_s16(a), vdupq_n_s8(0)).val[1]; }
+
+force_inline i32x4 Unpack16L(i16x8 a)             { return vzipq_s16(a, vdupq_n_s16(0)).val[0]; }
+force_inline i32x4 Unpack16H(i16x8 a)             { return vzipq_s16(a, vdupq_n_s16(0)).val[1]; }
+
+force_inline i8x16 Pack16(i16x8 l, i16x8 h)       { return vreinterpretq_s8_u8(vcombine_u8(vqmovun_s16(l), vqmovun_s16(h))); }
+force_inline i8x16 Pack16(i16x8 l)                { return vreinterpretq_s8_u8(vcombine_u8(vqmovun_s16(l), vdup_n_u8(0))); }
+
+force_inline i16x8 Pack32(i32x4 a)                { return vcombine_s16(vqmovn_s32(a), vdup_n_s16(0)); }
+
+force_inline i16x8 BroadcastLH0(i16x8 a)          {
+	return vcombine_s16(vdup_n_s16(vgetq_lane_s16(a, 0)), vdup_n_s16(vgetq_lane_s16(a, 4)));
+}
+
+force_inline i16x8 BroadcastLH1(i16x8 a)          {
+	return vcombine_s16(vdup_n_s16(vgetq_lane_s16(a, 1)), vdup_n_s16(vgetq_lane_s16(a, 5)));
+}
+
+force_inline i16x8 BroadcastLH2(i16x8 a)          {
+	return vcombine_s16(vdup_n_s16(vgetq_lane_s16(a, 2)), vdup_n_s16(vgetq_lane_s16(a, 6)));
+}
+
+force_inline i16x8 BroadcastLH3(i16x8 a)          {
+	return vcombine_s16(vdup_n_s16(vgetq_lane_s16(a, 3)), vdup_n_s16(vgetq_lane_s16(a, 7)));
+}
+
+force_inline i16x8 i64all(qword data)             { return vreinterpretq_s16_u64(vdupq_n_u64(data)); }

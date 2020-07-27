@@ -265,4 +265,31 @@ CONSOLE_APP_MAIN
 		DUMP(a ^ b);
 		DUMP(~a);
 	}
+	
+	{
+		LOG("=========================");
+		i8x16 a(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+		DUMP(Unpack8L(a));
+		DUMP(Unpack8H(a));
+		i16x8 h = Unpack8H(a);
+		DUMP(Unpack16L(h));
+		DUMP(Unpack16H(h));
+		
+		DUMP(Pack16(Unpack8L(a), Unpack8H(a)));
+		DUMP(Pack32(Unpack16L(h)));
+	}
+	{
+		LOG("=========================");
+		i16x8 a(1, 2, 3, 4, 5, 6, 7, 8);
+		
+		DUMP(a);
+		DUMP(BroadcastLH0(a));
+		DUMP(BroadcastLH1(a));
+		DUMP(BroadcastLH2(a));
+		DUMP(BroadcastLH3(a));
+		
+		auto i64 = i64all(I64(0x123456789abcdef));
+		
+		LOGHEXDUMP(&i64, 16);
+	}
 }
