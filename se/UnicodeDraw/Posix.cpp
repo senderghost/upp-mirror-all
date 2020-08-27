@@ -2,7 +2,7 @@
 
 using namespace Upp;
 
-#ifdef PLATFORM_POSIX
+#ifdef PLATFORM_GTK
 
 #include <cairo/cairo-ft.h>
 

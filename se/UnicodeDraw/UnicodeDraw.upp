@@ -5,6 +5,7 @@ file
 	UnicodeData.txt,
 	Win32.cpp,
 	Posix.cpp,
+	MacOS.mm,
 	main.cpp;
 
 mainconfig
