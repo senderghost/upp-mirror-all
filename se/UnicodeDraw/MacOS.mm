@@ -41,7 +41,7 @@ int GetAdvanceWidth(Font fnt, int ch)
 {
 	bool bold_synth;
 	CTFontRef ctfont = CT_Font(fnt, bold_synth);
-	int width = -1;
+	int width = -1; // rather tofu width?-
 	if(ctfont) {
 		LTIMING("GetGlyphInfoSys 2");
 	    CGGlyph glyph_index = GlyphIndex(fnt, ch);
