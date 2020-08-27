@@ -58,8 +58,49 @@ int GetAdvanceWidth(Font fnt, int ch)
 	return width;
 }
 
-void RenderCodepoint(FontGlyphConsumer& sw, double x, double y, int ch, Font fnt)
+struct sCGPathTarget {
+	double x, y;
+	FontGlyphConsumer *sw;
+};
+
+static void convertCGPathToQPainterPath(void *info, const CGPathElement *e)
 {
+	auto t = (sCGPathTarget *)info;
+	switch(e->type) {
+	case kCGPathElementMoveToPoint:
+		t->sw->Move(Pointf(e->points[0].x + t->x, e->points[0].y + t->y));
+		break;
+	case kCGPathElementAddLineToPoint:
+		t->sw->Line(Pointf(e->points[0].x + t->x, e->points[0].y + t->y));
+		break;
+	case kCGPathElementAddQuadCurveToPoint:
+		t->sw->Quadratic(Pointf(e->points[0].x + t->x, e->points[0].y + t->y),
+	                     Pointf(e->points[1].x + t->x, e->points[1].y + t->y));
+		break;
+	case kCGPathElementAddCurveToPoint:
+		t->sw->Cubic(Pointf(e->points[0].x + t->x, e->points[0].y + t->y),
+	                 Pointf(e->points[1].x + t->x, e->points[1].y + t->y),
+	                 Pointf(e->points[2].x + t->x, e->points[2].y + t->y));
+		break;
+	case kCGPathElementCloseSubpath:
+		t->sw->Close();
+		break;
+	}
+}
+
+void RenderCodepoint(FontGlyphConsumer& sw, double x, double y, int chr, Font font)
+{
+	CGAffineTransform cgMatrix = CGAffineTransformIdentity;
+	cgMatrix = CGAffineTransformScale(cgMatrix, 1, -1);
+	bool synth;
+	CTFontRef ctfont = CT_Font(font, synth);
+    CGGlyph glyph_index = GlyphIndex(font, chr);
+    CFRef<CGPathRef> cgpath = CTFontCreatePathForGlyph(ctfont, glyph_index, &cgMatrix);
+    sCGPathTarget t;
+    t.x = x;
+    t.y = y + font.GetAscent();
+    t.sw = &sw;
+    CGPathApply(cgpath, &t, convertCGPathToQPainterPath);
 }
 
 void DrawCodepoint(Draw& w, int x, int y, int ch, Font font)
