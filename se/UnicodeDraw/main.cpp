@@ -5,8 +5,6 @@ using namespace Upp;
 int  GlyphIndex(Font fnt, int ch);
 bool HasCodepoint(Font fnt, int ch);
 int  GetAdvanceWidth(Font fnt, int ch);
-double fx_to_dbl(const FIXED& p);
-Pointf fx_to_dbl(const Pointf& pp, const POINTFX& p);
 void RenderCodepoint(FontGlyphConsumer& sw, double x, double y, int ch, Font fnt);
 void DrawCodepoint(Draw& w, int x, int y, int ch, Font font);
 

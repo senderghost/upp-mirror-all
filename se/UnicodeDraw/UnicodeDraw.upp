@@ -4,6 +4,7 @@ uses
 file
 	UnicodeData.txt,
 	Win32.cpp,
+	Posix.cpp,
 	main.cpp;
 
 mainconfig
